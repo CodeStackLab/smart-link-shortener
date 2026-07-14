@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#dc2626">
+  <title>Sign In — Smart Link Shortener</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+  <meta name="description" content="Admin login for Smart Link Shortener. Manage shortlinks, analytics, and IP firewall.">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-theme="light">
+
+<div class="auth-wrapper">
+  <!-- Left: Brand Panel -->
+  <div class="auth-brand">
+    <div class="brand-logo">⚡</div>
+    <div class="brand-tagline">
+      <h2>Smart Link<br>Shortener</h2>
+      <p>Intelligent link redirection engine with real-time analytics, VPN detection, and IP firewall.</p>
+    </div>
+    <ul class="brand-features">
+      <li><span class="icon">🔗</span> Custom short links with smart routing</li>
+      <li><span class="icon">🌍</span> Country & VPN traffic analytics</li>
+      <li><span class="icon">🛡️</span> IP firewall & bot protection</li>
+      <li><span class="icon">📱</span> QR Code generator for every link</li>
+      <li><span class="icon">⏱️</span> Delay timer, quotas & expiry rules</li>
+    </ul>
+  </div>
+
+  <!-- Right: Login Form -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <div class="auth-topbar">
+        <div class="mini-logo">
+          <div class="mini-logo-icon">⚡</div>
+          Smart <span class="hide-mobile">Shortener</span>
+        </div>
+        <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
+      </div>
+
+      <div class="auth-card-header">
+        <h1>Welcome back 👋</h1>
+        <p>Sign in to your admin dashboard to manage links and traffic.</p>
+      </div>
+
+      <div id="login-alert" class="alert alert-danger"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" class="form-control" placeholder="e.g. admin" value="admin" required autocomplete="username" inputmode="text" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="form-group" style="margin-bottom:1.5rem;">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" inputmode="text">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          ⚡ Sign In to Dashboard
+        </button>
+      </form>
+
+
+    </div>
+  </div>
+</div>
+
+<script src="/js/login.js"></script>
+</body>
+</html>

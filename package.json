@@ -1,0 +1,28 @@
+{
+  "name": "smart-link-shortener",
+  "version": "1.0.0",
+  "description": "Smart Link Shortener with Referrer Routing, Anti-Bot Shield, and Coolify Docker support",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "link-shortener",
+    "express",
+    "bot-protection",
+    "coolify",
+    "docker"
+  ],
+  "author": "CodeStackLab",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.0.0",
+    "node-fetch": "^2.7.0",
+    "qrcode": "^1.5.4"
+  }
+}

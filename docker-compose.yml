@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  link-shortener:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: link-shortener
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "3000:3000"

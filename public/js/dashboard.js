@@ -1,0 +1,1343 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // Intercept global fetch to handle 401 Unauthorized globally (e.g. if container restarted and session memory was wiped)
+  const originalFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const res = await originalFetch(...args);
+    if (res.status === 401 && !args[0].includes('/api/session')) {
+      window.location.href = '/admin';
+    }
+    return res;
+  };
+
+  const alertBox = document.getElementById('dashboard-alert');
+  const logoutBtn = document.getElementById('logout-btn');
+  const userBadge = document.getElementById('user-badge');
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+  // QR Modal Elements
+  const qrModal = document.getElementById('qr-modal');
+  const qrModalCode = document.getElementById('qr-modal-code');
+  const qrModalImg = document.getElementById('qr-modal-img');
+  const qrDownloadBtn = document.getElementById('qr-download-btn');
+  const closeQrBtn = document.getElementById('close-qr-btn');
+
+  if (closeQrBtn) {
+    closeQrBtn.addEventListener('click', () => {
+      if (qrModal) qrModal.style.display = 'none';
+    });
+  }
+
+  // Theme Switcher Engine
+  let currentTheme = localStorage.getItem('theme') || 'light';
+
+  window.applyTheme = function(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    if (themeToggleBtn) {
+      if (theme === 'light') themeToggleBtn.innerHTML = '☀️ Light';
+      else if (theme === 'dark') themeToggleBtn.innerHTML = '🌙 Dark';
+      else if (theme === 'multi') themeToggleBtn.innerHTML = '🌈 Sunset';
+      else if (theme === 'ocean') themeToggleBtn.innerHTML = '❄️ Ocean';
+      else if (theme === 'wine') themeToggleBtn.innerHTML = '🍷 Wine';
+      else if (theme === 'forest') themeToggleBtn.innerHTML = '🌲 Forest';
+    }
+  };
+
+  // Define local variable applyTheme as a shortcut
+  const applyTheme = window.applyTheme;
+  applyTheme(currentTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const themeOrder = ['light', 'dark', 'multi', 'ocean', 'wine', 'forest'];
+      let nextIndex = (themeOrder.indexOf(currentTheme) + 1) % themeOrder.length;
+      if (nextIndex === -1) nextIndex = 0;
+      applyTheme(themeOrder[nextIndex]);
+    });
+  }
+
+  // Helper: Convert Base64 Data URI to Native Binary Blob URL for Reliable 1-Click PNG Download
+  function base64ToBlobUrl(base64Data, mimeType = 'image/png') {
+    try {
+      const parts = base64Data.split(';base64,');
+      const contentType = parts[0].replace('data:', '') || mimeType;
+      const raw = window.atob(parts[1] || base64Data);
+      const rawLength = raw.length;
+      const uInt8Array = new Uint8Array(rawLength);
+
+      for (let i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+      }
+
+      const blob = new Blob([uInt8Array], { type: contentType });
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      return base64Data;
+    }
+  }
+
+  // --------------------------------------------------------
+  // COLLAPSIBLE PRO SMART SETTINGS ENGINE
+  // --------------------------------------------------------
+  const toggleProSettingsBtn = document.getElementById('toggle-pro-settings-btn');
+  const proSettingsBody = document.getElementById('pro-settings-body');
+  const proSettingsToggleIcon = document.getElementById('pro-settings-toggle-icon');
+
+  if (toggleProSettingsBtn && proSettingsBody) {
+    toggleProSettingsBtn.addEventListener('click', () => {
+      const isOpen = proSettingsBody.classList.contains('open');
+      if (!isOpen) {
+        proSettingsBody.classList.add('open');
+        toggleProSettingsBtn.classList.add('open');
+        if (proSettingsToggleIcon) { proSettingsToggleIcon.textContent = '▼ Hide'; proSettingsToggleIcon.classList.add('open'); }
+      } else {
+        proSettingsBody.classList.remove('open');
+        toggleProSettingsBtn.classList.remove('open');
+        if (proSettingsToggleIcon) { proSettingsToggleIcon.textContent = '▶ Click to Show'; proSettingsToggleIcon.classList.remove('open'); }
+      }
+    });
+  }
+
+  let currentLoggedInUsername = '';
+
+  // Check Session & Update Header User Badge
+  fetch('/api/session')
+    .then(res => res.json())
+    .then(data => {
+      if (!data.authenticated) {
+        window.location.href = '/admin';
+      } else {
+        currentLoggedInUsername = data.username;
+        if (userBadge) {
+          userBadge.textContent = `${data.username} (${data.role || 'Admin'})`;
+        }
+      }
+    })
+    .catch(() => {
+      window.location.href = '/admin';
+    });
+
+  // Logout Handler
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/admin';
+    });
+  }
+
+  // Mobile Hamburger Menu Toggler
+  const hamburgerMenuBtn = document.getElementById('hamburger-menu-btn');
+  const menuOverlay = document.getElementById('menu-overlay');
+
+  if (hamburgerMenuBtn) {
+    hamburgerMenuBtn.addEventListener('click', () => {
+      document.body.classList.toggle('menu-open');
+    });
+  }
+
+  if (menuOverlay) {
+    menuOverlay.addEventListener('click', () => {
+      document.body.classList.remove('menu-open');
+    });
+  }
+
+  // Tab Switcher Logic
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.style.display = 'none');
+
+      btn.classList.add('active');
+      document.getElementById(targetTab).style.display = 'block';
+
+      // Close mobile navigation drawer
+      document.body.classList.remove('menu-open');
+
+      if (targetTab === 'tab-links') loadLinks();
+      if (targetTab === 'tab-domains') loadDomains();
+      if (targetTab === 'tab-geo') loadCountryAnalytics();
+      if (targetTab === 'tab-analytics') loadAnalytics();
+      if (targetTab === 'tab-firewall') loadBlockedIps();
+      if (targetTab === 'tab-settings') loadUsers();
+    });
+  });
+
+  // Show Banner Alert
+  function showAlert(msg, isError = false) {
+    alertBox.textContent = msg;
+    alertBox.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
+    alertBox.style.display = 'block';
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+    }, 4500);
+  }
+
+  // Collapsible DNS Setup Guide Toggle
+  const toggleDnsGuideBtn = document.getElementById('toggle-dns-guide-btn');
+  const dnsGuideBody = document.getElementById('dns-guide-body');
+  const dnsGuideToggleIcon = document.getElementById('dns-guide-toggle-icon');
+
+  if (toggleDnsGuideBtn && dnsGuideBody) {
+    toggleDnsGuideBtn.addEventListener('click', () => {
+      const isHidden = dnsGuideBody.style.display === 'none' || !dnsGuideBody.style.display;
+      dnsGuideBody.style.display = isHidden ? 'block' : 'none';
+      if (dnsGuideToggleIcon) {
+        dnsGuideToggleIcon.textContent = isHidden ? '▼ Click to Hide Guide' : '▶ Click to Show Guide';
+      }
+    });
+  }
+
+  // Interactive Platform Chips Checkboxes
+  const platformChips = document.querySelectorAll('.platform-chip');
+  platformChips.forEach(chip => {
+    const cb = chip.querySelector('input[type="checkbox"]');
+    if (cb) {
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+  });
+
+  // Custom Website Checkbox Chip Toggle
+  const customDomainEnableCb = document.getElementById('custom-domain-enable-cb');
+  const customDomainsContainer = document.getElementById('custom-domains-container');
+  const customDomainChip = document.getElementById('custom-domain-chip');
+  const customDomainsInput = document.getElementById('custom-domains-input');
+  let customDomainsList = [];
+
+  if (customDomainEnableCb && customDomainsContainer) {
+    customDomainEnableCb.addEventListener('change', () => {
+      if (customDomainEnableCb.checked) {
+        customDomainsContainer.style.display = 'flex';
+        if (customDomainChip) customDomainChip.classList.add('active');
+      } else {
+        customDomainsContainer.style.display = 'none';
+        if (customDomainChip) customDomainChip.classList.remove('active');
+        customDomainsList = [];
+        renderDomainTags();
+      }
+    });
+  }
+
+  function renderDomainTags() {
+    if (!customDomainsContainer) return;
+    const existingTags = customDomainsContainer.querySelectorAll('.domain-tag');
+    existingTags.forEach(t => t.remove());
+
+    customDomainsList.forEach((domain, index) => {
+      const tag = document.createElement('div');
+      tag.className = 'domain-tag';
+      tag.innerHTML = `🌐 ${domain} <span class="remove-tag" data-index="${index}">&times;</span>`;
+      customDomainsContainer.insertBefore(tag, customDomainsInput);
+    });
+
+    customDomainsContainer.querySelectorAll('.remove-tag').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        customDomainsList.splice(idx, 1);
+        renderDomainTags();
+      });
+    });
+  }
+
+  if (customDomainsInput) {
+    customDomainsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const val = customDomainsInput.value.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0];
+        if (val && !customDomainsList.includes(val)) {
+          customDomainsList.push(val);
+          customDomainsInput.value = '';
+          renderDomainTags();
+        }
+      }
+    });
+  }
+
+  // --------------------------------------------------------
+  // TAB 1: LINK MANAGER LOGIC
+  // --------------------------------------------------------
+  const linksTbody = document.getElementById('links-tbody');
+  const createForm = document.getElementById('create-link-form');
+  const searchInput = document.getElementById('search-links');
+  let allLinksCache = [];
+
+  async function loadLinks() {
+    try {
+      const res = await fetch('/api/admin/links');
+      allLinksCache = await res.json();
+      renderLinksTable(allLinksCache);
+    } catch (err) {
+      if (linksTbody) linksTbody.innerHTML = `<tr><td colspan="8" style="color: var(--danger);">Failed to load links.</td></tr>`;
+    }
+  }
+
+  function renderLinksTable(links) {
+    if (!linksTbody) return;
+
+    if (!Array.isArray(links) || links.length === 0) {
+      linksTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No smart links found. Create your first link above!</td></tr>`;
+      return;
+    }
+
+    const host = window.location.origin;
+
+    linksTbody.innerHTML = links.map(link => {
+      const domainToUse = link.domain ? link.domain : host.replace(/^https?:\/\//, '');
+      const shortUrl = `${window.location.protocol}//${domainToUse}/s/${link.code}`;
+      
+      const presetBadges = (link.allowedPlatforms || ['facebook']).map(p => {
+        const labels = {
+          facebook: 'Facebook',
+          instagram: 'Instagram'
+        };
+        return `<span class="badge badge-info">${labels[p] || p}</span>`;
+      }).join(' ');
+
+      const customBadges = (link.customDomains || []).map(d => {
+        return `<span class="badge badge-custom">🌐 ${d}</span>`;
+      }).join(' ');
+
+      // Pro Features Badges
+      const delayBadge = link.delaySeconds > 0 
+        ? `<span class="badge badge-warning">⏱️ ${link.delaySeconds}s Delay</span>`
+        : `<span class="badge badge-info">⏱️ Instant</span>`;
+
+      let limitsInfo = [];
+      if (link.maxClicks > 0) limitsInfo.push(`Cap: ${link.clicks}/${link.maxClicks}`);
+      if (link.hourlyLimit > 0) limitsInfo.push(`${link.hourlyLimit}/hr`);
+      if (link.dailyLimit > 0) limitsInfo.push(`${link.dailyLimit}/day`);
+      if (link.monthlyLimit > 0) limitsInfo.push(`${link.monthlyLimit}/mo`);
+
+      const limitsBadge = limitsInfo.length > 0
+        ? `<span class="badge badge-custom">🛑 ${limitsInfo.join(', ')}</span>`
+        : `<span class="badge badge-success">♾️ Unlimited</span>`;
+
+      let expBadge = '';
+      if (link.expiresAt) {
+        const isExp = new Date(link.expiresAt).getTime() < Date.now();
+        expBadge = isExp
+          ? `<span class="badge badge-danger">❌ Expired</span>`
+          : `<span class="badge badge-warning">⏰ Expires ${new Date(link.expiresAt).toLocaleDateString()}</span>`;
+      }
+
+      return `
+        <tr>
+          <td data-label="Short Link">
+            <div class="shortlink-cell-wrap">
+              <strong style="color: var(--accent-primary); font-size: 0.95rem;">/${link.code}</strong>
+              <div style="margin-top: 0.2rem;">
+                <span class="code-box">${shortUrl}</span>
+              </div>
+            </div>
+          </td>
+          <td data-label="Target URL">
+            <a href="${link.targetUrl}" target="_blank" class="url-link">${link.targetUrl}</a>
+          </td>
+          <td data-label="Fallback URL">
+            <span style="color: var(--text-secondary); font-size: 0.8rem; word-break: break-all;">${link.fallbackUrl}</span>
+          </td>
+          <td data-label="Allowed Sources">
+            <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+              ${presetBadges}
+              ${customBadges}
+            </div>
+          </td>
+          <td data-label="Settings">
+            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+              ${delayBadge}
+              ${limitsBadge}
+              ${expBadge}
+            </div>
+          </td>
+          <td data-label="Clicks"><strong style="font-size: 1.1rem; font-family: 'Outfit', sans-serif;">${link.clicks || 0}</strong></td>
+          <td data-label="Status">
+            <span class="badge ${link.active ? 'badge-success' : 'badge-danger'}">
+              ${link.active ? 'Active' : 'Paused'}
+            </span>
+          </td>
+          <td data-label="Actions">
+            <div class="action-btn-group">
+              <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
+              <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
+              <button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">
+                ${link.active ? 'Pause' : 'Enable'}
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.id}')">🗑️ Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = allLinksCache.filter(l => 
+        l.code.toLowerCase().includes(q) || 
+        l.targetUrl.toLowerCase().includes(q) ||
+        (l.customDomains || []).some(d => d.toLowerCase().includes(q))
+      );
+      renderLinksTable(filtered);
+    });
+  }
+
+  // QR Code Modal & 1-Click PNG Download Handler (Using Binary Blob URL)
+  window.showQrModal = async function(code) {
+    try {
+      const res = await fetch(`/api/admin/qrcode/${code}`);
+      const data = await res.json();
+      if (res.ok && data.qrUrl) {
+        if (qrModalCode) qrModalCode.textContent = `/${data.code} - ${data.fullUrl}`;
+        if (qrModalImg) qrModalImg.src = data.qrUrl;
+        
+        if (qrDownloadBtn) {
+          qrDownloadBtn.onclick = (e) => {
+            e.preventDefault();
+            const blobUrl = base64ToBlobUrl(data.qrUrl, 'image/png');
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `qrcode_${data.code}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => {
+              if (blobUrl.startsWith('blob:')) URL.revokeObjectURL(blobUrl);
+            }, 1000);
+          };
+        }
+
+        if (qrModal) { qrModal.style.display = 'flex'; qrModal.style.setProperty('display','flex','important'); }
+      } else {
+        showAlert('Failed to load QR code', true);
+      }
+    } catch (err) {
+      showAlert('Failed to load QR code', true);
+    }
+  };
+
+  window.copyToClipboard = function(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        showAlert(`Copied ${text} to clipboard!`);
+      }).catch(err => {
+        fallbackCopyTextToClipboard(text);
+      });
+    } else {
+      fallbackCopyTextToClipboard(text);
+    }
+  };
+
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showAlert(`Copied ${text} to clipboard!`);
+      } else {
+        showAlert('Failed to copy text', true);
+      }
+    } catch (err) {
+      showAlert('Failed to copy text', true);
+    }
+    document.body.removeChild(textArea);
+  }
+
+  window.toggleLinkStatus = async function(id, newActive) {
+    try {
+      const res = await fetch(`/api/admin/links/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: newActive })
+      });
+      if (res.ok) {
+        showAlert('Link status updated');
+        loadLinks();
+      }
+    } catch (err) {
+      showAlert('Failed to update status', true);
+    }
+  };
+
+  window.deleteLink = async function(id) {
+    if (!confirm('Are you sure you want to delete this short link?')) return;
+    try {
+      const res = await fetch(`/api/admin/links/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showAlert('Shortlink deleted');
+        loadLinks();
+      }
+    } catch (err) {
+      showAlert('Failed to delete link', true);
+    }
+  };
+
+  if (createForm) {
+    createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const domainSelect = document.getElementById('link-domain');
+      const domain = domainSelect ? domainSelect.value : '';
+      const code = document.getElementById('link-code').value.trim();
+      const targetUrl = document.getElementById('target-url').value.trim();
+      const fallbackUrl = document.getElementById('fallback-url').value.trim();
+      const delaySeconds = parseInt(document.getElementById('delay-seconds').value || 0, 10);
+      const maxClicks = parseInt(document.getElementById('max-clicks').value || 0, 10);
+      const hourlyLimit = parseInt(document.getElementById('hourly-limit').value || 0, 10);
+      const dailyLimit = parseInt(document.getElementById('daily-limit').value || 0, 10);
+      const monthlyLimit = parseInt(document.getElementById('monthly-limit').value || 0, 10);
+      const expiresAt = document.getElementById('expires-at').value;
+
+      const androidUrl = document.getElementById('android-url').value.trim();
+      const iosUrl = document.getElementById('ios-url').value.trim();
+
+      const allowedPlatforms = [];
+      document.querySelectorAll('.platform-cb:checked').forEach(cb => {
+        allowedPlatforms.push(cb.value);
+      });
+
+      const finalCustomDomains = customDomainEnableCb && customDomainEnableCb.checked ? customDomainsList : [];
+
+      try {
+        const response = await fetch('/api/admin/links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code,
+            targetUrl,
+            fallbackUrl,
+            allowedPlatforms,
+            customDomains: finalCustomDomains,
+            delaySeconds,
+            maxClicks,
+            hourlyLimit,
+            dailyLimit,
+            monthlyLimit,
+            expiresAt,
+            androidUrl,
+            iosUrl,
+            domain
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const generatedCode = data.link.code;
+          showAlert(`Short link '/s/${generatedCode}' created successfully! Opening QR Code...`);
+          createForm.reset();
+          customDomainsList = [];
+          renderDomainTags();
+          
+          // Reset default checkboxes: ONLY Facebook Checked!
+          document.querySelectorAll('.platform-chip').forEach((chip) => {
+            const cb = chip.querySelector('input[type="checkbox"]');
+            if (cb) {
+              if (cb.value === 'facebook') {
+                cb.checked = true;
+                chip.classList.add('active');
+              } else {
+                cb.checked = false;
+                chip.classList.remove('active');
+              }
+            }
+          });
+          if (customDomainsContainer) customDomainsContainer.style.display = 'none';
+          if (proSettingsBody) { proSettingsBody.classList.remove('open'); }
+          if (toggleProSettingsBtn) toggleProSettingsBtn.classList.remove('open');
+          if (proSettingsToggleIcon) { proSettingsToggleIcon.textContent = '▶ Click to Show'; proSettingsToggleIcon.classList.remove('open'); }
+          loadLinks();
+          
+          // Automatically open QR Code Download Modal for the newly created link!
+          setTimeout(() => {
+            showQrModal(generatedCode);
+          }, 400);
+        } else {
+          showAlert(data.error || 'Failed to create link', true);
+        }
+      } catch (err) {
+        showAlert('Network error creating link', true);
+      }
+    });
+  }
+
+  // --------------------------------------------------------
+  // TAB 2: COUNTRY & VPN MAP ANALYTICS LOGIC
+  // --------------------------------------------------------
+  const countriesTbody = document.getElementById('countries-tbody');
+  const startDateInput = document.getElementById('start-date-input');
+  const endDateInput = document.getElementById('end-date-input');
+  const applyDateBtn = document.getElementById('apply-date-btn');
+  const datePresetBtns = document.querySelectorAll('.date-preset-btn');
+
+  async function loadCountryAnalytics(startDate = '', endDate = '') {
+    if (!countriesTbody) return;
+    try {
+      let query = '';
+      if (startDate && endDate) {
+        query = `?startDate=${startDate}&endDate=${endDate}`;
+      }
+
+      const res = await fetch(`/api/admin/analytics/countries${query}`);
+      const data = await res.json();
+
+      const totalVpn = data.totalVpnClicks || data.totalVpsClicks || 0;
+      document.getElementById('stat-geo-genuine').textContent = data.totalGenuineClicks || 0;
+      document.getElementById('stat-geo-vpn').textContent = totalVpn;
+
+      const vpnPercentage = data.totalLogs > 0 ? Math.round((totalVpn / data.totalLogs) * 100) : 0;
+      const riskEl = document.getElementById('stat-geo-risk');
+      if (vpnPercentage > 30) {
+        riskEl.textContent = `HIGH (${vpnPercentage}% VPN)`;
+        riskEl.style.color = '#ef4444';
+      } else if (vpnPercentage > 10) {
+        riskEl.textContent = `MEDIUM (${vpnPercentage}% VPN)`;
+        riskEl.style.color = '#f59e0b';
+      } else {
+        riskEl.textContent = `LOW (${vpnPercentage}% VPN)`;
+        riskEl.style.color = '#10b981';
+      }
+
+      const countries = data.countries || [];
+      if (countries.length === 0) {
+        countriesTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No country traffic recorded for selected range.</td></tr>`;
+        return;
+      }
+
+      const maxClicks = Math.max(...countries.map(c => c.totalClicks), 1);
+
+      countriesTbody.innerHTML = countries.map(c => {
+        const percent = Math.round((c.totalClicks / data.totalLogs) * 100) || 0;
+        const barWidth = Math.round((c.totalClicks / maxClicks) * 100);
+        const vpnCount = c.vpnClicks || c.vpsClicks || 0;
+
+        return `
+          <tr>
+            <td data-label="Country">
+              <strong style="font-size: 0.95rem; margin-right: 0.35rem;">${c.flag || '🌐'}</strong>
+              <strong style="color: var(--text-primary);">${c.name} (${c.code})</strong>
+            </td>
+            <td data-label="Total Traffic"><strong style="font-size: 1.05rem; font-family: 'Outfit', sans-serif;">${c.totalClicks}</strong></td>
+            <td data-label="Organic"><span style="color: #10b981; font-weight: 600;">${c.organicClicks}</span></td>
+            <td data-label="VPN / Proxy"><span class="badge ${vpnCount > 0 ? 'badge-warning' : 'badge-info'}">${vpnCount} VPN / Proxy</span></td>
+            <td data-label="Share">
+              <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: flex-end;">
+                <div style="flex: 1; background: rgba(0,0,0,0.08); height: 6px; border-radius: 4px; overflow: hidden; max-width: 120px;">
+                  <div style="width: ${barWidth}%; height: 100%; background: var(--accent-gradient);"></div>
+                </div>
+                <span style="font-size: 0.775rem; font-weight: 700; color: var(--text-secondary); width: 34px;">${percent}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      if (countriesTbody) countriesTbody.innerHTML = `<tr><td colspan="5" style="color: var(--danger);">Failed to load country analytics.</td></tr>`;
+    }
+  }
+
+  datePresetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      datePresetBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const range = btn.getAttribute('data-range');
+      const now = new Date();
+      let start, end;
+
+      if (range === 'last30') {
+        end = new Date();
+        start = new Date();
+        start.setDate(now.getDate() - 30);
+      } else if (range === 'thisMonth') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      } else if (range === 'lastMonth') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0);
+      }
+
+      if (startDateInput && endDateInput) {
+        startDateInput.value = start.toISOString().split('T')[0];
+        endDateInput.value = end.toISOString().split('T')[0];
+      }
+
+      loadCountryAnalytics(start.toISOString().split('T')[0], end.toISOString().split('T')[0]);
+    });
+  });
+
+  if (applyDateBtn) {
+    applyDateBtn.addEventListener('click', () => {
+      const s = startDateInput.value;
+      const e = endDateInput.value;
+      if (!s || !e) return showAlert('Please select both start and end dates', true);
+      loadCountryAnalytics(s, e);
+    });
+  }
+
+  // --------------------------------------------------------
+  // TAB 3: TRAFFIC AUDIT LOGS LOGIC (With Auto Live Feed)
+  // --------------------------------------------------------
+  const logsTbody = document.getElementById('logs-tbody');
+  const clearLogsBtn = document.getElementById('clear-logs-btn');
+
+  async function loadAnalytics() {
+    try {
+      const res = await fetch('/api/admin/logs');
+      const logs = await res.json();
+
+      if (!Array.isArray(logs) || logs.length === 0) {
+        if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No traffic logs recorded yet.</td></tr>`;
+        document.getElementById('stat-total-clicks').textContent = '0';
+        document.getElementById('stat-organic-clicks').textContent = '0';
+        document.getElementById('stat-fallback-clicks').textContent = '0';
+        return;
+      }
+
+      let organicCount = 0;
+      let fallbackCount = 0;
+
+      logs.forEach(log => {
+        if (log.status === 'ORGANIC_CLICK') organicCount++;
+        else if (log.status === 'FALLBACK_REDIRECT') fallbackCount++;
+      });
+
+      document.getElementById('stat-total-clicks').textContent = logs.length;
+      document.getElementById('stat-organic-clicks').textContent = organicCount;
+      document.getElementById('stat-fallback-clicks').textContent = fallbackCount;
+
+      if (logsTbody) {
+        logsTbody.innerHTML = logs.slice(0, 250).map(log => {
+          let badgeClass = 'badge-info';
+          if (log.status === 'ORGANIC_CLICK') badgeClass = 'badge-success';
+          if (log.status === 'FALLBACK_REDIRECT') badgeClass = 'badge-warning';
+          if (log.status === 'IP_FIREWALL_BLOCKED' || log.status === 'RATE_LIMITED' || log.status.includes('EXCEEDED') || log.status.includes('EXPIRED')) badgeClass = 'badge-danger';
+
+          const timeStr = new Date(log.timestamp).toLocaleTimeString();
+          const flag = log.flag || '🌐';
+          const location = `${flag} ${log.countryName || 'Unknown'} (${log.city || 'N/A'})`;
+          const isVpn = log.isVpn || log.isVps || false;
+          
+          const connectionBadge = isVpn 
+            ? `<span class="badge badge-warning">🔒 VPN / Proxy</span>`
+            : `<span class="badge badge-info">🌐 Residential</span>`;
+
+          const durationStr = log.durationSeconds ? `${log.durationSeconds}s` : 'Redirected';
+
+          return `
+            <tr>
+              <td data-label="Time" style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</td>
+              <td data-label="Code"><strong style="color: var(--accent-primary); font-size: 0.875rem;">/${log.code || '-'}</strong></td>
+              <td data-label="IP / ISP">
+                <code>${log.ip || '-'}</code><br>
+                <small style="color: var(--text-muted); font-size: 0.7rem;">${log.isp || 'ISP'}</small>
+              </td>
+              <td data-label="Location" style="font-size: 0.775rem;">${location}</td>
+              <td data-label="Connection">${connectionBadge}</td>
+              <td data-label="Referrer" style="max-width: 140px; word-break: break-all; font-size: 0.75rem;">${log.referer || 'Direct/Blank'}</td>
+              <td data-label="Status"><span class="badge ${badgeClass}">${log.status}</span></td>
+              <td data-label="Dwell"><span style="font-weight: 600; color: var(--accent-primary);">${durationStr}</span></td>
+              <td data-label="Action">
+                <button class="btn btn-danger btn-sm" onclick="quickBlockIp('${log.ip}')" style="padding: 0.2rem 0.5rem; font-size: 0.725rem;">
+                  🚫 Block IP
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    } catch (err) {
+      if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="color: var(--danger);">Failed to load analytics.</td></tr>`;
+    }
+  }
+
+  // Live Auto-Refresh Stream every 6 seconds
+  setInterval(() => {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'tab-analytics') {
+      loadAnalytics();
+    }
+  }, 6000);
+
+  if (clearLogsBtn) {
+    clearLogsBtn.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to clear all click logs?')) return;
+      await fetch('/api/admin/clear-logs', { method: 'POST' });
+      showAlert('Click logs cleared.');
+      loadAnalytics();
+    });
+  }
+
+  window.quickBlockIp = async function(ip) {
+    if (!confirm(`Are you sure you want to block IP ${ip}?`)) return;
+    try {
+      const res = await fetch('/api/admin/block-ip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip, reason: 'Quick Block from Traffic Logs' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert(`IP address ${ip} has been blocked by Firewall.`);
+        loadAnalytics();
+      } else {
+        showAlert(data.error || 'Failed to block IP', true);
+      }
+    } catch (err) {
+      showAlert('Error blocking IP', true);
+    }
+  };
+
+  // --------------------------------------------------------
+  // TAB 4: IP FIREWALL & BLOCKLIST MANAGER LOGIC
+  // --------------------------------------------------------
+  const firewallTbody = document.getElementById('firewall-tbody');
+  const blockIpForm = document.getElementById('block-ip-form');
+
+  async function loadBlockedIps() {
+    if (!firewallTbody) return;
+    loadShieldSettings();
+    try {
+      const res = await fetch('/api/admin/blocked-ips');
+      const blocked = await res.json();
+
+      if (!Array.isArray(blocked) || blocked.length === 0) {
+        firewallTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No IP addresses currently blocked in Firewall.</td></tr>`;
+        return;
+      }
+
+      firewallTbody.innerHTML = blocked.map(item => {
+        const timeStr = new Date(item.blockedAt).toLocaleString();
+        return `
+          <tr>
+            <td data-label="IP Address"><code>${item.ip}</code></td>
+            <td data-label="Reason" style="color: var(--text-secondary);">${item.reason || 'Manual Block'}</td>
+            <td data-label="Blocked At" style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</td>
+            <td data-label="Actions">
+              <button class="btn btn-secondary btn-sm" onclick="unblockIp('${item.ip}')" style="width:100% !important;">
+                🔓 Unblock IP
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      if (firewallTbody) firewallTbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">Failed to load blocked IPs.</td></tr>`;
+    }
+  }
+
+  window.unblockIp = async function(ip) {
+    if (!confirm(`Are you sure you want to unblock IP ${ip}?`)) return;
+    try {
+      const res = await fetch(`/api/admin/blocked-ips/${encodeURIComponent(ip)}`, { method: 'DELETE' });
+      if (res.ok) {
+        showAlert(`IP ${ip} has been unblocked.`);
+        loadBlockedIps();
+      }
+    } catch (err) {
+      showAlert('Error unblocking IP', true);
+    }
+  };
+
+  // Auto Shield Form Elements & Sync
+  const autoShieldForm = document.getElementById('auto-shield-form');
+  const botProtectionCb = document.getElementById('bot-protection-enabled');
+  const botLimitClicksInput = document.getElementById('bot-limit-clicks');
+  const botLimitMinutesInput = document.getElementById('bot-limit-minutes');
+  const vpnProtectionCb = document.getElementById('vpn-protection-enabled');
+  const vpnLimitClicksInput = document.getElementById('vpn-limit-clicks');
+  const vpnLimitMinutesInput = document.getElementById('vpn-limit-minutes');
+  const blockCountriesCb = document.getElementById('block-suspicious-countries');
+  const blockScrapersCb = document.getElementById('block-known-scrapers');
+  const honeypotCb = document.getElementById('honeypot-protection-enabled');
+
+  async function loadShieldSettings() {
+    if (!autoShieldForm) return;
+    try {
+      const res = await fetch('/api/admin/settings');
+      if (!res.ok) return;
+      const settings = await res.json();
+
+      botProtectionCb.checked = !!settings.botProtectionEnabled;
+      botLimitClicksInput.value = settings.botLimitClicks || 100;
+      botLimitMinutesInput.value = settings.botLimitMinutes || 1;
+      
+      vpnProtectionCb.checked = !!settings.vpnProtectionEnabled;
+      vpnLimitClicksInput.value = settings.vpnLimitClicks || 500;
+      vpnLimitMinutesInput.value = settings.vpnLimitMinutes || 90;
+
+      blockCountriesCb.checked = !!settings.blockSuspiciousCountries;
+      blockScrapersCb.checked = !!settings.blockKnownScrapers;
+      honeypotCb.checked = !!settings.honeypotProtectionEnabled;
+
+      toggleSettingsGroup('bot-settings-group', botProtectionCb.checked);
+      toggleSettingsGroup('vpn-settings-group', vpnProtectionCb.checked);
+    } catch (err) {
+      console.error('Failed to load shield settings:', err);
+    }
+  }
+
+  function toggleSettingsGroup(groupId, show) {
+    const group = document.getElementById(groupId);
+    if (group) {
+      group.style.opacity = show ? '1' : '0.5';
+      group.querySelectorAll('input').forEach(input => {
+        input.disabled = !show;
+      });
+    }
+  }
+
+  if (botProtectionCb) {
+    botProtectionCb.addEventListener('change', (e) => {
+      toggleSettingsGroup('bot-settings-group', e.target.checked);
+    });
+  }
+
+  if (vpnProtectionCb) {
+    vpnProtectionCb.addEventListener('change', (e) => {
+      toggleSettingsGroup('vpn-settings-group', e.target.checked);
+    });
+  }
+
+  if (autoShieldForm) {
+    autoShieldForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const payload = {
+        botProtectionEnabled: botProtectionCb.checked,
+        botLimitClicks: parseInt(botLimitClicksInput.value || 100, 10),
+        botLimitMinutes: parseInt(botLimitMinutesInput.value || 1, 10),
+        vpnProtectionEnabled: vpnProtectionCb.checked,
+        vpnLimitClicks: parseInt(vpnLimitClicksInput.value || 500, 10),
+        vpnLimitMinutes: parseInt(vpnLimitMinutesInput.value || 90, 10),
+        blockSuspiciousCountries: blockCountriesCb.checked,
+        blockKnownScrapers: blockScrapersCb.checked,
+        honeypotProtectionEnabled: honeypotCb.checked
+      };
+
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('Shield & Firewall settings updated successfully!');
+          loadShieldSettings();
+        } else {
+          showAlert(data.error || 'Failed to save settings', true);
+        }
+      } catch (err) {
+        showAlert('Error saving settings', true);
+      }
+    });
+  }
+
+  if (blockIpForm) {
+    blockIpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ip = document.getElementById('block-ip-address').value.trim();
+      const reason = document.getElementById('block-ip-reason').value.trim();
+
+      try {
+        const res = await fetch('/api/admin/block-ip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip, reason })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert(`IP ${ip} blocked successfully!`);
+          blockIpForm.reset();
+          loadBlockedIps();
+        } else {
+          showAlert(data.error || 'Failed to block IP', true);
+        }
+      } catch (err) {
+        showAlert('Error blocking IP', true);
+      }
+    });
+  }
+
+  // --------------------------------------------------------
+  // TAB 5: TEAM MEMBERS & USER INVITES LOGIC
+  // --------------------------------------------------------
+  const usersTbody = document.getElementById('users-tbody');
+  const inviteUserForm = document.getElementById('invite-user-form');
+  const passwordChangeForm = document.getElementById('password-change-form');
+
+  async function loadUsers() {
+    if (!usersTbody) return;
+    try {
+      const res = await fetch('/api/admin/users');
+      const users = await res.json();
+
+      if (!Array.isArray(users) || users.length === 0) {
+        usersTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No team members found.</td></tr>`;
+        return;
+      }
+
+      usersTbody.innerHTML = users.map(user => {
+        const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
+        return `
+          <tr>
+            <td data-label="User">
+              <strong style="color: var(--text-primary); font-size: 0.85rem;">${user.username}</strong>
+              ${isSelf ? '<span class="badge badge-success" style="margin-left:0.3rem; font-size:0.6rem;">You</span>' : ''}
+            </td>
+            <td data-label="Role"><span class="badge badge-info">${user.role || 'Admin'}</span></td>
+            <td data-label="Actions">
+              ${isSelf ? '<span style="color: var(--text-muted); font-size:0.725rem;">Current Account</span>' : `
+                <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')" style="width:100% !important;">Remove 🗑️</button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      if (usersTbody) usersTbody.innerHTML = `<tr><td colspan="3" style="color: var(--danger);">Failed to load team users.</td></tr>`;
+    }
+  }
+
+  window.deleteUser = async function(id) {
+    if (!confirm('Are you sure you want to remove this team member?')) return;
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('Team member removed.');
+        loadUsers();
+      } else {
+        showAlert(data.error || 'Failed to remove user', true);
+      }
+    } catch (err) {
+      showAlert('Error deleting user', true);
+    }
+  };
+
+  if (inviteUserForm) {
+    inviteUserForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('new-user-username').value.trim();
+      const password = document.getElementById('new-user-password').value.trim();
+      const role = document.getElementById('new-user-role').value;
+
+      try {
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, role })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert(`Team user '${username}' created successfully!`);
+          inviteUserForm.reset();
+          loadUsers();
+        } else {
+          showAlert(data.error || 'Failed to create user', true);
+        }
+      } catch (err) {
+        showAlert('Error inviting user', true);
+      }
+    });
+  }
+
+  if (passwordChangeForm) {
+    passwordChangeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById('current-password').value.trim();
+      const newPassword = document.getElementById('new-password').value.trim();
+      const confirmPassword = document.getElementById('confirm-password').value.trim();
+
+      if (newPassword !== confirmPassword) {
+        return showAlert('New password and confirm password do not match.', true);
+      }
+
+      if (newPassword.length < 6) {
+        return showAlert('New password must be at least 6 characters.', true);
+      }
+
+      try {
+        const res = await fetch('/api/admin/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('Password changed successfully! Keep your credentials safe.');
+          passwordChangeForm.reset();
+        } else {
+          showAlert(data.error || 'Failed to change password', true);
+        }
+      } catch (err) {
+        showAlert('Error updating password', true);
+      }
+    });
+  }
+
+  // --------------------------------------------------------
+  // MULTI UI/UX CUSTOMIZATION LOGIC
+  // --------------------------------------------------------
+  const themePresetBtns = document.querySelectorAll('.theme-preset-btn');
+  const uiDensitySelect = document.getElementById('ui-density-select');
+  const uiBorderSelect = document.getElementById('ui-border-select');
+  const uiFontSelect = document.getElementById('ui-font-select');
+  const uiShadowSelect = document.getElementById('ui-shadow-select');
+  const uiGlassCb = document.getElementById('ui-glass-cb');
+
+  // Remove any remaining RTL override globally (as requested by user)
+  document.body.removeAttribute('dir');
+  localStorage.removeItem('rtl-mode');
+
+  // Load Saved Spacing Density
+  const savedDensity = localStorage.getItem('ui-density') || 'cozy';
+  if (uiDensitySelect) {
+    uiDensitySelect.value = savedDensity;
+    applyDensity(savedDensity);
+    uiDensitySelect.addEventListener('change', (e) => {
+      const density = e.target.value;
+      localStorage.setItem('ui-density', density);
+      applyDensity(density);
+      showAlert(`Layout density updated to: ${density.toUpperCase()}`);
+    });
+  }
+
+  function applyDensity(density) {
+    document.body.classList.remove('density-compact', 'density-standard', 'density-cozy');
+    document.documentElement.classList.remove('density-compact', 'density-standard', 'density-cozy');
+    if (density === 'compact') {
+      document.body.classList.add('density-compact');
+      document.documentElement.classList.add('density-compact');
+    } else if (density === 'standard') {
+      document.body.classList.add('density-standard');
+      document.documentElement.classList.add('density-standard');
+    } else {
+      document.body.classList.add('density-cozy');
+      document.documentElement.classList.add('density-cozy');
+    }
+  }
+
+  // Load Saved Borders
+  const savedBorder = localStorage.getItem('ui-border') || 'default';
+  if (uiBorderSelect) {
+    uiBorderSelect.value = savedBorder;
+    applyBorderPreset(savedBorder);
+    uiBorderSelect.addEventListener('change', (e) => {
+      const style = e.target.value;
+      localStorage.setItem('ui-border', style);
+      applyBorderPreset(style);
+      showAlert(`Border corner style updated to: ${style.toUpperCase()}`);
+    });
+  }
+
+  function applyBorderPreset(style) {
+    const root = document.documentElement;
+    if (style === 'sharp') {
+      root.style.setProperty('--r-sm', '0px');
+      root.style.setProperty('--r-md', '0px');
+      root.style.setProperty('--r-lg', '0px');
+      root.style.setProperty('--r-xl', '0px');
+    } else if (style === 'pill') {
+      root.style.setProperty('--r-sm', '14px');
+      root.style.setProperty('--r-md', '20px');
+      root.style.setProperty('--r-lg', '28px');
+      root.style.setProperty('--r-xl', '36px');
+    } else {
+      root.style.removeProperty('--r-sm');
+      root.style.removeProperty('--r-md');
+      root.style.removeProperty('--r-lg');
+      root.style.removeProperty('--r-xl');
+    }
+  }
+
+  // Load Saved Typography
+  const savedFont = localStorage.getItem('ui-font') || 'sans';
+  if (uiFontSelect) {
+    uiFontSelect.value = savedFont;
+    applyFont(savedFont);
+    uiFontSelect.addEventListener('change', (e) => {
+      const font = e.target.value;
+      localStorage.setItem('ui-font', font);
+      applyFont(font);
+      showAlert(`Typography theme updated to: ${uiFontSelect.options[uiFontSelect.selectedIndex].text}`);
+    });
+  }
+
+  function applyFont(font) {
+    document.body.classList.remove('font-sans', 'font-grotesk', 'font-outfit');
+    document.body.classList.add(`font-${font}`);
+  }
+
+  // Load Saved Shadow System
+  const savedShadow = localStorage.getItem('ui-shadow') || 'default';
+  if (uiShadowSelect) {
+    uiShadowSelect.value = savedShadow;
+    applyShadow(savedShadow);
+    uiShadowSelect.addEventListener('change', (e) => {
+      const shadow = e.target.value;
+      localStorage.setItem('ui-shadow', shadow);
+      applyShadow(shadow);
+      showAlert(`Shadow intensity updated to: ${shadow.toUpperCase()}`);
+    });
+  }
+
+  function applyShadow(shadow) {
+    document.body.classList.remove('shadow-flat', 'shadow-glow');
+    if (shadow === 'flat') {
+      document.body.classList.add('shadow-flat');
+    } else if (shadow === 'glow') {
+      document.body.classList.add('shadow-glow');
+    }
+  }
+
+  // Load Saved Glassmorphism Backdrop Blur
+  const savedGlass = localStorage.getItem('ui-glass') !== 'false';
+  if (uiGlassCb) {
+    uiGlassCb.checked = savedGlass;
+    applyGlass(savedGlass);
+    uiGlassCb.addEventListener('change', (e) => {
+      const isGlass = e.target.checked;
+      localStorage.setItem('ui-glass', isGlass);
+      applyGlass(isGlass);
+      showAlert(`Glassmorphism backdrop effects ${isGlass ? 'enabled' : 'disabled'}`);
+    });
+  }
+
+  function applyGlass(isGlass) {
+    if (isGlass) {
+      document.body.classList.remove('glass-disabled');
+    } else {
+      document.body.classList.add('glass-disabled');
+    }
+  }
+
+  // Load Theme Presets (All 6 options)
+  themePresetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTheme = btn.getAttribute('data-theme');
+      applyTheme(targetTheme);
+      showAlert(`Theme preset changed to: ${targetTheme.toUpperCase()}`);
+    });
+  });
+
+  // Initial load
+  loadLinks();
+  loadDomains();
+});
+
+// --------------------------------------------------------
+// CUSTOM DOMAINS MANAGEMENT LOGIC
+// --------------------------------------------------------
+const domainsTbody = document.getElementById('domains-tbody');
+const addDomainForm = document.getElementById('add-domain-form');
+const domainSelect = document.getElementById('link-domain');
+
+async function loadDomains() {
+  try {
+    const res = await fetch('/api/admin/domains');
+    const domains = await res.json();
+    renderDomainsTable(domains);
+    populateDomainSelects(domains);
+  } catch (err) {
+    if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="3" style="color: var(--danger); text-align: center;">Failed to load domains.</td></tr>`;
+  }
+}
+
+function renderDomainsTable(domains) {
+  if (!domainsTbody) return;
+  if (!Array.isArray(domains) || domains.length === 0) {
+    domainsTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No custom domains configured yet. Add your first above!</td></tr>`;
+    return;
+  }
+
+  domainsTbody.innerHTML = domains.map(dom => `
+    <tr>
+      <td data-label="Domain"><strong>${dom.domain}</strong></td>
+      <td data-label="Added At">${new Date(dom.createdAt).toLocaleString()}</td>
+      <td data-label="Actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')">🗑️ Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function populateDomainSelects(domains) {
+  if (!domainSelect) return;
+  const currentVal = domainSelect.value;
+  domainSelect.innerHTML = '<option value="">Default (link.infucar.com)</option>';
+  domains.forEach(dom => {
+    const option = document.createElement('option');
+    option.value = dom.domain;
+    option.textContent = dom.domain;
+    domainSelect.appendChild(option);
+  });
+  domainSelect.value = currentVal;
+}
+
+if (addDomainForm) {
+  addDomainForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const domainInput = document.getElementById('new-domain-input');
+    const domain = domainInput.value.trim();
+    if (!domain) return;
+
+    try {
+      const res = await fetch('/api/admin/domains', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showAlert(`Domain ${domain} added successfully!`);
+        domainInput.value = '';
+        loadDomains();
+      } else {
+        showAlert(data.error || 'Failed to add domain', true);
+      }
+    } catch (err) {
+      showAlert('Error adding domain', true);
+    }
+  });
+}
+
+window.deleteDomain = async function(id) {
+  if (!confirm('Are you sure you want to delete this custom domain? Links configured to use this domain will stop resolving correctly unless pointed back to default.')) return;
+  try {
+    const res = await fetch(`/api/admin/domains/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      showAlert('Domain deleted successfully');
+      loadDomains();
+    } else {
+      showAlert('Failed to delete domain', true);
+    }
+  } catch (err) {
+    showAlert('Error deleting domain', true);
+  }
+};
+

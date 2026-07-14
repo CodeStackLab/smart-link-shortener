@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#dc2626">
+  <title>Admin Dashboard — Smart Link Shortener</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-theme="light">
+
+<!-- ── STICKY HEADER ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-group">
+      <button id="hamburger-menu-btn" class="hamburger-menu-btn" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="logo-badge">⚡</div>
+      <div class="logo-text">
+        <h1>Smart Link <span class="hide-mobile">Shortener</span></h1>
+        <p>Referrer & Domain Redirection Engine</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
+      <span id="user-badge" class="badge badge-red" style="padding:0.3rem 0.65rem; font-size:0.725rem;">Admin</span>
+      <button id="logout-btn" class="btn btn-secondary btn-sm">🔒 Logout</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── TABS ── -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
+  <button class="tab-btn" data-tab="tab-domains">🌐 Custom Domains</button>
+  <button class="tab-btn" data-tab="tab-geo">🌍 Country & VPN</button>
+  <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
+  <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
+  <button class="tab-btn" data-tab="tab-multi">🎨 Multi UI/UX</button>
+  <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
+</div>
+
+<!-- ── GLOBAL ALERT ── -->
+<div class="container" style="padding-top:0.5rem; padding-bottom:0;">
+  <div id="dashboard-alert" class="alert alert-success"></div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 1 — LINK MANAGER
+══════════════════════════════ -->
+<div id="tab-links" class="tab-content">
+  <div class="container">
+
+    <!-- Create Form Card -->
+    <div class="card" style="padding:1.35rem; margin-bottom:1.1rem;">
+      <div class="section-title"><span class="accent">⚡</span> Create New Smart Shortlink</div>
+
+      <form id="create-link-form">
+        <!-- Row 1: domain, slug, target, fallback -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.85rem;">
+          <div class="form-group">
+            <label for="link-domain">Domain</label>
+            <select id="link-domain" class="form-control">
+              <option value="">Default (link.infucar.com)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="link-code">Short Code (Slug)</label>
+            <input type="text" id="link-code" class="form-control" placeholder="e.g. android (leave blank to auto-generate)" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text">
+          </div>
+          <div class="form-group">
+            <label for="target-url">Primary Target URL</label>
+            <input type="url" id="target-url" class="form-control" placeholder="https://mywebsite.com" required autocomplete="url" inputmode="url" spellcheck="false">
+          </div>
+          <div class="form-group">
+            <label for="fallback-url">Fallback URL</label>
+            <input type="url" id="fallback-url" class="form-control" placeholder="https://www.google.com" autocomplete="url" inputmode="url" spellcheck="false">
+            <small style="font-size:0.7rem; color:var(--text-muted);">Defaults to Google Search if empty.</small>
+          </div>
+        </div>
+
+        <!-- Row 2: traffic sources -->
+        <div class="form-group" style="margin-top:0.25rem;">
+          <label>1. Allowed Traffic Sources</label>
+          <div class="platform-chips-row">
+            <label class="platform-chip active">
+              <input type="checkbox" class="platform-cb" value="facebook" checked>
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+              <span>Facebook</span>
+            </label>
+            <label class="platform-chip">
+              <input type="checkbox" class="platform-cb" value="instagram">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+              <span>Instagram</span>
+            </label>
+            <label class="platform-chip" id="custom-domain-chip">
+              <input type="checkbox" id="custom-domain-enable-cb">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Custom Website</span>
+            </label>
+
+            <div class="tag-input-container" id="custom-domains-container" style="flex:1; min-width:260px; display:none;">
+              <input type="text" id="custom-domains-input" class="tag-input-field" placeholder="Type a domain and press Enter…" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url">
+            </div>
+          </div>
+          <small style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem; display:block;">
+            Traffic from checked sources → Primary URL. All other sources → Fallback URL.
+          </small>
+        </div>
+
+        <!-- Pro Settings Accordion -->
+        <div class="pro-accordion" id="pro-accordion">
+          <div class="pro-accordion-header" id="toggle-pro-settings-btn">
+            <div class="pro-accordion-title">
+              🚀 2. Pro Smart Settings — Timer, Expiration & Quotas
+              <span class="badge badge-red" style="font-size:0.6rem;">Pro</span>
+            </div>
+            <span class="pro-accordion-icon" id="pro-settings-toggle-icon">▶ Click to Show</span>
+          </div>
+          <div class="pro-accordion-body" id="pro-settings-body">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.85rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="delay-seconds">⏱️ Delay Timer (Seconds)</label>
+                <input type="number" id="delay-seconds" class="form-control" placeholder="0 = Instant" min="0" max="60" value="0" inputmode="numeric">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Countdown before redirect</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="expires-at">⏰ Link Expiration Date</label>
+                <input type="datetime-local" id="expires-at" class="form-control">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Auto-expires & redirects</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="max-clicks">🛑 Total Clicks Cap</label>
+                <input type="number" id="max-clicks" class="form-control" placeholder="0 = Unlimited" min="0" value="0" inputmode="numeric">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Max clicks allowed</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="hourly-limit">⌛ Hourly Limit</label>
+                <input type="number" id="hourly-limit" class="form-control" placeholder="0 = Unlimited" min="0" value="0">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Max clicks / hour</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="daily-limit">📅 Daily Limit (24h)</label>
+                <input type="number" id="daily-limit" class="form-control" placeholder="0 = Unlimited" min="0" value="0">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Max clicks / 24h</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="monthly-limit">🗓️ Monthly Limit</label>
+                <input type="number" id="monthly-limit" class="form-control" placeholder="0 = Unlimited" min="0" value="0">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Max clicks / month</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="android-url">🤖 Android Target URL</label>
+                <input type="url" id="android-url" class="form-control" placeholder="https://mywebsite.com/android" autocomplete="url" inputmode="url" spellcheck="false">
+                <small style="font-size:0.7rem; color:var(--text-muted);">Android specific redirect</small>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="ios-url">🍎 iOS Target URL</label>
+                <input type="url" id="ios-url" class="form-control" placeholder="https://mywebsite.com/ios" autocomplete="url" inputmode="url" spellcheck="false">
+                <small style="font-size:0.7rem; color:var(--text-muted);">iOS specific redirect</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:1.1rem;">
+          ⚡ Generate Smart Shortlink
+        </button>
+      </form>
+    </div>
+
+    <!-- Links Table Card -->
+    <div class="card" style="padding:1.1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
+        <div class="section-title" style="margin-bottom:0;"><span class="accent">🔗</span> Active Smart Links</div>
+        <div class="search-box">
+          <input type="text" id="search-links" class="form-control" placeholder="Search short codes..." style="max-width:210px; padding-left:2.1rem;">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Short Link</th>
+              <th>Target URL</th>
+              <th>Fallback</th>
+              <th>Sources</th>
+              <th>Pro</th>
+              <th>Clicks</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="links-tbody">
+            <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading links…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB — CUSTOM DOMAINS
+══════════════════════════════ -->
+<div id="tab-domains" class="tab-content" style="display:none;">
+  <div class="container">
+    
+    <!-- Collapsible Step-by-Step DNS Guide -->
+    <div class="pro-accordion" id="dns-guide-accordion" style="margin-bottom:1.1rem; background: rgba(59, 130, 246, 0.03); border: 1px solid rgba(59, 130, 246, 0.15);">
+      <div class="pro-accordion-header" id="toggle-dns-guide-btn" style="padding: 0.75rem 1rem;">
+        <div class="pro-accordion-title" style="font-size: 0.9rem; color: var(--accent-primary); font-weight: 600;">
+          📖 How to Point Your Custom Domain / Subdomain (DNS Guide)
+        </div>
+        <span class="pro-accordion-icon" id="dns-guide-toggle-icon">▶ Click to Show Guide</span>
+      </div>
+      <div class="pro-accordion-body" id="dns-guide-body" style="display: none; padding: 1rem; border-top: 1px solid rgba(59, 130, 246, 0.15);">
+        <div style="font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);">
+          <p>To make your custom domain or subdomain work, you must point it to this server IP. Follow these steps:</p>
+          <ol style="margin-left: 1.2rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+            <li>Log in to your Domain Registrar (e.g. GoDaddy, Namecheap, Cloudflare, etc.).</li>
+            <li>Go to the <strong>DNS Management</strong> page for your domain.</li>
+            <li>Add a new <strong>A Record</strong> with the following details:
+              <ul style="margin-left: 1.2rem; margin-top: 0.25rem; margin-bottom: 0.25rem; list-style-type: square;">
+                <li><strong>Type:</strong> <code>A</code></li>
+                <li><strong>Name / Host:</strong> <code>@</code> (for root domain like <code>example.com</code>) OR enter your subdomain prefix (e.g. <code>go</code>, <code>track</code>, or <code>link</code>).</li>
+                <li><strong>Value / Points to:</strong> <code>89.117.51.151</code></li>
+                <li><strong>TTL:</strong> <code>Automatic</code> or <code>1 hour (3600)</code></li>
+              </ul>
+            </li>
+            <li>Save the record. It can take anywhere from a few minutes to a few hours for the DNS changes to propagate.</li>
+            <li>Add your domain/subdomain below. Our Caddy server will automatically install a free Let's Encrypt SSL certificate when the link is first loaded!</li>
+          </ol>
+          <div style="margin-top:0.5rem; font-size:0.75rem; background: rgba(230,57,70,0.06); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(230,57,70,0.12); color: var(--danger);">
+            ⚠️ <strong>Cloudflare Users:</strong> If your domain is in Cloudflare, make sure to change the Proxy Status from <strong>Proxied (Orange Cloud)</strong> to <strong>DNS Only (Grey Cloud)</strong> so SSL generation works correctly.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 2fr; gap:1.25rem; align-items:start; flex-wrap:wrap;">
+      
+      <!-- Add Domain Card -->
+      <div class="card" style="padding:1.35rem;">
+        <div class="section-title"><span class="accent">🌐</span> Add Custom Domain / Subdomain</div>
+        <form id="add-domain-form">
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label for="new-domain-input">Domain or Subdomain</label>
+            <input type="text" id="new-domain-input" class="form-control" placeholder="e.g. go.yourbrand.com or link.site.com" required autocomplete="off">
+            <small style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:0.35rem;">
+              Point your domain's <strong>A Record</strong> to <code>89.117.51.151</code> before adding it here.
+            </small>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">⚡ Add Domain</button>
+        </form>
+      </div>
+
+      <!-- Active Domains Card -->
+      <div class="card" style="padding:1.35rem;">
+        <div class="section-title"><span class="accent">📁</span> Active Domains</div>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th>Added At</th>
+                <th style="width:100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="domains-tbody">
+              <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading domains…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 2 — COUNTRY & VPN
+══════════════════════════════ -->
+<div id="tab-geo" class="tab-content" style="display:none;">
+  <div class="container">
+
+    <div class="filter-toolbar">
+      <div class="filter-group">
+        <span class="filter-label">📅 Quick Range:</span>
+        <button class="btn btn-secondary btn-sm date-preset-btn active" data-range="last30">Last 30 Days</button>
+        <button class="btn btn-secondary btn-sm date-preset-btn" data-range="thisMonth">This Month</button>
+        <button class="btn btn-secondary btn-sm date-preset-btn" data-range="lastMonth">Last Month</button>
+      </div>
+      <div class="filter-group">
+        <input type="date" id="start-date-input" class="form-control" style="width:auto; font-size:0.775rem; padding:0.3rem 0.55rem;">
+        <span style="color:var(--text-muted); font-size:0.8rem;">→</span>
+        <input type="date" id="end-date-input" class="form-control" style="width:auto; font-size:0.775rem; padding:0.3rem 0.55rem;">
+        <button id="apply-date-btn" class="btn btn-primary btn-sm">Apply</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon teal">🌱</div>
+        <div class="stat-body">
+          <div class="stat-title">Genuine Organic</div>
+          <div id="stat-geo-genuine" class="stat-value" style="color:#059669;">0</div>
+          <div class="stat-desc">Verified residential clicks</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">🔒</div>
+        <div class="stat-body">
+          <div class="stat-title">VPN / Proxy Traffic</div>
+          <div id="stat-geo-vpn" class="stat-value" style="color:#b45309;">0</div>
+          <div class="stat-desc">NordVPN, ExpressVPN, TOR…</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">🚨</div>
+        <div class="stat-body">
+          <div class="stat-title">Traffic Risk Level</div>
+          <div id="stat-geo-risk" class="stat-value" style="font-size:1.2rem; color:#059669;">LOW</div>
+          <div class="stat-desc">Real-time ASN heuristic</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:1.1rem;">
+      <div class="section-title" style="margin-bottom:0.85rem;"><span class="accent">🌐</span> Country Traffic Distribution</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>Total Traffic</th>
+              <th>Organic</th>
+              <th>VPN / Proxy</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody id="countries-tbody">
+            <tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading analytics…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 3 — TRAFFIC LOGS
+══════════════════════════════ -->
+<div id="tab-analytics" class="tab-content" style="display:none;">
+  <div class="container">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">📊</div>
+        <div class="stat-body">
+          <div class="stat-title">Total Clicks</div>
+          <div id="stat-total-clicks" class="stat-value">0</div>
+          <div class="stat-desc">All shortlink traffic</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon teal">✅</div>
+        <div class="stat-body">
+          <div class="stat-title">Organic Clicks</div>
+          <div id="stat-organic-clicks" class="stat-value" style="color:#059669;">0</div>
+          <div class="stat-desc">Social & custom domain</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">↩️</div>
+        <div class="stat-body">
+          <div class="stat-title">Fallback Clicks</div>
+          <div id="stat-fallback-clicks" class="stat-value" style="color:#b45309;">0</div>
+          <div class="stat-desc">WhatsApp, direct & unlisted</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:1.1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
+        <div class="section-title" style="margin-bottom:0;"><span class="accent">📊</span> Real-Time Traffic Audit Logs</div>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <a href="/api/admin/export-csv" class="btn btn-secondary btn-sm">📥 Export CSV</a>
+          <button id="clear-logs-btn" class="btn btn-danger btn-sm">🗑️ Clear Logs</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Code</th>
+              <th>IP / ISP</th>
+              <th>Location</th>
+              <th>Connection</th>
+              <th>Referrer</th>
+              <th>Status</th>
+              <th>Dwell</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody">
+            <tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading logs…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 4 — IP FIREWALL
+══════════════════════════════ -->
+<div id="tab-firewall" class="tab-content" style="display:none;">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
+
+      <div class="card" style="padding:1.35rem; height:fit-content;">
+        <div class="section-title"><span class="accent">🚫</span> Block IP Address</div>
+        <form id="block-ip-form">
+          <div class="form-group">
+            <label for="block-ip-address">Target IP Address</label>
+            <input type="text" id="block-ip-address" class="form-control" placeholder="e.g. 198.51.100.42" required>
+          </div>
+          <div class="form-group">
+            <label for="block-ip-reason">Reason / Note</label>
+            <input type="text" id="block-ip-reason" class="form-control" placeholder="e.g. VPN / Fake Traffic">
+          </div>
+          <button type="submit" class="btn btn-danger btn-block" style="margin-top:0.5rem; border:none; background:var(--grad-red); color:white; box-shadow:var(--shadow-red-sm);">
+            🚫 Block IP Now
+          </button>
+        </form>
+      </div>
+
+      <!-- Auto Shield & Firewall Settings -->
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="auto-shield-card">
+        <div class="section-title"><span class="accent">🛡️</span> Auto Shield & Firewall Settings</div>
+        <form id="auto-shield-form">
+          
+          <div style="border-bottom:1px solid var(--border); padding-bottom:0.75rem; margin-bottom:0.75rem;">
+            <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; font-weight:700;">
+              <input type="checkbox" id="bot-protection-enabled" style="width:16px; height:16px; accent-color:var(--red-primary);">
+              <span>Enable Auto Bot Protection</span>
+            </label>
+            <div id="bot-settings-group" style="margin-top:0.5rem; padding-left:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="bot-limit-clicks">Max Clicks</label>
+                <input type="number" id="bot-limit-clicks" class="form-control form-control-sm" min="1" required>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="bot-limit-minutes">Time Window (Min)</label>
+                <input type="number" id="bot-limit-minutes" class="form-control form-control-sm" min="1" required>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-bottom:1px solid var(--border); padding-bottom:0.75rem; margin-bottom:0.75rem;">
+            <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; font-weight:700;">
+              <input type="checkbox" id="vpn-protection-enabled" style="width:16px; height:16px; accent-color:var(--red-primary);">
+              <span>Enable VPN Auto-Block</span>
+            </label>
+            <div id="vpn-settings-group" style="margin-top:0.5rem; padding-left:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="vpn-limit-clicks">Max VPN Hits</label>
+                <input type="number" id="vpn-limit-clicks" class="form-control form-control-sm" min="1" required>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="vpn-limit-minutes">Time Window (Min)</label>
+                <input type="number" id="vpn-limit-minutes" class="form-control form-control-sm" min="1" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced Bot Protection Options (AI recommendations) -->
+          <div style="margin-bottom:0.75rem;">
+            <div style="font-weight:700; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Advanced Bot Protections (Recommended)</div>
+            
+            <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; margin-bottom:0.3rem;">
+              <input type="checkbox" id="block-suspicious-countries" style="width:15px; height:15px; accent-color:var(--red-primary);">
+              <span style="font-size:0.75rem;">Block High-Risk Countries (CN, RU, etc.)</span>
+            </label>
+            
+            <br>
+            <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; margin-bottom:0.3rem;">
+              <input type="checkbox" id="block-known-scrapers" style="width:15px; height:15px; accent-color:var(--red-primary);">
+              <span style="font-size:0.75rem;">Strict User-Agent Scraper Check</span>
+            </label>
+            
+            <br>
+            <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; margin-bottom:0.3rem;">
+              <input type="checkbox" id="honeypot-protection-enabled" style="width:15px; height:15px; accent-color:var(--red-primary);">
+              <span style="font-size:0.75rem;">Enable Invisible Honeypot Links</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" style="border:none; background:var(--grad-brand); color:white; box-shadow:var(--shadow-red-sm);">
+            💾 Save Shield Settings
+          </button>
+        </form>
+      </div>
+
+      <div class="card" style="padding:1.35rem;">
+        <div class="section-title"><span class="accent">🛡️</span> Blocked IP Addresses</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>IP Address</th>
+                <th>Reason</th>
+                <th>Blocked At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="firewall-tbody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 5 — SETTINGS
+══════════════════════════════ -->
+<div id="tab-settings" class="tab-content" style="display:none;">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
+
+      <!-- Team Panel -->
+      <div class="card" style="padding:1.35rem;">
+        <div class="section-title"><span class="accent">👥</span> Team Members</div>
+        <form id="invite-user-form" style="margin-bottom:1.5rem;">
+          <div class="form-group">
+            <label for="new-user-username">Username</label>
+            <input type="text" id="new-user-username" class="form-control" placeholder="e.g. john_manager" required>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+            <div class="form-group">
+              <label for="new-user-password">Password</label>
+              <input type="password" id="new-user-password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+              <label for="new-user-role">Role</label>
+              <select id="new-user-role" class="form-control">
+                <option>Admin</option>
+                <option>Manager</option>
+                <option>Editor</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">➕ Invite User</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:1.5rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Password Panel -->
+      <div class="card" style="padding:1.35rem; height:fit-content;">
+        <div class="section-title"><span class="accent">🔒</span> Change Password</div>
+        <form id="password-change-form">
+          <div class="form-group">
+            <label for="current-password">Current Password</label>
+            <input type="password" id="current-password" class="form-control" placeholder="Current password" required>
+          </div>
+          <div class="form-group">
+            <label for="new-password">New Password</label>
+            <input type="password" id="new-password" class="form-control" placeholder="Min 6 characters" required>
+          </div>
+          <div class="form-group">
+            <label for="confirm-password">Confirm New Password</label>
+            <input type="password" id="confirm-password" class="form-control" placeholder="Re-type new password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.5rem;">💾 Update Password</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 6 — MULTI UI/UX CUSTOMIZATION & CUSTOM THEMES
+══════════════════════════════ -->
+<div id="tab-multi" class="tab-content" style="display:none;">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.25rem;">
+      
+      <!-- Theme Selection Card -->
+      <div class="card" style="padding:1.5rem;">
+        <div class="section-title"><span class="accent">🎨</span> Dynamic Theme Presets</div>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          Select from premium UI/UX color presets. Changes take effect instantly and are persisted in your local profile.
+        </p>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+          <button class="btn btn-secondary theme-preset-btn" data-theme="light" style="justify-content:flex-start;">☀️ Pure Light</button>
+          <button class="btn btn-secondary theme-preset-btn" data-theme="dark" style="justify-content:flex-start;">🌙 Dark Slate</button>
+          <button class="btn btn-secondary theme-preset-btn" data-theme="multi" style="background:var(--grad-brand); color:white; border:none; justify-content:flex-start;">🌈 Sunset Glow</button>
+          <button class="btn btn-secondary theme-preset-btn" data-theme="ocean" style="justify-content:flex-start;">❄️ Cyber Ocean</button>
+          <button class="btn btn-secondary theme-preset-btn" data-theme="wine" style="justify-content:flex-start;">🍷 Crimson Wine</button>
+          <button class="btn btn-secondary theme-preset-btn" data-theme="forest" style="justify-content:flex-start;">🌲 Emerald Forest</button>
+        </div>
+      </div>
+
+      <!-- Spacing and Borders -->
+      <div class="card" style="padding:1.5rem;">
+        <div class="section-title"><span class="accent">📐</span> Spacing & Layout Mechanics</div>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          Adjust the visual scaling, boundary styles, and density characteristics of the user interface.
+        </p>
+        
+        <div class="form-group">
+          <label for="ui-density-select">Layout Density</label>
+          <select id="ui-density-select" class="form-control">
+            <option value="cozy">Cozy Mode (Spacious & Modern)</option>
+            <option value="standard">Standard Mode (Balanced)</option>
+            <option value="compact">Compact Mode (Data Intensive)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ui-border-select">Border Corner Profiles</label>
+          <select id="ui-border-select" class="form-control">
+            <option value="default">Rounded Corners (Default 12px)</option>
+            <option value="sharp">Sharp Edges (0px)</option>
+            <option value="pill">Max Rounding (Pill 24px)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Advanced UI elements -->
+      <div class="card" style="padding:1.5rem;">
+        <div class="section-title"><span class="accent">⚙️</span> Typography & Extra Effects</div>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          Refine the dashboard aesthetics with advanced font selection and layout effects.
+        </p>
+
+        <div class="form-group">
+          <label for="ui-font-select">Primary Typography Preset</label>
+          <select id="ui-font-select" class="form-control">
+            <option value="sans">Plus Jakarta Sans (Sleek Clean)</option>
+            <option value="grotesk">Space Grotesk (Tech Editorial)</option>
+            <option value="outfit">Outfit (Modern Elegant)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ui-shadow-select">Shadow & Elevation Glow</label>
+          <select id="ui-shadow-select" class="form-control">
+            <option value="default">Balanced Shadow System</option>
+            <option value="flat">Flat Design (No Shadows)</option>
+            <option value="glow">Soft Ambient Glow</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none;">
+            <input type="checkbox" id="ui-glass-cb" style="width:18px; height:18px; accent-color:var(--red-primary);" checked>
+            <span style="font-size:0.825rem; font-weight:700;">Enable Glassmorphic Backdrop Blur</span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     QR CODE MODAL
+══════════════════════════════ -->
+<div class="qr-overlay" id="qr-modal">
+  <div class="qr-modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+      <h3 style="font-size:1.1rem; font-weight:800;">📱 QR Code</h3>
+      <button id="close-qr-btn" class="btn btn-ghost btn-sm">✕ Close</button>
+    </div>
+    <p id="qr-modal-code" style="color:var(--red-primary); font-size:0.8rem; font-weight:700; margin-bottom:0.5rem;"></p>
+    <div class="qr-img-wrapper">
+      <img id="qr-modal-img" src="" alt="QR Code">
+    </div>
+    <a id="qr-download-btn" href="#" class="btn btn-primary btn-block" style="margin-top:0.25rem;">📥 Download PNG</a>
+  </div>
+</div>
+
+<div id="menu-overlay" class="menu-overlay"></div>
+
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
