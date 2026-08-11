@@ -1310,9 +1310,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res.ok && data.success) {
           const directUrl = data.user.directLoginUrl || `${window.location.origin}/login?u=${encodeURIComponent(username)}&p=${encodeURIComponent(password)}`;
           
-          navigator.clipboard.writeText(directUrl).catch(() => {});
+          // Populate success card
+          const succCard = document.getElementById('user-created-success-card');
+          const succUser = document.getElementById('succ-username');
+          const succPass = document.getElementById('succ-password');
+          const succRole = document.getElementById('succ-role');
+          const succLink = document.getElementById('succ-direct-link');
+          const succCopyBtn = document.getElementById('succ-copy-btn');
+
+          if (succUser) succUser.textContent = username;
+          if (succPass) succPass.textContent = password;
+          if (succRole) succRole.textContent = role;
+          if (succLink) succLink.value = directUrl;
+
+          if (succCopyBtn) {
+            succCopyBtn.onclick = () => {
+              const fullText = `👤 Username: ${username}\n🔑 Password: ${password}\n🎭 Role: ${role}\n🔗 Direct 1-Click Login Link: ${directUrl}`;
+              navigator.clipboard.writeText(fullText).then(() => {
+                succCopyBtn.textContent = '✅ Copied Credentials & Link!';
+                setTimeout(() => { succCopyBtn.textContent = '📋 Copy Full Credentials & Link'; }, 2500);
+              }).catch(() => {});
+            };
+          }
+
+          if (succCard) succCard.style.display = 'block';
           
-          showAlert(`✅ User '${username}' (${role}) created! Direct login link copied to clipboard!`);
+          showAlert(`✅ User '${username}' (${role}) created successfully!`);
           
           inviteUserForm.reset();
           loadUsers();

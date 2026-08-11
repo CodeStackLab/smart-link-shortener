@@ -531,6 +531,27 @@
           </div>
           <button type="submit" class="btn btn-primary btn-block" style="font-weight:800;">➕ Invite &amp; Create User</button>
         </form>
+
+        <!-- Success Banner for Created User Credentials & Direct Link -->
+        <div id="user-created-success-card" style="display:none; background:rgba(16,185,129,0.08); border:1.5px solid rgba(16,185,129,0.4); border-radius:var(--r-sm); padding:1rem; margin-bottom:1.25rem;">
+          <div style="color:#10b981; font-weight:800; font-size:0.9rem; margin-bottom:0.5rem; display:flex; align-items:center; justify-content:space-between;">
+            <span>🎉 User Account Created Successfully!</span>
+            <button type="button" onclick="document.getElementById('user-created-success-card').style.display='none'" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:700;">✕</button>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-primary); line-height:1.6; margin-bottom:0.75rem;">
+            <div>👤 <strong>Username:</strong> <span id="succ-username" style="color:#1877f2; font-weight:700;"></span></div>
+            <div>🔑 <strong>Password:</strong> <code id="succ-password" style="font-weight:700; font-size:0.85rem;"></code></div>
+            <div>🎭 <strong>Role:</strong> <span id="succ-role" class="badge badge-info"></span></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.7); padding:0.6rem; border-radius:6px; margin-bottom:0.75rem; border:1px solid var(--border);">
+            <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">1-Click Direct Login Link (Send to User):</div>
+            <input type="text" id="succ-direct-link" readonly class="form-control" style="font-size:0.75rem; font-weight:700; font-family:monospace; background:#fff;" onclick="this.select()">
+          </div>
+          <button type="button" id="succ-copy-btn" class="btn btn-primary btn-block" style="font-size:0.8rem; font-weight:800; background:#10b981; border:none;">
+            📋 Copy Full Credentials &amp; Link
+          </button>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead><tr><th>User</th><th>Role</th><th>Password</th><th>Actions</th></tr></thead>
