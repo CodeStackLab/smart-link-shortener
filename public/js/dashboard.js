@@ -189,6 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
           userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : (uRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
         }
         applyRoleUiScoping(currentLoggedInRole);
+        // Load data AFTER session is confirmed
+        loadLinks();
+        loadUsers();
       }
     })
     .catch(() => {
@@ -376,6 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadLinks() {
     try {
       const res = await fetch('/api/admin/links');
+      if (!res.ok) {
+        if (linksTbody) linksTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">Please log in to view links.</td></tr>`;
+        return;
+      }
       allLinksCache = await res.json();
       renderLinksTable(allLinksCache);
     } catch (err) {
@@ -1220,49 +1227,53 @@ document.addEventListener('DOMContentLoaded', () => {
       const users = await res.json();
 
       if (!Array.isArray(users) || users.length === 0) {
-        usersTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1rem;">No team members found.</td></tr>`;
+        usersTbody.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:1.5rem 0;font-size:0.82rem;">No team members found.</div>`;
         return;
       }
 
-      const origin = window.location.origin;
-
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
-        const roleBadge = user.role === 'Admin' ? 'badge-red' : (user.role === 'Manager' ? 'badge-info' : 'badge-success');
-        const hasPass = !!user.rawPassword;
-        const passDisplay = hasPass
-          ? `<span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:var(--text-primary);background:rgba(24,119,242,0.07);padding:0.15rem 0.45rem;border-radius:5px;">${user.rawPassword}</span>`
-          : `<span style="color:var(--text-muted);font-size:0.75rem;letter-spacing:0.08em;">••••••••</span>`;
+        const roleColor = user.role === 'Admin' ? '#ef4444' : (user.role === 'Manager' ? '#3b82f6' : '#10b981');
+        const roleBg = user.role === 'Admin' ? 'rgba(239,68,68,0.1)' : (user.role === 'Manager' ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)');
+        const passChip = user.rawPassword
+          ? `<span style="font-family:monospace;font-size:0.73rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.09);padding:0.18rem 0.5rem;border-radius:6px;letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;display:inline-block;vertical-align:middle;">${user.rawPassword}</span>`
+          : `<span style="color:var(--text-muted);font-size:0.8rem;letter-spacing:0.12em;">••••••••</span>`;
 
         return `
-          <tr style="transition:background 0.18s;">
-            <td data-label="User">
-              <div style="display:flex;align-items:center;gap:0.45rem;">
-                <span style="font-size:1.1rem;">👤</span>
-                <div>
-                  <div style="font-weight:800;font-size:0.85rem;color:var(--text-primary);">${user.username}</div>
-                  ${isSelf ? '<span class="badge badge-success" style="font-size:0.6rem;padding:0.12rem 0.4rem;">You</span>' : ''}
-                </div>
+          <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid var(--border,#e8eaf0);border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+
+            <!-- Avatar + Name -->
+            <div style="display:flex;align-items:center;gap:0.45rem;flex:1;min-width:90px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1877f2,#6c3de8);display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">👤</div>
+              <div>
+                <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;">${user.username}</div>
+                ${isSelf ? '<div style="font-size:0.6rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.06em;">You</div>' : ''}
               </div>
-            </td>
-            <td data-label="Role"><span class="badge ${roleBadge}" style="font-weight:700;">${user.role || 'Editor'}</span></td>
-            <td data-label="Password">${passDisplay}</td>
-            <td data-label="Actions">
+            </div>
+
+            <!-- Role Badge -->
+            <span style="font-size:0.68rem;font-weight:800;color:${roleColor};background:${roleBg};border:1px solid ${roleColor}33;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;flex-shrink:0;">${user.role || 'Editor'}</span>
+
+            <!-- Password chip -->
+            <div style="flex-shrink:0;">${passChip}</div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:0.5rem;margin-left:auto;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
               ${isSelf
-                ? '<span style="color:var(--text-muted);font-size:0.72rem;font-weight:600;">Current Account</span>'
-                : `<div style="display:flex;gap:0.4rem;justify-content:flex-end;flex-wrap:wrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="openEditUserModal('${user.username}','${encodeURIComponent(user.rawPassword||'')}')" style="padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;border-radius:8px;">✏️ Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="openDeleteUserModal('${user.id}','${user.username}')" style="padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;border-radius:8px;">🗑️</button>
-                  </div>`
+                ? `<span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:0.4rem 0;">Current Account</span>`
+                : `<button onclick="openEditUserModal('${user.username}','${encodeURIComponent(user.rawPassword||'')}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
+                   <button onclick="openDeleteUserModal('${user.id}','${user.username}')" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(239,68,68,0.3);display:flex;align-items:center;gap:0.35rem;">🗑️ Delete</button>`
               }
-            </td>
-          </tr>
+            </div>
+          </div>
+
         `;
       }).join('');
     } catch (err) {
-      if (usersTbody) usersTbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">Failed to load team users.</td></tr>`;
+      if (usersTbody) usersTbody.innerHTML = `<div style="color:var(--danger);text-align:center;padding:1rem;font-size:0.82rem;">Failed to load team users.</div>`;
     }
   }
+
 
   window.resetUserPassword = async function(username, newPassword) {
     if (!newPassword || newPassword.trim().length < 6) {
@@ -1761,10 +1772,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Initial load
-  loadLinks();
+  // loadLinks() and loadUsers() are called after session check completes (see above)
   loadDomains();
-  loadUsers();
 
 // --------------------------------------------------------
 // CUSTOM DOMAINS MANAGEMENT LOGIC

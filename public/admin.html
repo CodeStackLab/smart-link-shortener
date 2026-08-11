@@ -36,7 +36,7 @@
       </a>
     </div>
     <div class="header-actions">
-      <button id="cache-refresh-btn" title="Force refresh all data from server" style="background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;cursor:pointer;letter-spacing:0.02em;">🔄 Force Refresh</button>
+      <button id="cache-refresh-btn" title="Force refresh all data from server" style="background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;border-radius:8px;padding:0.3rem 0.65rem;font-size:0.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:0.3rem;white-space:nowrap;">🔄<span class="hide-mobile"> Refresh</span></button>
       <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
       <span id="user-badge" class="badge badge-red" style="padding:0.3rem 0.65rem; font-size:0.725rem;">Admin</span>
       <button id="logout-btn" class="btn btn-secondary btn-sm">🔒 Logout</button>
@@ -553,14 +553,11 @@
           </button>
         </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>User</th><th>Role</th><th>Password</th><th>Actions</th></tr></thead>
-            <tbody id="users-tbody">
-              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1rem; font-size:0.82rem;">No team members invited yet. Use the form above to invite team members.</td></tr>
-            </tbody>
-          </table>
+        <!-- User List — Mobile-first card layout -->
+        <div id="users-tbody" style="display:flex; flex-direction:column; gap:0.55rem;">
+          <div style="text-align:center; color:var(--text-muted); padding:1.25rem 0; font-size:0.82rem;">No team members invited yet. Use the form above to invite team members.</div>
         </div>
+
       </div>
 
       <!-- Google Authenticator 2FA Manager Card -->
