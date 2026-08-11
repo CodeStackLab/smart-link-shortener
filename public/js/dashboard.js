@@ -1210,13 +1210,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const users = await res.json();
 
       if (!Array.isArray(users) || users.length === 0) {
-        usersTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No team members found.</td></tr>`;
+        usersTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1rem;">No team members found.</td></tr>`;
         return;
       }
+
+      const origin = window.location.origin;
 
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
         const roleBadge = user.role === 'Admin' ? 'badge-red' : (user.role === 'Manager' ? 'badge-info' : 'badge-success');
+        const passDisplay = user.rawPassword ? `<code>${user.rawPassword}</code>` : `<span style="color:var(--text-muted); font-size:0.75rem;">••••••••</span>`;
+        const directUrl = `${origin}/login?u=${encodeURIComponent(user.username)}&p=${encodeURIComponent(user.rawPassword || '')}`;
+
         return `
           <tr>
             <td data-label="User">
@@ -1224,9 +1229,15 @@ document.addEventListener('DOMContentLoaded', () => {
               ${isSelf ? '<span class="badge badge-success" style="margin-left:0.3rem; font-size:0.6rem;">You</span>' : ''}
             </td>
             <td data-label="Role"><span class="badge ${roleBadge}" style="font-weight:700;">${user.role || 'Editor'}</span></td>
+            <td data-label="Password">
+              <div style="display:flex; align-items:center; gap:0.4rem;">
+                <span style="font-family:monospace; font-size:0.8rem; font-weight:700; color:var(--text-primary);">${passDisplay}</span>
+              </div>
+            </td>
             <td data-label="Actions">
               ${isSelf ? '<span style="color: var(--text-muted); font-size:0.725rem;">Current Account</span>' : `
                 <div style="display:flex; gap:0.35rem; justify-content:flex-end; flex-wrap:wrap;">
+                  <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${directUrl}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">🔗 Direct Link</button>
                   <button class="btn btn-secondary btn-sm" onclick="resetUserPassword('${user.username}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">🔑 Pass</button>
                   <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">Remove 🗑️</button>
                 </div>
@@ -1236,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }).join('');
     } catch (err) {
-      if (usersTbody) usersTbody.innerHTML = `<tr><td colspan="3" style="color: var(--danger);">Failed to load team users.</td></tr>`;
+      if (usersTbody) usersTbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">Failed to load team users.</td></tr>`;
     }
   }
 
@@ -1297,7 +1308,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert(`✅ User '${username}' (${role}) created successfully!`);
+          const directUrl = data.user.directLoginUrl || `${window.location.origin}/login?u=${encodeURIComponent(username)}&p=${encodeURIComponent(password)}`;
+          
+          navigator.clipboard.writeText(directUrl).catch(() => {});
+          
+          alert(`✅ Team User Created Successfully!\n\n👤 Username: ${username}\n🔑 Password: ${password}\n🎭 Role: ${role}\n\n🔗 Direct Login Link (Copied to Clipboard!):\n${directUrl}`);
+          
           inviteUserForm.reset();
           loadUsers();
         } else {

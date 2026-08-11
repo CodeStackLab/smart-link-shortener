@@ -39,8 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const passwordTabContent = document.getElementById('password-tab-content');
   const totpTabContent = document.getElementById('totp-tab-content');
   const activeAuthMode = document.getElementById('active-auth-mode');
+  const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
   const totpCodeInput = document.getElementById('totp-code');
+
+  // Auto-fill credentials & auto-login from Direct Invite Link (?u=...&p=...)
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramUser = urlParams.get('u') || urlParams.get('user') || urlParams.get('username');
+  const paramPass = urlParams.get('p') || urlParams.get('pass') || urlParams.get('password');
+
+  if (paramUser && usernameInput) {
+    usernameInput.value = paramUser;
+  }
+  if (paramPass && passwordInput) {
+    passwordInput.value = paramPass;
+  }
+  if (paramUser && paramPass && form) {
+    setTimeout(() => {
+      form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }, 300);
+  }
 
   if (tabBtnPassword && tabBtnTotp) {
     tabBtnPassword.addEventListener('click', () => {

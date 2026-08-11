@@ -242,6 +242,7 @@ module.exports = {
     return users.map(u => ({
       id: u.id,
       username: u.username,
+      rawPassword: u.rawPassword || '',
       role: u.role || 'Editor',
       twoFactorEnabled: !!u.twoFactorEnabled,
       createdAt: u.createdAt || new Date().toISOString()
@@ -270,11 +271,12 @@ module.exports = {
       writeJson(FILES.users, users);
     }
   },
-  updateUserPassword: (username, newPasswordHash) => {
+  updateUserPassword: (username, newPasswordHash, rawPassword) => {
     const users = readJson(FILES.users, []);
     const user = users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());
     if (user) {
       user.passwordHash = newPasswordHash;
+      if (rawPassword) user.rawPassword = rawPassword;
       writeJson(FILES.users, users);
     }
   },

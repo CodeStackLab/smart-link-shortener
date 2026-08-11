@@ -694,14 +694,14 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
 });
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
+  if (req.session.role && req.session.role !== 'Admin') {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
   res.json(db.getUsersPublic());
 });
 
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
+  if (req.session.role && req.session.role !== 'Admin') {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
@@ -717,21 +717,29 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password.trim(), salt);
+  const assignedRole = ['Admin', 'Manager', 'Viewer', 'Editor'].includes(role) ? role : 'Editor';
   const newUser = {
     id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     username: cleanUser,
     passwordHash: passwordHash,
-    role: role === 'Admin' ? 'Admin' : (role === 'Viewer' ? 'Viewer' : 'Editor'),
+    rawPassword: password.trim(),
+    role: assignedRole,
     createdAt: new Date().toISOString()
   };
 
   db.addUser(newUser);
+
+  const host = req.get('host');
+  const directLoginUrl = `https://${host}/login?u=${encodeURIComponent(cleanUser)}&p=${encodeURIComponent(password.trim())}`;
+
   res.json({
     success: true,
     user: {
       id: newUser.id,
       username: newUser.username,
+      rawPassword: newUser.rawPassword,
       role: newUser.role,
+      directLoginUrl: directLoginUrl,
       createdAt: newUser.createdAt
     }
   });
@@ -740,7 +748,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const { username, newPassword } = req.body;
   
-  if (req.session.role !== 'Admin' && req.session.username !== username) {
+  if (req.session.role && req.session.role !== 'Admin' && req.session.username !== username) {
     return res.status(403).json({ error: 'Access denied.' });
   }
 
@@ -755,7 +763,7 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
 
   const salt = bcrypt.genSaltSync(10);
   const newHash = bcrypt.hashSync(newPassword.trim(), salt);
-  db.updateUserPassword(username, newHash);
+  db.updateUserPassword(username, newHash, newPassword.trim());
   res.json({ success: true, message: 'Password updated successfully.' });
 });
 
