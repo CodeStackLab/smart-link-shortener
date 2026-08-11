@@ -237,16 +237,28 @@ module.exports = {
 
   // Users CRUD
   getUsers: () => readJson(FILES.users, []),
+  getDefaultPermissions: (role) => {
+    if (role === 'Admin') return ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
+    if (role === 'Manager') return ['links', 'domains', 'geo', 'analytics'];
+    return ['links', 'geo', 'analytics']; // Editor default
+  },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);
-    return users.map(u => ({
-      id: u.id,
-      username: u.username,
-      rawPassword: u.rawPassword || '',
-      role: u.role || 'Editor',
-      twoFactorEnabled: !!u.twoFactorEnabled,
-      createdAt: u.createdAt || new Date().toISOString()
-    }));
+    return users.map(u => {
+      const role = u.role || 'Editor';
+      const defaultPerms = role === 'Admin'
+        ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : (role === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
+      return {
+        id: u.id,
+        username: u.username,
+        rawPassword: u.rawPassword || '',
+        role: role,
+        permissions: Array.isArray(u.permissions) ? u.permissions : defaultPerms,
+        twoFactorEnabled: !!u.twoFactorEnabled,
+        createdAt: u.createdAt || new Date().toISOString()
+      };
+    });
   },
   getUserByUsername: (username) => {
     const users = readJson(FILES.users, []);
@@ -254,6 +266,11 @@ module.exports = {
   },
   addUser: (user) => {
     const users = readJson(FILES.users, []);
+    if (!Array.isArray(user.permissions)) {
+      user.permissions = user.role === 'Admin'
+        ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : (user.role === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
+    }
     users.push(user);
     writeJson(FILES.users, users);
     return user;
@@ -263,14 +280,16 @@ module.exports = {
     users = users.filter(u => u.id !== id);
     writeJson(FILES.users, users);
   },
-  updateUserRole: (id, role) => {
+  updateUserRole: (id, role, permissions) => {
     const users = readJson(FILES.users, []);
     const user = users.find(u => u.id === id);
     if (user) {
       user.role = role;
+      if (Array.isArray(permissions)) user.permissions = permissions;
       writeJson(FILES.users, users);
     }
   },
+
   updateUserPassword: (username, newPasswordHash, rawPassword) => {
     const users = readJson(FILES.users, []);
     const user = users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());

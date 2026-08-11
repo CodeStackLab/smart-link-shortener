@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : (uRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
         }
-        applyRoleUiScoping(currentLoggedInRole);
+        applyRoleUiScoping(currentLoggedInRole, data.permissions);
         // Load data AFTER session is confirmed
         loadLinks();
         loadUsers();
@@ -198,17 +198,41 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/admin';
     });
 
-  function applyRoleUiScoping(role) {
-    if (role !== 'Admin') {
-      const firewallTabBtn = document.querySelector('.tab-btn[data-tab="tab-firewall"]');
-      const settingsTabBtn = document.querySelector('.tab-btn[data-tab="tab-settings"]');
-      if (firewallTabBtn) firewallTabBtn.style.display = 'none';
-      if (settingsTabBtn) settingsTabBtn.style.display = 'none';
+  let userCurrentPermissions = ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
 
-      const proAccordion = document.getElementById('pro-accordion');
-      if (proAccordion) proAccordion.style.display = 'none';
+  function applyRoleUiScoping(role, permissions) {
+    const isFullAdmin = role === 'Admin';
+    const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'] : ['links', 'geo', 'analytics']);
+    userCurrentPermissions = userPerms;
+
+    const navMap = [
+      { key: 'links', tabId: 'tab-links' },
+      { key: 'domains', tabId: 'tab-domains' },
+      { key: 'geo', tabId: 'tab-geo' },
+      { key: 'analytics', tabId: 'tab-analytics' },
+      { key: 'firewall', tabId: 'tab-firewall' },
+      { key: 'settings', tabId: 'tab-settings' }
+    ];
+
+    navMap.forEach(item => {
+      const hasAccess = isFullAdmin || userPerms.includes(item.key);
+
+      const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
+      if (tabBtn) tabBtn.style.display = hasAccess ? '' : 'none';
+
+      const mobileBtn = document.querySelector(`.mobile-nav-item[data-tab="${item.tabId}"]`);
+      if (mobileBtn) mobileBtn.style.display = hasAccess ? '' : 'none';
+
+      const tabContent = document.getElementById(item.tabId);
+      if (tabContent && !hasAccess) tabContent.style.display = 'none';
+    });
+
+    const proAccordion = document.getElementById('pro-accordion');
+    if (proAccordion) {
+      proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
   }
+
 
   // Logout Handler
   if (logoutBtn) {
@@ -1261,7 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:flex;gap:0.5rem;margin-left:auto;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
               ${isSelf
                 ? `<span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:0.4rem 0;">Current Account</span>`
-                : `<button onclick="openEditUserModal('${user.username}','${encodeURIComponent(user.rawPassword||'')}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
+                : `<button onclick="openEditUserModal('${user.username}','${encodeURIComponent(user.rawPassword||'')}','${user.id}','${user.role || 'Editor'}','${encodeURIComponent(JSON.stringify(user.permissions || []))}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
                    <button onclick="openDeleteUserModal('${user.id}','${user.username}')" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(239,68,68,0.3);display:flex;align-items:center;gap:0.35rem;">🗑️ Delete</button>`
               }
             </div>
@@ -1299,6 +1323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---- EDIT USER MODAL ----
   let _editModalUsername = '';
+  let _editUserId = '';
   const editUserModal = document.getElementById('edit-user-modal');
   const editUserModalClose = document.getElementById('edit-user-modal-close');
   const editUserDirectLink = document.getElementById('edit-user-direct-link');
@@ -1309,16 +1334,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const editUserPassError = document.getElementById('edit-user-pass-error');
   const editUserPassSuccess = document.getElementById('edit-user-pass-success');
   const editUserModalSubtitle = document.getElementById('edit-user-modal-subtitle');
+  const editUserRoleSelect = document.getElementById('edit-user-role-select');
+  const editUserSaveRoleBtn = document.getElementById('edit-user-save-role-btn');
+  const editUserRoleSuccess = document.getElementById('edit-user-role-success');
 
-  window.openEditUserModal = function(username, encodedPass) {
+  window.openEditUserModal = function(username, encodedPass, id, role, encodedPerms) {
     _editModalUsername = username;
+    _editUserId = id || '';
     const rawPass = decodeURIComponent(encodedPass || '');
+    let perms = [];
+    try { perms = JSON.parse(decodeURIComponent(encodedPerms || '[]')); } catch(e) {}
+
     const directUrl = `${window.location.origin}/login?u=${encodeURIComponent(username)}&p=${encodeURIComponent(rawPass)}`;
     if (editUserModalSubtitle) editUserModalSubtitle.textContent = `👤 ${username}`;
     if (editUserDirectLink) editUserDirectLink.value = directUrl;
     if (editUserNewPass) editUserNewPass.value = '';
     if (editUserPassError) editUserPassError.style.display = 'none';
     if (editUserPassSuccess) editUserPassSuccess.style.display = 'none';
+    if (editUserRoleSuccess) editUserRoleSuccess.style.display = 'none';
+
+    if (editUserRoleSelect) editUserRoleSelect.value = role || 'Editor';
+
+    document.querySelectorAll('.edit-perm-cb').forEach(cb => {
+      cb.checked = Array.isArray(perms) && perms.includes(cb.value);
+    });
+
     if (editUserModal) { editUserModal.style.display = 'flex'; }
   };
 
@@ -1370,6 +1410,42 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  if (editUserSaveRoleBtn) {
+    editUserSaveRoleBtn.addEventListener('click', async () => {
+      if (!_editUserId) return;
+      const role = editUserRoleSelect ? editUserRoleSelect.value : 'Editor';
+      const permissions = Array.from(document.querySelectorAll('.edit-perm-cb:checked')).map(cb => cb.value);
+
+      editUserSaveRoleBtn.textContent = '⏳ Saving...';
+      editUserSaveRoleBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/admin/users/update-role', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: _editUserId, role, permissions })
+        });
+        const data = await res.json();
+        editUserSaveRoleBtn.textContent = '💾 Save Role & Permissions';
+        editUserSaveRoleBtn.disabled = false;
+        if (res.ok && data.success) {
+          if (editUserRoleSuccess) {
+            editUserRoleSuccess.textContent = `✅ Role & Permissions updated successfully!`;
+            editUserRoleSuccess.style.display = 'block';
+          }
+          loadUsers();
+        } else {
+          showAlert(data.error || 'Failed to update role/permissions', true);
+        }
+      } catch(err) {
+        editUserSaveRoleBtn.textContent = '💾 Save Role & Permissions';
+        editUserSaveRoleBtn.disabled = false;
+        showAlert('Error updating role', true);
+      }
+    });
+  }
+
 
   // ---- DELETE USER MODAL ----
   let _deleteUserId = '';
@@ -1426,19 +1502,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const newUserRoleSelect = document.getElementById('new-user-role');
+  if (newUserRoleSelect) {
+    newUserRoleSelect.addEventListener('change', () => {
+      const selectedRole = newUserRoleSelect.value;
+      const defaultPerms = selectedRole === 'Admin'
+        ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : (selectedRole === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
+
+      document.querySelectorAll('.new-perm-cb').forEach(cb => {
+        cb.checked = defaultPerms.includes(cb.value);
+      });
+    });
+  }
+
   if (inviteUserForm) {
     inviteUserForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('new-user-username').value.trim();
       const password = document.getElementById('new-user-password').value.trim();
       const role = document.getElementById('new-user-role').value;
+      const permissions = Array.from(document.querySelectorAll('.new-perm-cb:checked')).map(cb => cb.value);
 
       try {
         const res = await fetch('/api/admin/users/invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, role })
+          body: JSON.stringify({ username, password, role, permissions })
         });
+
 
         const data = await res.json();
         if (res.ok && data.success) {

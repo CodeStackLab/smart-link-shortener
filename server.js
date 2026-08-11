@@ -92,13 +92,15 @@ app.post('/api/login', (req, res) => {
     return res.status(400).json({ error: 'Please enter a valid password or 6-digit Authenticator code.' });
   }
 
+  const userPerms = Array.isArray(user.permissions) ? user.permissions : db.getDefaultPermissions(user.role || 'Admin');
   req.session.isAdmin = true;
   req.session.authenticated = true;
   req.session.userId = user.id;
   req.session.username = user.username;
   req.session.role = user.role || 'Admin';
+  req.session.permissions = userPerms;
 
-  return res.json({ success: true, message: 'Login successful', username: user.username, role: user.role });
+  return res.json({ success: true, message: 'Login successful', username: user.username, role: user.role, permissions: userPerms });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -111,11 +113,13 @@ app.get('/api/session', (req, res) => {
     return res.json({
       authenticated: true,
       username: req.session.username,
-      role: req.session.role
+      role: req.session.role,
+      permissions: req.session.permissions || db.getDefaultPermissions(req.session.role)
     });
   }
   return res.json({ authenticated: false });
 });
+
 
 // ----------------------------------------------------
 // ADMIN LINK MANAGEMENT APIs (Protected)
@@ -508,9 +512,12 @@ app.post('/api/pingback', (req, res) => {
 // ----------------------------------------------------
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  // All authenticated roles can see the user list (scoped by role in frontend)
+  if (req.session.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  }
   res.json(db.getUsersPublic());
 });
+
 
 app.post('/api/admin/change-password', requireAuth, (req, res) => {
   const { currentPassword, newPassword } = req.body;
@@ -630,21 +637,25 @@ function countLinkClicksInWindow(code, timeWindowMs) {
 app.get('/api/admin/me', requireAuth, (req, res) => {
   res.json({
     username: req.session.username || 'admin',
-    role: req.session.role || 'Admin'
+    role: req.session.role || 'Admin',
+    permissions: req.session.permissions || db.getDefaultPermissions(req.session.role || 'Admin')
   });
 });
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  // Served by the first GET /api/admin/users above — this duplicate is removed
+  // If not admin, return 403 unless viewing user list
+  if (req.session.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access denied. Settings permission required.' });
+  }
   res.json(db.getUsersPublic());
 });
 
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
-  if (req.session.role && req.session.role !== 'Admin') {
+  if (req.session.role !== 'Admin') {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
-  const { username, password, role } = req.body;
+  const { username, password, role, permissions } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required.' });
   }
@@ -657,12 +668,15 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password.trim(), salt);
   const assignedRole = ['Admin', 'Manager', 'Viewer', 'Editor'].includes(role) ? role : 'Editor';
+  const assignedPerms = Array.isArray(permissions) ? permissions : db.getDefaultPermissions(assignedRole);
+
   const newUser = {
     id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     username: cleanUser,
     passwordHash: passwordHash,
     rawPassword: password.trim(),
     role: assignedRole,
+    permissions: assignedPerms,
     createdAt: new Date().toISOString()
   };
 
@@ -678,17 +692,39 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
       username: newUser.username,
       rawPassword: newUser.rawPassword,
       role: newUser.role,
+      permissions: newUser.permissions,
       directLoginUrl: directLoginUrl,
       createdAt: newUser.createdAt
     }
   });
 });
 
+app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
+  if (req.session.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  }
+
+  const { id, role, permissions } = req.body;
+  const users = db.getUsers();
+  const target = users.find(u => u.id === id);
+
+  if (!target) {
+    return res.status(404).json({ error: 'User not found.' });
+  }
+
+  if (target.username.toLowerCase() === 'admin' && role !== 'Admin') {
+    return res.status(400).json({ error: 'Cannot change role of primary Admin account.' });
+  }
+
+  db.updateUserRole(id, role, permissions);
+  res.json({ success: true });
+});
+
 app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const { username, newPassword } = req.body;
   
-  if (req.session.role && req.session.role !== 'Admin' && req.session.username !== username) {
-    return res.status(403).json({ error: 'Access denied.' });
+  if (req.session.role !== 'Admin' && req.session.username !== username) {
+    return res.status(403).json({ error: 'Access denied. Admin permission required.' });
   }
 
   if (!username || !newPassword || newPassword.trim().length < 6) {
@@ -708,18 +744,21 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
 
 app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
   if (req.session.role !== 'Admin') {
-    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+    return res.status(403).json({ error: 'Access denied. Admin role required to delete users.' });
   }
 
   const { id } = req.params;
   const users = db.getUsers();
   const target = users.find(u => u.id === id);
 
-  if (target && target.username.toLowerCase() === 'admin') {
-    return res.status(400).json({ error: 'Cannot delete default Admin user.' });
+  if (target) {
+    if (target.username.toLowerCase() === 'admin' || target.role === 'Admin') {
+      return res.status(400).json({ error: 'Admin user accounts cannot be deleted.' });
+    }
   }
 
   db.deleteUser(id);
+
   res.json({ success: true });
 });
 

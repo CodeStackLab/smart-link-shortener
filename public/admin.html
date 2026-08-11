@@ -530,8 +530,23 @@
               </select>
             </div>
           </div>
+
+          <!-- Granular Feature Access Permissions -->
+          <div class="form-group" style="margin-top:0.4rem; margin-bottom:1rem;">
+            <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.4rem; display:block;">Custom Feature Access Permissions:</label>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(125px, 1fr)); gap:0.45rem; background:var(--input-bg,#f9fafb); padding:0.65rem 0.85rem; border-radius:12px; border:1.5px solid var(--border,#e5e7eb);">
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="links" checked> ⚡ Shortlinks</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="domains"> 🌐 Domains</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo" checked> 🌍 Geo</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="analytics" checked> 📊 Analytics</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="settings"> ⚙️ Settings</label>
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary btn-block" style="font-weight:800;">➕ Invite &amp; Create User</button>
         </form>
+
 
         <!-- Success Banner for Created User Credentials & Direct Link -->
         <div id="user-created-success-card" style="display:none; background:rgba(16,185,129,0.08); border:1.5px solid rgba(16,185,129,0.4); border-radius:var(--r-sm); padding:1rem; margin-bottom:1.25rem;">
@@ -779,9 +794,38 @@ if ('serviceWorker' in navigator) {
       <div id="edit-user-pass-error" style="display:none; background:#fee2e2; border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem; color:#dc2626; font-weight:600; margin-bottom:0.75rem;"></div>
       <button id="edit-user-save-pass-btn" style="width:100%; background:linear-gradient(135deg,#1877f2 0%,#6c3de8 100%); border:none; color:#fff; border-radius:12px; padding:0.75rem; font-size:0.85rem; font-weight:800; cursor:pointer; letter-spacing:0.02em; box-shadow:0 4px 14px rgba(24,119,242,0.35);">🔐 Update Password</button>
       <div id="edit-user-pass-success" style="display:none; background:rgba(16,185,129,0.1); border:1.5px solid rgba(16,185,129,0.4); border-radius:10px; padding:0.65rem 0.85rem; font-size:0.78rem; font-weight:700; color:#10b981; margin-top:0.75rem; text-align:center;"></div>
+
+      <div style="height:1px; background:var(--border,#e5e7eb); margin:1rem 0;"></div>
+
+      <!-- Role & Feature Permissions Section -->
+      <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.65rem;">⚙️ Role &amp; Feature Permissions</div>
+      <div style="margin-bottom:0.75rem;">
+        <label style="font-size:0.75rem; font-weight:700; color:var(--text-primary); margin-bottom:0.35rem; display:block;">Role</label>
+        <select id="edit-user-role-select" style="width:100%; padding:0.55rem 0.75rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-size:0.8rem; font-weight:700; background:var(--input-bg,#f9fafb); color:var(--text-primary);">
+          <option value="Editor">Editor (Own Links & Traffic Only)</option>
+          <option value="Manager">Manager (View All Traffic & Manage Own Links)</option>
+          <option value="Admin">Admin (Full Control)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:0.85rem;">
+        <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">Allowed Features Checkboxes:</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; background:var(--input-bg,#f9fafb); padding:0.65rem 0.85rem; border-radius:10px; border:1px solid var(--border,#e5e7eb);">
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="links"> ⚡ Shortlinks</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="domains"> 🌐 Domains</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="geo"> 🌍 Geo</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="analytics"> 📊 Analytics</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="firewall"> 🛡️ Firewall</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="settings"> ⚙️ Settings</label>
+        </div>
+      </div>
+
+      <button id="edit-user-save-role-btn" style="width:100%; background:linear-gradient(135deg,#059669 0%,#10b981 100%); border:none; color:#fff; border-radius:12px; padding:0.75rem; font-size:0.85rem; font-weight:800; cursor:pointer; letter-spacing:0.02em; box-shadow:0 4px 14px rgba(16,185,129,0.35);">💾 Save Role &amp; Permissions</button>
+      <div id="edit-user-role-success" style="display:none; background:rgba(16,185,129,0.1); border:1.5px solid rgba(16,185,129,0.4); border-radius:10px; padding:0.65rem 0.85rem; font-size:0.78rem; font-weight:700; color:#10b981; margin-top:0.75rem; text-align:center;"></div>
     </div>
   </div>
 </div>
+
 
 <!-- Delete Confirm Modal -->
 <div id="delete-user-modal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:1rem;">
