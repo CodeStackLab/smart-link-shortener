@@ -508,67 +508,8 @@ app.post('/api/pingback', (req, res) => {
 // ----------------------------------------------------
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  const users = db.getUsers().map(u => ({
-    id: u.id,
-    username: u.username,
-    role: u.role || 'Admin',
-    createdAt: u.createdAt
-  }));
-  res.json(users);
-});
-
-app.post('/api/admin/users', requireAuth, (req, res) => {
-  const { username, password, role } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required.' });
-  }
-
-  const cleanUsername = username.trim().toLowerCase();
-  if (cleanUsername.length < 3) {
-    return res.status(400).json({ error: 'Username must be at least 3 characters long.' });
-  }
-
-  if (db.getUserByUsername(cleanUsername)) {
-    return res.status(400).json({ error: 'Username already exists.' });
-  }
-
-  if (password.trim().length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
-  }
-
-  const salt = bcrypt.genSaltSync(10);
-  const newUser = {
-    id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    username: cleanUsername,
-    passwordHash: bcrypt.hashSync(password.trim(), salt),
-    role: role || 'Admin',
-    createdAt: new Date().toISOString()
-  };
-
-  db.addUser(newUser);
-  res.json({ success: true, user: { id: newUser.id, username: newUser.username, role: newUser.role, createdAt: newUser.createdAt } });
-});
-
-app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const users = db.getUsers();
-  const targetUser = users.find(u => u.id === id);
-
-  if (!targetUser) {
-    return res.status(404).json({ error: 'User not found.' });
-  }
-
-  if (targetUser.username.toLowerCase() === req.session.username.toLowerCase()) {
-    return res.status(400).json({ error: 'You cannot delete your own logged-in user account.' });
-  }
-
-  if (users.length <= 1) {
-    return res.status(400).json({ error: 'Cannot delete the only admin user.' });
-  }
-
-  db.deleteUser(id);
-  res.json({ success: true });
+  // All authenticated roles can see the user list (scoped by role in frontend)
+  res.json(db.getUsersPublic());
 });
 
 app.post('/api/admin/change-password', requireAuth, (req, res) => {
@@ -694,9 +635,7 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
 });
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  if (req.session.role && req.session.role !== 'Admin') {
-    return res.status(403).json({ error: 'Access denied. Admin role required.' });
-  }
+  // Served by the first GET /api/admin/users above — this duplicate is removed
   res.json(db.getUsersPublic());
 });
 
@@ -1387,7 +1326,10 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.redirect('/admin');
+  if (req.session && req.session.isAdmin) {
+    return res.redirect('/admin');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // Root fallback route -> redirect to /admin

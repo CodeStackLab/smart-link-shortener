@@ -243,6 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
 
+  // Team / Users section elements
+  const inviteUserForm = document.getElementById('invite-user-form');
+  const usersTbody = document.getElementById('users-tbody');
+
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
@@ -1297,6 +1301,26 @@ document.addEventListener('DOMContentLoaded', () => {
       showAlert('Error deleting user', true);
     }
   };
+
+  // ---- FORCE REFRESH / CACHE CLEAR BUTTON ----
+  const cacheRefreshBtn = document.getElementById('cache-refresh-btn');
+  if (cacheRefreshBtn) {
+    cacheRefreshBtn.addEventListener('click', () => {
+      // Clear all cached state from localStorage
+      const keysToKeep = ['theme'];
+      Object.keys(localStorage).forEach(k => { if (!keysToKeep.includes(k)) localStorage.removeItem(k); });
+      // Reload everything from server
+      loadLinks();
+      loadUsers();
+      load2FAStatus();
+      loadBlockedIps();
+      loadDomains();
+      loadCountryAnalytics();
+      loadAnalytics();
+      cacheRefreshBtn.textContent = '✅ Refreshed!';
+      setTimeout(() => { cacheRefreshBtn.textContent = '🔄 Force Refresh'; }, 2000);
+    });
+  }
 
   if (inviteUserForm) {
     inviteUserForm.addEventListener('submit', async (e) => {
