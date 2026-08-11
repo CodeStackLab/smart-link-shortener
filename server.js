@@ -401,6 +401,9 @@ app.get('/api/admin/analytics/countries', requireAuth, (req, res) => {
   const dailyTraffic = {};
 
   filteredLogs.forEach(log => {
+    // Ignore social crawlers (e.g. Facebook preview bot) & firewall blocked logs from country traffic stats
+    if (log.status === 'SOCIAL_CRAWLER' || log.status === 'IP_FIREWALL_BLOCKED') return;
+
     const code = log.countryCode || 'US';
     const countryName = log.countryName || 'United States';
     const flag = log.flag || '🇺🇸';
@@ -697,12 +700,15 @@ async function handleShortlinkRedirect(req, res) {
     return res.status(404).send('Not Found');
   }
 
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  let clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress || '127.0.0.1';
+  if (clientIp.includes(',')) {
+    clientIp = clientIp.split(',')[0].trim();
+  }
   const userAgent = req.headers['user-agent'] || '';
   const rawReferer = req.headers['referer'] || req.headers['referrer'] || '';
 
-  // GeoIP & VPN Lookup
-  const geoInfo = lookupIp(clientIp);
+  // GeoIP & VPN Lookup (passes req.headers for Cloudflare IP Country header support)
+  const geoInfo = lookupIp(clientIp, req.headers);
   const logId = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
   // 0. Check IP Firewall (IP Blocking)
