@@ -269,18 +269,10 @@
 <div id="tab-geo" class="tab-content" style="display:none;">
   <div class="container">
 
-    <div class="filter-toolbar">
-      <div class="filter-group">
-        <span class="filter-label">📅 Quick Range:</span>
-        <button class="btn btn-secondary btn-sm date-preset-btn active" data-range="last30">Last 30 Days</button>
-        <button class="btn btn-secondary btn-sm date-preset-btn" data-range="thisMonth">This Month</button>
-        <button class="btn btn-secondary btn-sm date-preset-btn" data-range="lastMonth">Last Month</button>
-      </div>
-      <div class="filter-group">
-        <input type="date" id="start-date-input" class="form-control" style="width:auto; font-size:0.775rem; padding:0.3rem 0.55rem;">
-        <span style="color:var(--text-muted); font-size:0.8rem;">→</span>
-        <input type="date" id="end-date-input" class="form-control" style="width:auto; font-size:0.775rem; padding:0.3rem 0.55rem;">
-        <button id="apply-date-btn" class="btn btn-primary btn-sm">Apply</button>
+    <div class="filter-toolbar" style="justify-content:center; margin-bottom:1rem;">
+      <div class="filter-group" style="justify-content:center; gap:0.6rem;">
+        <button class="btn btn-secondary btn-sm date-preset-btn active" data-range="thisMonth" style="padding:0.45rem 1.1rem; font-size:0.85rem; font-weight:700; border-radius:10px;">This Month</button>
+        <button class="btn btn-secondary btn-sm date-preset-btn" data-range="lastMonth" style="padding:0.45rem 1.1rem; font-size:0.85rem; font-weight:700; border-radius:10px;">Last Month</button>
       </div>
     </div>
 

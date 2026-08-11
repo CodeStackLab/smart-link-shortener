@@ -654,21 +654,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/api/admin/analytics/countries${query}`);
       const data = await res.json();
 
-      const totalVpn = data.totalVpnClicks || data.totalVpsClicks || 0;
-      document.getElementById('stat-geo-genuine').textContent = data.totalGenuineClicks || 0;
-      document.getElementById('stat-geo-vpn').textContent = totalVpn;
+      const genuineEl = document.getElementById('stat-geo-genuine');
+      if (genuineEl) genuineEl.textContent = data.totalGenuineClicks || 0;
+
+      const vpnEl = document.getElementById('stat-geo-vpn');
+      if (vpnEl) vpnEl.textContent = totalVpn;
 
       const vpnPercentage = data.totalLogs > 0 ? Math.round((totalVpn / data.totalLogs) * 100) : 0;
       const riskEl = document.getElementById('stat-geo-risk');
-      if (vpnPercentage > 30) {
-        riskEl.textContent = `HIGH (${vpnPercentage}% VPN)`;
-        riskEl.style.color = '#ef4444';
-      } else if (vpnPercentage > 10) {
-        riskEl.textContent = `MEDIUM (${vpnPercentage}% VPN)`;
-        riskEl.style.color = '#f59e0b';
-      } else {
-        riskEl.textContent = `LOW (${vpnPercentage}% VPN)`;
-        riskEl.style.color = '#10b981';
+      if (riskEl) {
+        if (vpnPercentage > 30) {
+          riskEl.textContent = `HIGH (${vpnPercentage}% VPN)`;
+          riskEl.style.color = '#ef4444';
+        } else if (vpnPercentage > 10) {
+          riskEl.textContent = `MEDIUM (${vpnPercentage}% VPN)`;
+          riskEl.style.color = '#f59e0b';
+        } else {
+          riskEl.textContent = `LOW (${vpnPercentage}% VPN)`;
+          riskEl.style.color = '#10b981';
+        }
       }
 
       const countries = data.countries || [];
