@@ -179,8 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
         currentLoggedInUsername = data.username || 'admin';
         currentLoggedInRole = data.role || 'Admin';
         if (userBadge) {
-          userBadge.textContent = `${currentLoggedInUsername} (${currentLoggedInRole})`;
-          userBadge.className = `badge ${currentLoggedInRole === 'Admin' ? 'badge-red' : (currentLoggedInRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
+          const uName = (data.username || 'admin').trim();
+          const uRole = (data.role || 'Admin').trim();
+          if (uName.toLowerCase() === 'admin' || uName.toLowerCase() === uRole.toLowerCase()) {
+            userBadge.textContent = uRole;
+          } else {
+            userBadge.textContent = `${uName} (${uRole})`;
+          }
+          userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : (uRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
         }
         applyRoleUiScoping(currentLoggedInRole);
       }
