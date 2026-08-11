@@ -66,16 +66,23 @@
       </div>
 
       <form id="login-form">
-        <input type="hidden" id="username" value="admin">
         <input type="hidden" id="active-auth-mode" value="password">
+
+        <!-- Username Input -->
+        <div class="form-group" style="margin-bottom:0.85rem;">
+          <label for="username" style="font-weight:800; text-transform:uppercase; font-size:0.78rem; letter-spacing:0.04em; color:var(--text-secondary); display:block; margin-bottom:0.4rem;">
+            👤 USERNAME
+          </label>
+          <input type="text" id="username" class="form-control" placeholder="Enter username (e.g. admin)" value="admin" autocomplete="username" style="font-weight:700;">
+        </div>
 
         <!-- Tab 1: Password Login -->
         <div id="password-tab-content" class="login-tab-content">
           <div class="form-group" style="margin-bottom:0.85rem;">
-            <label for="password" style="font-weight:800; text-transform:uppercase; font-size:0.78rem; letter-spacing:0.04em; color:#334155; display:block; margin-bottom:0.4rem;">
-              ADMIN PASSWORD
+            <label for="password" style="font-weight:800; text-transform:uppercase; font-size:0.78rem; letter-spacing:0.04em; color:var(--text-secondary); display:block; margin-bottom:0.4rem;">
+              PASSWORD
             </label>
-            <input type="password" id="password" class="form-control" placeholder="Enter admin password" autocomplete="current-password">
+            <input type="password" id="password" class="form-control" placeholder="Enter password" autocomplete="current-password">
           </div>
         </div>
 

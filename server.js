@@ -123,7 +123,11 @@ app.get('/api/session', (req, res) => {
 
 app.get('/api/admin/links', requireAuth, (req, res) => {
   const links = db.getLinks();
-  res.json(links);
+  if (req.session.role === 'Admin') {
+    return res.json(links);
+  }
+  const userLinks = links.filter(l => l.createdBy === req.session.username);
+  res.json(userLinks);
 });
 
 app.post('/api/admin/links', requireAuth, (req, res) => {
@@ -204,7 +208,8 @@ app.post('/api/admin/links', requireAuth, (req, res) => {
     active: true,
     createdAt: new Date().toISOString(),
     clicks: 0,
-    domain: domain ? domain.trim().toLowerCase() : ''
+    domain: domain ? domain.trim().toLowerCase() : '',
+    createdBy: req.session.username || 'admin'
   };
 
   db.addLink(newLink);
@@ -213,6 +218,14 @@ app.post('/api/admin/links', requireAuth, (req, res) => {
 
 app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   const { id } = req.params;
+  const existingLink = db.getLinks().find(l => l.id === id);
+  if (!existingLink) {
+    return res.status(404).json({ error: 'Link not found.' });
+  }
+  if (req.session.role !== 'Admin' && existingLink.createdBy !== req.session.username) {
+    return res.status(403).json({ error: 'Access denied. You can only modify your own created links.' });
+  }
+
   const {
     targetUrl,
     fallbackUrl,
@@ -259,15 +272,15 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     domain: domain !== undefined ? (domain ? domain.trim().toLowerCase() : '') : undefined
   });
 
-  if (!updated) {
-    return res.status(404).json({ error: 'Link not found.' });
-  }
-
   res.json({ success: true, link: updated });
 });
 
 app.delete('/api/admin/links/:id', requireAuth, (req, res) => {
   const { id } = req.params;
+  const existingLink = db.getLinks().find(l => l.id === id);
+  if (existingLink && req.session.role !== 'Admin' && existingLink.createdBy !== req.session.username) {
+    return res.status(403).json({ error: 'Access denied. You can only delete your own created links.' });
+  }
   db.deleteLink(id);
   res.json({ success: true });
 });
@@ -383,7 +396,14 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
 
 app.get('/api/admin/analytics/countries', requireAuth, (req, res) => {
   const { startDate, endDate } = req.query;
-  const logs = db.getLogs();
+  let logs = db.getLogs();
+
+  if (req.session.role !== 'Admin') {
+    const userCodes = db.getLinks()
+      .filter(l => l.createdBy === req.session.username)
+      .map(l => (l.code || '').toLowerCase());
+    logs = logs.filter(l => l.code && userCodes.includes(l.code.toLowerCase()));
+  }
 
   let filteredLogs = logs;
   if (startDate && endDate) {
@@ -640,7 +660,14 @@ app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
 app.get('/api/admin/logs', requireAuth, (req, res) => {
   const logs = db.getLogs();
   const cleanLogs = logs.filter(l => l.status !== 'SOCIAL_CRAWLER');
-  res.json(cleanLogs);
+  if (req.session.role === 'Admin') {
+    return res.json(cleanLogs);
+  }
+  const userCodes = db.getLinks()
+    .filter(l => l.createdBy === req.session.username)
+    .map(l => (l.code || '').toLowerCase());
+  const userLogs = cleanLogs.filter(l => l.code && userCodes.includes(l.code.toLowerCase()));
+  res.json(userLogs);
 });
 
 app.post('/api/admin/clear-logs', requireAuth, (req, res) => {
@@ -655,6 +682,99 @@ function countLinkClicksInWindow(code, timeWindowMs) {
   const threshold = now - timeWindowMs;
   return logs.filter(l => l.code && l.code.toLowerCase() === code.toLowerCase() && new Date(l.timestamp).getTime() >= threshold).length;
 }
+
+// ----------------------------------------------------
+// TEAM USER MANAGEMENT & INVITES APIs
+// ----------------------------------------------------
+app.get('/api/admin/me', requireAuth, (req, res) => {
+  res.json({
+    username: req.session.username || 'admin',
+    role: req.session.role || 'Admin'
+  });
+});
+
+app.get('/api/admin/users', requireAuth, (req, res) => {
+  if (req.session.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  }
+  res.json(db.getUsersPublic());
+});
+
+app.post('/api/admin/users/invite', requireAuth, (req, res) => {
+  if (req.session.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  }
+
+  const { username, password, role } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required.' });
+  }
+
+  const cleanUser = username.trim().toLowerCase();
+  if (db.getUserByUsername(cleanUser)) {
+    return res.status(400).json({ error: 'Username already exists. Choose another.' });
+  }
+
+  const salt = bcrypt.genSaltSync(10);
+  const passwordHash = bcrypt.hashSync(password.trim(), salt);
+  const newUser = {
+    id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    username: cleanUser,
+    passwordHash: passwordHash,
+    role: role === 'Admin' ? 'Admin' : (role === 'Viewer' ? 'Viewer' : 'Editor'),
+    createdAt: new Date().toISOString()
+  };
+
+  db.addUser(newUser);
+  res.json({
+    success: true,
+    user: {
+      id: newUser.id,
+      username: newUser.username,
+      role: newUser.role,
+      createdAt: newUser.createdAt
+    }
+  });
+});
+
+app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
+  const { username, newPassword } = req.body;
+  
+  if (req.session.role !== 'Admin' && req.session.username !== username) {
+    return res.status(403).json({ error: 'Access denied.' });
+  }
+
+  if (!username || !newPassword || newPassword.trim().length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+  }
+
+  const user = db.getUserByUsername(username);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found.' });
+  }
+
+  const salt = bcrypt.genSaltSync(10);
+  const newHash = bcrypt.hashSync(newPassword.trim(), salt);
+  db.updateUserPassword(username, newHash);
+  res.json({ success: true, message: 'Password updated successfully.' });
+});
+
+app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
+  if (req.session.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  }
+
+  const { id } = req.params;
+  const users = db.getUsers();
+  const target = users.find(u => u.id === id);
+
+  if (target && target.username.toLowerCase() === 'admin') {
+    return res.status(400).json({ error: 'Cannot delete default Admin user.' });
+  }
+
+  db.deleteUser(id);
+  res.json({ success: true });
+});
 
 // ----------------------------------------------------
 // CUSTOM DOMAINS API

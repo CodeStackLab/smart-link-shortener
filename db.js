@@ -237,6 +237,16 @@ module.exports = {
 
   // Users CRUD
   getUsers: () => readJson(FILES.users, []),
+  getUsersPublic: () => {
+    const users = readJson(FILES.users, []);
+    return users.map(u => ({
+      id: u.id,
+      username: u.username,
+      role: u.role || 'Editor',
+      twoFactorEnabled: !!u.twoFactorEnabled,
+      createdAt: u.createdAt || new Date().toISOString()
+    }));
+  },
   getUserByUsername: (username) => {
     const users = readJson(FILES.users, []);
     return users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());
@@ -251,6 +261,14 @@ module.exports = {
     let users = readJson(FILES.users, []);
     users = users.filter(u => u.id !== id);
     writeJson(FILES.users, users);
+  },
+  updateUserRole: (id, role) => {
+    const users = readJson(FILES.users, []);
+    const user = users.find(u => u.id === id);
+    if (user) {
+      user.role = role;
+      writeJson(FILES.users, users);
+    }
   },
   updateUserPassword: (username, newPasswordHash) => {
     const users = readJson(FILES.users, []);

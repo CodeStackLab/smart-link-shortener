@@ -167,23 +167,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let currentLoggedInUsername = '';
+  let currentLoggedInRole = 'Admin';
 
-  // Check Session & Update Header User Badge
+  // Check Session & Update Header User Badge & Apply Role Scoping
   fetch('/api/session')
     .then(res => res.json())
     .then(data => {
       if (!data.authenticated) {
         window.location.href = '/admin';
       } else {
-        currentLoggedInUsername = data.username;
+        currentLoggedInUsername = data.username || 'admin';
+        currentLoggedInRole = data.role || 'Admin';
         if (userBadge) {
-          userBadge.textContent = data.username;
+          userBadge.textContent = `${currentLoggedInUsername} (${currentLoggedInRole})`;
+          userBadge.className = `badge ${currentLoggedInRole === 'Admin' ? 'badge-red' : (currentLoggedInRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
         }
+        applyRoleUiScoping(currentLoggedInRole);
       }
     })
     .catch(() => {
       window.location.href = '/admin';
     });
+
+  function applyRoleUiScoping(role) {
+    if (role !== 'Admin') {
+      const firewallTabBtn = document.querySelector('.tab-btn[data-tab="tab-firewall"]');
+      const settingsTabBtn = document.querySelector('.tab-btn[data-tab="tab-settings"]');
+      if (firewallTabBtn) firewallTabBtn.style.display = 'none';
+      if (settingsTabBtn) settingsTabBtn.style.display = 'none';
+
+      const proAccordion = document.getElementById('pro-accordion');
+      if (proAccordion) proAccordion.style.display = 'none';
+    }
+  }
 
   // Logout Handler
   if (logoutBtn) {
@@ -1160,9 +1176,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------
   // TAB 5: TEAM MEMBERS & USER INVITES LOGIC
   // --------------------------------------------------------
-  const usersTbody = document.getElementById('users-tbody');
-  const inviteUserForm = document.getElementById('invite-user-form');
-  const passwordChangeForm = document.getElementById('password-change-form');
+  const btnGenPass = document.getElementById('btn-gen-pass');
+  if (btnGenPass) {
+    btnGenPass.addEventListener('click', () => {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
+      let pass = '';
+      for (let i = 0; i < 10; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const passInput = document.getElementById('new-user-password');
+      if (passInput) passInput.value = pass;
+    });
+  }
 
   async function loadUsers() {
     if (!usersTbody) return;
@@ -1177,16 +1202,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
+        const roleBadge = user.role === 'Admin' ? 'badge-red' : (user.role === 'Manager' ? 'badge-info' : 'badge-success');
         return `
           <tr>
             <td data-label="User">
-              <strong style="color: var(--text-primary); font-size: 0.85rem;">${user.username}</strong>
+              <strong style="color: var(--text-primary); font-size: 0.85rem;">👤 ${user.username}</strong>
               ${isSelf ? '<span class="badge badge-success" style="margin-left:0.3rem; font-size:0.6rem;">You</span>' : ''}
             </td>
-            <td data-label="Role"><span class="badge badge-info">${user.role || 'Admin'}</span></td>
+            <td data-label="Role"><span class="badge ${roleBadge}" style="font-weight:700;">${user.role || 'Editor'}</span></td>
             <td data-label="Actions">
               ${isSelf ? '<span style="color: var(--text-muted); font-size:0.725rem;">Current Account</span>' : `
-                <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')" style="width:100% !important;">Remove 🗑️</button>
+                <div style="display:flex; gap:0.35rem; justify-content:flex-end; flex-wrap:wrap;">
+                  <button class="btn btn-secondary btn-sm" onclick="resetUserPassword('${user.username}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">🔑 Pass</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">Remove 🗑️</button>
+                </div>
               `}
             </td>
           </tr>
@@ -1196,6 +1225,31 @@ document.addEventListener('DOMContentLoaded', () => {
       if (usersTbody) usersTbody.innerHTML = `<tr><td colspan="3" style="color: var(--danger);">Failed to load team users.</td></tr>`;
     }
   }
+
+  window.resetUserPassword = async function(username) {
+    const newPassword = prompt(`Enter new password for team user '${username}':`);
+    if (!newPassword || newPassword.trim().length < 6) {
+      if (newPassword !== null) showAlert('Password must be at least 6 characters long.', true);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/users/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, newPassword: newPassword.trim() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert(`✅ Password for '${username}' updated successfully!`);
+        loadUsers();
+      } else {
+        showAlert(data.error || 'Failed to update password', true);
+      }
+    } catch (err) {
+      showAlert('Error resetting password', true);
+    }
+  };
 
   window.deleteUser = async function(id) {
     if (!confirm('Are you sure you want to remove this team member?')) return;
@@ -1221,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const role = document.getElementById('new-user-role').value;
 
       try {
-        const res = await fetch('/api/admin/users', {
+        const res = await fetch('/api/admin/users/invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password, role })
@@ -1229,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert(`Team user '${username}' created successfully!`);
+          showAlert(`✅ User '${username}' (${role}) created successfully!`);
           inviteUserForm.reset();
           loadUsers();
         } else {
@@ -1524,7 +1578,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial load
   loadLinks();
   loadDomains();
-});
 
 // --------------------------------------------------------
 // CUSTOM DOMAINS MANAGEMENT LOGIC
@@ -1616,4 +1669,5 @@ window.deleteDomain = async function(id) {
     showAlert('Error deleting domain', true);
   }
 };
+});
 
