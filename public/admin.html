@@ -6,7 +6,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#e63946">
+  <meta name="theme-color" content="#1877f2">
   <meta name="description" content="Admin dashboard for Smart FB Link Shortner. Manage shortlinks, analytics, VPN detection and IP firewall.">
   <title>Admin Dashboard — Smart FB Link Shortner</title>
   <link rel="manifest" href="/manifest.json">
@@ -30,7 +30,7 @@
           <img src="/icon-192.png" alt="Logo" style="width:36px; height:36px; border-radius:10px; display:block; object-fit:cover;">
         </div>
         <div class="logo-text">
-          <h1>Smart FB Link <span class="hide-mobile">Shortner</span></h1>
+          <h1>Smart FB <span class="hide-mobile">Link Shortner</span></h1>
           <p>Referrer &amp; Domain Redirection Engine</p>
         </div>
       </a>
@@ -72,38 +72,28 @@
       <div class="section-title"><span class="accent">⚡</span> Create New Smart Shortlink</div>
 
       <form id="create-link-form">
-        <!-- Row 1: domain, slug, target, fallback -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.85rem;">
+        <!-- Form fields: Primary Target URL & Short Code visible, Domain & Redirect URL hidden -->
+        <div style="display:grid; grid-template-columns:1fr; gap:0.85rem;">
           <div class="form-group">
-            <label>Domain</label>
-            <div class="form-control" style="display:flex; align-items:center; gap:0.5rem; cursor:default;">
-              <span>goo33.online</span>
-            </div>
-            <input type="hidden" id="link-domain" value="">
-          </div>
-          <div class="form-group">
-            <label for="link-code">Short Code (Slug)</label>
-            <input type="text" id="link-code" class="form-control" placeholder="e.g. android (leave blank to auto-generate)" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text">
-          </div>
-          <div class="form-group">
-            <label for="target-url">Primary Target URL</label>
+            <label for="target-url" style="font-weight:800; text-transform:uppercase; font-size:0.825rem; letter-spacing:0.04em;">PRIMARY TARGET URL</label>
             <input type="url" id="target-url" class="form-control" placeholder="https://mywebsite.com" required autocomplete="url" inputmode="url" spellcheck="false">
           </div>
           <div class="form-group">
-            <label>Redirect To URL</label>
-            <div class="form-control" style="cursor:default; color:var(--text-muted);">
-              https://www.google.com
-            </div>
+            <label for="link-code" style="font-weight:800; text-transform:uppercase; font-size:0.825rem; letter-spacing:0.04em;">SHORT CODE (SLUG)</label>
+            <input type="text" id="link-code" class="form-control" placeholder="e.g. android (leave blank to auto-generate)" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text">
           </div>
+          <!-- Hidden Domain and Fallback Redirect URL (Backend functionality preserved) -->
+          <input type="hidden" id="link-domain" value="">
+          <input type="hidden" id="fallback-url" value="https://www.google.com">
         </div>
 
         <!-- Row 2: traffic sources -->
         <div class="form-group" style="margin-top:0.25rem;">
-          <label>1. Allowed Traffic Sources</label>
+          <label style="font-weight:800; text-transform:uppercase; font-size:0.825rem; letter-spacing:0.04em;">1. ALLOWED TRAFFIC SOURCES</label>
           <div class="platform-chips-row">
-            <div class="platform-chip active" style="cursor:default; pointer-events:none;">
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
-              <span>Facebook</span>
+            <div class="platform-chip active" style="cursor:default; pointer-events:none; background:#1877f2 !important; border:none !important; color:#ffffff !important; font-weight:800 !important; box-shadow: 0 4px 14px rgba(24,119,242,0.25) !important;">
+              <svg width="16" height="16" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+              <span style="color:#ffffff !important; font-weight:800 !important; font-size:0.92rem !important;">Facebook</span>
             </div>
           </div>
           <input type="hidden" class="platform-cb" value="facebook">
@@ -155,18 +145,20 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top:1.1rem;">
-          ⚡ Generate Smart Shortlink
-        </button>
+        <div style="display:flex; justify-content:center; width:100%; margin-top:1.1rem;">
+          <button type="submit" class="btn btn-primary" style="margin:0 auto; min-height:44px; padding:0.65rem 1.6rem; font-size:0.95rem; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; gap:0.45rem;">
+            ⚡ Generate Smart Shortlink
+          </button>
+        </div>
       </form>
     </div>
 
     <!-- Links Table Card -->
     <div class="card" style="padding:1.1rem;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
-        <div class="section-title" style="margin-bottom:0;"><span class="accent">🔗</span> Active Smart Links</div>
-        <div class="search-box">
-          <input type="text" id="search-links" class="form-control" placeholder="Search short codes..." style="max-width:210px; padding-left:2.1rem;">
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; gap:0.65rem; margin-bottom:1rem; text-align:center;">
+        <div class="section-title" style="margin-bottom:0; text-align:center;"><span class="accent">🔗</span> Active Smart Links</div>
+        <div class="search-box" style="width:100%; max-width:240px; margin:0 auto;">
+          <input type="text" id="search-links" class="form-control" placeholder="Search short codes..." style="width:100%; max-width:240px; padding-left:2.5rem !important; text-align:left;">
         </div>
       </div>
       <div class="table-wrap">
@@ -299,22 +291,6 @@
           <div class="stat-title">Genuine Organic</div>
           <div id="stat-geo-genuine" class="stat-value" style="color:#059669;">0</div>
           <div class="stat-desc">Verified residential clicks</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon amber">🔒</div>
-        <div class="stat-body">
-          <div class="stat-title">VPN / Proxy Traffic</div>
-          <div id="stat-geo-vpn" class="stat-value" style="color:#b45309;">0</div>
-          <div class="stat-desc">NordVPN, ExpressVPN, TOR…</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon red">🚨</div>
-        <div class="stat-body">
-          <div class="stat-title">Traffic Risk Level</div>
-          <div id="stat-geo-risk" class="stat-value" style="font-size:1.2rem; color:#059669;">LOW</div>
-          <div class="stat-desc">Real-time ASN heuristic</div>
         </div>
       </div>
     </div>

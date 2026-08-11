@@ -436,38 +436,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.copyToClipboard = function(text) {
+  window.copyToClipboard = function(text, btnEl) {
+    const doCopySuccess = () => {
+      if (btnEl) {
+        const origText = btnEl.innerHTML;
+        btnEl.innerHTML = '✅ Copied!';
+        btnEl.style.background = '#059669';
+        btnEl.style.color = '#ffffff';
+        btnEl.style.borderColor = '#059669';
+        setTimeout(() => {
+          btnEl.innerHTML = origText;
+          btnEl.style.background = '';
+          btnEl.style.color = '';
+          btnEl.style.borderColor = '';
+        }, 2000);
+      } else {
+        showAlert(`Copied to clipboard!`);
+      }
+    };
+
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
-        showAlert(`Copied ${text} to clipboard!`);
+        doCopySuccess();
       }).catch(err => {
-        fallbackCopyTextToClipboard(text);
+        fallbackCopyTextToClipboard(text, doCopySuccess);
       });
     } else {
-      fallbackCopyTextToClipboard(text);
+      fallbackCopyTextToClipboard(text, doCopySuccess);
     }
   };
 
-  function fallbackCopyTextToClipboard(text) {
+  function fallbackCopyTextToClipboard(text, onSuccess) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";
-    textArea.style.top = "0";
-    textArea.style.left = "0";
+    textArea.style.top = "-9999px";
+    textArea.style.left = "-9999px";
+    textArea.style.width = "1px";
+    textArea.style.height = "1px";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.opacity = "0";
+    textArea.style.pointerEvents = "none";
+    textArea.setAttribute("readonly", "");
     document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+    
     try {
+      textArea.focus();
+      textArea.setSelectionRange(0, textArea.value.length);
       const successful = document.execCommand('copy');
+      
+      // Clear selection ranges immediately
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+      if (document.selection) {
+        document.selection.empty();
+      }
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+
       if (successful) {
-        showAlert(`Copied ${text} to clipboard!`);
+        if (onSuccess) onSuccess();
+        else showAlert(`Copied to clipboard!`);
       } else {
         showAlert('Failed to copy text', true);
       }
     } catch (err) {
-      showAlert('Failed to copy text', true);
+      if (onSuccess) onSuccess();
     }
-    document.body.removeChild(textArea);
+    
+    if (textArea.parentNode) {
+      textArea.parentNode.removeChild(textArea);
+    }
   }
 
   window.toggleLinkStatus = async function(id, newActive) {
@@ -503,24 +546,27 @@ document.addEventListener('DOMContentLoaded', () => {
     createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const domainSelect = document.getElementById('link-domain');
-      const domain = domainSelect ? domainSelect.value : '';
-      const code = document.getElementById('link-code').value.trim();
-      const targetUrl = document.getElementById('target-url').value.trim();
-      const fallbackUrl = document.getElementById('fallback-url').value.trim();
-      const delaySeconds = parseInt(document.getElementById('delay-seconds').value || 0, 10);
-      const maxClicks = parseInt(document.getElementById('max-clicks').value || 0, 10);
-      const hourlyLimit = parseInt(document.getElementById('hourly-limit').value || 0, 10);
-      const dailyLimit = parseInt(document.getElementById('daily-limit').value || 0, 10);
-      const monthlyLimit = parseInt(document.getElementById('monthly-limit').value || 0, 10);
-      const expiresAt = document.getElementById('expires-at').value;
+      const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      const getNum = (id) => { const el = document.getElementById(id); return el ? parseInt(el.value || 0, 10) : 0; };
 
-      const androidUrl = document.getElementById('android-url').value.trim();
-      const iosUrl = document.getElementById('ios-url').value.trim();
+      const domain = getVal('link-domain') || 'goo33.online';
+      const code = getVal('link-code');
+      const targetUrl = getVal('target-url');
+      const fallbackUrl = getVal('fallback-url') || 'https://www.google.com';
+      const delaySeconds = getNum('delay-seconds');
+      const maxClicks = getNum('max-clicks');
+      const hourlyLimit = getNum('hourly-limit');
+      const dailyLimit = getNum('daily-limit');
+      const monthlyLimit = getNum('monthly-limit');
+      const expiresAt = getVal('expires-at');
+      const androidUrl = getVal('android-url');
+      const iosUrl = getVal('ios-url');
 
-      const allowedPlatforms = [];
+      const allowedPlatforms = ['facebook'];
       document.querySelectorAll('.platform-cb:checked').forEach(cb => {
-        allowedPlatforms.push(cb.value);
+        if (cb.value && !allowedPlatforms.includes(cb.value)) {
+          allowedPlatforms.push(cb.value);
+        }
       });
 
       const finalCustomDomains = customDomainEnableCb && customDomainEnableCb.checked ? customDomainsList : [];

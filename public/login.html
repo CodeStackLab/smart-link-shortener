@@ -6,7 +6,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#dc2626">
+  <meta name="theme-color" content="#1877f2">
   <title>Sign In — Smart FB Link Shortner</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
@@ -19,8 +19,8 @@
 <div class="auth-wrapper">
   <!-- Left: Brand Panel -->
   <div class="auth-brand">
-    <div class="brand-logo" style="background:none; padding:0; width:56px; height:56px;">
-      <img src="/icon-192.png" alt="Logo" style="width:100%; height:100%; border-radius:14px; object-fit:cover; display:block;">
+    <div class="brand-logo" style="background:none; padding:0; width:64px; height:64px;">
+      <img src="/icon-192.png" alt="Logo" style="width:100%; height:100%; border-radius:16px; object-fit:cover; display:block;">
     </div>
     <div class="brand-tagline">
       <h2>Smart FB Link<br>Shortner</h2>
@@ -28,28 +28,29 @@
     </div>
     <ul class="brand-features">
       <li><span class="icon">🔗</span> Custom short links with smart routing</li>
-      <li><span class="icon">🌍</span> Country & VPN traffic analytics</li>
-      <li><span class="icon">🛡️</span> IP firewall & bot protection</li>
+      <li><span class="icon">🌍</span> Country &amp; VPN traffic analytics</li>
+      <li><span class="icon">🛡️</span> IP firewall &amp; bot protection</li>
       <li><span class="icon">📱</span> QR Code generator for every link</li>
-      <li><span class="icon">⏱️</span> Delay timer, quotas & expiry rules</li>
+      <li><span class="icon">⏱️</span> Delay timer, quotas &amp; expiry rules</li>
     </ul>
   </div>
 
   <!-- Right: Login Form -->
   <div class="auth-form-panel">
     <div class="auth-card">
+      
+      <!-- Topbar inside card -->
       <div class="auth-topbar">
-        <a href="/admin" class="mini-logo" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
-          <img src="/icon-192.png" alt="Logo" style="width:28px; height:28px; border-radius:8px; object-fit:cover; display:block; margin-right:0.35rem;">
-          Smart FB <span class="hide-mobile">Shortner</span>
+        <a href="/admin" class="mini-logo">
+          <img src="/icon-192.png" alt="Logo">
+          <span>Smart FB</span>
         </a>
-        <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
+        <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light Mode</button>
       </div>
 
-      <div class="auth-card-header" style="text-align:center;">
-        <h2 style="font-size:1.4rem; margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
-          🔐 Admin Dashboard Login
-        </h2>
+      <!-- Title -->
+      <div class="auth-card-header">
+        <h2>🔐 Admin Dashboard Login</h2>
       </div>
 
       <div id="login-alert" class="alert alert-danger" style="display:none;"></div>
@@ -70,8 +71,8 @@
 
         <!-- Tab 1: Password Login -->
         <div id="password-tab-content" class="login-tab-content">
-          <div class="form-group" style="margin-bottom:1.25rem;">
-            <label for="password" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted);">
+          <div class="form-group" style="margin-bottom:0.85rem;">
+            <label for="password" style="font-weight:800; text-transform:uppercase; font-size:0.78rem; letter-spacing:0.04em; color:#334155; display:block; margin-bottom:0.4rem;">
               ADMIN PASSWORD
             </label>
             <input type="password" id="password" class="form-control" placeholder="Enter admin password" autocomplete="current-password">
@@ -80,22 +81,21 @@
 
         <!-- Tab 2: Authenticator Code Login -->
         <div id="totp-tab-content" class="login-tab-content" style="display:none;">
-          <div class="form-group" style="margin-bottom:0.6rem;">
-            <label for="totp-code" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:#10b981; display:flex; align-items:center; gap:0.4rem;">
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <label for="totp-code" style="font-weight:800; text-transform:uppercase; font-size:0.78rem; letter-spacing:0.04em; color:#1877f2; display:flex; align-items:center; gap:0.4rem; margin-bottom:0.4rem;">
               📱 6-DIGIT AUTHENTICATOR CODE
             </label>
-            <input type="text" id="totp-code" class="form-control" placeholder="1 2 3 4 5 6" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" style="letter-spacing:0.25em; text-align:center; font-size:1.2rem; font-weight:700;">
+            <input type="text" id="totp-code" class="form-control" placeholder="1 2 3 4 5 6" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" style="letter-spacing:0.25em; text-align:center; font-size:1.25rem; font-weight:800;">
           </div>
-          <small style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:1.25rem; text-align:center;">
+          <small style="display:block; font-size:0.78rem; color:#64748b; margin-bottom:1rem; text-align:center; font-weight:500;">
             Open Google Authenticator App on your phone for 6-digit code.
           </small>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:0.5rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background: #3b82f6; border-color: #3b82f6; font-weight:600;">
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.4rem; min-height:44px; display:flex; align-items:center; justify-content:center; gap:0.45rem; background: #1877f2; border:none; color:#ffffff; font-weight:700; font-size:0.92rem; border-radius:12px; box-shadow:0 4px 14px rgba(24,119,242,0.25);">
           🔐 Login to Dashboard
         </button>
       </form>
-
 
     </div>
   </div>
