@@ -1312,10 +1312,20 @@ document.addEventListener('DOMContentLoaded', () => {
           
           navigator.clipboard.writeText(directUrl).catch(() => {});
           
-          alert(`✅ Team User Created Successfully!\n\n👤 Username: ${username}\n🔑 Password: ${password}\n🎭 Role: ${role}\n\n🔗 Direct Login Link (Copied to Clipboard!):\n${directUrl}`);
+          showAlert(`✅ User '${username}' (${role}) created! Direct login link copied to clipboard!`);
           
           inviteUserForm.reset();
           loadUsers();
+
+          // Keep user strictly on Settings tab
+          const settingsBtn = document.querySelector('.tab-btn[data-tab="tab-settings"]');
+          if (settingsBtn) {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.style.display = 'none');
+            settingsBtn.classList.add('active');
+            const target = document.getElementById('tab-settings');
+            if (target) target.style.display = 'block';
+          }
         } else {
           showAlert(data.error || 'Failed to create user', true);
         }
