@@ -1,0 +1,49 @@
+{
+  "name": "Smart Link Shortener",
+  "short_name": "SmartLink",
+  "description": "Admin dashboard for Smart Link Shortener — manage shortlinks, analytics, and IP firewall.",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#e63946",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Link Manager",
+      "short_name": "Links",
+      "description": "Manage your smart shortlinks",
+      "url": "/admin#tab-links",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Traffic Logs",
+      "short_name": "Analytics",
+      "description": "View traffic analytics",
+      "url": "/admin#tab-analytics",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "IP Firewall",
+      "short_name": "Firewall",
+      "description": "Manage IP firewall rules",
+      "url": "/admin#tab-firewall",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

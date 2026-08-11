@@ -7,9 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#dc2626">
-  <title>Sign In — Smart Link Shortener</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
-  <meta name="description" content="Admin login for Smart Link Shortener. Manage shortlinks, analytics, and IP firewall.">
+  <title>Sign In — Smart FB Link Shortner</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="description" content="Admin login for Smart FB Link Shortner. Manage shortlinks, analytics, and IP firewall.">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body data-theme="light">
@@ -17,9 +19,11 @@
 <div class="auth-wrapper">
   <!-- Left: Brand Panel -->
   <div class="auth-brand">
-    <div class="brand-logo">⚡</div>
+    <div class="brand-logo" style="background:none; padding:0; width:56px; height:56px;">
+      <img src="/icon-192.png" alt="Logo" style="width:100%; height:100%; border-radius:14px; object-fit:cover; display:block;">
+    </div>
     <div class="brand-tagline">
-      <h2>Smart Link<br>Shortener</h2>
+      <h2>Smart FB Link<br>Shortner</h2>
       <p>Intelligent link redirection engine with real-time analytics, VPN detection, and IP firewall.</p>
     </div>
     <ul class="brand-features">
@@ -35,32 +39,60 @@
   <div class="auth-form-panel">
     <div class="auth-card">
       <div class="auth-topbar">
-        <div class="mini-logo">
-          <div class="mini-logo-icon">⚡</div>
-          Smart <span class="hide-mobile">Shortener</span>
-        </div>
+        <a href="/admin" class="mini-logo" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
+          <img src="/icon-192.png" alt="Logo" style="width:28px; height:28px; border-radius:8px; object-fit:cover; display:block; margin-right:0.35rem;">
+          Smart FB <span class="hide-mobile">Shortner</span>
+        </a>
         <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
       </div>
 
-      <div class="auth-card-header">
-        <h1>Welcome back 👋</h1>
-        <p>Sign in to your admin dashboard to manage links and traffic.</p>
+      <div class="auth-card-header" style="text-align:center;">
+        <h2 style="font-size:1.4rem; margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+          🔐 Admin Dashboard Login
+        </h2>
       </div>
 
-      <div id="login-alert" class="alert alert-danger"></div>
+      <div id="login-alert" class="alert alert-danger" style="display:none;"></div>
+
+      <!-- Dual Login Tabs -->
+      <div class="login-tabs-container">
+        <button type="button" class="login-tab-btn active" id="tab-btn-password">
+          🔑 Password
+        </button>
+        <button type="button" class="login-tab-btn" id="tab-btn-totp">
+          📱 Authenticator Code
+        </button>
+      </div>
 
       <form id="login-form">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" class="form-control" placeholder="e.g. admin" value="admin" required autocomplete="username" inputmode="text" autocorrect="off" spellcheck="false">
-        </div>
-        <div class="form-group" style="margin-bottom:1.5rem;">
-          <label for="password">Password</label>
-          <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" inputmode="text">
+        <input type="hidden" id="username" value="admin">
+        <input type="hidden" id="active-auth-mode" value="password">
+
+        <!-- Tab 1: Password Login -->
+        <div id="password-tab-content" class="login-tab-content">
+          <div class="form-group" style="margin-bottom:1.25rem;">
+            <label for="password" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted);">
+              ADMIN PASSWORD
+            </label>
+            <input type="password" id="password" class="form-control" placeholder="Enter admin password" autocomplete="current-password">
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-lg">
-          ⚡ Sign In to Dashboard
+        <!-- Tab 2: Authenticator Code Login -->
+        <div id="totp-tab-content" class="login-tab-content" style="display:none;">
+          <div class="form-group" style="margin-bottom:0.6rem;">
+            <label for="totp-code" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:#10b981; display:flex; align-items:center; gap:0.4rem;">
+              📱 6-DIGIT AUTHENTICATOR CODE
+            </label>
+            <input type="text" id="totp-code" class="form-control" placeholder="1 2 3 4 5 6" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" style="letter-spacing:0.25em; text-align:center; font-size:1.2rem; font-weight:700;">
+          </div>
+          <small style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:1.25rem; text-align:center;">
+            Open Google Authenticator App on your phone for 6-digit code.
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:0.5rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background: #3b82f6; border-color: #3b82f6; font-weight:600;">
+          🔐 Login to Dashboard
         </button>
       </form>
 

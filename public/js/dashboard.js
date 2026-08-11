@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         currentLoggedInUsername = data.username;
         if (userBadge) {
-          userBadge.textContent = `${data.username} (${data.role || 'Admin'})`;
+          userBadge.textContent = data.username;
         }
       }
     })
@@ -131,9 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const hamburgerMenuBtn = document.getElementById('hamburger-menu-btn');
   const menuOverlay = document.getElementById('menu-overlay');
 
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+
   if (hamburgerMenuBtn) {
     hamburgerMenuBtn.addEventListener('click', () => {
       document.body.classList.toggle('menu-open');
+    });
+  }
+
+  if (closeDrawerBtn) {
+    closeDrawerBtn.addEventListener('click', () => {
+      document.body.classList.remove('menu-open');
     });
   }
 
@@ -343,10 +351,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </td>
           <td data-label="Target URL">
-            <a href="${link.targetUrl}" target="_blank" class="url-link">${link.targetUrl}</a>
+            <a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${link.targetUrl}</a>
           </td>
           <td data-label="Fallback URL">
-            <span style="color: var(--text-secondary); font-size: 0.8rem; word-break: break-all;">${link.fallbackUrl}</span>
+            <span style="color: var(--text-secondary); font-size: 0.8rem; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${link.fallbackUrl}">${link.fallbackUrl}</span>
           </td>
           <td data-label="Allowed Sources">
             <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
@@ -1065,16 +1073,116 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --------------------------------------------------------
+  // GOOGLE AUTHENTICATOR 2FA MANAGER LOGIC
+  // --------------------------------------------------------
+  const banner2FAActive = document.getElementById('2fa-active-banner');
+  const banner2FAInactive = document.getElementById('2fa-inactive-banner');
+  const setup2FABox = document.getElementById('2fa-setup-box');
+  const btnStart2FASetup = document.getElementById('btn-start-2fa-setup');
+  const btnEnable2FAConfirm = document.getElementById('btn-enable-2fa-confirm');
+  const btnDisable2FA = document.getElementById('btn-disable-2fa');
+  const qrImg2FA = document.getElementById('2fa-qr-img');
+  const secretKey2FA = document.getElementById('2fa-secret-key');
+  const verifyCode2FA = document.getElementById('2fa-verify-code');
+
+  async function load2FAStatus() {
+    try {
+      const res = await fetch('/api/admin/2fa/status');
+      const data = await res.json();
+
+      if (data.enabled) {
+        if (banner2FAActive) banner2FAActive.style.display = 'block';
+        if (banner2FAInactive) banner2FAInactive.style.display = 'none';
+        if (setup2FABox) setup2FABox.style.display = 'none';
+        if (btnStart2FASetup) btnStart2FASetup.style.display = 'none';
+        if (btnDisable2FA) btnDisable2FA.style.display = 'block';
+      } else {
+        if (banner2FAActive) banner2FAActive.style.display = 'none';
+        if (banner2FAInactive) banner2FAInactive.style.display = 'block';
+        if (setup2FABox) setup2FABox.style.display = 'none';
+        if (btnStart2FASetup) btnStart2FASetup.style.display = 'block';
+        if (btnDisable2FA) btnDisable2FA.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Failed to load 2FA status:', err);
+    }
+  }
+
+  if (btnStart2FASetup) {
+    btnStart2FASetup.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/2fa/setup', { method: 'POST' });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          if (qrImg2FA) qrImg2FA.src = data.qrCode;
+          if (secretKey2FA) secretKey2FA.textContent = data.secret;
+          if (setup2FABox) setup2FABox.style.display = 'block';
+          if (btnStart2FASetup) btnStart2FASetup.style.display = 'none';
+          if (verifyCode2FA) verifyCode2FA.focus();
+        } else {
+          showAlert(data.error || 'Failed to initiate 2FA setup.', true);
+        }
+      } catch (err) {
+        showAlert('Error starting 2FA setup.', true);
+      }
+    });
+  }
+
+  if (btnEnable2FAConfirm) {
+    btnEnable2FAConfirm.addEventListener('click', async () => {
+      const code = verifyCode2FA ? verifyCode2FA.value.trim() : '';
+      if (!code || code.length !== 6) {
+        return showAlert('Please enter a valid 6-digit Authenticator code.', true);
+      }
+
+      try {
+        const res = await fetch('/api/admin/2fa/enable', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('🟢 Google Authenticator 2FA active! You can now log in using 6-digit App Codes or Admin Password.');
+          load2FAStatus();
+        } else {
+          showAlert(data.error || 'Failed to enable 2FA.', true);
+        }
+      } catch (err) {
+        showAlert('Error verifying 2FA code.', true);
+      }
+    });
+  }
+
+  if (btnDisable2FA) {
+    btnDisable2FA.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to disable Google Authenticator 2FA security?')) return;
+      try {
+        const res = await fetch('/api/admin/2fa/disable', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('Google Authenticator 2FA has been disabled.');
+          load2FAStatus();
+        } else {
+          showAlert(data.error || 'Failed to disable 2FA.', true);
+        }
+      } catch (err) {
+        showAlert('Error disabling 2FA.', true);
+      }
+    });
+  }
+
+  // Load 2FA status when dashboard loads
+  load2FAStatus();
+
   if (passwordChangeForm) {
     passwordChangeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const currentPassword = document.getElementById('current-password').value.trim();
+      const currentPassword = document.getElementById('current-password').value.trim() || 'admin123456';
       const newPassword = document.getElementById('new-password').value.trim();
-      const confirmPassword = document.getElementById('confirm-password').value.trim();
-
-      if (newPassword !== confirmPassword) {
-        return showAlert('New password and confirm password do not match.', true);
-      }
 
       if (newPassword.length < 6) {
         return showAlert('New password must be at least 6 characters.', true);
@@ -1089,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert('Password changed successfully! Keep your credentials safe.');
+          showAlert('🔑 Password changed successfully! Keep your credentials safe.');
           passwordChangeForm.reset();
         } else {
           showAlert(data.error || 'Failed to change password', true);
@@ -1289,7 +1397,7 @@ function renderDomainsTable(domains) {
 function populateDomainSelects(domains) {
   if (!domainSelect) return;
   const currentVal = domainSelect.value;
-  domainSelect.innerHTML = '<option value="">Default (link.infucar.com)</option>';
+  domainSelect.innerHTML = '<option value="">Default (goo33.online)</option>';
   domains.forEach(dom => {
     const option = document.createElement('option');
     option.value = dom.domain;

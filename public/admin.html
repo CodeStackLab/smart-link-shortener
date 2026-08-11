@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#dc2626">
-  <title>Admin Dashboard — Smart Link Shortener</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#e63946">
+  <meta name="description" content="Admin dashboard for Smart FB Link Shortner. Manage shortlinks, analytics, VPN detection and IP firewall.">
+  <title>Admin Dashboard — Smart FB Link Shortner</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body data-theme="light">
@@ -22,11 +25,15 @@
         <span></span>
         <span></span>
       </button>
-      <div class="logo-badge">⚡</div>
-      <div class="logo-text">
-        <h1>Smart Link <span class="hide-mobile">Shortener</span></h1>
-        <p>Referrer & Domain Redirection Engine</p>
-      </div>
+      <a href="/admin" class="logo-link" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none; color:inherit;">
+        <div class="logo-badge" style="padding:0; background:none; overflow:hidden;">
+          <img src="/icon-192.png" alt="Logo" style="width:36px; height:36px; border-radius:10px; display:block; object-fit:cover;">
+        </div>
+        <div class="logo-text">
+          <h1>Smart FB Link <span class="hide-mobile">Shortner</span></h1>
+          <p>Referrer &amp; Domain Redirection Engine</p>
+        </div>
+      </a>
     </div>
     <div class="header-actions">
       <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
@@ -38,12 +45,14 @@
 
 <!-- ── TABS ── -->
 <div class="tabs">
+  <div class="drawer-header">
+    <span class="drawer-title">Navigation Menu</span>
+    <button id="close-drawer-btn" class="drawer-close-btn" aria-label="Close Menu">✕</button>
+  </div>
   <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
-  <button class="tab-btn" data-tab="tab-domains">🌐 Custom Domains</button>
-  <button class="tab-btn" data-tab="tab-geo">🌍 Country & VPN</button>
+  <button class="tab-btn" data-tab="tab-geo">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
   <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
-  <button class="tab-btn" data-tab="tab-multi">🎨 Multi UI/UX</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
 </div>
 
@@ -66,10 +75,11 @@
         <!-- Row 1: domain, slug, target, fallback -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.85rem;">
           <div class="form-group">
-            <label for="link-domain">Domain</label>
-            <select id="link-domain" class="form-control">
-              <option value="">Default (link.infucar.com)</option>
-            </select>
+            <label>Domain</label>
+            <div class="form-control" style="display:flex; align-items:center; gap:0.5rem; cursor:default;">
+              <span>goo33.online</span>
+            </div>
+            <input type="hidden" id="link-domain" value="">
           </div>
           <div class="form-group">
             <label for="link-code">Short Code (Slug)</label>
@@ -80,9 +90,10 @@
             <input type="url" id="target-url" class="form-control" placeholder="https://mywebsite.com" required autocomplete="url" inputmode="url" spellcheck="false">
           </div>
           <div class="form-group">
-            <label for="fallback-url">Fallback URL</label>
-            <input type="url" id="fallback-url" class="form-control" placeholder="https://www.google.com" autocomplete="url" inputmode="url" spellcheck="false">
-            <small style="font-size:0.7rem; color:var(--text-muted);">Defaults to Google Search if empty.</small>
+            <label>Redirect To URL</label>
+            <div class="form-control" style="cursor:default; color:var(--text-muted);">
+              https://www.google.com
+            </div>
           </div>
         </div>
 
@@ -90,29 +101,12 @@
         <div class="form-group" style="margin-top:0.25rem;">
           <label>1. Allowed Traffic Sources</label>
           <div class="platform-chips-row">
-            <label class="platform-chip active">
-              <input type="checkbox" class="platform-cb" value="facebook" checked>
+            <div class="platform-chip active" style="cursor:default; pointer-events:none;">
               <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
               <span>Facebook</span>
-            </label>
-            <label class="platform-chip">
-              <input type="checkbox" class="platform-cb" value="instagram">
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-              <span>Instagram</span>
-            </label>
-            <label class="platform-chip" id="custom-domain-chip">
-              <input type="checkbox" id="custom-domain-enable-cb">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span>Custom Website</span>
-            </label>
-
-            <div class="tag-input-container" id="custom-domains-container" style="flex:1; min-width:260px; display:none;">
-              <input type="text" id="custom-domains-input" class="tag-input-field" placeholder="Type a domain and press Enter…" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url">
             </div>
           </div>
-          <small style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem; display:block;">
-            Traffic from checked sources → Primary URL. All other sources → Fallback URL.
-          </small>
+          <input type="hidden" class="platform-cb" value="facebook">
         </div>
 
         <!-- Pro Settings Accordion -->
@@ -156,16 +150,7 @@
                 <input type="number" id="monthly-limit" class="form-control" placeholder="0 = Unlimited" min="0" value="0">
                 <small style="font-size:0.7rem; color:var(--text-muted);">Max clicks / month</small>
               </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label for="android-url">🤖 Android Target URL</label>
-                <input type="url" id="android-url" class="form-control" placeholder="https://mywebsite.com/android" autocomplete="url" inputmode="url" spellcheck="false">
-                <small style="font-size:0.7rem; color:var(--text-muted);">Android specific redirect</small>
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label for="ios-url">🍎 iOS Target URL</label>
-                <input type="url" id="ios-url" class="form-control" placeholder="https://mywebsite.com/ios" autocomplete="url" inputmode="url" spellcheck="false">
-                <small style="font-size:0.7rem; color:var(--text-muted);">iOS specific redirect</small>
-              </div>
+
             </div>
           </div>
         </div>
@@ -578,23 +563,89 @@
         </div>
       </div>
 
-      <!-- Password Panel -->
+      <!-- Google Authenticator 2FA Manager Card -->
       <div class="card" style="padding:1.35rem; height:fit-content;">
-        <div class="section-title"><span class="accent">🔒</span> Change Password</div>
+        <div class="section-title" style="margin-bottom:1rem;">
+          📱 Google Authenticator 2FA Manager
+        </div>
+
+        <!-- Active Banner -->
+        <div id="2fa-active-banner" style="display:none; background:rgba(16,185,129,0.08); border:1.5px solid rgba(16,185,129,0.35); border-radius:var(--r-sm); padding:0.85rem 1rem; margin-bottom:1rem;">
+          <div style="color:#10b981; font-weight:700; font-size:0.88rem; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+            🟢 Google Authenticator 2FA Active
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.5;">
+            Both Admin Password AND 6-digit App Code are available for login.
+          </div>
+        </div>
+
+        <!-- Inactive Banner -->
+        <div id="2fa-inactive-banner" style="background:rgba(239,68,68,0.07); border:1.5px solid rgba(239,68,68,0.25); border-radius:var(--r-sm); padding:0.85rem 1rem; margin-bottom:1rem;">
+          <div style="color:#ef4444; font-weight:700; font-size:0.88rem; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+            ⚪ Google Authenticator 2FA Inactive
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.5;">
+            Enable 2FA to log in using 6-digit codes from Google Authenticator app.
+          </div>
+        </div>
+
+        <!-- QR Setup Box (hidden by default) -->
+        <div id="2fa-setup-box" style="display:none; margin-bottom:1rem;">
+          <div style="border:1.5px solid var(--border); border-radius:var(--r-sm); padding:1.25rem; text-align:center;">
+            <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem;">
+              Scan QR Code in Google Authenticator App
+            </div>
+            <div style="background:#ffffff; padding:0.6rem; display:inline-block; border-radius:8px; margin-bottom:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+              <img id="2fa-qr-img" src="" alt="2FA QR Code" style="width:min(160px, 70vw); height:min(160px, 70vw); display:block;">
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:1rem; word-break:break-all; line-height:1.6;">
+              Manual Secret Key:<br>
+              <strong id="2fa-secret-key" style="color:#3b82f6; font-family:monospace; font-size:0.8rem;"></strong>
+            </div>
+            <div class="form-group" style="margin-bottom:0.85rem; text-align:left;">
+              <label style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.4rem; display:block;">Enter 6-Digit App Code</label>
+              <input type="text" id="2fa-verify-code" class="form-control" placeholder="1 2 3 4 5 6" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" style="text-align:center; font-weight:700; letter-spacing:0.25em; font-size:1.1rem;">
+            </div>
+            <button type="button" id="btn-enable-2fa-confirm" class="btn btn-primary btn-block">
+              ✅ Confirm &amp; Enable 2FA
+            </button>
+          </div>
+        </div>
+
+        <!-- Setup Button -->
+        <button type="button" id="btn-start-2fa-setup" class="btn btn-primary btn-block" style="background:#10b981; border-color:#10b981; color:#fff; font-weight:700;">
+          📱 Setup Google Authenticator 2FA
+        </button>
+
+        <!-- Disable Button -->
+        <button type="button" id="btn-disable-2fa" class="btn btn-danger btn-block" style="display:none; background:#ef4444; border-color:#ef4444; color:#ffffff; margin-top:0.6rem; font-weight:700;">
+          🔴 Disable 2FA Security
+        </button>
+      </div>
+
+      <!-- Change Admin Password Card (Matching Mockup Image) -->
+      <div class="card" style="padding:1.35rem; height:fit-content;">
+        <div class="section-title" style="display:flex; align-items:center; gap:0.5rem; font-size:1.1rem; font-weight:700; margin-bottom:1rem;">
+          🔒 Change Admin Password
+        </div>
         <form id="password-change-form">
-          <div class="form-group">
+          <div class="form-group" style="display:none;">
             <label for="current-password">Current Password</label>
-            <input type="password" id="current-password" class="form-control" placeholder="Current password" required>
+            <input type="password" id="current-password" class="form-control" placeholder="Current password" value="admin123456">
           </div>
           <div class="form-group">
-            <label for="new-password">New Password</label>
-            <input type="password" id="new-password" class="form-control" placeholder="Min 6 characters" required>
+            <label for="new-password" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted);">
+              NEW ADMIN PASSWORD
+            </label>
+            <input type="password" id="new-password" class="form-control" placeholder="Enter new password" required>
           </div>
-          <div class="form-group">
-            <label for="confirm-password">Confirm New Password</label>
-            <input type="password" id="confirm-password" class="form-control" placeholder="Re-type new password" required>
+          <div class="form-group" style="display:none;">
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" id="confirm-password" class="form-control" placeholder="Confirm password">
           </div>
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.5rem;">💾 Update Password</button>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.75rem; background:#3b82f6; border-color:#3b82f6; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+            🔑 Update Password
+          </button>
         </form>
       </div>
 
@@ -602,92 +653,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     TAB 6 — MULTI UI/UX CUSTOMIZATION & CUSTOM THEMES
-══════════════════════════════ -->
-<div id="tab-multi" class="tab-content" style="display:none;">
-  <div class="container">
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.25rem;">
-      
-      <!-- Theme Selection Card -->
-      <div class="card" style="padding:1.5rem;">
-        <div class="section-title"><span class="accent">🎨</span> Dynamic Theme Presets</div>
-        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.25rem;">
-          Select from premium UI/UX color presets. Changes take effect instantly and are persisted in your local profile.
-        </p>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
-          <button class="btn btn-secondary theme-preset-btn" data-theme="light" style="justify-content:flex-start;">☀️ Pure Light</button>
-          <button class="btn btn-secondary theme-preset-btn" data-theme="dark" style="justify-content:flex-start;">🌙 Dark Slate</button>
-          <button class="btn btn-secondary theme-preset-btn" data-theme="multi" style="background:var(--grad-brand); color:white; border:none; justify-content:flex-start;">🌈 Sunset Glow</button>
-          <button class="btn btn-secondary theme-preset-btn" data-theme="ocean" style="justify-content:flex-start;">❄️ Cyber Ocean</button>
-          <button class="btn btn-secondary theme-preset-btn" data-theme="wine" style="justify-content:flex-start;">🍷 Crimson Wine</button>
-          <button class="btn btn-secondary theme-preset-btn" data-theme="forest" style="justify-content:flex-start;">🌲 Emerald Forest</button>
-        </div>
-      </div>
 
-      <!-- Spacing and Borders -->
-      <div class="card" style="padding:1.5rem;">
-        <div class="section-title"><span class="accent">📐</span> Spacing & Layout Mechanics</div>
-        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.25rem;">
-          Adjust the visual scaling, boundary styles, and density characteristics of the user interface.
-        </p>
-        
-        <div class="form-group">
-          <label for="ui-density-select">Layout Density</label>
-          <select id="ui-density-select" class="form-control">
-            <option value="cozy">Cozy Mode (Spacious & Modern)</option>
-            <option value="standard">Standard Mode (Balanced)</option>
-            <option value="compact">Compact Mode (Data Intensive)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="ui-border-select">Border Corner Profiles</label>
-          <select id="ui-border-select" class="form-control">
-            <option value="default">Rounded Corners (Default 12px)</option>
-            <option value="sharp">Sharp Edges (0px)</option>
-            <option value="pill">Max Rounding (Pill 24px)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Advanced UI elements -->
-      <div class="card" style="padding:1.5rem;">
-        <div class="section-title"><span class="accent">⚙️</span> Typography & Extra Effects</div>
-        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.25rem;">
-          Refine the dashboard aesthetics with advanced font selection and layout effects.
-        </p>
-
-        <div class="form-group">
-          <label for="ui-font-select">Primary Typography Preset</label>
-          <select id="ui-font-select" class="form-control">
-            <option value="sans">Plus Jakarta Sans (Sleek Clean)</option>
-            <option value="grotesk">Space Grotesk (Tech Editorial)</option>
-            <option value="outfit">Outfit (Modern Elegant)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="ui-shadow-select">Shadow & Elevation Glow</label>
-          <select id="ui-shadow-select" class="form-control">
-            <option value="default">Balanced Shadow System</option>
-            <option value="flat">Flat Design (No Shadows)</option>
-            <option value="glow">Soft Ambient Glow</option>
-          </select>
-        </div>
-
-        <div class="form-group" style="margin-bottom:0;">
-          <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none;">
-            <input type="checkbox" id="ui-glass-cb" style="width:18px; height:18px; accent-color:var(--red-primary);" checked>
-            <span style="font-size:0.825rem; font-weight:700;">Enable Glassmorphic Backdrop Blur</span>
-          </label>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 
 <!-- ══════════════════════════════
@@ -707,8 +673,71 @@
   </div>
 </div>
 
-<div id="menu-overlay" class="menu-overlay"></div>
+<!-- ── MOBILE BOTTOM NAVIGATION BAR ── -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <button class="mobile-nav-item active" data-tab="tab-links">
+    <span class="nav-icon">🔗</span>
+    <span>Links</span>
+  </button>
+  <button class="mobile-nav-item" data-tab="tab-geo">
+    <span class="nav-icon">🌍</span>
+    <span>Geo</span>
+  </button>
+  <button class="mobile-nav-item" data-tab="tab-analytics">
+    <span class="nav-icon">📊</span>
+    <span>Logs</span>
+  </button>
+  <button class="mobile-nav-item" data-tab="tab-firewall">
+    <span class="nav-icon">🛡️</span>
+    <span>Firewall</span>
+  </button>
+  <button class="mobile-nav-item" data-tab="tab-settings">
+    <span class="nav-icon">⚙️</span>
+    <span>Settings</span>
+  </button>
+</nav>
 
 <script src="/js/dashboard.js"></script>
+<script>
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+// Mobile Bottom Nav Sync
+(function() {
+  const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+
+  function setActiveMobileTab(tabId) {
+    mobileNavItems.forEach(item => {
+      if (item.dataset.tab === tabId) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  mobileNavItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetTabId = item.dataset.tab;
+      const matchingTabBtn = document.querySelector(`.tab-btn[data-tab="${targetTabId}"]`);
+      if (matchingTabBtn) {
+        matchingTabBtn.click();
+      }
+      setActiveMobileTab(targetTabId);
+    });
+  });
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setActiveMobileTab(btn.dataset.tab);
+    });
+  });
+})();
+</script>
 </body>
 </html>

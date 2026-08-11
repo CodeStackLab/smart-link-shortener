@@ -260,6 +260,25 @@ module.exports = {
       writeJson(FILES.users, users);
     }
   },
+  updateUser2FA: (username, twoFactorSecret, twoFactorEnabled) => {
+    const users = readJson(FILES.users, []);
+    const user = users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());
+    if (user) {
+      if (twoFactorSecret !== undefined) user.twoFactorSecret = twoFactorSecret;
+      if (twoFactorEnabled !== undefined) user.twoFactorEnabled = !!twoFactorEnabled;
+      writeJson(FILES.users, users);
+    }
+  },
+  get2FAStatus: (username) => {
+    const users = readJson(FILES.users, []);
+    const user = users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());
+    if (!user) return { enabled: false, hasSecret: false };
+    return {
+      enabled: !!user.twoFactorEnabled,
+      hasSecret: !!user.twoFactorSecret,
+      secret: user.twoFactorSecret || ''
+    };
+  },
 
   // Custom Domains CRUD
   getCustomDomains: () => readJson(FILES.customDomains, []),
@@ -287,7 +306,7 @@ module.exports = {
     const domains = readJson(FILES.customDomains, []);
     const cleanDomain = (domain || '').trim().toLowerCase();
     // Allow main domain, localhost and internal IPs by default
-    if (cleanDomain === 'link.infucar.com' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1') {
+    if (cleanDomain === 'goo33.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1') {
       return true;
     }
     return domains.some(d => d.domain === cleanDomain);

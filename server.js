@@ -18,6 +18,8 @@ const { lookupIp } = require('./utils/geoDetector');
 const { generateQrDataUrl } = require('./utils/qrGenerator');
 const { fetchOgMeta } = require('./utils/ogFetcher');
 
+const totp = require('./utils/totp');
+
 function ensureAbsoluteUrl(url) {
   if (!url) return '';
   const trimmed = url.trim();
@@ -57,20 +59,37 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------------------------------------
 
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, totpCode } = req.body;
+  const targetUsername = (username || 'admin').trim();
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required.' });
-  }
-
-  const user = db.getUserByUsername(username.trim());
+  const user = db.getUserByUsername(targetUsername);
   if (!user) {
     return res.status(401).json({ error: 'Invalid username or password.' });
   }
 
-  const isMatch = bcrypt.compareSync(password.trim(), user.passwordHash);
-  if (!isMatch) {
-    return res.status(401).json({ error: 'Invalid username or password.' });
+  let authenticated = false;
+
+  // Option 1: Authenticate via 6-digit Authenticator TOTP Code
+  if (totpCode && totpCode.toString().trim().length > 0) {
+    const user2FA = db.get2FAStatus(user.username);
+    if (user2FA.secret && totp.verifyTOTP(totpCode, user2FA.secret)) {
+      authenticated = true;
+    } else {
+      return res.status(401).json({ error: 'Invalid or expired 6-digit Authenticator code.' });
+    }
+  }
+
+  // Option 2: Authenticate via Admin Password
+  if (!authenticated && password && password.toString().trim().length > 0) {
+    if (bcrypt.compareSync(password.trim(), user.passwordHash)) {
+      authenticated = true;
+    } else {
+      return res.status(401).json({ error: 'Invalid username or password.' });
+    }
+  }
+
+  if (!authenticated) {
+    return res.status(400).json({ error: 'Please enter a valid password or 6-digit Authenticator code.' });
   }
 
   req.session.isAdmin = true;
@@ -171,7 +190,7 @@ app.post('/api/admin/links', requireAuth, (req, res) => {
     id: 'link_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     code: cleanCode,
     targetUrl: ensureAbsoluteUrl(targetUrl),
-    fallbackUrl: fallbackUrl ? ensureAbsoluteUrl(fallbackUrl) : 'https://www.google.com/',
+    fallbackUrl: 'https://www.google.com/',
     allowedPlatforms: Array.isArray(allowedPlatforms) ? allowedPlatforms : ['facebook', 'direct'],
     customDomains: processedCustomDomains,
     delaySeconds: Math.max(0, parseInt(delaySeconds || 0, 10)),
@@ -225,7 +244,7 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
 
   const updated = db.updateLink(id, {
     targetUrl: targetUrl ? ensureAbsoluteUrl(targetUrl) : undefined,
-    fallbackUrl: fallbackUrl !== undefined ? (fallbackUrl ? ensureAbsoluteUrl(fallbackUrl) : 'https://www.google.com/') : undefined,
+    fallbackUrl: 'https://www.google.com/',
     allowedPlatforms: Array.isArray(allowedPlatforms) ? allowedPlatforms : undefined,
     customDomains: processedCustomDomains,
     delaySeconds: delaySeconds !== undefined ? Math.max(0, parseInt(delaySeconds, 10)) : undefined,
@@ -557,6 +576,60 @@ app.post('/api/admin/change-password', requireAuth, (req, res) => {
 });
 
 // ----------------------------------------------------
+// GOOGLE AUTHENTICATOR 2FA APIs
+// ----------------------------------------------------
+
+app.get('/api/admin/2fa/status', requireAuth, (req, res) => {
+  const username = req.session.username || 'admin';
+  const status = db.get2FAStatus(username);
+  res.json(status);
+});
+
+app.post('/api/admin/2fa/setup', requireAuth, async (req, res) => {
+  try {
+    const username = req.session.username || 'admin';
+    const secret = totp.generateSecret();
+    db.updateUser2FA(username, secret, false);
+
+    const otpauthUrl = totp.getOtpauthUrl('Smart Link Shortener', username, secret);
+    const qrCode = await totp.generateQRCodeDataUrl(otpauthUrl);
+
+    res.json({
+      success: true,
+      secret,
+      qrCode,
+      otpauthUrl
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate 2FA setup details.' });
+  }
+});
+
+app.post('/api/admin/2fa/enable', requireAuth, (req, res) => {
+  const { code } = req.body;
+  const username = req.session.username || 'admin';
+  const status = db.get2FAStatus(username);
+
+  if (!status.secret) {
+    return res.status(400).json({ error: '2FA setup required first. Please click Setup 2FA.' });
+  }
+
+  const isValid = totp.verifyTOTP(code, status.secret);
+  if (!isValid) {
+    return res.status(400).json({ error: 'Invalid 6-digit Authenticator code. Please check app & try again.' });
+  }
+
+  db.updateUser2FA(username, status.secret, true);
+  res.json({ success: true, message: 'Google Authenticator 2FA active! Both Admin Password and 6-digit App Code can now be used for login.' });
+});
+
+app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
+  const username = req.session.username || 'admin';
+  db.updateUser2FA(username, undefined, false);
+  res.json({ success: true, message: 'Google Authenticator 2FA has been disabled.' });
+});
+
+// ----------------------------------------------------
 // ADMIN ANALYTICS & LOGS APIs (Protected)
 // ----------------------------------------------------
 
@@ -754,7 +827,7 @@ async function handleShortlinkRedirect(req, res) {
   const link = db.getLinkByCode(code);
   if (link && link.domain) {
     const reqHost = req.hostname.toLowerCase();
-    if (link.domain !== reqHost && reqHost !== 'link.infucar.com' && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && reqHost !== '89.117.51.151') {
+    if (link.domain !== reqHost && reqHost !== 'goo33.online' && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && reqHost !== '89.117.51.151') {
       return res.status(404).send(`
         <!DOCTYPE html>
         <html>
