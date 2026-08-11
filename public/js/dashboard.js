@@ -1229,29 +1229,32 @@ document.addEventListener('DOMContentLoaded', () => {
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
         const roleBadge = user.role === 'Admin' ? 'badge-red' : (user.role === 'Manager' ? 'badge-info' : 'badge-success');
-        const passDisplay = user.rawPassword ? `<code>${user.rawPassword}</code>` : `<span style="color:var(--text-muted); font-size:0.75rem;">••••••••</span>`;
-        const directUrl = `${origin}/login?u=${encodeURIComponent(user.username)}&p=${encodeURIComponent(user.rawPassword || '')}`;
+        const hasPass = !!user.rawPassword;
+        const passDisplay = hasPass
+          ? `<span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:var(--text-primary);background:rgba(24,119,242,0.07);padding:0.15rem 0.45rem;border-radius:5px;">${user.rawPassword}</span>`
+          : `<span style="color:var(--text-muted);font-size:0.75rem;letter-spacing:0.08em;">••••••••</span>`;
 
         return `
-          <tr>
+          <tr style="transition:background 0.18s;">
             <td data-label="User">
-              <strong style="color: var(--text-primary); font-size: 0.85rem;">👤 ${user.username}</strong>
-              ${isSelf ? '<span class="badge badge-success" style="margin-left:0.3rem; font-size:0.6rem;">You</span>' : ''}
-            </td>
-            <td data-label="Role"><span class="badge ${roleBadge}" style="font-weight:700;">${user.role || 'Editor'}</span></td>
-            <td data-label="Password">
-              <div style="display:flex; align-items:center; gap:0.4rem;">
-                <span style="font-family:monospace; font-size:0.8rem; font-weight:700; color:var(--text-primary);">${passDisplay}</span>
+              <div style="display:flex;align-items:center;gap:0.45rem;">
+                <span style="font-size:1.1rem;">👤</span>
+                <div>
+                  <div style="font-weight:800;font-size:0.85rem;color:var(--text-primary);">${user.username}</div>
+                  ${isSelf ? '<span class="badge badge-success" style="font-size:0.6rem;padding:0.12rem 0.4rem;">You</span>' : ''}
+                </div>
               </div>
             </td>
+            <td data-label="Role"><span class="badge ${roleBadge}" style="font-weight:700;">${user.role || 'Editor'}</span></td>
+            <td data-label="Password">${passDisplay}</td>
             <td data-label="Actions">
-              ${isSelf ? '<span style="color: var(--text-muted); font-size:0.725rem;">Current Account</span>' : `
-                <div style="display:flex; gap:0.35rem; justify-content:flex-end; flex-wrap:wrap;">
-                  <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${directUrl}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">🔗 Direct Link</button>
-                  <button class="btn btn-secondary btn-sm" onclick="resetUserPassword('${user.username}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">🔑 Pass</button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')" style="padding:0.25rem 0.55rem; font-size:0.7rem; font-weight:700;">Remove 🗑️</button>
-                </div>
-              `}
+              ${isSelf
+                ? '<span style="color:var(--text-muted);font-size:0.72rem;font-weight:600;">Current Account</span>'
+                : `<div style="display:flex;gap:0.4rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditUserModal('${user.username}','${encodeURIComponent(user.rawPassword||'')}')" style="padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;border-radius:8px;">✏️ Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="openDeleteUserModal('${user.id}','${user.username}')" style="padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;border-radius:8px;">🗑️</button>
+                  </div>`
+              }
             </td>
           </tr>
         `;
@@ -1261,13 +1264,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.resetUserPassword = async function(username) {
-    const newPassword = prompt(`Enter new password for team user '${username}':`);
+  window.resetUserPassword = async function(username, newPassword) {
     if (!newPassword || newPassword.trim().length < 6) {
-      if (newPassword !== null) showAlert('Password must be at least 6 characters long.', true);
+      showAlert('Password must be at least 6 characters long.', true);
       return;
     }
-
     try {
       const res = await fetch('/api/admin/users/reset-password', {
         method: 'POST',
@@ -1276,31 +1277,123 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showAlert(`✅ Password for '${username}' updated successfully!`);
-        loadUsers();
+        return { success: true };
       } else {
-        showAlert(data.error || 'Failed to update password', true);
+        return { success: false, error: data.error || 'Failed to update password' };
       }
     } catch (err) {
-      showAlert('Error resetting password', true);
+      return { success: false, error: 'Network error' };
     }
   };
 
-  window.deleteUser = async function(id) {
-    if (!confirm('Are you sure you want to remove this team member?')) return;
-    try {
-      const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showAlert('Team member removed.');
+  // ---- EDIT USER MODAL ----
+  let _editModalUsername = '';
+  const editUserModal = document.getElementById('edit-user-modal');
+  const editUserModalClose = document.getElementById('edit-user-modal-close');
+  const editUserDirectLink = document.getElementById('edit-user-direct-link');
+  const editUserCopyLinkBtn = document.getElementById('edit-user-copy-link-btn');
+  const editUserNewPass = document.getElementById('edit-user-new-pass');
+  const editUserGenPass = document.getElementById('edit-user-gen-pass');
+  const editUserSavePassBtn = document.getElementById('edit-user-save-pass-btn');
+  const editUserPassError = document.getElementById('edit-user-pass-error');
+  const editUserPassSuccess = document.getElementById('edit-user-pass-success');
+  const editUserModalSubtitle = document.getElementById('edit-user-modal-subtitle');
+
+  window.openEditUserModal = function(username, encodedPass) {
+    _editModalUsername = username;
+    const rawPass = decodeURIComponent(encodedPass || '');
+    const directUrl = `${window.location.origin}/login?u=${encodeURIComponent(username)}&p=${encodeURIComponent(rawPass)}`;
+    if (editUserModalSubtitle) editUserModalSubtitle.textContent = `👤 ${username}`;
+    if (editUserDirectLink) editUserDirectLink.value = directUrl;
+    if (editUserNewPass) editUserNewPass.value = '';
+    if (editUserPassError) editUserPassError.style.display = 'none';
+    if (editUserPassSuccess) editUserPassSuccess.style.display = 'none';
+    if (editUserModal) { editUserModal.style.display = 'flex'; }
+  };
+
+  if (editUserModalClose) editUserModalClose.addEventListener('click', () => { if (editUserModal) editUserModal.style.display = 'none'; });
+  if (editUserModal) editUserModal.addEventListener('click', (e) => { if (e.target === editUserModal) editUserModal.style.display = 'none'; });
+
+  if (editUserCopyLinkBtn && editUserDirectLink) {
+    editUserCopyLinkBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(editUserDirectLink.value).then(() => {
+        editUserCopyLinkBtn.textContent = '✅ Copied!';
+        setTimeout(() => { editUserCopyLinkBtn.textContent = '📋 Copy'; }, 2200);
+      }).catch(() => {
+        editUserDirectLink.select();
+        document.execCommand('copy');
+      });
+    });
+  }
+
+  if (editUserGenPass) {
+    editUserGenPass.addEventListener('click', () => {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
+      let pass = '';
+      for (let i = 0; i < 10; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+      if (editUserNewPass) editUserNewPass.value = pass;
+    });
+  }
+
+  if (editUserSavePassBtn) {
+    editUserSavePassBtn.addEventListener('click', async () => {
+      const newPass = editUserNewPass ? editUserNewPass.value.trim() : '';
+      if (!newPass || newPass.length < 6) {
+        if (editUserPassError) { editUserPassError.textContent = '⚠️ Password must be at least 6 characters.'; editUserPassError.style.display = 'block'; }
+        return;
+      }
+      if (editUserPassError) editUserPassError.style.display = 'none';
+      editUserSavePassBtn.textContent = '⏳ Updating...';
+      editUserSavePassBtn.disabled = true;
+      const result = await resetUserPassword(_editModalUsername, newPass);
+      editUserSavePassBtn.textContent = '🔐 Update Password';
+      editUserSavePassBtn.disabled = false;
+      if (result && result.success) {
+        if (editUserPassSuccess) { editUserPassSuccess.textContent = `✅ Password updated successfully! New password: ${newPass}`; editUserPassSuccess.style.display = 'block'; }
+        // Update direct link with new password
+        const newUrl = `${window.location.origin}/login?u=${encodeURIComponent(_editModalUsername)}&p=${encodeURIComponent(newPass)}`;
+        if (editUserDirectLink) editUserDirectLink.value = newUrl;
         loadUsers();
       } else {
-        showAlert(data.error || 'Failed to remove user', true);
+        if (editUserPassError) { editUserPassError.textContent = '❌ ' + (result ? result.error : 'Error'); editUserPassError.style.display = 'block'; }
       }
-    } catch (err) {
-      showAlert('Error deleting user', true);
-    }
+    });
+  }
+
+  // ---- DELETE USER MODAL ----
+  let _deleteUserId = '';
+  const deleteUserModal = document.getElementById('delete-user-modal');
+  const deleteUserCancelBtn = document.getElementById('delete-user-cancel-btn');
+  const deleteUserConfirmBtn = document.getElementById('delete-user-confirm-btn');
+  const deleteUserModalSubtitle = document.getElementById('delete-user-modal-subtitle');
+
+  window.openDeleteUserModal = function(id, username) {
+    _deleteUserId = id;
+    if (deleteUserModalSubtitle) deleteUserModalSubtitle.textContent = `👤 ${username}`;
+    if (deleteUserModal) deleteUserModal.style.display = 'flex';
   };
+
+  if (deleteUserCancelBtn) deleteUserCancelBtn.addEventListener('click', () => { if (deleteUserModal) deleteUserModal.style.display = 'none'; });
+  if (deleteUserModal) deleteUserModal.addEventListener('click', (e) => { if (e.target === deleteUserModal) deleteUserModal.style.display = 'none'; });
+
+  if (deleteUserConfirmBtn) {
+    deleteUserConfirmBtn.addEventListener('click', async () => {
+      if (!_deleteUserId) return;
+      try {
+        const res = await fetch(`/api/admin/users/${_deleteUserId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (deleteUserModal) deleteUserModal.style.display = 'none';
+        if (res.ok && data.success) {
+          showAlert('Team member removed.');
+          loadUsers();
+        } else {
+          showAlert(data.error || 'Failed to remove user', true);
+        }
+      } catch (err) {
+        showAlert('Error deleting user', true);
+      }
+    });
+  }
 
   // ---- FORCE REFRESH / CACHE CLEAR BUTTON ----
   const cacheRefreshBtn = document.getElementById('cache-refresh-btn');

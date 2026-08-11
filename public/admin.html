@@ -753,5 +753,63 @@ if ('serviceWorker' in navigator) {
   });
 })();
 </script>
+
+<!-- ══════════════════════════════
+     EDIT USER MODAL (Custom — no browser prompt)
+══════════════════════════════ -->
+<div id="edit-user-modal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:var(--card-bg,#fff); border-radius:20px; width:min(92vw,440px); box-shadow:0 32px 80px rgba(0,0,0,0.25), 0 0 0 1px var(--border,rgba(0,0,0,0.08)); overflow:hidden; animation:editModalIn 0.28s cubic-bezier(.22,.68,0,1.2) forwards;">
+    <div style="background:linear-gradient(135deg,#1877f2 0%,#6c3de8 100%); padding:1.25rem 1.5rem 1rem; position:relative;">
+      <div style="font-size:1rem; font-weight:800; color:#fff; letter-spacing:0.01em;">✏️ Edit Team Member</div>
+      <div id="edit-user-modal-subtitle" style="font-size:0.78rem; color:rgba(255,255,255,0.78); margin-top:0.2rem;"></div>
+      <button id="edit-user-modal-close" style="position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,0.18); border:none; color:#fff; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:1rem; font-weight:700; line-height:1;">✕</button>
+    </div>
+    <div style="padding:1.35rem 1.5rem;">
+      <div style="margin-bottom:1.1rem;">
+        <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem;">🔗 1-Click Direct Login Link</div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input type="text" id="edit-user-direct-link" readonly style="flex:1; padding:0.55rem 0.75rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-size:0.72rem; font-family:monospace; background:var(--input-bg,#f9fafb); color:var(--text-primary,#111); font-weight:600; cursor:pointer; min-width:0;" onclick="this.select()" />
+          <button id="edit-user-copy-link-btn" style="background:linear-gradient(135deg,#1877f2,#6c3de8); border:none; color:#fff; border-radius:10px; padding:0.55rem 0.9rem; font-size:0.73rem; font-weight:800; cursor:pointer; white-space:nowrap; flex-shrink:0;">📋 Copy</button>
+        </div>
+        <div style="font-size:0.68rem; color:var(--text-muted,#888); margin-top:0.35rem;">Share this link — user clicks it and logs in instantly without typing.</div>
+      </div>
+      <div style="height:1px; background:var(--border,#e5e7eb); margin:1rem 0;"></div>
+      <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.65rem;">🔑 Change Password</div>
+      <div style="position:relative; margin-bottom:0.85rem;">
+        <input type="text" id="edit-user-new-pass" placeholder="Enter new password (min. 6 chars)" style="width:100%; box-sizing:border-box; padding:0.65rem 2.8rem 0.65rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-size:0.83rem; font-weight:600; background:var(--input-bg,#f9fafb); color:var(--text-primary,#111); outline:none;" />
+        <button id="edit-user-gen-pass" title="Auto-generate password" style="position:absolute; right:0.6rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:#6c3de8; padding:0; line-height:1;">🎲</button>
+      </div>
+      <div id="edit-user-pass-error" style="display:none; background:#fee2e2; border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem; color:#dc2626; font-weight:600; margin-bottom:0.75rem;"></div>
+      <button id="edit-user-save-pass-btn" style="width:100%; background:linear-gradient(135deg,#1877f2 0%,#6c3de8 100%); border:none; color:#fff; border-radius:12px; padding:0.75rem; font-size:0.85rem; font-weight:800; cursor:pointer; letter-spacing:0.02em; box-shadow:0 4px 14px rgba(24,119,242,0.35);">🔐 Update Password</button>
+      <div id="edit-user-pass-success" style="display:none; background:rgba(16,185,129,0.1); border:1.5px solid rgba(16,185,129,0.4); border-radius:10px; padding:0.65rem 0.85rem; font-size:0.78rem; font-weight:700; color:#10b981; margin-top:0.75rem; text-align:center;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div id="delete-user-modal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:var(--card-bg,#fff); border-radius:20px; width:min(92vw,380px); box-shadow:0 32px 80px rgba(0,0,0,0.25); overflow:hidden; animation:editModalIn 0.28s cubic-bezier(.22,.68,0,1.2) forwards;">
+    <div style="background:linear-gradient(135deg,#ef4444,#b91c1c); padding:1.25rem 1.5rem 1rem;">
+      <div style="font-size:1rem; font-weight:800; color:#fff;">🗑️ Remove Team Member</div>
+      <div id="delete-user-modal-subtitle" style="font-size:0.78rem; color:rgba(255,255,255,0.8); margin-top:0.2rem;"></div>
+    </div>
+    <div style="padding:1.25rem 1.5rem;">
+      <div style="font-size:0.84rem; color:var(--text-primary,#111); margin-bottom:1.25rem; line-height:1.6;">This will permanently remove this team member's account. This action <strong>cannot be undone</strong>.</div>
+      <div style="display:flex; gap:0.65rem;">
+        <button id="delete-user-cancel-btn" style="flex:1; background:var(--secondary-btn-bg,#f1f5f9); border:1.5px solid var(--border,#e5e7eb); color:var(--text-primary,#111); border-radius:12px; padding:0.65rem; font-size:0.82rem; font-weight:700; cursor:pointer;">Cancel</button>
+        <button id="delete-user-confirm-btn" style="flex:1; background:linear-gradient(135deg,#ef4444,#b91c1c); border:none; color:#fff; border-radius:12px; padding:0.65rem; font-size:0.82rem; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(239,68,68,0.4);">🗑️ Yes, Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes editModalIn {
+  from { opacity:0; transform:scale(0.92) translateY(12px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+</style>
+
 </body>
 </html>
+
