@@ -77,10 +77,76 @@ document.addEventListener('DOMContentLoaded', () => {
       return base64Data;
     }
   }
+  // --------------------------------------------------------
+  // COPY LINK TOAST — shown after shortlink generation
+  // --------------------------------------------------------
+  function showCopyLinkToast(shortUrl) {
+    // Remove any existing toast first
+    const existing = document.getElementById('copy-link-toast');
+    if (existing) existing.remove();
 
-  // --------------------------------------------------------
-  // COLLAPSIBLE PRO SMART SETTINGS ENGINE
-  // --------------------------------------------------------
+    const toast = document.createElement('div');
+    toast.id = 'copy-link-toast';
+    toast.innerHTML = `
+      <div style="display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap;">
+        <span style="font-size:1.25rem;">✅</span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.15rem; letter-spacing:0.02em;">Short Link Created!</div>
+          <div id="copy-link-toast-url" style="font-size:0.75rem; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${shortUrl}</div>
+        </div>
+        <button id="copy-link-toast-btn" style="background:#fff; color:#1877f2; border:none; border-radius:8px; padding:0.4rem 0.85rem; font-weight:800; font-size:0.82rem; cursor:pointer; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.12);">📋 Copy</button>
+        <button id="copy-link-toast-close" style="background:rgba(255,255,255,0.18); color:#fff; border:none; border-radius:50%; width:26px; height:26px; cursor:pointer; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
+      </div>
+    `;
+    Object.assign(toast.style, {
+      position: 'fixed',
+      bottom: '5.5rem',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'linear-gradient(135deg, #1877f2 0%, #0d5fd9 100%)',
+      borderRadius: '14px',
+      padding: '0.85rem 1rem',
+      width: 'min(92vw, 380px)',
+      boxShadow: '0 8px 32px rgba(24,119,242,0.4)',
+      zIndex: '99999',
+      animation: 'slideUpFade 0.35s cubic-bezier(.22,.68,0,1.2) forwards',
+    });
+
+    document.body.appendChild(toast);
+
+    // Inject animation if not already present
+    if (!document.getElementById('toast-anim-style')) {
+      const style = document.createElement('style');
+      style.id = 'toast-anim-style';
+      style.textContent = `@keyframes slideUpFade { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`;
+      document.head.appendChild(style);
+    }
+
+    // Copy button handler
+    document.getElementById('copy-link-toast-btn').addEventListener('click', function() {
+      navigator.clipboard.writeText(shortUrl).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = shortUrl;
+        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+      this.textContent = '✅ Copied!';
+      this.style.background = '#10b981';
+      this.style.color = '#fff';
+      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 1800);
+    });
+
+    // Close button handler
+    document.getElementById('copy-link-toast-close').addEventListener('click', () => toast.remove());
+
+    // Auto-dismiss after 8 seconds
+    setTimeout(() => { if (toast && toast.parentNode) toast.remove(); }, 8000);
+  }
+
+
   const toggleProSettingsBtn = document.getElementById('toggle-pro-settings-btn');
   const proSettingsBody = document.getElementById('pro-settings-body');
   const proSettingsToggleIcon = document.getElementById('pro-settings-toggle-icon');
@@ -597,7 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (response.ok && data.success) {
           const generatedCode = data.link.code;
-          showAlert(`Short link '/s/${generatedCode}' created successfully! Opening QR Code...`);
+          const shortUrl = `${location.origin}/s/${generatedCode}`;
+          
           createForm.reset();
           customDomainsList = [];
           renderDomainTags();
@@ -621,10 +688,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (proSettingsToggleIcon) { proSettingsToggleIcon.textContent = '▶ Click to Show'; proSettingsToggleIcon.classList.remove('open'); }
           loadLinks();
           
-          // Automatically open QR Code Download Modal for the newly created link!
-          setTimeout(() => {
-            showQrModal(generatedCode);
-          }, 400);
+          // Show copy-link success toast instead of QR modal
+          showCopyLinkToast(shortUrl);
         } else {
           showAlert(data.error || 'Failed to create link', true);
         }

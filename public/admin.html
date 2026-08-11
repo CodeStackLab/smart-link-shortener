@@ -574,8 +574,22 @@
               <img id="2fa-qr-img" src="" alt="2FA QR Code" style="width:min(160px, 70vw); height:min(160px, 70vw); display:block;">
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:1rem; word-break:break-all; line-height:1.6;">
-              Manual Secret Key:<br>
-              <strong id="2fa-secret-key" style="color:#3b82f6; font-family:monospace; font-size:0.8rem;"></strong>
+              Manual Secret Key:
+              <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:0.4rem; flex-wrap:wrap;">
+                <strong id="2fa-secret-key" style="color:#3b82f6; font-family:monospace; font-size:0.82rem; word-break:break-all; text-align:center;"></strong>
+                <button id="copy-secret-key-btn" type="button" onclick="(function(){
+                  const key = document.getElementById('2fa-secret-key').textContent;
+                  if(!key) return;
+                  const btn = document.getElementById('copy-secret-key-btn');
+                  navigator.clipboard.writeText(key).catch(()=>{
+                    const ta=document.createElement('textarea');
+                    ta.value=key; ta.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;';
+                    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                  });
+                  btn.textContent='✅ Copied!'; btn.style.background='#10b981'; btn.style.color='#fff';
+                  setTimeout(()=>{ btn.textContent='📋 Copy Key'; btn.style.background=''; btn.style.color=''; }, 2000);
+                })()" style="background:#1877f2; color:#fff; border:none; border-radius:8px; padding:0.3rem 0.75rem; font-size:0.75rem; font-weight:800; cursor:pointer; flex-shrink:0; box-shadow:0 2px 8px rgba(24,119,242,0.25);">📋 Copy Key</button>
+              </div>
             </div>
             <div class="form-group" style="margin-bottom:0.85rem; text-align:left;">
               <label style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.4rem; display:block;">Enter 6-Digit App Code</label>
