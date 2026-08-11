@@ -14,7 +14,7 @@ const {
   checkRateLimit,
   checkAndApplyAutoShield
 } = require('./utils/detector');
-const { lookupIp } = require('./utils/geoDetector');
+const { lookupIp, lookupIpAsync } = require('./utils/geoDetector');
 const { generateQrDataUrl } = require('./utils/qrGenerator');
 const { fetchOgMeta } = require('./utils/ogFetcher');
 
@@ -639,7 +639,8 @@ app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
 
 app.get('/api/admin/logs', requireAuth, (req, res) => {
   const logs = db.getLogs();
-  res.json(logs);
+  const cleanLogs = logs.filter(l => l.status !== 'SOCIAL_CRAWLER');
+  res.json(cleanLogs);
 });
 
 app.post('/api/admin/clear-logs', requireAuth, (req, res) => {
@@ -707,8 +708,8 @@ async function handleShortlinkRedirect(req, res) {
   const userAgent = req.headers['user-agent'] || '';
   const rawReferer = req.headers['referer'] || req.headers['referrer'] || '';
 
-  // GeoIP & VPN Lookup (passes req.headers for Cloudflare IP Country header support)
-  const geoInfo = lookupIp(clientIp, req.headers);
+  // Real-Time GeoIP & VPN Lookup (ip-api.com API + geoip-lite + Cloudflare headers)
+  const geoInfo = await lookupIpAsync(clientIp, req.headers);
   const logId = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
   // 0. Check IP Firewall (IP Blocking)
@@ -998,25 +999,8 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
-  // 3. Check Social Scrapers — Serve Rich OG Meta Tags fetched from Target URL
+  // 3. Check Social Scrapers — Serve Rich OG Meta Tags fetched from Target URL SILENTLY without logging!
   if (isSocialScraper(userAgent)) {
-    const logEntry = {
-      id: logId,
-      timestamp: new Date().toISOString(),
-      code: link.code,
-      ip: clientIp,
-      countryCode: geoInfo.countryCode,
-      countryName: geoInfo.countryName,
-      flag: geoInfo.flag,
-      city: geoInfo.city,
-      isp: geoInfo.isp,
-      isVpn: geoInfo.isVpn,
-      referer: rawReferer || 'Crawler',
-      userAgent: userAgent,
-      status: 'SOCIAL_CRAWLER',
-      actionTaken: 'Served OpenGraph Tags (Rich Preview)'
-    };
-    db.addLog(logEntry);
 
     // Fetch real OG metadata from the target URL
     const ogMeta = await fetchOgMeta(link.targetUrl);
