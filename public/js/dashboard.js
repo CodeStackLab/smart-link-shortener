@@ -643,6 +643,66 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyDateBtn = document.getElementById('apply-date-btn');
   const datePresetBtns = document.querySelectorAll('.date-preset-btn');
 
+  let geoCurrentPage = 1;
+  const geoPageSize = 10;
+  let currentGeoCountries = [];
+  let currentGeoTotalLogs = 0;
+
+  function renderGeoTable() {
+    if (!countriesTbody) return;
+    if (!currentGeoCountries || currentGeoCountries.length === 0) {
+      countriesTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No country traffic recorded for selected range.</td></tr>`;
+      updateGeoPaginationUI(0, 1);
+      return;
+    }
+
+    const totalPages = Math.ceil(currentGeoCountries.length / geoPageSize);
+    if (geoCurrentPage > totalPages) geoCurrentPage = totalPages;
+    if (geoCurrentPage < 1) geoCurrentPage = 1;
+
+    const startIdx = (geoCurrentPage - 1) * geoPageSize;
+    const pagedCountries = currentGeoCountries.slice(startIdx, startIdx + geoPageSize);
+    const maxClicks = Math.max(...currentGeoCountries.map(c => c.totalClicks), 1);
+
+    countriesTbody.innerHTML = pagedCountries.map(c => {
+      const percent = Math.round((c.totalClicks / (currentGeoTotalLogs || 1)) * 100) || 0;
+      const barWidth = Math.round((c.totalClicks / maxClicks) * 100);
+      const vpnCount = c.vpnClicks || c.vpsClicks || 0;
+
+      return `
+        <tr>
+          <td data-label="Country">
+            <strong style="font-size: 0.95rem; margin-right: 0.35rem;">${c.flag || '🌐'}</strong>
+            <strong style="color: var(--text-primary);">${c.name} (${c.code})</strong>
+          </td>
+          <td data-label="Total Traffic"><strong style="font-size: 1.05rem; font-family: 'Outfit', sans-serif;">${c.totalClicks}</strong></td>
+          <td data-label="Organic"><span style="color: #10b981; font-weight: 600;">${c.organicClicks}</span></td>
+          <td data-label="VPN / Proxy"><span class="badge ${vpnCount > 0 ? 'badge-warning' : 'badge-info'}">${vpnCount} VPN / Proxy</span></td>
+          <td data-label="Share">
+            <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: flex-end;">
+              <div style="flex: 1; background: rgba(0,0,0,0.08); height: 6px; border-radius: 4px; overflow: hidden; max-width: 120px;">
+                <div style="width: ${barWidth}%; height: 100%; background: #1877f2;"></div>
+              </div>
+              <span style="font-size: 0.775rem; font-weight: 700; color: var(--text-secondary); width: 34px;">${percent}%</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    updateGeoPaginationUI(totalPages, geoCurrentPage);
+  }
+
+  function updateGeoPaginationUI(totalPages, page) {
+    const pageInfo = document.getElementById('geo-page-info');
+    if (pageInfo) pageInfo.textContent = `Page ${page} of ${totalPages || 1}`;
+
+    const prevBtn = document.getElementById('geo-prev-btn');
+    const nextBtn = document.getElementById('geo-next-btn');
+    if (prevBtn) prevBtn.disabled = (page <= 1);
+    if (nextBtn) nextBtn.disabled = (page >= totalPages || totalPages === 0);
+  }
+
   async function loadCountryAnalytics(startDate = '', endDate = '') {
     if (!countriesTbody) return;
     try {
@@ -654,6 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/api/admin/analytics/countries${query}`);
       const data = await res.json();
 
+      const totalVpn = data.totalVpnClicks || data.totalVpsClicks || 0;
       const genuineEl = document.getElementById('stat-geo-genuine');
       if (genuineEl) genuineEl.textContent = data.totalGenuineClicks || 0;
 
@@ -675,42 +736,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      const countries = data.countries || [];
-      if (countries.length === 0) {
-        countriesTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No country traffic recorded for selected range.</td></tr>`;
-        return;
-      }
-
-      const maxClicks = Math.max(...countries.map(c => c.totalClicks), 1);
-
-      countriesTbody.innerHTML = countries.map(c => {
-        const percent = Math.round((c.totalClicks / data.totalLogs) * 100) || 0;
-        const barWidth = Math.round((c.totalClicks / maxClicks) * 100);
-        const vpnCount = c.vpnClicks || c.vpsClicks || 0;
-
-        return `
-          <tr>
-            <td data-label="Country">
-              <strong style="font-size: 0.95rem; margin-right: 0.35rem;">${c.flag || '🌐'}</strong>
-              <strong style="color: var(--text-primary);">${c.name} (${c.code})</strong>
-            </td>
-            <td data-label="Total Traffic"><strong style="font-size: 1.05rem; font-family: 'Outfit', sans-serif;">${c.totalClicks}</strong></td>
-            <td data-label="Organic"><span style="color: #10b981; font-weight: 600;">${c.organicClicks}</span></td>
-            <td data-label="VPN / Proxy"><span class="badge ${vpnCount > 0 ? 'badge-warning' : 'badge-info'}">${vpnCount} VPN / Proxy</span></td>
-            <td data-label="Share">
-              <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: flex-end;">
-                <div style="flex: 1; background: rgba(0,0,0,0.08); height: 6px; border-radius: 4px; overflow: hidden; max-width: 120px;">
-                  <div style="width: ${barWidth}%; height: 100%; background: var(--accent-gradient);"></div>
-                </div>
-                <span style="font-size: 0.775rem; font-weight: 700; color: var(--text-secondary); width: 34px;">${percent}%</span>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      currentGeoCountries = data.countries || [];
+      currentGeoTotalLogs = data.totalLogs || 1;
+      geoCurrentPage = 1;
+      renderGeoTable();
     } catch (err) {
-      if (countriesTbody) countriesTbody.innerHTML = `<tr><td colspan="5" style="color: var(--danger);">Failed to load country analytics.</td></tr>`;
+      console.error('Geo analytics error:', err);
+      if (countriesTbody) countriesTbody.innerHTML = `<tr><td colspan="5" style="color: var(--danger); text-align:center; padding:1.5rem;">Failed to load country analytics.</td></tr>`;
     }
+  }
+
+  const geoPrevBtn = document.getElementById('geo-prev-btn');
+  const geoNextBtn = document.getElementById('geo-next-btn');
+  if (geoPrevBtn) {
+    geoPrevBtn.addEventListener('click', () => {
+      if (geoCurrentPage > 1) {
+        geoCurrentPage--;
+        renderGeoTable();
+      }
+    });
+  }
+  if (geoNextBtn) {
+    geoNextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(currentGeoCountries.length / geoPageSize);
+      if (geoCurrentPage < totalPages) {
+        geoCurrentPage++;
+        renderGeoTable();
+      }
+    });
   }
 
   datePresetBtns.forEach(btn => {

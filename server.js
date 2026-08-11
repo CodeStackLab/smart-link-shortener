@@ -428,7 +428,8 @@ app.get('/api/admin/analytics/countries', requireAuth, (req, res) => {
       totalGenuineClicks++;
     }
 
-    const dayKey = log.timestamp.split('T')[0];
+    const ts = log && log.timestamp ? String(log.timestamp) : new Date().toISOString();
+    const dayKey = ts.includes('T') ? ts.split('T')[0] : ts.slice(0, 10);
     if (!dailyTraffic[dayKey]) {
       dailyTraffic[dayKey] = { date: dayKey, total: 0, vpn: 0, organic: 0 };
     }
