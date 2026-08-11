@@ -66,7 +66,12 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     alertBox.style.display = 'none';
 
-    const username = (document.getElementById('username')?.value || 'admin').trim();
+    const username = (document.getElementById('username')?.value || '').trim();
+    if (!username) {
+      alertBox.textContent = 'Please enter your username.';
+      alertBox.style.display = 'block';
+      return;
+    }
     const mode = activeAuthMode ? activeAuthMode.value : 'password';
 
     let payload = { username };

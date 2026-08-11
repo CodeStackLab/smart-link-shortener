@@ -422,11 +422,32 @@ document.addEventListener('DOMContentLoaded', () => {
           : `<span class="badge badge-warning">⏰ Expires ${new Date(link.expiresAt).toLocaleDateString()}</span>`;
       }
 
+      const isOwner = (link.createdBy || 'admin').toLowerCase() === currentLoggedInUsername.toLowerCase();
+      const canManage = currentLoggedInRole === 'Admin' || isOwner;
+
+      const actionsHtml = canManage ? `
+        <div class="action-btn-group">
+          <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">
+            ${link.active ? 'Pause' : 'Enable'}
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.id}')">🗑️ Delete</button>
+        </div>
+      ` : `
+        <div class="action-btn-group">
+          <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
+          <span class="badge badge-info" style="font-size:0.7rem; padding:0.35rem 0.65rem; font-weight:700;">👁️ View Only</span>
+        </div>
+      `;
+
       return `
         <tr>
           <td data-label="Short Link">
             <div class="shortlink-cell-wrap">
               <strong style="color: var(--accent-primary); font-size: 0.95rem;">/${link.code}</strong>
+              ${link.createdBy && link.createdBy.toLowerCase() !== 'admin' ? `<span class="badge badge-custom" style="margin-left:0.3rem; font-size:0.6rem;">By: ${link.createdBy}</span>` : ''}
               <div style="margin-top: 0.2rem;">
                 <span class="code-box">${shortUrl}</span>
               </div>
@@ -458,14 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </span>
           </td>
           <td data-label="Actions">
-            <div class="action-btn-group">
-              <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
-              <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
-              <button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">
-                ${link.active ? 'Pause' : 'Enable'}
-              </button>
-              <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.id}')">🗑️ Delete</button>
-            </div>
+            ${actionsHtml}
           </td>
         </tr>
       `;
@@ -1578,6 +1592,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial load
   loadLinks();
   loadDomains();
+  loadUsers();
 
 // --------------------------------------------------------
 // CUSTOM DOMAINS MANAGEMENT LOGIC
