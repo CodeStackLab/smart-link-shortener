@@ -630,35 +630,53 @@ input.form-control, textarea.form-control { cursor: text; }
   height: auto;
 }
 
+/* Platform Chips Base Styling (Inactive) */
+.platform-chip {
+  background: var(--input-bg, #f3f4f6) !important;
+  border: 1.5px solid var(--border, #e5e7eb) !important;
+  color: var(--text-primary, #333) !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.platform-chip svg {
+  fill: #4b5563 !important;
+}
+.platform-chip span {
+  color: var(--text-primary, #333) !important;
+}
+
 /* Facebook chip active */
 .platform-chip:has(input[value="facebook"]:checked),
-.platform-chip.active,
 #chip-facebook.active {
   background: #1877f2 !important; border-color: #1877f2 !important;
   color: #ffffff !important; box-shadow: 0 4px 14px rgba(24,119,242,0.3) !important;
 }
 .platform-chip:has(input[value="facebook"]:checked) svg,
-#chip-facebook svg {
+#chip-facebook.active svg {
   fill: #ffffff !important;
 }
-
-/* Instagram chip active / default gradient style */
-#chip-instagram {
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
-  color: #ffffff !important; border: none !important;
-  box-shadow: 0 4px 14px rgba(220,39,67,0.35) !important;
-}
-#chip-instagram svg {
-  fill: #ffffff !important;
-}
-#chip-instagram span {
+.platform-chip:has(input[value="facebook"]:checked) span,
+#chip-facebook.active span {
   color: #ffffff !important;
 }
+
+/* Instagram chip active */
 .platform-chip:has(input[value="instagram"]:checked),
 #chip-instagram.active {
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
-  color: #ffffff !important; border: none !important;
+  border: none !important;
+  color: #ffffff !important;
   box-shadow: 0 4px 14px rgba(220,39,67,0.35) !important;
+}
+.platform-chip:has(input[value="instagram"]:checked) svg,
+#chip-instagram.active svg {
+  fill: #ffffff !important;
+}
+.platform-chip:has(input[value="instagram"]:checked) span,
+#chip-instagram.active span {
+  color: #ffffff !important;
 }
 
 /* Custom Website chip active */
@@ -671,6 +689,10 @@ input.form-control, textarea.form-control { cursor: text; }
 .platform-chip:has(input[value="custom_website"]:checked) svg,
 #chip-custom-website.active svg {
   fill: #ffffff !important;
+}
+.platform-chip:has(input[value="custom_website"]:checked) span,
+#chip-custom-website.active span {
+  color: #ffffff !important;
 }
 
 /* Tag Input */

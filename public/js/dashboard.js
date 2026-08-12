@@ -405,18 +405,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Interactive Platform Chips Checkboxes
+  // Interactive Platform Chips Checkboxes (Mobile Touch & Click Sync)
   const platformChips = document.querySelectorAll('.platform-chip');
   platformChips.forEach(chip => {
     const cb = chip.querySelector('input[type="checkbox"]');
     if (cb) {
-      cb.addEventListener('change', () => {
+      const syncActive = () => {
         if (cb.checked) {
           chip.classList.add('active');
         } else {
           chip.classList.remove('active');
         }
+      };
+      cb.addEventListener('change', syncActive);
+      chip.addEventListener('click', (e) => {
+        if (e.target !== cb) {
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event('change'));
+        }
       });
+      syncActive();
     }
   });
 
