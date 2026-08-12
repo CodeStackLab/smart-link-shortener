@@ -664,9 +664,9 @@ input.form-control, textarea.form-control { cursor: text; }
 /* Custom Website chip active */
 .platform-chip:has(input[value="custom_website"]:checked),
 #chip-custom-website.active {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
   border: none !important;
-  color: #ffffff !important; box-shadow: 0 4px 14px rgba(16,185,129,0.35) !important;
+  color: #ffffff !important; box-shadow: 0 4px 14px rgba(99,102,241,0.35) !important;
 }
 .platform-chip:has(input[value="custom_website"]:checked) svg,
 #chip-custom-website.active svg {
