@@ -347,7 +347,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mobileBtn) mobileBtn.style.display = hasAccess ? '' : 'none';
 
       const tabContent = document.getElementById(item.tabId);
-      if (tabContent && !hasAccess) tabContent.style.display = 'none';
+      if (tabContent) {
+        if (!hasAccess) {
+          tabContent.style.display = 'none';
+        } else if (tabContent.style.display === 'none') {
+          // Only re-show if this tab is the currently active tab
+          const tabBtn2 = document.querySelector(`.tab-btn.active[data-tab="${item.tabId}"]`);
+          if (tabBtn2) tabContent.style.display = 'block';
+        }
+      }
     });
 
     const createFormCard = document.querySelector('#create-link-form')?.closest('.card');
@@ -359,6 +367,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const proAccordion = document.getElementById('pro-accordion');
     if (proAccordion) {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
+    // If no tab is currently visible/active, activate the first visible tab
+    const allTabBtns = document.querySelectorAll('.tab-btn');
+    const anyActive = Array.from(allTabBtns).some(b => b.classList.contains('active') && b.style.display !== 'none');
+    if (!anyActive) {
+      const firstVisible = Array.from(allTabBtns).find(b => b.style.display !== 'none');
+      if (firstVisible) firstVisible.click();
     }
   }
 
