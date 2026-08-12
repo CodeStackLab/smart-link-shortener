@@ -244,17 +244,17 @@ module.exports = {
   // Users CRUD
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
-    if (role === 'Admin') return ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    if (role === 'Manager') return ['links', 'domains', 'geo', 'analytics'];
-    return ['links', 'geo', 'analytics']; // Editor default
+    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
+    if (role === 'Manager') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'];
+    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']; // Editor default
   },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);
     return users.map(u => {
       const role = u.role || 'Editor';
       const defaultPerms = role === 'Admin'
-        ? ['links', 'instagram', 'custom_website', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : (role === 'Manager' ? ['links', 'instagram', 'custom_website', 'domains', 'geo', 'analytics'] : ['links', 'instagram', 'custom_website', 'geo', 'analytics']);
+        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : (role === 'Manager' ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
       return {
         id: u.id,
         username: u.username,

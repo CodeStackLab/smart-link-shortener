@@ -267,8 +267,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = role === 'Admin';
-    const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'] : ['links', 'geo', 'analytics']);
+    const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
     userCurrentPermissions = userPerms;
+
+    // Traffic Source Chips Scoping based on Admin's assigned user permissions
+    const chipFacebook = document.getElementById('chip-facebook');
+    const chipInstagram = document.getElementById('chip-instagram');
+    const chipCustomWeb = document.getElementById('chip-custom-website');
+
+    if (chipFacebook) {
+      chipFacebook.style.display = (isFullAdmin || userPerms.includes('facebook')) ? 'inline-flex' : 'none';
+    }
+    if (chipInstagram) {
+      chipInstagram.style.display = (isFullAdmin || userPerms.includes('instagram')) ? 'inline-flex' : 'none';
+    }
+    if (chipCustomWeb) {
+      chipCustomWeb.style.display = (isFullAdmin || userPerms.includes('custom_website')) ? 'inline-flex' : 'none';
+    }
 
     const navMap = [
       { key: 'links', tabId: 'tab-links' },
@@ -305,12 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (proAccordion) {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
-
-    // Platform Traffic Sources Checkboxes (Always visible and enabled for all roles)
-    const chipInstagram = document.getElementById('chip-instagram');
-    const chipCustomWeb = document.getElementById('chip-custom-website');
-    if (chipInstagram) chipInstagram.style.display = 'inline-flex';
-    if (chipCustomWeb) chipCustomWeb.style.display = 'inline-flex';
   }
 
 
@@ -1824,8 +1833,8 @@ document.addEventListener('DOMContentLoaded', () => {
     newUserRoleSelect.addEventListener('change', () => {
       const selectedRole = newUserRoleSelect.value;
       const defaultPerms = selectedRole === 'Admin'
-        ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : (selectedRole === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
+        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : (selectedRole === 'Manager' ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
 
       document.querySelectorAll('.new-perm-cb').forEach(cb => {
         cb.checked = defaultPerms.includes(cb.value);
