@@ -1517,11 +1517,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const userSites = Array.isArray(user.allowedTargetDomains) ? user.allowedTargetDomains : [];
         const sitesBadge = userSites.length > 0
-          ? `<span style="font-size:0.68rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.08);padding:0.2rem 0.55rem;border-radius:12px;border:1px solid rgba(24,119,242,0.2);">🌐 Sites: ${userSites.join(', ')}</span>`
+          ? `<span style="font-size:0.68rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.08);padding:0.25rem 0.55rem;border-radius:10px;border:1px solid rgba(24,119,242,0.2);word-break:break-all;overflow-wrap:anywhere;display:inline-block;max-width:100%;box-sizing:border-box;">🌐 Sites: ${userSites.join(', ')}</span>`
           : `<span style="font-size:0.68rem;font-weight:600;color:var(--text-muted);">🌐 Sites: Default / Global</span>`;
 
         return `
-          <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid var(--border,#e8eaf0);border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+          <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid var(--border,#e8eaf0);border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;max-width:100%;overflow-x:hidden;box-sizing:border-box;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
 
             <!-- Avatar + Name -->
             <div style="display:flex;align-items:center;gap:0.45rem;flex:1;min-width:90px;">
@@ -1535,11 +1535,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Role Badge -->
             <span style="font-size:0.68rem;font-weight:800;color:${roleColor};background:${roleBg};border:1px solid ${roleColor}33;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;flex-shrink:0;">${user.role || 'Editor'}</span>
 
-            <!-- Assigned Sites Badge -->
-            <div style="flex-shrink:0;">${sitesBadge}</div>
-
             <!-- Password chip -->
             <div style="flex-shrink:0;">${passChip}</div>
+
+            <!-- Assigned Sites Badge (Wrapped cleanly within card bounds) -->
+            <div style="flex:1 1 100%;width:100%;max-width:100%;box-sizing:border-box;margin-top:0.2rem;word-break:break-all;overflow-wrap:anywhere;">${sitesBadge}</div>
 
             <!-- Actions -->
             <div style="display:flex;gap:0.5rem;margin-left:auto;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
