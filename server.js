@@ -164,13 +164,18 @@ app.get('/api/session', (req, res) => {
     const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
     const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
 
-    const finalAllowed = userAllowed.length > 0 ? userAllowed : globalAllowed;
+    const finalAllowed = (req.session.role !== 'Admin') ? userAllowed : (userAllowed.length > 0 ? userAllowed : globalAllowed);
+
+    let perms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : (req.session.permissions || db.getDefaultPermissions(req.session.role));
+    if (!perms.includes('facebook') && !perms.includes('instagram') && !perms.includes('custom_website')) {
+      perms = ['facebook', 'instagram', 'custom_website', ...perms];
+    }
 
     return res.json({
       authenticated: true,
       username: req.session.username,
-      role: req.session.role,
-      permissions: req.session.permissions || db.getDefaultPermissions(req.session.role),
+      role: (userObj && userObj.role) ? userObj.role : req.session.role,
+      permissions: perms,
       allowedTargetDomains: finalAllowed
     });
   }

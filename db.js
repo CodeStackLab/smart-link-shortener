@@ -255,12 +255,16 @@ module.exports = {
       const defaultPerms = role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
         : (role === 'Manager' ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
+      let userPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
+      if (!userPerms.includes('facebook') && !userPerms.includes('instagram') && !userPerms.includes('custom_website')) {
+        userPerms = ['facebook', 'instagram', 'custom_website', ...userPerms];
+      }
       return {
         id: u.id,
         username: u.username,
         rawPassword: u.rawPassword || '',
         role: role,
-        permissions: Array.isArray(u.permissions) ? u.permissions : defaultPerms,
+        permissions: userPerms,
         allowedTargetDomains: Array.isArray(u.allowedTargetDomains) ? u.allowedTargetDomains : [],
         twoFactorEnabled: !!u.twoFactorEnabled,
         createdAt: u.createdAt || new Date().toISOString()
