@@ -267,10 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = role === 'Admin';
-    const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
+    const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
+    const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
     userCurrentPermissions = userPerms;
 
-    // Traffic Source Chips Scoping based on Admin's assigned user permissions
+    // Traffic Source Chips Scoping (Admin ALWAYS gets full access; Editor/Manager gets scoped based on assigned permissions)
     const chipFacebook = document.getElementById('chip-facebook');
     const chipInstagram = document.getElementById('chip-instagram');
     const chipCustomWeb = document.getElementById('chip-custom-website');
