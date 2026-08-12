@@ -1716,6 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
       editUserSavePassBtn.disabled = false;
       if (result && result.success) {
         if (editUserPassSuccess) { editUserPassSuccess.textContent = `✅ Password updated successfully! New password: ${newPass}`; editUserPassSuccess.style.display = 'block'; }
+        showAlert(`✅ Password updated successfully for '${_editModalUsername}'!`);
         // Update direct link with new password
         const newUrl = `${window.location.origin}/login?u=${encodeURIComponent(_editModalUsername)}&p=${encodeURIComponent(newPass)}`;
         if (editUserDirectLink) editUserDirectLink.value = newUrl;
@@ -1752,7 +1753,11 @@ document.addEventListener('DOMContentLoaded', () => {
             editUserRoleSuccess.textContent = `✅ Role, Permissions & Assigned Sites updated successfully!`;
             editUserRoleSuccess.style.display = 'block';
           }
+          showAlert(`✅ Settings Saved Successfully for user '${_editModalUsername}'!`);
           loadUsers();
+          setTimeout(() => {
+            if (editUserModal) editUserModal.style.display = 'none';
+          }, 1200);
         } else {
           showAlert(data.error || 'Failed to update role/permissions', true);
         }

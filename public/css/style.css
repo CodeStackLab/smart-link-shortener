@@ -852,15 +852,53 @@ tbody tr:hover td { background: transparent; }
 .badge-custom  { background: rgba(131,56,236,0.15); color: #6d28d9; border: 1px solid rgba(131,56,236,0.3); }
 
 /* ════════════════════════════════════════
-   ALERTS
+   FLOATING TOAST ALERTS & NOTIFICATIONS
 ════════════════════════════════════════ */
+#dashboard-alert {
+  position: fixed !important;
+  top: 22px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 99999999 !important;
+  min-width: min(92vw, 420px) !important;
+  max-width: 95vw !important;
+  padding: 0.85rem 1.4rem !important;
+  border-radius: 16px !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  animation: alertToastSlideDown 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards !important;
+}
+
+@keyframes alertToastSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
 .alert {
   padding: 0.7rem 1rem; border-radius: var(--r-sm);
   font-size: 0.825rem; font-weight: 600; display: none; margin-bottom: 1rem;
   border: 1px solid transparent;
 }
-.alert-success { background: rgba(6,214,160,0.1); border-color: rgba(6,214,160,0.3); color: #047857; }
-.alert-danger  { background: rgba(230,57,70,0.1); border-color: rgba(230,57,70,0.25); color: var(--red-dark); }
+.alert-success {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+.alert-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
 
 /* ════════════════════════════════════════
    UTILITY
