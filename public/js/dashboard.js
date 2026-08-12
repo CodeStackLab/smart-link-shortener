@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
           userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : (uRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
         }
         applyRoleUiScoping(currentLoggedInRole, data.permissions);
+        updateTargetUrlFieldForRole(data);
         // Load data AFTER session is confirmed
         loadLinks();
         loadUsers();
@@ -197,6 +198,61 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(() => {
       window.location.href = '/admin';
     });
+
+  function updateTargetUrlFieldForRole(sessionData) {
+    const targetInput = document.getElementById('target-url');
+    const targetSelect = document.getElementById('target-url-select');
+    const postUrlInput = document.getElementById('post-url-input');
+
+    if (!targetInput || !targetSelect) return;
+
+    const role = sessionData ? sessionData.role : (currentLoggedInRole || 'Admin');
+    const allowedSites = (sessionData && Array.isArray(sessionData.allowedTargetDomains)) ? sessionData.allowedTargetDomains : [];
+
+    if (role === 'Admin') {
+      targetInput.style.display = 'block';
+      targetInput.required = true;
+      targetSelect.style.display = 'none';
+      targetSelect.required = false;
+    } else {
+      // Editor / Manager sees Dropdown Select Menu
+      targetInput.style.display = 'none';
+      targetInput.required = false;
+      targetSelect.style.display = 'block';
+      targetSelect.required = true;
+
+      if (allowedSites.length > 0) {
+        const cleanSites = allowedSites.map(s => {
+          let clean = s.trim();
+          if (!/^https?:\/\//i.test(clean)) {
+            clean = 'https://' + clean.replace(/^www\./i, '');
+          }
+          return clean;
+        });
+
+        targetSelect.innerHTML = cleanSites.map(s => `<option value="${s}">🌐 ${s}</option>`).join('');
+        // Automatically default to 1st assigned site so Editor doesn't have to pick manually!
+        targetSelect.value = cleanSites[0];
+        targetInput.value = cleanSites[0];
+      } else {
+        targetSelect.innerHTML = `<option value="">-- No Assigned Target Websites (Ask Admin to add sites in Settings) --</option>`;
+      }
+    }
+
+    // Auto-update targetInput when post-url-input or targetSelect changes
+    if (postUrlInput) {
+      postUrlInput.oninput = () => {
+        const val = postUrlInput.value.trim();
+        if (val.startsWith('http://') || val.startsWith('https://')) {
+          targetInput.value = val;
+        } else if (val) {
+          let base = targetSelect && targetSelect.value ? targetSelect.value : (targetInput.value || '');
+          let cleanPath = val.startsWith('/') ? val : '/' + val;
+          targetInput.value = base ? (base.replace(/\/+$/, '') + cleanPath) : val;
+        }
+      };
+    }
+  }
 
   let userCurrentPermissions = ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
 
@@ -227,9 +283,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tabContent && !hasAccess) tabContent.style.display = 'none';
     });
 
+    const createFormCard = document.querySelector('#create-link-form')?.closest('.card');
+    if (createFormCard) {
+      if (role === 'Manager') {
+        createFormCard.style.display = 'none';
+      } else {
+        createFormCard.style.display = 'block';
+      }
+    }
+
     const proAccordion = document.getElementById('pro-accordion');
     if (proAccordion) {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
+    // Platform Traffic Sources Scoping for Editor / Manager
+    const chipInstagram = document.getElementById('chip-instagram');
+    const chipCustomWeb = document.getElementById('chip-custom-website');
+    if (chipInstagram) {
+      chipInstagram.style.display = (isFullAdmin || userPerms.includes('instagram')) ? 'inline-flex' : 'none';
+    }
+    if (chipCustomWeb) {
+      chipCustomWeb.style.display = (isFullAdmin || userPerms.includes('custom_website')) ? 'inline-flex' : 'none';
     }
   }
 
@@ -687,8 +762,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const getNum = (id) => { const el = document.getElementById(id); return el ? parseInt(el.value || 0, 10) : 0; };
 
       const domain = getVal('link-domain') || 'goo33.online';
-      const code = getVal('link-code');
-      const targetUrl = getVal('target-url');
+
+      // 1. Auto-generate random slug if code is empty/hidden
+      let code = getVal('link-code');
+      if (!code) {
+        code = Math.random().toString(36).substring(2, 8);
+      }
+
+      // 2. Resolve targetUrl (Admin text input vs Editor dropdown select vs Post URL paste)
+      let targetUrl = '';
+      const targetInput = document.getElementById('target-url');
+      const targetSelect = document.getElementById('target-url-select');
+      const postUrlInput = document.getElementById('post-url-input');
+      const postUrlVal = postUrlInput ? postUrlInput.value.trim() : '';
+
+      if (postUrlVal && (postUrlVal.startsWith('http://') || postUrlVal.startsWith('https://'))) {
+        targetUrl = postUrlVal;
+      } else if (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value) {
+        let baseUrl = targetSelect.value.trim().replace(/\/+$/, '');
+        let path = postUrlVal ? (postUrlVal.startsWith('/') ? postUrlVal : '/' + postUrlVal) : '';
+        targetUrl = baseUrl + path;
+      } else if (targetInput && targetInput.value) {
+        targetUrl = targetInput.value.trim();
+      }
+
+      if (!targetUrl) {
+        showAlert('Please select or enter a valid Target URL.', true);
+        return;
+      }
+
       const fallbackUrl = getVal('fallback-url') || 'https://www.google.com';
       const delaySeconds = getNum('delay-seconds');
       const maxClicks = getNum('max-clicks');
@@ -947,6 +1049,60 @@ document.addEventListener('DOMContentLoaded', () => {
   const logsTbody = document.getElementById('logs-tbody');
   const clearLogsBtn = document.getElementById('clear-logs-btn');
 
+  function formatReferrerBadge(refererStr) {
+    if (!refererStr || refererStr.trim() === '' || refererStr.toLowerCase() === 'direct/blank' || refererStr.toLowerCase() === 'direct') {
+      return `<span class="badge" style="background:var(--border, #e2e8f0); color:var(--text-secondary, #475569); font-weight:700; padding:0.25rem 0.6rem; border-radius:12px; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.3rem;">🔗 Direct / Blank</span>`;
+    }
+
+    let decodedRef = refererStr.trim();
+    try { decodedRef = decodeURIComponent(refererStr); } catch(e) {}
+    const refLower = decodedRef.toLowerCase();
+
+    // Facebook Referrers (lm.facebook.com, l.facebook.com, m.facebook.com, facebook.com, fb)
+    if (refLower.includes('facebook') || refLower.includes('fb.com') || refLower.includes('fb.me')) {
+      return `<span class="badge" style="background:#1877f2; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(24,119,242,0.25);">
+        <svg width="14" height="14" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+        <span>Facebook</span>
+      </span>`;
+    }
+
+    // Instagram Referrers
+    if (refLower.includes('instagram') || refLower.includes('instagr.am')) {
+      return `<span class="badge" style="background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(220,39,67,0.25);">
+        <svg width="14" height="14" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        <span>Instagram</span>
+      </span>`;
+    }
+
+    // WhatsApp Referrers
+    if (refLower.includes('whatsapp') || refLower.includes('wa.me')) {
+      return `<span class="badge" style="background:#25d366; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(37,211,102,0.25);">
+        💬 <span>WhatsApp</span>
+      </span>`;
+    }
+
+    // Google Referrers
+    if (refLower.includes('google')) {
+      return `<span class="badge" style="background:#4285f4; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(66,133,244,0.25);">
+        🔍 <span>Google</span>
+      </span>`;
+    }
+
+    // Generic Domain Referrer
+    try {
+      const parsed = new URL(/^https?:\/\//i.test(decodedRef) ? decodedRef : 'https://' + decodedRef);
+      const domainHost = parsed.hostname.replace(/^www\./, '');
+      return `<span class="badge" style="background:var(--surface-2, #f1f5f9); color:var(--text-primary, #1e293b); font-weight:700; padding:0.25rem 0.65rem; border-radius:12px; font-size:0.75rem; border:1px solid var(--border, #cbd5e1); display:inline-flex; align-items:center; gap:0.3rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        🌐 <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${domainHost}</span>
+      </span>`;
+    } catch (e) {
+      let cleanText = decodedRef.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+      return `<span class="badge" style="background:var(--surface-2, #f1f5f9); color:var(--text-primary, #1e293b); font-weight:700; padding:0.25rem 0.65rem; border-radius:12px; font-size:0.75rem; border:1px solid var(--border, #cbd5e1); display:inline-flex; align-items:center; gap:0.3rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        🌐 <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${cleanText}</span>
+      </span>`;
+    }
+  }
+
   async function loadAnalytics() {
     try {
       const res = await fetch('/api/admin/logs');
@@ -954,9 +1110,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!Array.isArray(logs) || logs.length === 0) {
         if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No traffic logs recorded yet.</td></tr>`;
-        document.getElementById('stat-total-clicks').textContent = '0';
-        document.getElementById('stat-organic-clicks').textContent = '0';
-        document.getElementById('stat-fallback-clicks').textContent = '0';
+        const totalEl = document.getElementById('stat-total-clicks');
+        if (totalEl) totalEl.textContent = '0';
+        const orgEl = document.getElementById('stat-organic-clicks');
+        if (orgEl) orgEl.textContent = '0';
+        const fbEl = document.getElementById('stat-fallback-clicks');
+        if (fbEl) fbEl.textContent = '0';
         return;
       }
 
@@ -968,16 +1127,30 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (log.status === 'FALLBACK_REDIRECT') fallbackCount++;
       });
 
-      document.getElementById('stat-total-clicks').textContent = logs.length;
-      document.getElementById('stat-organic-clicks').textContent = organicCount;
-      document.getElementById('stat-fallback-clicks').textContent = fallbackCount;
+      const totalEl = document.getElementById('stat-total-clicks');
+      if (totalEl) totalEl.textContent = logs.length;
+      const orgEl = document.getElementById('stat-organic-clicks');
+      if (orgEl) orgEl.textContent = organicCount;
+      const fbEl = document.getElementById('stat-fallback-clicks');
+      if (fbEl) fbEl.textContent = fallbackCount;
+
+      // Filter out blocked firewall entries from UI table (works in background silently)
+      const displayLogs = logs.filter(log => {
+        if (!log.status) return true;
+        const st = log.status.toUpperCase();
+        return !st.includes('BLOCKED') && !st.includes('FIREWALL') && !st.includes('RATE_LIMITED');
+      });
+
+      if (!Array.isArray(displayLogs) || displayLogs.length === 0) {
+        if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">No organic traffic logs recorded yet. (Blocked firewall entries run silently in background).</td></tr>`;
+        return;
+      }
 
       if (logsTbody) {
-        logsTbody.innerHTML = logs.slice(0, 250).map(log => {
+        logsTbody.innerHTML = displayLogs.slice(0, 250).map(log => {
           let badgeClass = 'badge-info';
           if (log.status === 'ORGANIC_CLICK') badgeClass = 'badge-success';
           if (log.status === 'FALLBACK_REDIRECT') badgeClass = 'badge-warning';
-          if (log.status === 'IP_FIREWALL_BLOCKED' || log.status === 'RATE_LIMITED' || log.status.includes('EXCEEDED') || log.status.includes('EXPIRED')) badgeClass = 'badge-danger';
 
           const timeStr = new Date(log.timestamp).toLocaleTimeString();
           const flag = log.flag || '🌐';
@@ -995,12 +1168,20 @@ document.addEventListener('DOMContentLoaded', () => {
               <td data-label="Time" style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</td>
               <td data-label="Code"><strong style="color: var(--accent-primary); font-size: 0.875rem;">/${log.code || '-'}</strong></td>
               <td data-label="IP / ISP">
-                <code>${log.ip || '-'}</code><br>
-                <small style="color: var(--text-muted); font-size: 0.7rem;">${log.isp || 'ISP'}</small>
+                <div class="ip-isp-cell">
+                  <div class="ip-row">
+                    <span class="mobile-sublabel">IP</span>
+                    <code>${log.ip || '-'}</code>
+                  </div>
+                  <div class="isp-row">
+                    <span class="mobile-sublabel">ISP</span>
+                    <small class="isp-text">${log.isp || 'ISP'}</small>
+                  </div>
+                </div>
               </td>
               <td data-label="Location" style="font-size: 0.775rem;">${location}</td>
               <td data-label="Connection">${connectionBadge}</td>
-              <td data-label="Referrer" style="max-width: 140px; word-break: break-all; font-size: 0.75rem;">${log.referer || 'Direct/Blank'}</td>
+              <td data-label="Referrer">${formatReferrerBadge(log.referer)}</td>
               <td data-label="Status"><span class="badge ${badgeClass}">${log.status}</span></td>
               <td data-label="Dwell"><span style="font-weight: 600; color: var(--accent-primary);">${durationStr}</span></td>
               <td data-label="Action">
@@ -1244,6 +1425,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ---- DYNAMIC PER-USER SITES MANAGER HELPERS ----
+  function renderUserSiteInputRow(container, initialDomain = '') {
+    if (!container) return;
+    const currentRows = container.querySelectorAll('.user-site-item-row');
+    if (currentRows.length >= 10) {
+      showAlert('Maximum 10 allowed websites permitted per user account.', true);
+      return;
+    }
+
+    const emptyNotice = container.querySelector('#invite-sites-empty-msg, #edit-sites-empty-msg');
+    if (emptyNotice) emptyNotice.style.display = 'none';
+
+    const row = document.createElement('div');
+    row.className = 'user-site-item-row';
+    row.style.cssText = 'display:flex; gap:0.4rem; align-items:center; width:100%; margin-bottom:0.25rem;';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control user-site-input';
+    input.placeholder = 'e.g. Akel.com';
+    input.value = initialDomain;
+    input.style.cssText = 'font-weight:700; font-size:0.8rem; padding:0.45rem 0.65rem; height:36px; min-height:36px; flex:1; min-width:0;';
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.innerHTML = '🗑️';
+    delBtn.title = 'Remove Site';
+    delBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:8px; padding:0.4rem 0.65rem; cursor:pointer; font-weight:700; flex-shrink:0; font-size:0.75rem; min-height:36px; height:36px;';
+
+    delBtn.addEventListener('click', () => {
+      row.remove();
+      const remaining = container.querySelectorAll('.user-site-item-row');
+      if (remaining.length === 0 && emptyNotice) {
+        emptyNotice.style.display = 'block';
+      }
+    });
+
+    row.appendChild(input);
+    row.appendChild(delBtn);
+    container.appendChild(row);
+  }
+
+  const btnAddInviteSite = document.getElementById('btn-add-invite-site');
+  const inviteSitesList = document.getElementById('invite-sites-list');
+  if (btnAddInviteSite && inviteSitesList) {
+    btnAddInviteSite.addEventListener('click', () => {
+      renderUserSiteInputRow(inviteSitesList, '');
+    });
+  }
+
+  const btnAddEditUserSite = document.getElementById('btn-add-edit-user-site');
+  const editUserSitesList = document.getElementById('edit-user-sites-list');
+  if (btnAddEditUserSite && editUserSitesList) {
+    btnAddEditUserSite.addEventListener('click', () => {
+      renderUserSiteInputRow(editUserSitesList, '');
+    });
+  }
+
+  let allUsersCache = [];
+
   async function loadUsers() {
     if (!usersTbody) return;
     try {
@@ -1255,6 +1496,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      allUsersCache = users;
+
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
         const roleColor = user.role === 'Admin' ? '#ef4444' : (user.role === 'Manager' ? '#3b82f6' : '#10b981');
@@ -1262,6 +1505,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const passChip = user.rawPassword
           ? `<span style="font-family:monospace;font-size:0.73rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.09);padding:0.18rem 0.5rem;border-radius:6px;letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;display:inline-block;vertical-align:middle;">${user.rawPassword}</span>`
           : `<span style="color:var(--text-muted);font-size:0.8rem;letter-spacing:0.12em;">••••••••</span>`;
+
+        const userSites = Array.isArray(user.allowedTargetDomains) ? user.allowedTargetDomains : [];
+        const sitesBadge = userSites.length > 0
+          ? `<span style="font-size:0.68rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.08);padding:0.2rem 0.55rem;border-radius:12px;border:1px solid rgba(24,119,242,0.2);">🌐 Sites: ${userSites.join(', ')}</span>`
+          : `<span style="font-size:0.68rem;font-weight:600;color:var(--text-muted);">🌐 Sites: Default / Global</span>`;
 
         return `
           <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid var(--border,#e8eaf0);border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
@@ -1278,6 +1526,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Role Badge -->
             <span style="font-size:0.68rem;font-weight:800;color:${roleColor};background:${roleBg};border:1px solid ${roleColor}33;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;flex-shrink:0;">${user.role || 'Editor'}</span>
 
+            <!-- Assigned Sites Badge -->
+            <div style="flex-shrink:0;">${sitesBadge}</div>
+
             <!-- Password chip -->
             <div style="flex-shrink:0;">${passChip}</div>
 
@@ -1285,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:flex;gap:0.5rem;margin-left:auto;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
               ${isSelf
                 ? `<span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:0.4rem 0;">Current Account</span>`
-                : `<button onclick="openEditUserModal('${user.username}','${encodeURIComponent(user.rawPassword||'')}','${user.id}','${user.role || 'Editor'}','${encodeURIComponent(JSON.stringify(user.permissions || []))}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
+                : `<button onclick="openEditUserModal('${user.id}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
                    <button onclick="openDeleteUserModal('${user.id}','${user.username}')" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(239,68,68,0.3);display:flex;align-items:center;gap:0.35rem;">🗑️ Delete</button>`
               }
             </div>
@@ -1338,12 +1589,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const editUserSaveRoleBtn = document.getElementById('edit-user-save-role-btn');
   const editUserRoleSuccess = document.getElementById('edit-user-role-success');
 
-  window.openEditUserModal = function(username, encodedPass, id, role, encodedPerms) {
+  window.openEditUserModal = function(userId) {
+    const user = allUsersCache.find(u => u.id === userId);
+    if (!user) return;
+
+    const username = user.username;
     _editModalUsername = username;
-    _editUserId = id || '';
-    const rawPass = decodeURIComponent(encodedPass || '');
-    let perms = [];
-    try { perms = JSON.parse(decodeURIComponent(encodedPerms || '[]')); } catch(e) {}
+    _editUserId = user.id;
+    const rawPass = user.rawPassword || '';
+    const perms = Array.isArray(user.permissions) ? user.permissions : [];
+    const userSites = Array.isArray(user.allowedTargetDomains) ? user.allowedTargetDomains : [];
 
     const directUrl = `${window.location.origin}/login?u=${encodeURIComponent(username)}&p=${encodeURIComponent(rawPass)}`;
     if (editUserModalSubtitle) editUserModalSubtitle.textContent = `👤 ${username}`;
@@ -1353,11 +1608,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editUserPassSuccess) editUserPassSuccess.style.display = 'none';
     if (editUserRoleSuccess) editUserRoleSuccess.style.display = 'none';
 
-    if (editUserRoleSelect) editUserRoleSelect.value = role || 'Editor';
+    if (editUserRoleSelect) editUserRoleSelect.value = user.role || 'Editor';
 
     document.querySelectorAll('.edit-perm-cb').forEach(cb => {
-      cb.checked = Array.isArray(perms) && perms.includes(cb.value);
+      cb.checked = perms.includes(cb.value);
     });
+
+    // Populate user's individual allowed sites in Edit User modal
+    if (editUserSitesList) {
+      editUserSitesList.querySelectorAll('.user-site-item-row').forEach(row => row.remove());
+      const emptyNotice = editUserSitesList.querySelector('#edit-sites-empty-msg');
+      if (userSites.length > 0) {
+        if (emptyNotice) emptyNotice.style.display = 'none';
+        userSites.forEach(site => renderUserSiteInputRow(editUserSitesList, site));
+      } else {
+        if (emptyNotice) emptyNotice.style.display = 'block';
+      }
+    }
 
     if (editUserModal) { editUserModal.style.display = 'flex'; }
   };
@@ -1416,6 +1683,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!_editUserId) return;
       const role = editUserRoleSelect ? editUserRoleSelect.value : 'Editor';
       const permissions = Array.from(document.querySelectorAll('.edit-perm-cb:checked')).map(cb => cb.value);
+      const allowedTargetDomains = Array.from(document.querySelectorAll('#edit-user-sites-list .user-site-input'))
+        .map(inp => inp.value.trim())
+        .filter(Boolean);
 
       editUserSaveRoleBtn.textContent = '⏳ Saving...';
       editUserSaveRoleBtn.disabled = true;
@@ -1424,14 +1694,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/api/admin/users/update-role', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: _editUserId, role, permissions })
+          body: JSON.stringify({ id: _editUserId, role, permissions, allowedTargetDomains })
         });
         const data = await res.json();
         editUserSaveRoleBtn.textContent = '💾 Save Role & Permissions';
         editUserSaveRoleBtn.disabled = false;
         if (res.ok && data.success) {
           if (editUserRoleSuccess) {
-            editUserRoleSuccess.textContent = `✅ Role & Permissions updated successfully!`;
+            editUserRoleSuccess.textContent = `✅ Role, Permissions & Assigned Sites updated successfully!`;
             editUserRoleSuccess.style.display = 'block';
           }
           loadUsers();
@@ -1523,12 +1793,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('new-user-password').value.trim();
       const role = document.getElementById('new-user-role').value;
       const permissions = Array.from(document.querySelectorAll('.new-perm-cb:checked')).map(cb => cb.value);
+      const allowedTargetDomains = Array.from(document.querySelectorAll('#invite-sites-list .user-site-input'))
+        .map(inp => inp.value.trim())
+        .filter(Boolean);
 
       try {
         const res = await fetch('/api/admin/users/invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, role, permissions })
+          body: JSON.stringify({ username, password, role, permissions, allowedTargetDomains })
         });
 
 

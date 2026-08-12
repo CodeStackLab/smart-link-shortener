@@ -29,6 +29,85 @@ function ensureAbsoluteUrl(url) {
   return 'https://' + trimmed;
 }
 
+function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androidUrl) {
+  if (userRole === 'Admin') {
+    return { allowed: true };
+  }
+
+  const userObj = db.getUserByUsername(username);
+  const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
+  const settings = db.getSettings();
+  const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
+
+  let allowedDomainsList = [];
+  if (userAllowed.length > 0) {
+    allowedDomainsList = userAllowed;
+  } else if (settings.restrictEditorDomains !== false && globalAllowed.length > 0) {
+    allowedDomainsList = globalAllowed;
+  } else if (settings.restrictEditorDomains !== false) {
+    return {
+      allowed: false,
+      error: `Access Denied: Admin has not assigned any allowed target websites to your account ('${username}'). Contact Admin to assign allowed websites.`
+    };
+  } else {
+    return { allowed: true };
+  }
+
+  const cleanAllowed = allowedDomainsList
+    .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
+    .filter(Boolean);
+
+  if (cleanAllowed.length === 0) {
+    return {
+      allowed: false,
+      error: `Access Denied: Admin has not assigned any allowed target websites to your account ('${username}'). Contact Admin to assign allowed websites.`
+    };
+  }
+
+  const checkUrl = (urlStr) => {
+    if (!urlStr) return { ok: true };
+    try {
+      const fullUrl = ensureAbsoluteUrl(urlStr);
+      const parsed = new URL(fullUrl);
+      let host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+      const match = cleanAllowed.some(domain => host === domain || host.endsWith('.' + domain));
+      return { ok: match, host };
+    } catch (e) {
+      return { ok: false, host: 'invalid' };
+    }
+  };
+
+  const targetCheck = checkUrl(targetUrl);
+  if (!targetCheck.ok) {
+    return {
+      allowed: false,
+      error: `Access Denied: Your account '${username}' is only allowed to shorten assigned websites (${cleanAllowed.slice(0, 3).join(', ')}${cleanAllowed.length > 3 ? '...' : ''}). Domain '${targetCheck.host}' is not allowed.`
+    };
+  }
+
+  if (iosUrl) {
+    const iosCheck = checkUrl(iosUrl);
+    if (!iosCheck.ok) {
+      return {
+        allowed: false,
+        error: `Access Denied: iOS URL domain '${iosCheck.host}' is not in your account's allowed websites list.`
+      };
+    }
+  }
+
+  if (androidUrl) {
+    const androidCheck = checkUrl(androidUrl);
+    if (!androidCheck.ok) {
+      return {
+        allowed: false,
+        error: `Access Denied: Android URL domain '${androidCheck.host}' is not in your account's allowed websites list.`
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -110,11 +189,19 @@ app.post('/api/logout', (req, res) => {
 
 app.get('/api/session', (req, res) => {
   if (req.session && req.session.isAdmin) {
+    const userObj = db.getUserByUsername(req.session.username);
+    const settings = db.getSettings();
+    const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
+    const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
+
+    const finalAllowed = userAllowed.length > 0 ? userAllowed : globalAllowed;
+
     return res.json({
       authenticated: true,
       username: req.session.username,
       role: req.session.role,
-      permissions: req.session.permissions || db.getDefaultPermissions(req.session.role)
+      permissions: req.session.permissions || db.getDefaultPermissions(req.session.role),
+      allowedTargetDomains: finalAllowed
     });
   }
   return res.json({ authenticated: false });
@@ -127,7 +214,7 @@ app.get('/api/session', (req, res) => {
 
 app.get('/api/admin/links', requireAuth, (req, res) => {
   const links = db.getLinks();
-  if (req.session.role === 'Admin') {
+  if (req.session.role === 'Admin' || req.session.role === 'Manager') {
     return res.json(links);
   }
   const userLinks = links.filter(l => l.createdBy === req.session.username);
@@ -135,6 +222,10 @@ app.get('/api/admin/links', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/links', requireAuth, (req, res) => {
+  if (req.session.role === 'Manager') {
+    return res.status(403).json({ error: 'Manager accounts have View-Only access to all links and cannot create new links.' });
+  }
+
   const {
     code,
     targetUrl,
@@ -154,6 +245,11 @@ app.post('/api/admin/links', requireAuth, (req, res) => {
 
   if (!targetUrl) {
     return res.status(400).json({ error: 'Target URL is required.' });
+  }
+
+  const domainCheck = isTargetUrlAllowedForUser(req.session.username, req.session.role, targetUrl, iosUrl, androidUrl);
+  if (!domainCheck.allowed) {
+    return res.status(403).json({ error: domainCheck.error });
   }
 
   let cleanCode = '';
@@ -226,6 +322,9 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   if (!existingLink) {
     return res.status(404).json({ error: 'Link not found.' });
   }
+  if (req.session.role === 'Manager') {
+    return res.status(403).json({ error: 'Access denied. Manager accounts have View-Only access and cannot modify links.' });
+  }
   if (req.session.role !== 'Admin' && existingLink.createdBy !== req.session.username) {
     return res.status(403).json({ error: 'Access denied. You can only modify your own created links.' });
   }
@@ -246,6 +345,13 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     active,
     domain
   } = req.body;
+
+  if (targetUrl) {
+    const domainCheck = isTargetUrlAllowedForUser(req.session.username, req.session.role, targetUrl, iosUrl, androidUrl);
+    if (!domainCheck.allowed) {
+      return res.status(403).json({ error: domainCheck.error });
+    }
+  }
 
   let processedCustomDomains = undefined;
   if (Array.isArray(customDomains)) {
@@ -373,8 +479,18 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     vpnLimitMinutes,
     blockSuspiciousCountries,
     blockKnownScrapers,
-    honeypotProtectionEnabled
+    honeypotProtectionEnabled,
+    restrictEditorDomains,
+    allowedTargetDomains
   } = req.body;
+
+  let processedAllowedDomains = undefined;
+  if (Array.isArray(allowedTargetDomains)) {
+    processedAllowedDomains = allowedTargetDomains
+      .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
+      .filter(Boolean)
+      .slice(0, 10);
+  }
 
   const updated = db.updateSettings({
     rateLimitWindowSeconds: rateLimitWindowSeconds !== undefined ? parseInt(rateLimitWindowSeconds, 10) : undefined,
@@ -388,7 +504,9 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     vpnLimitMinutes: vpnLimitMinutes !== undefined ? parseInt(vpnLimitMinutes, 10) : undefined,
     blockSuspiciousCountries: blockSuspiciousCountries !== undefined ? !!blockSuspiciousCountries : undefined,
     blockKnownScrapers: blockKnownScrapers !== undefined ? !!blockKnownScrapers : undefined,
-    honeypotProtectionEnabled: honeypotProtectionEnabled !== undefined ? !!honeypotProtectionEnabled : undefined
+    honeypotProtectionEnabled: honeypotProtectionEnabled !== undefined ? !!honeypotProtectionEnabled : undefined,
+    restrictEditorDomains: restrictEditorDomains !== undefined ? !!restrictEditorDomains : undefined,
+    allowedTargetDomains: processedAllowedDomains
   });
 
   res.json({ success: true, settings: updated });
@@ -608,7 +726,7 @@ app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
 app.get('/api/admin/logs', requireAuth, (req, res) => {
   const logs = db.getLogs();
   const cleanLogs = logs.filter(l => l.status !== 'SOCIAL_CRAWLER');
-  if (req.session.role === 'Admin') {
+  if (req.session.role === 'Admin' || req.session.role === 'Manager') {
     return res.json(cleanLogs);
   }
   const userCodes = db.getLinks()
@@ -655,7 +773,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
-  const { username, password, role, permissions } = req.body;
+  const { username, password, role, permissions, allowedTargetDomains } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required.' });
   }
@@ -670,6 +788,20 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   const assignedRole = ['Admin', 'Manager', 'Viewer', 'Editor'].includes(role) ? role : 'Editor';
   const assignedPerms = Array.isArray(permissions) ? permissions : db.getDefaultPermissions(assignedRole);
 
+  let processedAllowed = [];
+  if (Array.isArray(allowedTargetDomains)) {
+    processedAllowed = allowedTargetDomains
+      .map(d => {
+        if (typeof d !== 'string') return '';
+        let val = d.trim();
+        if (!val) return '';
+        if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
+        return val;
+      })
+      .filter(Boolean)
+      .slice(0, 10);
+  }
+
   const newUser = {
     id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     username: cleanUser,
@@ -677,6 +809,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
     rawPassword: password.trim(),
     role: assignedRole,
     permissions: assignedPerms,
+    allowedTargetDomains: processedAllowed,
     createdAt: new Date().toISOString()
   };
 
@@ -693,6 +826,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
       rawPassword: newUser.rawPassword,
       role: newUser.role,
       permissions: newUser.permissions,
+      allowedTargetDomains: newUser.allowedTargetDomains,
       directLoginUrl: directLoginUrl,
       createdAt: newUser.createdAt
     }
@@ -704,7 +838,7 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
-  const { id, role, permissions } = req.body;
+  const { id, role, permissions, allowedTargetDomains } = req.body;
   const users = db.getUsers();
   const target = users.find(u => u.id === id);
 
@@ -716,7 +850,7 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Cannot change role of primary Admin account.' });
   }
 
-  db.updateUserRole(id, role, permissions);
+  db.updateUserRole(id, role, permissions, allowedTargetDomains);
   res.json({ success: true });
 });
 

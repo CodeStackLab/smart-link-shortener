@@ -1570,14 +1570,90 @@ table td:nth-child(3)  /* Fallback URL */ {
   td[data-label="Short Link"]::before,
   td[data-label="Target URL"]::before, 
   td[data-label="Fallback URL"]::before {
-    margin-bottom: 0.2rem !important;
+    margin-bottom: 0.25rem !important;
   }
   td[data-label="Short Link"] > *,
   td[data-label="Target URL"] > *, 
   td[data-label="Fallback URL"] > * {
     text-align: left !important;
     width: 100% !important;
-    word-break: break-all !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Referrer & IP / ISP same-line row alignment on mobile */
+  td[data-label="Referrer"] {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  /* Sub-row layout for IP & ISP on Mobile */
+  td[data-label="IP / ISP"]::before {
+    display: none !important;
+  }
+  td[data-label="IP / ISP"] {
+    display: block !important;
+    padding: 0.5rem 0.85rem !important;
+  }
+  .ip-isp-cell {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.35rem !important;
+  }
+  .mobile-sublabel {
+    display: inline-block !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    color: var(--text-muted, #64748b) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    flex-shrink: 0 !important;
+  }
+  .ip-row {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+    padding-bottom: 0.35rem !important;
+    border-bottom: 1px dashed var(--border, #e2e8f0) !important;
+  }
+  .isp-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 0.5rem !important;
+  }
+  .isp-text {
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary, #1e293b) !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Prevent IP address wrapping / line distortion on mobile */
+  td code,
+  td[data-label="IP / ISP"] code,
+  td[data-label="IP Address"] code {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    font-family: monospace, SFMono-Regular, Consolas, monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.88rem !important;
+    display: inline-block !important;
+    background: rgba(59, 130, 246, 0.08) !important;
+    color: #1d4ed8 !important;
+    padding: 0.15rem 0.45rem !important;
+    border-radius: 6px !important;
+    margin-bottom: 0.2rem !important;
   }
 
   /* Allowed Traffic Sources Responsiveness: 2 Columns Grid */

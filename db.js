@@ -93,7 +93,9 @@ function initDb() {
     vpnLimitMinutes: 90,
     blockSuspiciousCountries: false,
     blockKnownScrapers: false,
-    honeypotProtectionEnabled: false
+    honeypotProtectionEnabled: false,
+    restrictEditorDomains: true,
+    allowedTargetDomains: []
   };
 
   if (!settings) {
@@ -165,7 +167,9 @@ module.exports = {
     vpnLimitMinutes: 90,
     blockSuspiciousCountries: false,
     blockKnownScrapers: false,
-    honeypotProtectionEnabled: false
+    honeypotProtectionEnabled: false,
+    restrictEditorDomains: true,
+    allowedTargetDomains: []
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -180,7 +184,9 @@ module.exports = {
       vpnLimitMinutes: 90,
       blockSuspiciousCountries: false,
       blockKnownScrapers: false,
-      honeypotProtectionEnabled: false
+      honeypotProtectionEnabled: false,
+      restrictEditorDomains: true,
+      allowedTargetDomains: []
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);
@@ -247,14 +253,15 @@ module.exports = {
     return users.map(u => {
       const role = u.role || 'Editor';
       const defaultPerms = role === 'Admin'
-        ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : (role === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
+        ? ['links', 'instagram', 'custom_website', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : (role === 'Manager' ? ['links', 'instagram', 'custom_website', 'domains', 'geo', 'analytics'] : ['links', 'instagram', 'custom_website', 'geo', 'analytics']);
       return {
         id: u.id,
         username: u.username,
         rawPassword: u.rawPassword || '',
         role: role,
         permissions: Array.isArray(u.permissions) ? u.permissions : defaultPerms,
+        allowedTargetDomains: Array.isArray(u.allowedTargetDomains) ? u.allowedTargetDomains : [],
         twoFactorEnabled: !!u.twoFactorEnabled,
         createdAt: u.createdAt || new Date().toISOString()
       };
@@ -271,6 +278,20 @@ module.exports = {
         ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
         : (user.role === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
     }
+    if (Array.isArray(user.allowedTargetDomains)) {
+      user.allowedTargetDomains = user.allowedTargetDomains
+        .map(d => {
+          if (typeof d !== 'string') return '';
+          let val = d.trim();
+          if (!val) return '';
+          if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
+          return val;
+        })
+        .filter(Boolean)
+        .slice(0, 10);
+    } else {
+      user.allowedTargetDomains = [];
+    }
     users.push(user);
     writeJson(FILES.users, users);
     return user;
@@ -280,12 +301,24 @@ module.exports = {
     users = users.filter(u => u.id !== id);
     writeJson(FILES.users, users);
   },
-  updateUserRole: (id, role, permissions) => {
+  updateUserRole: (id, role, permissions, allowedTargetDomains) => {
     const users = readJson(FILES.users, []);
     const user = users.find(u => u.id === id);
     if (user) {
-      user.role = role;
+      if (role !== undefined) user.role = role;
       if (Array.isArray(permissions)) user.permissions = permissions;
+      if (Array.isArray(allowedTargetDomains)) {
+        user.allowedTargetDomains = allowedTargetDomains
+          .map(d => {
+            if (typeof d !== 'string') return '';
+            let val = d.trim();
+            if (!val) return '';
+            if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
+            return val;
+          })
+          .filter(Boolean)
+          .slice(0, 10);
+      }
       writeJson(FILES.users, users);
     }
   },
