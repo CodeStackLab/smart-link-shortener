@@ -36,24 +36,15 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
 
   const userObj = db.getUserByUsername(username);
   const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
-  const settings = db.getSettings();
-  const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
 
-  let allowedDomainsList = [];
-  if (userAllowed.length > 0) {
-    allowedDomainsList = userAllowed;
-  } else if (settings.restrictEditorDomains !== false && globalAllowed.length > 0) {
-    allowedDomainsList = globalAllowed;
-  } else if (settings.restrictEditorDomains !== false) {
+  if (userAllowed.length === 0) {
     return {
       allowed: false,
       error: `Access Denied: Admin has not assigned any allowed target websites to your account ('${username}'). Contact Admin to assign allowed websites.`
     };
-  } else {
-    return { allowed: true };
   }
 
-  const cleanAllowed = allowedDomainsList
+  const cleanAllowed = userAllowed
     .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
     .filter(Boolean);
 
@@ -64,44 +55,23 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
     };
   }
 
-  const checkUrl = (urlStr) => {
-    if (!urlStr) return { ok: true };
+  const urlsToCheck = [targetUrl, iosUrl, androidUrl].filter(Boolean);
+
+  for (const urlStr of urlsToCheck) {
     try {
-      const fullUrl = ensureAbsoluteUrl(urlStr);
-      const parsed = new URL(fullUrl);
-      let host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-      const match = cleanAllowed.some(domain => host === domain || host.endsWith('.' + domain));
-      return { ok: match, host };
+      const parsed = new URL(urlStr.startsWith('http') ? urlStr : 'https://' + urlStr);
+      const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+
+      const isMatched = cleanAllowed.some(cleanAllowedDom => host === cleanAllowedDom || host.endsWith('.' + cleanAllowedDom));
+
+      if (!isMatched) {
+        return {
+          allowed: false,
+          error: `Access Denied: Target website '${host}' is not in your assigned allowed websites list (${cleanAllowed.join(', ')}). Contact Admin to assign this website.`
+        };
+      }
     } catch (e) {
-      return { ok: false, host: 'invalid' };
-    }
-  };
-
-  const targetCheck = checkUrl(targetUrl);
-  if (!targetCheck.ok) {
-    return {
-      allowed: false,
-      error: `Access Denied: Your account '${username}' is only allowed to shorten assigned websites (${cleanAllowed.slice(0, 3).join(', ')}${cleanAllowed.length > 3 ? '...' : ''}). Domain '${targetCheck.host}' is not allowed.`
-    };
-  }
-
-  if (iosUrl) {
-    const iosCheck = checkUrl(iosUrl);
-    if (!iosCheck.ok) {
-      return {
-        allowed: false,
-        error: `Access Denied: iOS URL domain '${iosCheck.host}' is not in your account's allowed websites list.`
-      };
-    }
-  }
-
-  if (androidUrl) {
-    const androidCheck = checkUrl(androidUrl);
-    if (!androidCheck.ok) {
-      return {
-        allowed: false,
-        error: `Access Denied: Android URL domain '${androidCheck.host}' is not in your account's allowed websites list.`
-      };
+      return { allowed: false, error: `Invalid URL format: ${urlStr}` };
     }
   }
 
