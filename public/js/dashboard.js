@@ -306,15 +306,11 @@ document.addEventListener('DOMContentLoaded', () => {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
 
-    // Platform Traffic Sources Scoping for Editor / Manager
+    // Platform Traffic Sources Checkboxes (Always visible and enabled for all roles)
     const chipInstagram = document.getElementById('chip-instagram');
     const chipCustomWeb = document.getElementById('chip-custom-website');
-    if (chipInstagram) {
-      chipInstagram.style.display = (isFullAdmin || userPerms.includes('instagram')) ? 'inline-flex' : 'none';
-    }
-    if (chipCustomWeb) {
-      chipCustomWeb.style.display = (isFullAdmin || userPerms.includes('custom_website')) ? 'inline-flex' : 'none';
-    }
+    if (chipInstagram) chipInstagram.style.display = 'inline-flex';
+    if (chipCustomWeb) chipCustomWeb.style.display = 'inline-flex';
   }
 
 
@@ -427,6 +423,24 @@ document.addEventListener('DOMContentLoaded', () => {
       syncActive();
     }
   });
+
+  // Toggle Custom Website Target URL Input box when Customize Website chip is checked
+  const cbCustomWeb = document.getElementById('cb-custom-website');
+  const customWebContainer = document.getElementById('custom-website-input-container');
+  const customWebTargetInput = document.getElementById('custom-website-target-url');
+
+  if (cbCustomWeb && customWebContainer) {
+    const toggleCustomWebInput = () => {
+      if (cbCustomWeb.checked) {
+        customWebContainer.style.display = 'block';
+        if (customWebTargetInput) customWebTargetInput.focus();
+      } else {
+        customWebContainer.style.display = 'none';
+      }
+    };
+    cbCustomWeb.addEventListener('change', toggleCustomWebInput);
+    toggleCustomWebInput();
+  }
 
   // Custom Website Checkbox Chip Toggle
   const customDomainEnableCb = document.getElementById('custom-domain-enable-cb');
@@ -786,14 +800,21 @@ document.addEventListener('DOMContentLoaded', () => {
         code = Math.random().toString(36).substring(2, 8);
       }
 
-      // 2. Resolve targetUrl (Admin text input vs Editor dropdown select vs Post URL paste)
+      // 2. Resolve targetUrl (Admin text input vs Editor dropdown select vs Custom Website input)
       let targetUrl = '';
       const targetInput = document.getElementById('target-url');
       const targetSelect = document.getElementById('target-url-select');
       const postUrlInput = document.getElementById('post-url-input');
       const postUrlVal = postUrlInput ? postUrlInput.value.trim() : '';
 
-      if (postUrlVal && (postUrlVal.startsWith('http://') || postUrlVal.startsWith('https://'))) {
+      const cbCustomWeb = document.getElementById('cb-custom-website');
+      const customWebTargetInput = document.getElementById('custom-website-target-url');
+
+      if (cbCustomWeb && cbCustomWeb.checked && customWebTargetInput && customWebTargetInput.value.trim()) {
+        let customUrl = customWebTargetInput.value.trim();
+        if (!/^https?:\/\//i.test(customUrl)) customUrl = 'https://' + customUrl;
+        targetUrl = customUrl;
+      } else if (postUrlVal && (postUrlVal.startsWith('http://') || postUrlVal.startsWith('https://'))) {
         targetUrl = postUrlVal;
       } else if (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value) {
         let baseUrl = targetSelect.value.trim().replace(/\/+$/, '');
