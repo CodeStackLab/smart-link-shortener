@@ -35,24 +35,29 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
   }
 
   const userObj = db.getUserByUsername(username);
-  const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
+  const userPerms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : [];
 
-  if (userAllowed.length === 0) {
-    return {
-      allowed: false,
-      error: `Access Denied: Admin has not assigned any allowed target websites to your account ('${username}'). Contact Admin to assign allowed websites.`
-    };
+  // If Editor has 'custom_website' permission, allow any custom website target URL!
+  if (userPerms.includes('custom_website')) {
+    return { allowed: true };
   }
 
-  const cleanAllowed = userAllowed
+  const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
+  const settings = db.getSettings();
+  const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
+
+  const combinedAllowed = userAllowed.length > 0 ? userAllowed : globalAllowed;
+
+  if (combinedAllowed.length === 0) {
+    return { allowed: true };
+  }
+
+  const cleanAllowed = combinedAllowed
     .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
     .filter(Boolean);
 
   if (cleanAllowed.length === 0) {
-    return {
-      allowed: false,
-      error: `Access Denied: Admin has not assigned any allowed target websites to your account ('${username}'). Contact Admin to assign allowed websites.`
-    };
+    return { allowed: true };
   }
 
   const urlsToCheck = [targetUrl, iosUrl, androidUrl].filter(Boolean);
@@ -160,16 +165,22 @@ app.post('/api/logout', (req, res) => {
 app.get('/api/session', (req, res) => {
   if (req.session && req.session.isAdmin) {
     const userObj = db.getUserByUsername(req.session.username);
+    if (req.session.username !== 'admin' && !userObj) {
+      req.session.destroy();
+      return res.json({ authenticated: false });
+    }
+
     const settings = db.getSettings();
     const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
     const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
 
     const finalAllowed = (req.session.role !== 'Admin') ? userAllowed : (userAllowed.length > 0 ? userAllowed : globalAllowed);
 
-    let perms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : (req.session.permissions || db.getDefaultPermissions(req.session.role));
-    if (!perms.includes('facebook') && !perms.includes('instagram') && !perms.includes('custom_website')) {
-      perms = ['facebook', 'instagram', 'custom_website', ...perms];
-    }
+    // Always read fresh permissions from DB (respects admin edits without requiring re-login)
+    const defaultPerms = db.getDefaultPermissions(req.session.role || 'Admin');
+    const perms = (userObj && Array.isArray(userObj.permissions) && userObj.permissions.length > 0)
+      ? userObj.permissions
+      : (req.session.permissions || defaultPerms);
 
     return res.json({
       authenticated: true,
@@ -189,7 +200,7 @@ app.get('/api/session', (req, res) => {
 
 app.get('/api/admin/links', requireAuth, (req, res) => {
   const links = db.getLinks();
-  if (req.session.role === 'Admin' || req.session.role === 'Manager') {
+  if (req.session.role === 'Admin') {
     return res.json(links);
   }
   const userLinks = links.filter(l => l.createdBy === req.session.username);
@@ -197,8 +208,13 @@ app.get('/api/admin/links', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/links', requireAuth, (req, res) => {
-  if (req.session.role === 'Manager') {
-    return res.status(403).json({ error: 'Manager accounts have View-Only access to all links and cannot create new links.' });
+  if (req.session.role !== 'Admin') {
+    const userObj = db.getUserByUsername(req.session.username);
+    const userPerms = (userObj && Array.isArray(userObj.permissions) && userObj.permissions.length > 0)
+      ? userObj.permissions : db.getDefaultPermissions('Editor');
+    if (!userPerms.includes('links')) {
+      return res.status(403).json({ error: 'Access denied. Your account does not have Shortlinks creation permission. Ask Admin to enable it.' });
+    }
   }
 
   const {
@@ -265,12 +281,28 @@ app.post('/api/admin/links', requireAuth, (req, res) => {
       .filter(Boolean);
   }
 
+  // Server-side: enforce platform permissions for non-Admin users
+  let finalAllowedPlatforms = Array.isArray(allowedPlatforms) ? allowedPlatforms : ['facebook', 'direct'];
+  if (req.session.role !== 'Admin') {
+    const userObj = db.getUserByUsername(req.session.username);
+    const userPerms = (userObj && Array.isArray(userObj.permissions) && userObj.permissions.length > 0)
+      ? userObj.permissions
+      : db.getDefaultPermissions(req.session.role);
+    // Only keep platforms the user has permission for
+    const platformPermMap = { facebook: 'facebook', instagram: 'instagram', custom_website: 'custom_website' };
+    finalAllowedPlatforms = finalAllowedPlatforms.filter(p => {
+      const permKey = platformPermMap[p];
+      return !permKey || userPerms.includes(permKey);
+    });
+    if (finalAllowedPlatforms.length === 0) finalAllowedPlatforms = ['facebook'];
+  }
+
   const newLink = {
     id: 'link_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     code: cleanCode,
     targetUrl: ensureAbsoluteUrl(targetUrl),
     fallbackUrl: 'https://www.google.com/',
-    allowedPlatforms: Array.isArray(allowedPlatforms) ? allowedPlatforms : ['facebook', 'direct'],
+    allowedPlatforms: finalAllowedPlatforms,
     customDomains: processedCustomDomains,
     delaySeconds: Math.max(0, parseInt(delaySeconds || 0, 10)),
     maxClicks: Math.max(0, parseInt(maxClicks || 0, 10)),
@@ -297,11 +329,15 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   if (!existingLink) {
     return res.status(404).json({ error: 'Link not found.' });
   }
-  if (req.session.role === 'Manager') {
-    return res.status(403).json({ error: 'Access denied. Manager accounts have View-Only access and cannot modify links.' });
-  }
-  if (req.session.role !== 'Admin' && existingLink.createdBy !== req.session.username) {
-    return res.status(403).json({ error: 'Access denied. You can only modify your own created links.' });
+  if (req.session.role !== 'Admin') {
+    const userObj = db.getUserByUsername(req.session.username);
+    const userPerms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : [];
+    if (!userPerms.includes('links')) {
+      return res.status(403).json({ error: 'Access denied. Your account does not have Shortlinks edit permission.' });
+    }
+    if (existingLink.createdBy !== req.session.username) {
+      return res.status(403).json({ error: 'Access denied. You can only modify your own created links.' });
+    }
   }
 
   const {
@@ -363,8 +399,15 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
 app.delete('/api/admin/links/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   const existingLink = db.getLinks().find(l => l.id === id);
-  if (existingLink && req.session.role !== 'Admin' && existingLink.createdBy !== req.session.username) {
-    return res.status(403).json({ error: 'Access denied. You can only delete your own created links.' });
+  if (existingLink && req.session.role !== 'Admin') {
+    const userObj = db.getUserByUsername(req.session.username);
+    const userPerms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : [];
+    if (!userPerms.includes('links')) {
+      return res.status(403).json({ error: 'Access denied. Your account does not have Shortlinks delete permission.' });
+    }
+    if (existingLink.createdBy !== req.session.username) {
+      return res.status(403).json({ error: 'Access denied. You can only delete your own created links.' });
+    }
   }
   db.deleteLink(id);
   res.json({ success: true });
@@ -701,7 +744,7 @@ app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
 app.get('/api/admin/logs', requireAuth, (req, res) => {
   const logs = db.getLogs();
   const cleanLogs = logs.filter(l => l.status !== 'SOCIAL_CRAWLER');
-  if (req.session.role === 'Admin' || req.session.role === 'Manager') {
+  if (req.session.role === 'Admin') {
     return res.json(cleanLogs);
   }
   const userCodes = db.getLinks()
@@ -735,13 +778,6 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
   });
 });
 
-app.get('/api/admin/users', requireAuth, (req, res) => {
-  // If not admin, return 403 unless viewing user list
-  if (req.session.role !== 'Admin') {
-    return res.status(403).json({ error: 'Access denied. Settings permission required.' });
-  }
-  res.json(db.getUsersPublic());
-});
 
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   if (req.session.role !== 'Admin') {
@@ -760,7 +796,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password.trim(), salt);
-  const assignedRole = ['Admin', 'Manager', 'Viewer', 'Editor'].includes(role) ? role : 'Editor';
+  const assignedRole = ['Admin', 'Editor'].includes(role) ? role : 'Editor';
   const assignedPerms = Array.isArray(permissions) ? permissions : db.getDefaultPermissions(assignedRole);
 
   let processedAllowed = [];

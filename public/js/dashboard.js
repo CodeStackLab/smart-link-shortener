@@ -168,16 +168,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentLoggedInUsername = '';
   let currentLoggedInRole = 'Admin';
+  let currentPermissionsString = '';
+  let currentAllowedSitesString = '';
 
-  // Check Session & Update Header User Badge & Apply Role Scoping
-  fetch('/api/session')
-    .then(res => res.json())
-    .then(data => {
-      if (!data.authenticated) {
-        window.location.href = '/admin';
-      } else {
+  function syncSessionLive(isInitial = false) {
+    fetch('/api/session')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.authenticated) {
+          window.location.href = '/admin';
+          return;
+        }
+
         currentLoggedInUsername = data.username || 'admin';
         currentLoggedInRole = data.role || 'Admin';
+
         if (userBadge) {
           const uName = (data.username || 'admin').trim();
           const uRole = (data.role || 'Admin').trim();
@@ -186,18 +191,45 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             userBadge.textContent = `${uName} (${uRole})`;
           }
-          userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : (uRole === 'Manager' ? 'badge-info' : 'badge-success')}`;
+          userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : 'badge-success'}`;
         }
-        applyRoleUiScoping(currentLoggedInRole, data.permissions);
-        updateTargetUrlFieldForRole(data);
-        // Load data AFTER session is confirmed
-        loadLinks();
-        loadUsers();
-      }
-    })
-    .catch(() => {
-      window.location.href = '/admin';
-    });
+
+        const newPermsStr = JSON.stringify(data.permissions || []);
+        const newSitesStr = JSON.stringify(data.allowedTargetDomains || []);
+
+        // Real-Time Live Sync: Automatically re-scope UI if permissions or assigned sites change!
+        if (isInitial || newPermsStr !== currentPermissionsString || newSitesStr !== currentAllowedSitesString) {
+          currentPermissionsString = newPermsStr;
+          currentAllowedSitesString = newSitesStr;
+
+          applyRoleUiScoping(currentLoggedInRole, data.permissions);
+          updateTargetUrlFieldForRole(data);
+
+          // If active tab is now hidden, redirect user to Links tab
+          const activeTabBtn = document.querySelector('.tab-btn.active');
+          if (activeTabBtn && activeTabBtn.style.display === 'none') {
+            const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
+            if (defaultLinksTab) defaultLinksTab.click();
+          }
+        }
+
+        if (isInitial) {
+          loadLinks();
+          loadUsers();
+        }
+      })
+      .catch(() => {
+        if (isInitial) window.location.href = '/admin';
+      });
+  }
+
+  // Initial session check & UI setup
+  syncSessionLive(true);
+
+  // REALTIME LIVE PERMISSION STREAM (Polls every 3.5 seconds)
+  setInterval(() => {
+    syncSessionLive(false);
+  }, 3500);
 
   function updateTargetUrlFieldForRole(sessionData) {
     const targetInput = document.getElementById('target-url');
@@ -207,36 +239,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!targetInput || !targetSelect) return;
 
     const role = sessionData ? sessionData.role : (currentLoggedInRole || 'Admin');
+    const perms = sessionData && Array.isArray(sessionData.permissions) ? sessionData.permissions : userCurrentPermissions;
+    const hasCustomWebPerm = perms.includes('custom_website');
     const allowedSites = (sessionData && Array.isArray(sessionData.allowedTargetDomains)) ? sessionData.allowedTargetDomains : [];
 
-    if (role === 'Admin') {
+    if (role === 'Admin' || hasCustomWebPerm || allowedSites.length === 0) {
       targetInput.style.display = 'block';
       targetInput.required = true;
       targetSelect.style.display = 'none';
       targetSelect.required = false;
+      if (allowedSites.length > 0 && !targetInput.value) {
+        targetInput.value = allowedSites[0];
+      }
     } else {
-      // Editor / Manager sees Dropdown Select Menu
+      // Editor with assigned websites (and no custom_website permission) sees Dropdown Select Menu
       targetInput.style.display = 'none';
       targetInput.required = false;
       targetSelect.style.display = 'block';
       targetSelect.required = true;
 
-      if (allowedSites.length > 0) {
-        const cleanSites = allowedSites.map(s => {
-          let clean = s.trim();
-          if (!/^https?:\/\//i.test(clean)) {
-            clean = 'https://' + clean.replace(/^www\./i, '');
-          }
-          return clean;
-        });
+      const cleanSites = allowedSites.map(s => {
+        let clean = s.trim();
+        if (!/^https?:\/\//i.test(clean)) {
+          clean = 'https://' + clean.replace(/^www\./i, '');
+        }
+        return clean;
+      });
 
-        targetSelect.innerHTML = cleanSites.map(s => `<option value="${s}">🌐 ${s}</option>`).join('');
-        // Automatically default to 1st assigned site so Editor doesn't have to pick manually!
-        targetSelect.value = cleanSites[0];
-        targetInput.value = cleanSites[0];
-      } else {
-        targetSelect.innerHTML = `<option value="">-- No Assigned Target Websites (Ask Admin to add sites in Settings) --</option>`;
-      }
+      targetSelect.innerHTML = cleanSites.map(s => `<option value="${s}">🌐 ${s}</option>`).join('');
+      targetSelect.value = cleanSites[0];
+      targetInput.value = cleanSites[0];
     }
 
     // Auto-update targetInput when post-url-input or targetSelect changes
@@ -271,20 +303,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
     userCurrentPermissions = userPerms;
 
-    // Traffic Source Chips Scoping (Admin ALWAYS gets full access; Editor/Manager gets scoped based on assigned permissions)
-    const chipFacebook = document.getElementById('chip-facebook');
-    const chipInstagram = document.getElementById('chip-instagram');
-    const chipCustomWeb = document.getElementById('chip-custom-website');
+    // Traffic Source Chips Scoping
+    // Admin always gets full access; Editor/Manager sees only permitted chips
+    const platformPermMap = [
+      { chipId: 'chip-facebook', perm: 'facebook', cbId: 'cb-facebook' },
+      { chipId: 'chip-instagram', perm: 'instagram', cbId: 'cb-instagram' },
+      { chipId: 'chip-custom-website', perm: 'custom_website', cbId: 'cb-custom-website' }
+    ];
 
-    if (chipFacebook) {
-      chipFacebook.style.display = (isFullAdmin || userPerms.includes('facebook')) ? 'inline-flex' : 'none';
-    }
-    if (chipInstagram) {
-      chipInstagram.style.display = (isFullAdmin || userPerms.includes('instagram')) ? 'inline-flex' : 'none';
-    }
-    if (chipCustomWeb) {
-      chipCustomWeb.style.display = (isFullAdmin || userPerms.includes('custom_website')) ? 'inline-flex' : 'none';
-    }
+    platformPermMap.forEach(({ chipId, perm, cbId }) => {
+      const chip = document.getElementById(chipId);
+      const cb = document.getElementById(cbId);
+      if (!chip) return;
+      const hasAccess = isFullAdmin || userPerms.includes(perm);
+      if (hasAccess) {
+        chip.style.display = 'flex';
+        chip.style.opacity = '1';
+        chip.style.pointerEvents = '';
+        chip.title = '';
+      } else {
+        // Hide completely — user doesn't have this platform permission
+        chip.style.display = 'none';
+        if (cb) { cb.checked = false; chip.classList.remove('active'); }
+      }
+    });
 
     const navMap = [
       { key: 'links', tabId: 'tab-links' },
@@ -310,11 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const createFormCard = document.querySelector('#create-link-form')?.closest('.card');
     if (createFormCard) {
-      if (role === 'Manager') {
-        createFormCard.style.display = 'none';
-      } else {
-        createFormCard.style.display = 'block';
-      }
+      const canCreate = isFullAdmin || userPerms.includes('links');
+      createFormCard.style.display = canCreate ? 'block' : 'none';
     }
 
     const proAccordion = document.getElementById('pro-accordion');
@@ -574,7 +613,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const isOwner = (link.createdBy || 'admin').toLowerCase() === currentLoggedInUsername.toLowerCase();
-      const canManage = currentLoggedInRole === 'Admin' || isOwner;
+      const hasLinksPerm = userCurrentPermissions.includes('links');
+      const canManage = currentLoggedInRole === 'Admin' || (isOwner && hasLinksPerm);
 
       const actionsHtml = canManage ? `
         <div class="action-btn-group">
@@ -843,12 +883,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const androidUrl = getVal('android-url');
       const iosUrl = getVal('ios-url');
 
-      const allowedPlatforms = ['facebook'];
+      // Build allowedPlatforms — only include platforms the user has permission for
+      const platformPerms = ['facebook', 'instagram', 'custom_website'];
+      const allowedPlatforms = [];
       document.querySelectorAll('.platform-cb:checked').forEach(cb => {
-        if (cb.value && !allowedPlatforms.includes(cb.value)) {
-          allowedPlatforms.push(cb.value);
+        const val = cb.value;
+        // For non-admin users, enforce permission check on each platform
+        const isPermitted = currentLoggedInRole === 'Admin' || userCurrentPermissions.includes(val);
+        if (val && !allowedPlatforms.includes(val) && isPermitted) {
+          allowedPlatforms.push(val);
         }
       });
+      // Ensure at least one platform is included (fallback to whatever's permitted)
+      if (allowedPlatforms.length === 0) {
+        if (userCurrentPermissions.includes('facebook') || currentLoggedInRole === 'Admin') allowedPlatforms.push('facebook');
+        else if (userCurrentPermissions.includes('instagram')) allowedPlatforms.push('instagram');
+      }
 
       const finalCustomDomains = customDomainEnableCb && customDomainEnableCb.checked ? customDomainsList : [];
 
@@ -1542,8 +1592,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
-        const roleColor = user.role === 'Admin' ? '#ef4444' : (user.role === 'Manager' ? '#3b82f6' : '#10b981');
-        const roleBg = user.role === 'Admin' ? 'rgba(239,68,68,0.1)' : (user.role === 'Manager' ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)');
+        const roleColor = user.role === 'Admin' ? '#ef4444' : '#10b981';
+        const roleBg = user.role === 'Admin' ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)';
         const passChip = user.rawPassword
           ? `<span style="font-family:monospace;font-size:0.73rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.09);padding:0.18rem 0.5rem;border-radius:6px;letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;display:inline-block;vertical-align:middle;">${user.rawPassword}</span>`
           : `<span style="color:var(--text-muted);font-size:0.8rem;letter-spacing:0.12em;">••••••••</span>`;
@@ -1835,7 +1885,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const selectedRole = newUserRoleSelect.value;
       const defaultPerms = selectedRole === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : (selectedRole === 'Manager' ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
 
       document.querySelectorAll('.new-perm-cb').forEach(cb => {
         cb.checked = defaultPerms.includes(cb.value);

@@ -245,7 +245,6 @@ module.exports = {
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
     if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    if (role === 'Manager') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'];
     return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']; // Editor default
   },
   getUsersPublic: () => {
@@ -254,11 +253,9 @@ module.exports = {
       const role = u.role || 'Editor';
       const defaultPerms = role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : (role === 'Manager' ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
-      let userPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
-      if (!userPerms.includes('facebook') && !userPerms.includes('instagram') && !userPerms.includes('custom_website')) {
-        userPerms = ['facebook', 'instagram', 'custom_website', ...userPerms];
-      }
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+      // Use saved permissions if explicitly set; otherwise fall back to role defaults
+      const userPerms = Array.isArray(u.permissions) && u.permissions.length > 0 ? u.permissions : defaultPerms;
       return {
         id: u.id,
         username: u.username,
@@ -277,10 +274,11 @@ module.exports = {
   },
   addUser: (user) => {
     const users = readJson(FILES.users, []);
-    if (!Array.isArray(user.permissions)) {
+    // Only set default permissions when none were explicitly provided
+    if (!Array.isArray(user.permissions) || user.permissions.length === 0) {
       user.permissions = user.role === 'Admin'
-        ? ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : (user.role === 'Manager' ? ['links', 'domains', 'geo', 'analytics'] : ['links', 'geo', 'analytics']);
+        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
     }
     if (Array.isArray(user.allowedTargetDomains)) {
       user.allowedTargetDomains = user.allowedTargetDomains
