@@ -631,19 +631,46 @@ input.form-control, textarea.form-control { cursor: text; }
 }
 
 /* Facebook chip active */
-.platform-chip:has(input[value="facebook"]:checked) {
-  background: rgba(24,119,242,0.1); border-color: #1877f2 !important;
-  color: #1877f2 !important; box-shadow: 0 0 0 3px rgba(24,119,242,0.1);
+.platform-chip:has(input[value="facebook"]:checked),
+.platform-chip.active,
+#chip-facebook.active {
+  background: #1877f2 !important; border-color: #1877f2 !important;
+  color: #ffffff !important; box-shadow: 0 4px 14px rgba(24,119,242,0.3) !important;
 }
-/* Instagram chip active */
-.platform-chip:has(input[value="instagram"]:checked) {
-  background: rgba(225,48,108,0.1); border-color: #e1306c !important;
-  color: #e1306c !important; box-shadow: 0 0 0 3px rgba(225,48,108,0.1);
+.platform-chip:has(input[value="facebook"]:checked) svg,
+#chip-facebook svg {
+  fill: #ffffff !important;
 }
+
+/* Instagram chip active / default gradient style */
+#chip-instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+  color: #ffffff !important; border: none !important;
+  box-shadow: 0 4px 14px rgba(220,39,67,0.35) !important;
+}
+#chip-instagram svg {
+  fill: #ffffff !important;
+}
+#chip-instagram span {
+  color: #ffffff !important;
+}
+.platform-chip:has(input[value="instagram"]:checked),
+#chip-instagram.active {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+  color: #ffffff !important; border: none !important;
+  box-shadow: 0 4px 14px rgba(220,39,67,0.35) !important;
+}
+
 /* Custom Website chip active */
-.platform-chip:has(#custom-domain-enable-cb:checked) {
-  background: rgba(131,56,236,0.1); border-color: #8338ec !important;
-  color: #8338ec !important; box-shadow: 0 0 0 3px rgba(131,56,236,0.1);
+.platform-chip:has(input[value="custom_website"]:checked),
+#chip-custom-website.active {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border: none !important;
+  color: #ffffff !important; box-shadow: 0 4px 14px rgba(16,185,129,0.35) !important;
+}
+.platform-chip:has(input[value="custom_website"]:checked) svg,
+#chip-custom-website.active svg {
+  fill: #ffffff !important;
 }
 
 /* Tag Input */
@@ -1656,19 +1683,22 @@ table td:nth-child(3)  /* Fallback URL */ {
     margin-bottom: 0.2rem !important;
   }
 
-  /* Allowed Traffic Sources Responsiveness: 2 Columns Grid */
+  /* Allowed Traffic Sources Responsiveness: 1 Column Full Width per Chip */
   .platform-chips-row {
     display: flex !important;
-    flex-flow: row wrap !important;
-    gap: 0.55rem !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+    width: 100% !important;
   }
   .platform-chip {
-    flex: 1 1 calc(50% - 0.3rem) !important;
-    min-width: auto !important;
-    height: 42px !important;
-    padding: 0.45rem 0.65rem !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 46px !important;
+    padding: 0.55rem 1rem !important;
     box-sizing: border-box !important;
     justify-content: center !important;
+    border-radius: 12px !important;
   }
   #custom-domains-container {
     width: 100% !important;

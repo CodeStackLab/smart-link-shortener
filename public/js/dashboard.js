@@ -241,16 +241,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto-update targetInput when post-url-input or targetSelect changes
     if (postUrlInput) {
-      postUrlInput.oninput = () => {
+      const updateTargetUrl = () => {
         const val = postUrlInput.value.trim();
+        let base = (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value)
+          ? targetSelect.value.trim()
+          : (targetInput.value || targetInput.placeholder || 'https://website.com');
+        if (base && !/^https?:\/\//i.test(base)) base = 'https://' + base;
+        base = base.split('/')[0] + '//' + base.split('/')[2]; // base domain
+        if (base.endsWith('/undefined') || !base.includes('.')) base = 'https://website.com';
+
         if (val.startsWith('http://') || val.startsWith('https://')) {
           targetInput.value = val;
         } else if (val) {
-          let base = targetSelect && targetSelect.value ? targetSelect.value : (targetInput.value || '');
           let cleanPath = val.startsWith('/') ? val : '/' + val;
-          targetInput.value = base ? (base.replace(/\/+$/, '') + cleanPath) : val;
+          targetInput.value = base + cleanPath;
         }
       };
+
+      postUrlInput.oninput = updateTargetUrl;
+      if (targetSelect) targetSelect.onchange = updateTargetUrl;
     }
   }
 
