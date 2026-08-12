@@ -317,16 +317,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!chip) return;
       const hasAccess = isFullAdmin || userPerms.includes(perm);
       if (hasAccess) {
-        chip.style.display = 'flex';
+        chip.style.setProperty('display', 'flex', 'important');
         chip.style.opacity = '1';
         chip.style.pointerEvents = '';
         chip.title = '';
       } else {
         // Hide completely — user doesn't have this platform permission
-        chip.style.display = 'none';
-        if (cb) { cb.checked = false; chip.classList.remove('active'); }
+        chip.style.setProperty('display', 'none', 'important');
+        if (cb) { cb.checked = false; }
+        chip.classList.remove('active');
       }
     });
+
+    const customWebContainer = document.getElementById('custom-website-input-container');
+    if (customWebContainer) {
+      const hasCustomWeb = isFullAdmin || userPerms.includes('custom_website');
+      if (!hasCustomWeb) {
+        customWebContainer.style.setProperty('display', 'none', 'important');
+      }
+    }
 
     const navMap = [
       { key: 'links', tabId: 'tab-links' },
@@ -341,10 +350,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const hasAccess = isFullAdmin || userPerms.includes(item.key);
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
-      if (tabBtn) tabBtn.style.display = hasAccess ? '' : 'none';
+      if (tabBtn) {
+        if (hasAccess) {
+          tabBtn.style.removeProperty('display');
+        } else {
+          tabBtn.style.setProperty('display', 'none', 'important');
+        }
+      }
 
       const mobileBtn = document.querySelector(`.mobile-nav-item[data-tab="${item.tabId}"]`);
-      if (mobileBtn) mobileBtn.style.display = hasAccess ? '' : 'none';
+      if (mobileBtn) {
+        if (hasAccess) {
+          mobileBtn.style.removeProperty('display');
+        } else {
+          mobileBtn.style.setProperty('display', 'none', 'important');
+        }
+      }
 
       const tabContent = document.getElementById(item.tabId);
       if (tabContent) {
