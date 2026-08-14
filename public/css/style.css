@@ -592,7 +592,7 @@ input.form-control, textarea.form-control { cursor: text; }
   display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;
 }
 .platform-chip {
-  display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 0.5rem !important;
+  display: inline-flex; align-items: center !important; justify-content: center !important; gap: 0.5rem !important;
   padding: 0.45rem 0.9rem !important;
   background: var(--surface);
   border: 1.5px solid var(--border);
@@ -647,51 +647,78 @@ input.form-control, textarea.form-control { cursor: text; }
   color: var(--text-primary, #333) !important;
 }
 
-/* Facebook chip active */
+/* A selected source gets an unmistakable checkmark without losing its colour. */
+.platform-chip {
+  position: relative;
+}
+.platform-chip.active {
+  padding-right: 2.8rem !important;
+  outline: 3px solid rgba(15, 23, 42, 0.22);
+  outline-offset: 2px;
+  transform: translateY(-1px);
+}
+.platform-chip.active::after {
+  content: '✓';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #166534;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Keep each traffic source in its recognizable brand colour, selected or not. */
 .platform-chip:has(input[value="facebook"]:checked),
-#chip-facebook.active {
+#chip-facebook {
   background: #1877f2 !important; border-color: #1877f2 !important;
   color: #ffffff !important; box-shadow: 0 4px 14px rgba(24,119,242,0.3) !important;
 }
 .platform-chip:has(input[value="facebook"]:checked) svg,
-#chip-facebook.active svg {
+#chip-facebook svg {
   fill: #ffffff !important;
 }
 .platform-chip:has(input[value="facebook"]:checked) span,
-#chip-facebook.active span {
+#chip-facebook span {
   color: #ffffff !important;
 }
 
-/* Instagram chip active */
 .platform-chip:has(input[value="instagram"]:checked),
-#chip-instagram.active {
+#chip-instagram {
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
   border: none !important;
   color: #ffffff !important;
   box-shadow: 0 4px 14px rgba(220,39,67,0.35) !important;
 }
 .platform-chip:has(input[value="instagram"]:checked) svg,
-#chip-instagram.active svg {
+#chip-instagram svg {
   fill: #ffffff !important;
 }
 .platform-chip:has(input[value="instagram"]:checked) span,
-#chip-instagram.active span {
+#chip-instagram span {
   color: #ffffff !important;
 }
 
-/* Custom Website chip active */
 .platform-chip:has(input[value="custom_website"]:checked),
-#chip-custom-website.active {
+#chip-custom-website {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
   border: none !important;
   color: #ffffff !important; box-shadow: 0 4px 14px rgba(99,102,241,0.35) !important;
 }
 .platform-chip:has(input[value="custom_website"]:checked) svg,
-#chip-custom-website.active svg {
+#chip-custom-website svg {
   fill: #ffffff !important;
 }
 .platform-chip:has(input[value="custom_website"]:checked) span,
-#chip-custom-website.active span {
+#chip-custom-website span {
   color: #ffffff !important;
 }
 
@@ -1668,6 +1695,25 @@ table td:nth-child(3)  /* Fallback URL */ {
     overflow-wrap: anywhere !important;
   }
 
+  /* Keep source badges inside narrow mobile link cards. */
+  td[data-label="Allowed Sources"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.45rem !important;
+    text-align: left !important;
+  }
+  td[data-label="Allowed Sources"] > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+  td[data-label="Allowed Sources"] .badge {
+    max-width: 100% !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* Referrer & IP / ISP same-line row alignment on mobile */
   td[data-label="Referrer"] {
     flex-direction: row !important;
@@ -1980,5 +2026,3 @@ table *, .card *, .glass-panel * {
   -ms-user-select: none !important;
   user-select: none !important;
 }
-
-

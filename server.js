@@ -29,8 +29,46 @@ function ensureAbsoluteUrl(url) {
   return 'https://' + trimmed;
 }
 
+function isAdminRole(role) {
+  return typeof role === 'string' && role.trim().toLowerCase() === 'admin';
+}
+
+function getUserPermissions(username, role) {
+  if (isAdminRole(role)) return db.getDefaultPermissions('Admin');
+  const user = db.getUserByUsername(username);
+  return user && Array.isArray(user.permissions) && user.permissions.length > 0
+    ? user.permissions
+    : db.getDefaultPermissions('Editor');
+}
+
+function requirePermission(permission) {
+  return (req, res, next) => {
+    if (isAdminRole(req.session.role) || getUserPermissions(req.session.username, req.session.role).includes(permission)) {
+      return next();
+    }
+    return res.status(403).json({ error: `Access denied. Your account does not have ${permission} permission.` });
+  };
+}
+
+function normaliseAllowedDomains(domains) {
+  if (!Array.isArray(domains)) return [];
+
+  return [...new Set(domains
+    .map(domain => {
+      if (typeof domain !== 'string' || !domain.trim()) return '';
+      try {
+        const value = /^https?:\/\//i.test(domain.trim()) ? domain.trim() : `https://${domain.trim()}`;
+        return new URL(value).hostname.toLowerCase().replace(/^www\./, '');
+      } catch {
+        return '';
+      }
+    })
+    .filter(Boolean))];
+}
+
 function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androidUrl) {
-  if (userRole === 'Admin') {
+  // Administrators are never subject to editor target-site restrictions.
+  if (isAdminRole(userRole)) {
     return { allowed: true };
   }
 
@@ -42,9 +80,12 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
     return { allowed: true };
   }
 
-  const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
+  const userAllowed = normaliseAllowedDomains(userObj && userObj.allowedTargetDomains);
   const settings = db.getSettings();
-  const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
+  if (settings.restrictEditorDomains === false) {
+    return { allowed: true };
+  }
+  const globalAllowed = normaliseAllowedDomains(settings.allowedTargetDomains);
 
   const combinedAllowed = userAllowed.length > 0 ? userAllowed : globalAllowed;
 
@@ -52,9 +93,7 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
     return { allowed: true };
   }
 
-  const cleanAllowed = combinedAllowed
-    .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
-    .filter(Boolean);
+  const cleanAllowed = normaliseAllowedDomains(combinedAllowed);
 
   if (cleanAllowed.length === 0) {
     return { allowed: true };
@@ -64,7 +103,7 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
 
   for (const urlStr of urlsToCheck) {
     try {
-      const parsed = new URL(urlStr.startsWith('http') ? urlStr : 'https://' + urlStr);
+      const parsed = new URL(/^https?:\/\//i.test(urlStr) ? urlStr : 'https://' + urlStr);
       const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
       const isMatched = cleanAllowed.some(cleanAllowedDom => host === cleanAllowedDom || host.endsWith('.' + cleanAllowedDom));
@@ -72,7 +111,7 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
       if (!isMatched) {
         return {
           allowed: false,
-          error: `Access Denied: Target website '${host}' is not in your assigned allowed websites list (${cleanAllowed.join(', ')}). Contact Admin to assign this website.`
+          error: `Access Denied: Target website '${host}' is not in your assigned allowed websites list (${cleanAllowed.join(', ')}). Contact Admin to assign this website or grant Custom Website permission.`
         };
       }
     } catch (e) {
@@ -146,7 +185,7 @@ app.post('/api/login', (req, res) => {
     return res.status(400).json({ error: 'Please enter a valid password or 6-digit Authenticator code.' });
   }
 
-  const userPerms = Array.isArray(user.permissions) ? user.permissions : db.getDefaultPermissions(user.role || 'Admin');
+  const userPerms = getUserPermissions(user.username, user.role || 'Admin');
   req.session.isAdmin = true;
   req.session.authenticated = true;
   req.session.userId = user.id;
@@ -171,21 +210,22 @@ app.get('/api/session', (req, res) => {
     }
 
     const settings = db.getSettings();
-    const userAllowed = (userObj && Array.isArray(userObj.allowedTargetDomains)) ? userObj.allowedTargetDomains : [];
-    const globalAllowed = Array.isArray(settings.allowedTargetDomains) ? settings.allowedTargetDomains : [];
-
-    const finalAllowed = (req.session.role !== 'Admin') ? userAllowed : (userAllowed.length > 0 ? userAllowed : globalAllowed);
+    const userAllowed = normaliseAllowedDomains(userObj && userObj.allowedTargetDomains);
+    const globalAllowed = normaliseAllowedDomains(settings.allowedTargetDomains);
+    const role = (userObj && userObj.role) ? userObj.role : req.session.role;
+    // A personal assignment takes precedence; otherwise editors see the same
+    // global list that the server will enforce when restrictions are enabled.
+    const finalAllowed = !isAdminRole(role) && settings.restrictEditorDomains !== false
+      ? (userAllowed.length > 0 ? userAllowed : globalAllowed)
+      : [];
 
     // Always read fresh permissions from DB (respects admin edits without requiring re-login)
-    const defaultPerms = db.getDefaultPermissions(req.session.role || 'Admin');
-    const perms = (userObj && Array.isArray(userObj.permissions) && userObj.permissions.length > 0)
-      ? userObj.permissions
-      : (req.session.permissions || defaultPerms);
+    const perms = getUserPermissions(req.session.username, role);
 
     return res.json({
       authenticated: true,
       username: req.session.username,
-      role: (userObj && userObj.role) ? userObj.role : req.session.role,
+      role,
       permissions: perms,
       allowedTargetDomains: finalAllowed
     });
@@ -200,22 +240,14 @@ app.get('/api/session', (req, res) => {
 
 app.get('/api/admin/links', requireAuth, (req, res) => {
   const links = db.getLinks();
-  if (req.session.role === 'Admin') {
+  if (isAdminRole(req.session.role)) {
     return res.json(links);
   }
   const userLinks = links.filter(l => l.createdBy === req.session.username);
   res.json(userLinks);
 });
 
-app.post('/api/admin/links', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
-    const userObj = db.getUserByUsername(req.session.username);
-    const userPerms = (userObj && Array.isArray(userObj.permissions) && userObj.permissions.length > 0)
-      ? userObj.permissions : db.getDefaultPermissions('Editor');
-    if (!userPerms.includes('links')) {
-      return res.status(403).json({ error: 'Access denied. Your account does not have Shortlinks creation permission. Ask Admin to enable it.' });
-    }
-  }
+app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res) => {
 
   const {
     code,
@@ -283,11 +315,8 @@ app.post('/api/admin/links', requireAuth, (req, res) => {
 
   // Server-side: enforce platform permissions for non-Admin users
   let finalAllowedPlatforms = Array.isArray(allowedPlatforms) ? allowedPlatforms : ['facebook', 'direct'];
-  if (req.session.role !== 'Admin') {
-    const userObj = db.getUserByUsername(req.session.username);
-    const userPerms = (userObj && Array.isArray(userObj.permissions) && userObj.permissions.length > 0)
-      ? userObj.permissions
-      : db.getDefaultPermissions(req.session.role);
+  if (!isAdminRole(req.session.role)) {
+    const userPerms = getUserPermissions(req.session.username, req.session.role);
     // Only keep platforms the user has permission for
     const platformPermMap = { facebook: 'facebook', instagram: 'instagram', custom_website: 'custom_website' };
     finalAllowedPlatforms = finalAllowedPlatforms.filter(p => {
@@ -329,9 +358,8 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   if (!existingLink) {
     return res.status(404).json({ error: 'Link not found.' });
   }
-  if (req.session.role !== 'Admin') {
-    const userObj = db.getUserByUsername(req.session.username);
-    const userPerms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : [];
+  if (!isAdminRole(req.session.role)) {
+    const userPerms = getUserPermissions(req.session.username, req.session.role);
     if (!userPerms.includes('links')) {
       return res.status(403).json({ error: 'Access denied. Your account does not have Shortlinks edit permission.' });
     }
@@ -399,9 +427,8 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
 app.delete('/api/admin/links/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   const existingLink = db.getLinks().find(l => l.id === id);
-  if (existingLink && req.session.role !== 'Admin') {
-    const userObj = db.getUserByUsername(req.session.username);
-    const userPerms = (userObj && Array.isArray(userObj.permissions)) ? userObj.permissions : [];
+  if (existingLink && !isAdminRole(req.session.role)) {
+    const userPerms = getUserPermissions(req.session.username, req.session.role);
     if (!userPerms.includes('links')) {
       return res.status(403).json({ error: 'Access denied. Your account does not have Shortlinks delete permission.' });
     }
@@ -425,7 +452,7 @@ app.get('/api/admin/qrcode/:code', async (req, res) => {
 });
 
 // CSV Export Endpoint
-app.get('/api/admin/export-csv', requireAuth, (req, res) => {
+app.get('/api/admin/export-csv', requireAuth, requirePermission('analytics'), (req, res) => {
   const logs = db.getLogs();
   
   let csv = 'Timestamp,ShortCode,IP,ISP,Country,City,ConnectionType,Status,Referrer,DwellTimeSeconds\n';
@@ -455,12 +482,12 @@ app.get('/api/admin/export-csv', requireAuth, (req, res) => {
 // IP FIREWALL & BLOCKING APIs (Protected)
 // ----------------------------------------------------
 
-app.get('/api/admin/blocked-ips', requireAuth, (req, res) => {
+app.get('/api/admin/blocked-ips', requireAuth, requirePermission('firewall'), (req, res) => {
   const blocked = db.getBlockedIps();
   res.json(blocked);
 });
 
-app.post('/api/admin/block-ip', requireAuth, (req, res) => {
+app.post('/api/admin/block-ip', requireAuth, requirePermission('firewall'), (req, res) => {
   const { ip, reason } = req.body;
   if (!ip || !ip.trim()) {
     return res.status(400).json({ error: 'IP address is required.' });
@@ -474,17 +501,17 @@ app.post('/api/admin/block-ip', requireAuth, (req, res) => {
   res.json({ success: true, entry: result });
 });
 
-app.delete('/api/admin/blocked-ips/:ip', requireAuth, (req, res) => {
+app.delete('/api/admin/blocked-ips/:ip', requireAuth, requirePermission('firewall'), (req, res) => {
   const { ip } = req.params;
   db.unblockIp(decodeURIComponent(ip));
   res.json({ success: true });
 });
 
-app.get('/api/admin/settings', requireAuth, (req, res) => {
+app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {
   res.json(db.getSettings());
 });
 
-app.post('/api/admin/settings', requireAuth, (req, res) => {
+app.post('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {
   const {
     rateLimitWindowSeconds,
     rateLimitMaxRequests,
@@ -506,8 +533,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
   if (Array.isArray(allowedTargetDomains)) {
     processedAllowedDomains = allowedTargetDomains
       .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
-      .filter(Boolean)
-      .slice(0, 10);
+      .filter(Boolean);
   }
 
   const updated = db.updateSettings({
@@ -534,11 +560,11 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
 // ADVANCED COUNTRY & VPN ANALYTICS APIs (Protected)
 // ----------------------------------------------------
 
-app.get('/api/admin/analytics/countries', requireAuth, (req, res) => {
+app.get('/api/admin/analytics/countries', requireAuth, requirePermission('geo'), (req, res) => {
   const { startDate, endDate } = req.query;
   let logs = db.getLogs();
 
-  if (req.session.role !== 'Admin') {
+  if (!isAdminRole(req.session.role)) {
     const userCodes = db.getLinks()
       .filter(l => l.createdBy === req.session.username)
       .map(l => (l.code || '').toLowerCase());
@@ -648,7 +674,7 @@ app.post('/api/pingback', (req, res) => {
 // ----------------------------------------------------
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
+  if (!isAdminRole(req.session.role)) {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
   res.json(db.getUsersPublic());
@@ -741,10 +767,10 @@ app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
 // ADMIN ANALYTICS & LOGS APIs (Protected)
 // ----------------------------------------------------
 
-app.get('/api/admin/logs', requireAuth, (req, res) => {
+app.get('/api/admin/logs', requireAuth, requirePermission('analytics'), (req, res) => {
   const logs = db.getLogs();
   const cleanLogs = logs.filter(l => l.status !== 'SOCIAL_CRAWLER');
-  if (req.session.role === 'Admin') {
+  if (isAdminRole(req.session.role)) {
     return res.json(cleanLogs);
   }
   const userCodes = db.getLinks()
@@ -754,7 +780,7 @@ app.get('/api/admin/logs', requireAuth, (req, res) => {
   res.json(userLogs);
 });
 
-app.post('/api/admin/clear-logs', requireAuth, (req, res) => {
+app.post('/api/admin/clear-logs', requireAuth, requirePermission('analytics'), (req, res) => {
   db.clearLogs();
   res.json({ success: true });
 });
@@ -780,7 +806,7 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
 
 
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
+  if (!isAdminRole(req.session.role)) {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
@@ -809,8 +835,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
         if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
         return val;
       })
-      .filter(Boolean)
-      .slice(0, 10);
+      .filter(Boolean);
   }
 
   const newUser = {
@@ -845,7 +870,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
+  if (!isAdminRole(req.session.role)) {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
@@ -868,7 +893,7 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
 app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const { username, newPassword } = req.body;
   
-  if (req.session.role !== 'Admin' && req.session.username !== username) {
+  if (!isAdminRole(req.session.role) && req.session.username !== username) {
     return res.status(403).json({ error: 'Access denied. Admin permission required.' });
   }
 
@@ -888,7 +913,7 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
 });
 
 app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
-  if (req.session.role !== 'Admin') {
+  if (!isAdminRole(req.session.role)) {
     return res.status(403).json({ error: 'Access denied. Admin role required to delete users.' });
   }
 
@@ -897,7 +922,7 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
   const target = users.find(u => u.id === id);
 
   if (target) {
-    if (target.username.toLowerCase() === 'admin' || target.role === 'Admin') {
+    if (target.username.toLowerCase() === 'admin' || isAdminRole(target.role)) {
       return res.status(400).json({ error: 'Admin user accounts cannot be deleted.' });
     }
   }
@@ -910,11 +935,11 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
 // ----------------------------------------------------
 // CUSTOM DOMAINS API
 // ----------------------------------------------------
-app.get('/api/admin/domains', requireAuth, (req, res) => {
+app.get('/api/admin/domains', requireAuth, requirePermission('domains'), (req, res) => {
   res.json(db.getCustomDomains());
 });
 
-app.post('/api/admin/domains', requireAuth, (req, res) => {
+app.post('/api/admin/domains', requireAuth, requirePermission('domains'), (req, res) => {
   const { domain } = req.body;
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required.' });
@@ -927,7 +952,7 @@ app.post('/api/admin/domains', requireAuth, (req, res) => {
   res.json({ success: true, domain: newDomain });
 });
 
-app.delete('/api/admin/domains/:id', requireAuth, (req, res) => {
+app.delete('/api/admin/domains/:id', requireAuth, requirePermission('domains'), (req, res) => {
   const { id } = req.params;
   db.deleteCustomDomain(id);
   res.json({ success: true });

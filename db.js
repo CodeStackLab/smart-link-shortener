@@ -289,8 +289,7 @@ module.exports = {
           if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
           return val;
         })
-        .filter(Boolean)
-        .slice(0, 10);
+        .filter(Boolean);
     } else {
       user.allowedTargetDomains = [];
     }
@@ -318,8 +317,7 @@ module.exports = {
             if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
             return val;
           })
-          .filter(Boolean)
-          .slice(0, 10);
+          .filter(Boolean);
       }
       writeJson(FILES.users, users);
     }

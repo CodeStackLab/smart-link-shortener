@@ -243,14 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const hasCustomWebPerm = perms.includes('custom_website');
     const allowedSites = (sessionData && Array.isArray(sessionData.allowedTargetDomains)) ? sessionData.allowedTargetDomains : [];
 
-    if (role === 'Admin' || hasCustomWebPerm || allowedSites.length === 0) {
+    if (String(role).trim().toLowerCase() === 'admin' || hasCustomWebPerm || allowedSites.length === 0) {
       targetInput.style.display = 'block';
       targetInput.required = true;
       targetSelect.style.display = 'none';
       targetSelect.required = false;
-      if (allowedSites.length > 0 && !targetInput.value) {
-        targetInput.value = allowedSites[0];
-      }
     } else {
       // Editor with assigned websites (and no custom_website permission) sees Dropdown Select Menu
       targetInput.style.display = 'none';
@@ -298,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let userCurrentPermissions = ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
 
   function applyRoleUiScoping(role, permissions) {
-    const isFullAdmin = role === 'Admin';
+    const isFullAdmin = String(role).trim().toLowerCase() === 'admin';
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
     const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
     userCurrentPermissions = userPerms;
@@ -1557,11 +1554,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- DYNAMIC PER-USER SITES MANAGER HELPERS ----
   function renderUserSiteInputRow(container, initialDomain = '') {
     if (!container) return;
-    const currentRows = container.querySelectorAll('.user-site-item-row');
-    if (currentRows.length >= 10) {
-      showAlert('Maximum 10 allowed websites permitted per user account.', true);
-      return;
-    }
 
     const emptyNotice = container.querySelector('#invite-sites-empty-msg, #edit-sites-empty-msg');
     if (emptyNotice) emptyNotice.style.display = 'none';
@@ -2375,4 +2367,3 @@ window.deleteDomain = async function(id) {
   }
 };
 });
-
