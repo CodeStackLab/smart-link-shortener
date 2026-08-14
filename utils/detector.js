@@ -66,6 +66,10 @@ const PLATFORM_DOMAINS = {
  */
 function parseReferrer(refererHeader = '', allowedPlatforms = [], customDomains = [], userAgent = '') {
   const ua = (userAgent || '').toLowerCase();
+  // "Custom Website" is the unrestricted traffic-source option. When it is
+  // selected, a visit from any referrer (including direct/app traffic) is a
+  // genuine target visit rather than an incorrect fallback redirect.
+  const allowsCustomWebsite = allowedPlatforms.includes('custom_website');
 
   // 0. Check User-Agent for known mobile app in-app browsers (which often strip referrer)
   let detectedPlatform = null;
@@ -89,12 +93,12 @@ function parseReferrer(refererHeader = '', allowedPlatforms = [], customDomains 
   }
 
   if (detectedPlatform) {
-    const isAllowed = allowedPlatforms.includes(detectedPlatform);
+    const isAllowed = allowsCustomWebsite || allowedPlatforms.includes(detectedPlatform);
     return { isDirect: false, platform: detectedPlatform, domain: detectedDomain, isAllowed };
   }
 
   if (!refererHeader) {
-    const isAllowed = allowedPlatforms.includes('direct');
+    const isAllowed = allowsCustomWebsite || allowedPlatforms.includes('direct');
     return { isDirect: true, platform: 'direct', domain: 'Direct / Blank', isAllowed };
   }
 
@@ -105,7 +109,7 @@ function parseReferrer(refererHeader = '', allowedPlatforms = [], customDomains 
     // 1. Check Preset Platforms
     for (const [platformKey, domains] of Object.entries(PLATFORM_DOMAINS)) {
       if (domains.some(d => host === d || host.endsWith('.' + d))) {
-        const isAllowed = allowedPlatforms.includes(platformKey);
+        const isAllowed = allowsCustomWebsite || allowedPlatforms.includes(platformKey);
         return { isDirect: false, platform: platformKey, domain: host, isAllowed };
       }
     }
@@ -121,7 +125,7 @@ function parseReferrer(refererHeader = '', allowedPlatforms = [], customDomains 
     }
 
     // 3. Unlisted Other Referrer
-    const isAllowed = allowedPlatforms.includes('other');
+    const isAllowed = allowsCustomWebsite || allowedPlatforms.includes('other');
     return { isDirect: false, platform: 'other', domain: host, isAllowed };
   } catch (err) {
     return { isDirect: false, platform: 'other', domain: refererHeader, isAllowed: false };

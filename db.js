@@ -210,6 +210,13 @@ module.exports = {
     }
   },
   clearLogs: () => writeJson(FILES.logs, []),
+  removeLogsByIds: (ids) => {
+    const idSet = new Set(Array.isArray(ids) ? ids : []);
+    const logs = readJson(FILES.logs, []);
+    const retained = logs.filter(log => !idSet.has(log.id));
+    writeJson(FILES.logs, retained);
+    return logs.length - retained.length;
+  },
 
   // IP Firewall Blocklist
   getBlockedIps: () => readJson(FILES.blockedIps, []),

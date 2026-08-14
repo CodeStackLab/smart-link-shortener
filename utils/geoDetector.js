@@ -58,13 +58,7 @@ function isPrivateIp(cleanIp) {
          cleanIp === '::1' || 
          cleanIp.startsWith('192.168.') || 
          cleanIp.startsWith('10.') || 
-         cleanIp.startsWith('172.16.') || 
-         cleanIp.startsWith('172.17.') || 
-         cleanIp.startsWith('172.18.') || 
-         cleanIp.startsWith('172.19.') || 
-         cleanIp.startsWith('172.20.') || 
-         cleanIp.startsWith('172.30.') || 
-         cleanIp.startsWith('172.31.');
+         /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(cleanIp);
 }
 
 /**

@@ -1332,6 +1332,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 6000);
 
+  // Keep country totals current while the Geo tab is open as well.
+  setInterval(() => {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'tab-geo') {
+      loadCountryAnalytics(startDateInput?.value || '', endDateInput?.value || '');
+    }
+  }, 6000);
+
   if (clearLogsBtn) {
     clearLogsBtn.addEventListener('click', async () => {
       if (!confirm('Are you sure you want to clear all click logs?')) return;

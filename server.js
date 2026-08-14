@@ -66,6 +66,48 @@ function normaliseAllowedDomains(domains) {
     .filter(Boolean))];
 }
 
+function getClientIp(req) {
+  // Proxies append their own address to X-Forwarded-For; the first valid value
+  // is the visitor address. Cloudflare's dedicated header takes precedence.
+  const candidates = [
+    req.headers['cf-connecting-ip'],
+    req.headers['x-forwarded-for'],
+    req.headers['x-real-ip'],
+    req.socket && req.socket.remoteAddress
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string') continue;
+    const ip = candidate.split(',')[0].trim().replace(/^\[|\]$/g, '').replace(/^::ffff:/i, '');
+    if (ip) return ip;
+  }
+  return '127.0.0.1';
+}
+
+function isSocialRelayRequest(geoInfo, referer = '', userAgent = '') {
+  const network = String(geoInfo && geoInfo.isp || '').toLowerCase();
+  const source = String(referer || '').toLowerCase();
+  const ua = String(userAgent || '').toLowerCase();
+  const fromFacebook = /(^https?:\/\/)?([a-z0-9-]+\.)?(facebook\.com|fb\.com|fb\.me|messenger\.com)/.test(source);
+  const isFacebookApp = /fb_iab|fb4a|fban|fbios|messenger/.test(ua);
+  // Facebook's link-preview/relay fleet often sends a desktop browser UA, so
+  // UA matching alone cannot distinguish it from a real visit. It may use a
+  // Meta IP or a hosted cloud IP, but it does not use Facebook's mobile app UA.
+  const isMetaNetwork = /facebook|meta platforms|instagram/.test(network);
+  const isHostedPreview = Boolean(geoInfo && geoInfo.isVpn) && !isFacebookApp && /windows nt|macintosh|x11/.test(ua);
+  return fromFacebook && (isMetaNetwork || isHostedPreview);
+}
+
+function isDuplicateTrafficClick(code, ip, windowMs = 5000) {
+  const now = Date.now();
+  return db.getLogs().some(log => {
+    if (!log || log.code !== code || log.ip !== ip) return false;
+    if (log.status !== 'ORGANIC_CLICK' && log.status !== 'FALLBACK_REDIRECT') return false;
+    const timestamp = new Date(log.timestamp).getTime();
+    return Number.isFinite(timestamp) && now - timestamp >= 0 && now - timestamp < windowMs;
+  });
+}
+
 function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androidUrl) {
   // Administrators are never subject to editor target-site restrictions.
   if (isAdminRole(userRole)) {
@@ -590,9 +632,11 @@ app.get('/api/admin/analytics/countries', requireAuth, requirePermission('geo'),
     // Ignore social crawlers (e.g. Facebook preview bot) & firewall blocked logs from country traffic stats
     if (log.status === 'SOCIAL_CRAWLER' || log.status === 'IP_FIREWALL_BLOCKED') return;
 
-    const code = log.countryCode || 'US';
-    const countryName = log.countryName || 'United States';
-    const flag = log.flag || '🇺🇸';
+    // Never label unknown/legacy traffic as United States. That caused the
+    // country report to show incorrect US traffic for logs without geo data.
+    const code = log.countryCode || 'UN';
+    const countryName = log.countryName || 'Unknown Country';
+    const flag = log.flag || '🌐';
     const isVpn = log.isVpn || log.isVps || false;
 
     if (!countryMap[code]) {
@@ -977,10 +1021,7 @@ async function handleShortlinkRedirect(req, res) {
     return res.status(404).send('Not Found');
   }
 
-  let clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress || '127.0.0.1';
-  if (clientIp.includes(',')) {
-    clientIp = clientIp.split(',')[0].trim();
-  }
+  const clientIp = getClientIp(req);
   const userAgent = req.headers['user-agent'] || '';
   const rawReferer = req.headers['referer'] || req.headers['referrer'] || '';
 
@@ -1276,7 +1317,7 @@ async function handleShortlinkRedirect(req, res) {
   }
 
   // 3. Check Social Scrapers — Serve Rich OG Meta Tags fetched from Target URL SILENTLY without logging!
-  if (isSocialScraper(userAgent)) {
+  if (isSocialScraper(userAgent) || isSocialRelayRequest(geoInfo, rawReferer, userAgent)) {
 
     // Fetch real OG metadata from the target URL
     const ogMeta = await fetchOgMeta(link.targetUrl);
@@ -1340,9 +1381,6 @@ async function handleShortlinkRedirect(req, res) {
 
   // 5. Parse Referrer against Allowed Presets + Custom User Domains
   const parsedRef = parseReferrer(rawReferer, link.allowedPlatforms || ['facebook'], link.customDomains || [], userAgent);
-
-  db.incrementClicks(link.code);
-
   let destinationUrl = parsedRef.isAllowed ? link.targetUrl : link.fallbackUrl;
 
   // Smart Device OS Targeting (iOS vs Android override)
@@ -1356,6 +1394,14 @@ async function handleShortlinkRedirect(req, res) {
       destinationUrl = link.androidUrl;
     }
   }
+
+  // Mobile in-app browsers and social relays can issue more than one request
+  // for one tap. Count only the first request from the same visitor and link.
+  if (isDuplicateTrafficClick(link.code, clientIp)) {
+    return res.redirect(destinationUrl);
+  }
+
+  db.incrementClicks(link.code);
 
   const clickStatus = parsedRef.isAllowed ? 'ORGANIC_CLICK' : 'FALLBACK_REDIRECT';
   const delaySec = link.delaySeconds || 0;
