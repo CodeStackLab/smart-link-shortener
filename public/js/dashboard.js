@@ -466,7 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Save button + read-only note in Auto Shield form
     const saveShieldBtn = document.getElementById('save-shield-btn');
     const shieldNote = document.getElementById('shield-admin-only-note');
-    // Disable all firewall inputs for non-admins
+
+    // ── Auto Shield: only Super Admin can change global settings ──
     const autoShieldForm = document.getElementById('auto-shield-form');
     if (autoShieldForm) {
       autoShieldForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
@@ -475,17 +476,35 @@ document.addEventListener('DOMContentLoaded', () => {
         el.style.cursor = isSuperAdmin ? '' : 'not-allowed';
       });
     }
-    // Block IP form: disable for non-admin too
-    const blockIpForm = document.getElementById('block-ip-form');
-    if (blockIpForm) {
-      blockIpForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
-        el.disabled = !isSuperAdmin;
-        el.style.opacity = isSuperAdmin ? '' : '0.45';
-        el.style.cursor = isSuperAdmin ? '' : 'not-allowed';
-      });
-    }
     if (saveShieldBtn) saveShieldBtn.style.display = isSuperAdmin ? '' : 'none';
     if (shieldNote) shieldNote.style.display = isSuperAdmin ? 'none' : 'block';
+
+    // ── Block IP form: Editors CAN use it (for their own links) ──
+    // BUT the "Globally for All Editors" label/button must be Admin-only.
+    const blockIpForm = document.getElementById('block-ip-form');
+    const blockIpSubmitBtn = blockIpForm ? blockIpForm.querySelector('button[type="submit"]') : null;
+    if (blockIpForm) {
+      // Always keep the form fields enabled for firewall-permitted users
+      blockIpForm.querySelectorAll('input').forEach(el => {
+        el.disabled = false;
+        el.style.opacity = '';
+        el.style.cursor = '';
+      });
+    }
+    // Change button text based on role
+    if (blockIpSubmitBtn) {
+      if (isSuperAdmin) {
+        blockIpSubmitBtn.innerHTML = '🚫 Block IP Globally for All Editors';
+        blockIpSubmitBtn.style.opacity = '';
+        blockIpSubmitBtn.style.cursor = '';
+        blockIpSubmitBtn.disabled = false;
+      } else {
+        blockIpSubmitBtn.innerHTML = '🚫 Block This IP';
+        blockIpSubmitBtn.style.opacity = '';
+        blockIpSubmitBtn.style.cursor = '';
+        blockIpSubmitBtn.disabled = false;
+      }
+    }
     // ─────────────────────────────────────────────────────────────
 
     // ─── Geo & Logs Section Visibility — per-editor permissions ──
