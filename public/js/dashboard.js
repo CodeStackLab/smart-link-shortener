@@ -1914,7 +1914,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'form-control user-site-input';
-    input.placeholder = 'e.g. Akel.com';
+    input.placeholder = 'e.g. https://yourdomain.com';
     input.value = initialDomain;
     input.style.cssText = 'font-weight:700; font-size:0.8rem; padding:0.45rem 0.65rem; height:36px; min-height:36px; flex:1; min-width:0;';
 

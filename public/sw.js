@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartlink-v8';
+const CACHE_NAME = 'smartlink-v9';
 const STATIC_ASSETS = [
   '/admin',
   '/admin.html',
