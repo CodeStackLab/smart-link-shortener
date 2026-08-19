@@ -56,8 +56,24 @@ function requirePermission(...permissions) {
   return (req, res, next) => {
     if (isAdminRole(req.session.role)) return next();
     const userPerms = getUserPermissions(req.session.username, req.session.role);
+
+    // Direct permission match
     const hasAny = permissions.some(p => userPerms.includes(p));
     if (hasAny) return next();
+
+    // Auto-grant parent tab access when granular sub-permissions exist
+    // e.g. geo_organic or geo_country_dist implies 'geo' tab access
+    const impliedMap = {
+      links: 'col_',
+      geo: 'geo_',
+      analytics: 'logs_'
+    };
+    const hasImplied = permissions.some(p => {
+      const prefix = impliedMap[p];
+      return prefix && userPerms.some(up => up.startsWith(prefix));
+    });
+    if (hasImplied) return next();
+
     return res.status(403).json({ error: `Access denied. Required permission: ${permissions.join(' or ')}.` });
   };
 }

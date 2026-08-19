@@ -354,6 +354,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Separate tab/feature perms from granular UI perms
     const granularPrefixes = ['col_', 'geo_', 'logs_'];
     const tabPerms = allPerms.filter(p => !granularPrefixes.some(prefix => p.startsWith(prefix)));
+
+    // Auto-include parent tab permissions when granular sub-permissions are set
+    // e.g. col_* implies 'links' tab, geo_* implies 'geo' tab, logs_* implies 'analytics' tab
+    if (!isFullAdmin) {
+      const hasColPerm = allPerms.some(p => p.startsWith('col_'));
+      const hasGeoPerm = allPerms.some(p => p.startsWith('geo_'));
+      const hasLogsPerm = allPerms.some(p => p.startsWith('logs_'));
+      if (hasColPerm && !tabPerms.includes('links')) tabPerms.push('links');
+      if (hasGeoPerm && !tabPerms.includes('geo')) tabPerms.push('geo');
+      if (hasLogsPerm && !tabPerms.includes('analytics')) tabPerms.push('analytics');
+    }
+
     const userFeaturePerms = isFullAdmin ? defaultFullPerms : (tabPerms.length > 0 ? tabPerms : defaultEditorPerms);
 
     // userCurrentPermissions holds ALL permissions (tab + granular) for later checks
