@@ -346,8 +346,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
-    userCurrentPermissions = userPerms;
+    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+
+    // All permissions from session (may include col_*, geo_*, logs_* granular keys)
+    const allPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : defaultEditorPerms);
+
+    // Separate tab/feature perms from granular UI perms
+    const granularPrefixes = ['col_', 'geo_', 'logs_'];
+    const tabPerms = allPerms.filter(p => !granularPrefixes.some(prefix => p.startsWith(prefix)));
+    const userFeaturePerms = isFullAdmin ? defaultFullPerms : (tabPerms.length > 0 ? tabPerms : defaultEditorPerms);
+
+    // userCurrentPermissions holds ALL permissions (tab + granular) for later checks
+    userCurrentPermissions = allPerms;
+    const userPerms = userFeaturePerms; // used below for tab/chip visibility
 
     // Traffic Source Chips Scoping
     // Admin always gets full access; Editor/Manager sees only permitted chips

@@ -262,7 +262,8 @@ module.exports = {
       const defaultPerms = role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
-      // Use saved permissions if explicitly set; otherwise fall back to role defaults
+      // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
+      // Only fall back to role defaults if no permissions have been explicitly set
       const userPerms = Array.isArray(u.permissions) && u.permissions.length > 0 ? u.permissions : defaultPerms;
       return {
         id: u.id,

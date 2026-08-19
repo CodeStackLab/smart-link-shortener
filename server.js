@@ -34,11 +34,21 @@ function isAdminRole(role) {
 }
 
 function getUserPermissions(username, role) {
-  if (isAdminRole(role)) return db.getDefaultPermissions('Admin');
   const user = db.getUserByUsername(username);
-  return user && Array.isArray(user.permissions) && user.permissions.length > 0
+  const storedPerms = (user && Array.isArray(user.permissions) && user.permissions.length > 0)
     ? user.permissions
-    : db.getDefaultPermissions('Editor');
+    : null;
+
+  // Admin/Super Admin always get all tab/feature permissions
+  if (isAdminRole(role)) {
+    const adminBase = db.getDefaultPermissions('Admin');
+    // Also pass through any custom granular perms (col_*, geo_*, logs_*) stored for this admin
+    const customPerms = storedPerms ? storedPerms.filter(p => !adminBase.includes(p)) : [];
+    return [...adminBase, ...customPerms];
+  }
+
+  // Editor: use stored perms if available, otherwise fall back to defaults
+  return storedPerms || db.getDefaultPermissions('Editor');
 }
 
 // Accepts one or more permission strings (OR logic: user needs at least one).
