@@ -102,12 +102,14 @@ function isSocialRelayRequest(geoInfo, referer = '', userAgent = '') {
   const ua = String(userAgent || '').toLowerCase();
   const fromFacebook = /(^https?:\/\/)?([a-z0-9-]+\.)?(facebook\.com|fb\.com|fb\.me|messenger\.com)/.test(source);
   const isFacebookApp = /fb_iab|fb4a|fban|fbios|messenger/.test(ua);
-  // Facebook's link-preview/relay fleet often sends a desktop browser UA, so
-  // UA matching alone cannot distinguish it from a real visit. It may use a
-  // Meta IP or a hosted cloud IP, but it does not use Facebook's mobile app UA.
-  const isMetaNetwork = /facebook|meta platforms|instagram/.test(network);
-  const isHostedPreview = Boolean(geoInfo && geoInfo.isVpn) && !isFacebookApp && /windows nt|macintosh|x11/.test(ua);
-  return fromFacebook && (isMetaNetwork || isHostedPreview);
+  
+  // Datacenter / Cloud / Hosting ASNs that run crawlers, preview bots, and relays
+  const isCloudDatacenter = Boolean(geoInfo && geoInfo.isVpn) || /amazon|aws|meta platforms|facebook|google|microsoft|azure|oracle|digitalocean|hetzner|ovh|linode|vultr|leaseweb|reliablesite|servers tech|m247|choopa|hostinger|contabo|akamai|cloudflare|fastly/.test(network);
+  
+  // Any hit from a cloud/datacenter IP that is NOT a genuine mobile in-app browser is a social relay or crawler
+  if (isCloudDatacenter && !isFacebookApp) return true;
+  if (fromFacebook && (isCloudDatacenter || !isFacebookApp)) return true;
+  return false;
 }
 
 function isDuplicateTrafficClick(code, ip, windowMs = 5000) {
@@ -685,15 +687,17 @@ app.get('/api/admin/analytics/countries', requireAuth, requirePermission('geo'),
   const dailyTraffic = {};
 
   filteredLogs.forEach(log => {
-    // Ignore social crawlers (e.g. Facebook preview bot) & firewall blocked logs from country traffic stats
-    if (log.status === 'SOCIAL_CRAWLER' || log.status === 'IP_FIREWALL_BLOCKED') return;
+    // Ignore social crawlers, firewall blocked, spam bots, and dev/unknown logs
+    if (log.status === 'SOCIAL_CRAWLER' || log.status === 'IP_FIREWALL_BLOCKED' || log.status === 'SPAM_BOT_BLOCKED') return;
 
-    // Never label unknown/legacy traffic as United States. That caused the
-    // country report to show incorrect US traffic for logs without geo data.
+    // Filter out Datacenter / Cloud / Hosting VPS logs (e.g. AWS, Meta, Google US servers) from polluting real country traffic
+    const isVpn = Boolean(log.isVpn || log.isVps);
     const code = log.countryCode || 'UN';
+    if (code === 'UN' || code === 'DEV') return;
+    if (isVpn && code === 'US') return; // Exclude US cloud datacenter hits
+
     const countryName = log.countryName || 'Unknown Country';
     const flag = log.flag || '🌐';
-    const isVpn = log.isVpn || log.isVps || false;
 
     if (!countryMap[code]) {
       countryMap[code] = {
@@ -1463,10 +1467,13 @@ async function handleShortlinkRedirect(req, res) {
 
   // 5. Parse Referrer against Allowed Presets + Custom User Domains
   const parsedRef = parseReferrer(rawReferer, link.allowedPlatforms || ['facebook'], link.customDomains || [], userAgent);
-  let destinationUrl = parsedRef.isAllowed ? link.targetUrl : link.fallbackUrl;
+  
+  // Only genuine residential/mobile users (not Datacenter/VPN) get organic access
+  const isGenuineOrganic = parsedRef.isAllowed && !geoInfo.isVpn;
+  let destinationUrl = isGenuineOrganic ? link.targetUrl : link.fallbackUrl;
 
   // Smart Device OS Targeting (iOS vs Android override)
-  if (parsedRef.isAllowed) {
+  if (isGenuineOrganic) {
     const isIos = /iPhone|iPad|iPod/i.test(userAgent);
     const isAndroid = /Android/i.test(userAgent);
 
@@ -1485,7 +1492,7 @@ async function handleShortlinkRedirect(req, res) {
 
   db.incrementClicks(link.code);
 
-  const clickStatus = parsedRef.isAllowed ? 'ORGANIC_CLICK' : 'FALLBACK_REDIRECT';
+  const clickStatus = isGenuineOrganic ? 'ORGANIC_CLICK' : 'FALLBACK_REDIRECT';
   const delaySec = link.delaySeconds || 0;
 
   const logEntry = {
