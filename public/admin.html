@@ -157,13 +157,13 @@
           <thead>
             <tr>
               <th>Short Link</th>
-              <th>Target URL</th>
-              <th>Fallback</th>
-              <th>Sources</th>
-              <th>Pro</th>
-              <th>Clicks</th>
+              <th id="th-target-url">Target URL</th>
+              <th id="th-fallback-url">Fallback</th>
+              <th id="th-sources">Sources</th>
+              <th id="th-settings">Pro</th>
+              <th id="th-clicks">Clicks</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th id="th-actions">Actions</th>
             </tr>
           </thead>
           <tbody id="links-tbody">
@@ -580,6 +580,20 @@
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="settings"> ⚙️ Settings</label>
             </div>
+          </div>
+
+          <!-- Links Table Column Visibility (What Editor Sees in the Links Table) -->
+          <div style="margin-bottom:0.85rem;">
+            <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📋 Links Table — Column Visibility for this Editor:</label>
+            <div style="background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.4rem;">
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_target_url" checked> 🎯 Target URL</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_fallback_url"> 🔄 Fallback URL</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_sources" checked> 📌 Allowed Sources</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_settings"> ⚙️ Settings (Pro)</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_clicks" checked> 👆 Clicks Count</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_actions" checked> ⚡ Actions</label>
+            </div>
+            <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem; padding:0 0.2rem;">💡 Hidden columns are not visible to editor, but shortlinks still work correctly in background.</div>
           </div>
 
           <button type="submit" style="width:100%; margin-top:0.9rem; background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.75rem 1.2rem; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 18px rgba(24,119,242,0.38) !important; text-align:center; min-height:46px; box-sizing:border-box; letter-spacing:0.01em;">

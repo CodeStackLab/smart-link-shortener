@@ -457,6 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const firstVisible = Array.from(allTabBtns).find(b => b.style.display !== 'none');
       if (firstVisible) firstVisible.click();
     }
+
+    // Re-apply link table column visibility on every permission sync
+    if (typeof applyLinksColumnVisibility === 'function') applyLinksColumnVisibility();
   }
 
 
@@ -755,36 +758,69 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
           </td>
-          <td data-label="Target URL">
+          <td data-label="Target URL" class="col-target-url">
             <a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${link.targetUrl}</a>
           </td>
-          <td data-label="Fallback URL">
+          <td data-label="Fallback URL" class="col-fallback-url">
             <span style="color: var(--text-secondary); font-size: 0.8rem; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${link.fallbackUrl}">${link.fallbackUrl}</span>
           </td>
-          <td data-label="Allowed Sources">
+          <td data-label="Allowed Sources" class="col-sources">
             <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
               ${presetBadges}
               ${customBadges}
             </div>
           </td>
-          <td data-label="Settings">
+          <td data-label="Settings" class="col-settings">
             <div style="display: flex; flex-direction: column; gap: 0.2rem;">
               ${delayBadge}
               ${limitsBadge}
               ${expBadge}
             </div>
           </td>
-          <td data-label="Clicks"><strong style="font-size: 1.1rem; font-family: 'Outfit', sans-serif;">${link.clicks || 0}</strong></td>
+          <td data-label="Clicks" class="col-clicks"><strong style="font-size: 1.1rem; font-family: 'Outfit', sans-serif;">${link.clicks || 0}</strong></td>
           <td data-label="Status">
             ${statusBadge}
           </td>
-          <td data-label="Actions">
+          <td data-label="Actions" class="col-actions">
             ${actionsHtml}
           </td>
         </tr>
       `;
     }).join('');
+
+    // Apply column visibility rules immediately after rendering
+    applyLinksColumnVisibility();
   }
+
+  // ── Column Visibility ──────────────────────────────────────────
+  // Admin always sees all columns; Editors see only permitted cols.
+  function applyLinksColumnVisibility() {
+    const isAdmin = currentLoggedInUsername.toLowerCase() === 'admin' || currentLoggedInRole.toLowerCase() === 'admin' || currentLoggedInRole.toLowerCase() === 'super admin';
+
+    const colMap = [
+      { perm: 'col_target_url',   thId: 'th-target-url',   tdClass: 'col-target-url' },
+      { perm: 'col_fallback_url', thId: 'th-fallback-url', tdClass: 'col-fallback-url' },
+      { perm: 'col_sources',      thId: 'th-sources',      tdClass: 'col-sources' },
+      { perm: 'col_settings',     thId: 'th-settings',     tdClass: 'col-settings' },
+      { perm: 'col_clicks',       thId: 'th-clicks',       tdClass: 'col-clicks' },
+      { perm: 'col_actions',      thId: 'th-actions',      tdClass: 'col-actions' }
+    ];
+
+    colMap.forEach(({ perm, thId, tdClass }) => {
+      const hasColPerm = isAdmin || userCurrentPermissions.includes(perm);
+      const display = hasColPerm ? '' : 'none';
+
+      // Header
+      const th = document.getElementById(thId);
+      if (th) th.style.display = display;
+
+      // All cells in this column
+      document.querySelectorAll(`td.${tdClass}`).forEach(td => {
+        td.style.display = display;
+      });
+    });
+  }
+  // ───────────────────────────────────────────────────────────────
 
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
