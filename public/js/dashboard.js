@@ -186,12 +186,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (userBadge) {
           const uName = (data.username || 'admin').trim();
           const uRole = (data.role || 'Admin').trim();
-          if (uName.toLowerCase() === 'admin' || uName.toLowerCase() === uRole.toLowerCase()) {
+          if (uName.toLowerCase() === 'admin') {
+            userBadge.textContent = '👑 Super Admin';
+            userBadge.style.background = 'linear-gradient(135deg, #ef4444 0%, #7c3aed 100%)';
+            userBadge.style.color = '#ffffff';
+            userBadge.style.boxShadow = '0 2px 8px rgba(124,58,237,0.35)';
+            userBadge.className = 'badge';
+          } else if (uName.toLowerCase() === uRole.toLowerCase()) {
             userBadge.textContent = uRole;
+            userBadge.style.background = '';
+            userBadge.style.color = '';
+            userBadge.style.boxShadow = '';
+            userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : 'badge-success'}`;
           } else {
             userBadge.textContent = `${uName} (${uRole})`;
+            userBadge.style.background = '';
+            userBadge.style.color = '';
+            userBadge.style.boxShadow = '';
+            userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : 'badge-success'}`;
           }
-          userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : 'badge-success'}`;
         }
 
         const newPermsStr = JSON.stringify(data.permissions || []);
@@ -410,6 +423,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (proAccordion) {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
+
+    // ─── Super Admin Gating ─────────────────────────────────────
+    // Only the PRIMARY admin account (username 'admin') is the Super Admin.
+    // All others (even role=Admin) CANNOT manage team members.
+    const isSuperAdmin = currentLoggedInUsername.toLowerCase() === 'admin';
+
+    const teamCard = document.getElementById('team-management-card');
+    if (teamCard) {
+      teamCard.style.display = isSuperAdmin ? '' : 'none';
+    }
+
+    // Role selector in invite form: only Super Admin can see the Admin option
+    const roleSelectInvite = document.getElementById('new-user-role');
+    if (roleSelectInvite) {
+      const adminOpt = roleSelectInvite.querySelector('option[value="Admin"]');
+      if (adminOpt) {
+        if (!isSuperAdmin) {
+          adminOpt.style.display = 'none';
+          // Force Editor if somehow Admin was selected
+          if (roleSelectInvite.value === 'Admin') roleSelectInvite.value = 'Editor';
+        } else {
+          adminOpt.style.display = '';
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────
 
     // If no tab is currently visible/active, activate the first visible tab
     const allTabBtns = document.querySelectorAll('.tab-btn');
@@ -1715,14 +1754,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
-        const roleColor = user.role === 'Admin' ? '#ef4444' : '#10b981';
-        const roleBg = user.role === 'Admin' ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)';
+        const isUserSuperAdmin = user.username.toLowerCase() === 'admin';
+        const isSuperAdminViewer = currentLoggedInUsername.toLowerCase() === 'admin';
+
+        // Role display
+        let roleColor, roleBg, roleLabel;
+        if (isUserSuperAdmin) {
+          roleColor = '#7c3aed';
+          roleBg = 'rgba(124,58,237,0.1)';
+          roleLabel = '👑 Super Admin';
+        } else if (user.role === 'Admin') {
+          roleColor = '#ef4444';
+          roleBg = 'rgba(239,68,68,0.1)';
+          roleLabel = 'Admin';
+        } else {
+          roleColor = '#10b981';
+          roleBg = 'rgba(16,185,129,0.1)';
+          roleLabel = user.role || 'Editor';
+        }
+
         const passChip = user.rawPassword
           ? `<span style="font-family:monospace;font-size:0.73rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.09);padding:0.18rem 0.5rem;border-radius:6px;letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;display:inline-block;vertical-align:middle;">${user.rawPassword}</span>`
           : `<span style="color:var(--text-muted);font-size:0.8rem;letter-spacing:0.12em;">••••••••</span>`;
 
         const userSites = Array.isArray(user.allowedTargetDomains) ? user.allowedTargetDomains : [];
-        const sitesCountText = user.role === 'Admin'
+        const sitesCountText = (user.role === 'Admin' || isUserSuperAdmin)
           ? 'Default / Global'
           : (userSites.length > 0
               ? (userSites.length === 1 ? '1 Allowed Site' : `${userSites.length} Allowed Sites`)
@@ -1730,18 +1786,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sitesTooltip = userSites.length > 0 ? userSites.join(', ') : 'No individual sites assigned';
 
-        const sitesBadge = user.role === 'Admin'
+        const sitesBadge = (user.role === 'Admin' || isUserSuperAdmin)
           ? `<span style="font-size:0.68rem;font-weight:600;color:var(--text-muted);white-space:nowrap;">🌐 Sites: Default / Global</span>`
           : (userSites.length > 0
               ? `<span title="${sitesTooltip.replace(/"/g, '&quot;')}" style="font-size:0.68rem;font-weight:700;color:#1877f2;background:rgba(24,119,242,0.08);padding:0.2rem 0.55rem;border-radius:12px;border:1px solid rgba(24,119,242,0.2);white-space:nowrap;cursor:pointer;">🌐 Sites: ${sitesCountText}</span>`
               : `<span style="font-size:0.68rem;font-weight:600;color:var(--text-muted);white-space:nowrap;">🌐 Sites: None Assigned</span>`);
 
+        // Action buttons — Edit/Delete only shown to Super Admin, not to regular Admins or Editors
+        let actionsBtnHtml = '';
+        if (isSelf) {
+          actionsBtnHtml = `<span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:0.4rem 0;">Current Account</span>`;
+        } else if (isSuperAdminViewer && !isUserSuperAdmin) {
+          // Super Admin can edit/delete all non-super-admin users
+          actionsBtnHtml = `
+            <button onclick="openEditUserModal('${user.id}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
+            <button onclick="openDeleteUserModal('${user.id}','${user.username}')" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(239,68,68,0.3);display:flex;align-items:center;gap:0.35rem;">🗑️ Delete</button>
+          `;
+        } else if (isUserSuperAdmin) {
+          // Super Admin user row — protected, no actions
+          actionsBtnHtml = `<span style="font-size:0.7rem;font-weight:700;color:#7c3aed;padding:0.3rem 0.6rem;background:rgba(124,58,237,0.08);border-radius:10px;border:1px solid rgba(124,58,237,0.2);">👑 Protected</span>`;
+        }
+
         return `
-          <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid var(--border,#e8eaf0);border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;max-width:100%;box-sizing:border-box;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+          <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid ${isUserSuperAdmin ? 'rgba(124,58,237,0.25)' : 'var(--border,#e8eaf0)'};border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;max-width:100%;box-sizing:border-box;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
 
             <!-- Avatar + Name -->
             <div style="display:flex;align-items:center;gap:0.45rem;flex:1;min-width:90px;">
-              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1877f2,#6c3de8);display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">👤</div>
+              <div style="width:32px;height:32px;border-radius:50%;background:${isUserSuperAdmin ? 'linear-gradient(135deg,#ef4444,#7c3aed)' : 'linear-gradient(135deg,#1877f2,#6c3de8)'};display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">${isUserSuperAdmin ? '👑' : '👤'}</div>
               <div>
                 <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;">${user.username}</div>
                 ${isSelf ? '<div style="font-size:0.6rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.06em;">You</div>' : ''}
@@ -1749,9 +1820,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <!-- Role Badge -->
-            <span style="font-size:0.68rem;font-weight:800;color:${roleColor};background:${roleBg};border:1px solid ${roleColor}33;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;flex-shrink:0;">${user.role || 'Editor'}</span>
+            <span style="font-size:0.68rem;font-weight:800;color:${roleColor};background:${roleBg};border:1px solid ${roleColor}33;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;flex-shrink:0;">${roleLabel}</span>
 
-            <!-- Assigned Sites Badge (Compact count pill) -->
+            <!-- Assigned Sites Badge -->
             <div style="flex-shrink:0;">${sitesBadge}</div>
 
             <!-- Password chip -->
@@ -1759,14 +1830,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Actions -->
             <div style="display:flex;gap:0.5rem;margin-left:auto;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
-              ${isSelf
-                ? `<span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:0.4rem 0;">Current Account</span>`
-                : `<button onclick="openEditUserModal('${user.id}')" style="background:linear-gradient(135deg,#1877f2,#6c3de8);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(24,119,242,0.3);display:flex;align-items:center;gap:0.35rem;">✏️ Edit</button>
-                   <button onclick="openDeleteUserModal('${user.id}','${user.username}')" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:#fff;border-radius:10px;padding:0.45rem 0.9rem;font-size:0.8rem;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(239,68,68,0.3);display:flex;align-items:center;gap:0.35rem;">🗑️ Delete</button>`
-              }
+              ${actionsBtnHtml}
             </div>
           </div>
-
         `;
       }).join('');
     } catch (err) {

@@ -265,11 +265,14 @@ app.get('/api/session', (req, res) => {
 
     // Always read fresh permissions from DB (respects admin edits without requiring re-login)
     const perms = getUserPermissions(req.session.username, role);
+    const isSuperAdmin = (req.session.username || '').toLowerCase() === 'admin';
+    const effectiveRole = isSuperAdmin ? 'Super Admin' : (role || 'Editor');
 
     return res.json({
       authenticated: true,
       username: req.session.username,
-      role,
+      role: effectiveRole,
+      isSuperAdmin: isSuperAdmin,
       permissions: perms,
       allowedTargetDomains: finalAllowed
     });
@@ -761,8 +764,8 @@ app.post('/api/pingback', (req, res) => {
 // ----------------------------------------------------
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  if (!isAdminRole(req.session.role)) {
-    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  if ((req.session.username || '').toLowerCase() !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin can view team members.' });
   }
   res.json(db.getUsersPublic());
 });
@@ -893,8 +896,8 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
 
 
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
-  if (!isAdminRole(req.session.role)) {
-    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  if ((req.session.username || '').toLowerCase() !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can invite/create new users.' });
   }
 
   const { username, password, role, permissions, allowedTargetDomains } = req.body;
@@ -957,8 +960,8 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
-  if (!isAdminRole(req.session.role)) {
-    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  if ((req.session.username || '').toLowerCase() !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can modify user roles & permissions.' });
   }
 
   const { id, role, permissions, allowedTargetDomains } = req.body;
@@ -970,7 +973,7 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
   }
 
   if (target.username.toLowerCase() === 'admin' && role !== 'Admin') {
-    return res.status(400).json({ error: 'Cannot change role of primary Admin account.' });
+    return res.status(400).json({ error: 'Cannot change role of primary Super Admin account.' });
   }
 
   db.updateUserRole(id, role, permissions, allowedTargetDomains);
@@ -980,8 +983,8 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
 app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const { username, newPassword } = req.body;
   
-  if (!isAdminRole(req.session.role) && req.session.username !== username) {
-    return res.status(403).json({ error: 'Access denied. Admin permission required.' });
+  if ((req.session.username || '').toLowerCase() !== 'admin' && req.session.username !== username) {
+    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can reset user passwords.' });
   }
 
   if (!username || !newPassword || newPassword.trim().length < 6) {
@@ -1000,8 +1003,8 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
 });
 
 app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
-  if (!isAdminRole(req.session.role)) {
-    return res.status(403).json({ error: 'Access denied. Admin role required to delete users.' });
+  if ((req.session.username || '').toLowerCase() !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can delete team members.' });
   }
 
   const { id } = req.params;
@@ -1009,8 +1012,8 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
   const target = users.find(u => u.id === id);
 
   if (target) {
-    if (target.username.toLowerCase() === 'admin' || isAdminRole(target.role)) {
-      return res.status(400).json({ error: 'Admin user accounts cannot be deleted.' });
+    if (target.username.toLowerCase() === 'admin' || target.role === 'Super Admin') {
+      return res.status(400).json({ error: 'Primary Super Admin account cannot be deleted.' });
     }
   }
 

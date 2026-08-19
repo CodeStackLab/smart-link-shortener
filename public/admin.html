@@ -536,9 +536,14 @@
   <div class="container">
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
 
-      <!-- Team Panel -->
-      <div class="card" style="padding:1.35rem;">
-        <div class="section-title"><span class="accent">👥</span> Team Members &amp; Access Roles</div>
+      <!-- Team Panel (Super Admin Only) -->
+      <div class="card" style="padding:1.35rem;" id="team-management-card">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div><span class="accent">👥</span> Team Members &amp; Access Roles</div>
+          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#ef4444,#7c3aed); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(124,58,237,0.3);">
+            👑 Super Admin Only
+          </span>
+        </div>
         <form id="invite-user-form" style="margin-bottom:1.5rem;">
           <div class="form-group">
             <label for="new-user-username">Username</label>
