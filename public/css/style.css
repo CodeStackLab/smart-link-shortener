@@ -930,26 +930,81 @@ tbody tr:hover td { background: transparent; }
 /* ════════════════════════════════════════
    UTILITY
 ════════════════════════════════════════ */
-.code-box {
-  display: block;
-  background: var(--red-soft); border: 1px solid rgba(230,57,70,0.2);
-  color: var(--red-dark); padding: 0.18rem 0.5rem;
-  border-radius: 5px; font-family: monospace; font-size: 0.78rem; font-weight: 700;
-  /* ── Key fix: truncate long URLs inside the box ── */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
+.shortlink-cell-wrap {
+  width: 100%;
+  max-width: 280px;
+  min-width: 0;
   box-sizing: border-box;
-  width: fit-content;
-  max-width: min(260px, 100%);
 }
 
-/* Constrain the shortlink cell wrapper so it never pushes the table */
-.shortlink-cell-wrap {
-  max-width: 220px;
-  min-width: 0;
-  overflow: hidden;
+.shortlink-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 0.35rem;
+}
+
+.shortlink-code-badge {
+  color: var(--accent-primary, #1877f2);
+  font-size: 0.95rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+}
+
+.copy-link-btn-cell {
+  padding: 0.2rem 0.55rem !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  background: var(--surface, #f8fafc) !important;
+  border: 1px solid var(--border, #e2e8f0) !important;
+  color: var(--text-primary, #0f172a) !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  flex-shrink: 0 !important;
+  min-height: 26px !important;
+  height: 26px !important;
+  transition: all 0.15s ease !important;
+}
+
+.copy-link-btn-cell:hover {
+  background: #1877f2 !important;
+  color: #fff !important;
+  border-color: #1877f2 !important;
+}
+
+.shortlink-box-wrap {
+  width: 100%;
+  cursor: pointer;
+}
+
+.code-box {
+  display: block;
+  background: rgba(24,119,242,0.06);
+  border: 1px solid rgba(24,119,242,0.22);
+  color: #1877f2;
+  padding: 0.32rem 0.6rem;
+  border-radius: 8px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-all;
+  white-space: normal;
+  line-height: 1.4;
+  transition: all 0.15s ease;
+}
+
+.code-box:hover {
+  background: rgba(24,119,242,0.12);
+  border-color: #1877f2;
 }
 
 .url-link {
@@ -964,11 +1019,18 @@ tbody tr:hover td { background: transparent; }
   .url-link {
     max-width: calc(100vw - 3rem);
   }
-  .code-box {
-    max-width: min(200px, calc(100vw - 4rem));
-  }
   .shortlink-cell-wrap {
-    max-width: calc(100vw - 3rem);
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .code-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 0.78rem !important;
+    padding: 0.35rem 0.65rem !important;
+    word-break: break-all !important;
+    white-space: normal !important;
   }
 }
 .action-btn-group { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
@@ -1701,19 +1763,23 @@ table td:nth-child(3)  /* Fallback URL */ {
     flex-direction: column !important;
     align-items: flex-start !important;
     text-align: left !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   td[data-label="Short Link"]::before,
   td[data-label="Target URL"]::before, 
   td[data-label="Fallback URL"]::before {
-    margin-bottom: 0.25rem !important;
+    margin-bottom: 0.35rem !important;
   }
   td[data-label="Short Link"] > *,
   td[data-label="Target URL"] > *, 
   td[data-label="Fallback URL"] > * {
     text-align: left !important;
     width: 100% !important;
-    word-break: break-word !important;
+    max-width: 100% !important;
+    word-break: break-all !important;
     overflow-wrap: anywhere !important;
+    box-sizing: border-box !important;
   }
 
   /* Keep source badges inside narrow mobile link cards. */
