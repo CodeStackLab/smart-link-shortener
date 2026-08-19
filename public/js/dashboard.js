@@ -268,21 +268,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return clean;
       });
 
-      // Mask URL for display: show protocol + first 12 chars of domain/path, then ****
+      // Mask URL for display: show protocol + initial characters + generous stars to fill box
       function maskUrl(url) {
         try {
           const u = new URL(url);
-          const proto = u.protocol + '//'; // "https://"
-          const host = u.hostname;          // "behance.net"
-          const path = u.pathname + u.search; // "/search/projects/palour"
-          // Show first 6 chars of host, mask rest
-          const visibleHost = host.length > 6 ? host.substring(0, 6) + '****' : host;
-          // Always mask path fully
-          const maskedPath = path && path !== '/' ? '/****' : '';
+          const proto = u.protocol + '//';
+          const host = u.hostname;
+          const path = u.pathname + u.search;
+          // Show first 6-7 chars of domain, then a long chain of stars so the box looks full
+          const visibleHost = host.length > 6 ? host.substring(0, 6) + '**********' : host;
+          // Generous stars for the path so the input field looks completely filled
+          const maskedPath = path && path !== '/' ? '/********************' : '****************';
           return proto + visibleHost + maskedPath;
         } catch {
-          // Fallback: show first 15 chars then ****
-          return url.substring(0, 15) + '****';
+          // Fallback: initial chars + generous stars
+          return (url.substring(0, 15) || 'https://website') + '************************';
         }
       }
 
