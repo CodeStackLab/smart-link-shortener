@@ -456,6 +456,14 @@ document.addEventListener('DOMContentLoaded', () => {
       createFormCard.style.display = canCreate ? 'block' : 'none';
     }
 
+    const activeLinksCard = document.getElementById('active-smart-links-card');
+    if (activeLinksCard) {
+      // User requested: "jab tak mai smarlinks select nahi karo tab tak active smartlinks show nhi ho"
+      // This means we strictly check allPerms (raw permissions) for 'links', not the auto-granted userPerms
+      const showActiveLinks = isFullAdmin || allPerms.includes('links');
+      activeLinksCard.style.display = showActiveLinks ? 'block' : 'none';
+    }
+
     const proAccordion = document.getElementById('pro-accordion');
     if (proAccordion) {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
