@@ -1596,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert(`IP ${ip} blocked successfully!`);
+          showAlert(`🚫 IP ${ip} has been blocked globally for all editors & links!`);
           blockIpForm.reset();
           loadBlockedIps();
         } else {

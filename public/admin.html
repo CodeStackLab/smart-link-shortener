@@ -375,6 +375,22 @@
       <!-- Block IP Address Card -->
       <div class="card" style="padding:1.35rem; height:fit-content;">
         <div class="section-title"><span class="accent">🚫</span> Block IP Address</div>
+
+        <!-- Global Enforcement Toggle -->
+        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(220,38,38,0.08) 100%); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem;">
+            <div>
+              <label for="block-ip-globally" style="font-weight:800; font-size:0.84rem; color:#dc2626; display:flex; align-items:center; gap:0.4rem; cursor:pointer; text-transform:none; margin-bottom:0.15rem;">
+                <span>🌐 Apply Block Globally (All Editors)</span>
+              </label>
+              <div style="font-size:0.7rem; color:var(--text-muted); line-height:1.35;">
+                Blocks this IP on every shortlink created by all editors &amp; admins.
+              </div>
+            </div>
+            <input type="checkbox" id="block-ip-globally" checked style="width:19px; height:19px; accent-color:#dc2626; cursor:pointer; flex-shrink:0;">
+          </div>
+        </div>
+
         <form id="block-ip-form">
           <div class="form-group">
             <label for="block-ip-address">Target IP Address</label>
@@ -384,8 +400,8 @@
             <label for="block-ip-reason">Reason / Note</label>
             <input type="text" id="block-ip-reason" class="form-control" placeholder="e.g. VPN / Fake Traffic">
           </div>
-          <button type="submit" class="btn btn-danger btn-block" style="margin-top:0.5rem; border:none; background:var(--grad-red); color:white; box-shadow:var(--shadow-red-sm);">
-            🚫 Block IP Now
+          <button type="submit" class="btn btn-danger btn-block" style="margin-top:0.5rem; border:none; background:var(--grad-red); color:white; box-shadow:var(--shadow-red-sm); font-weight:800; font-size:0.92rem; padding:0.75rem 1rem;">
+            🚫 Block IP Globally for All Editors
           </button>
         </form>
       </div>
@@ -479,7 +495,18 @@
 
       <!-- Blocked IP Addresses Table -->
       <div class="card" style="padding:1.35rem;">
-        <div class="section-title"><span class="accent">🛡️</span> Blocked IP Addresses</div>
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div><span class="accent">🛡️</span> Blocked IP Addresses</div>
+          <span style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
+            🌐 Active for All Editors
+          </span>
+        </div>
+
+        <!-- Global Status Notice -->
+        <div style="background:rgba(16,185,129,0.06); border:1.5px solid rgba(16,185,129,0.25); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.75rem; font-weight:700; color:#059669; display:flex; align-items:center; gap:0.5rem;">
+          ✅ <span>All IPs listed below are automatically blocked across <strong>all links created by all editors</strong> globally.</span>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
