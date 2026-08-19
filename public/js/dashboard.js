@@ -359,14 +359,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // e.g. col_* implies 'links' tab, geo_* implies 'geo' tab, logs_* implies 'analytics' tab
     if (!isFullAdmin) {
       const hasColPerm = allPerms.some(p => p.startsWith('col_'));
+      const hasPlatformPerm = allPerms.includes('facebook') || allPerms.includes('instagram') || allPerms.includes('custom_website');
       const hasGeoPerm = allPerms.some(p => p.startsWith('geo_'));
       const hasLogsPerm = allPerms.some(p => p.startsWith('logs_'));
-      if (hasColPerm && !tabPerms.includes('links')) tabPerms.push('links');
+      
+      if ((hasColPerm || hasPlatformPerm) && !tabPerms.includes('links')) tabPerms.push('links');
       if (hasGeoPerm && !tabPerms.includes('geo')) tabPerms.push('geo');
       if (hasLogsPerm && !tabPerms.includes('analytics')) tabPerms.push('analytics');
     }
 
-    const userFeaturePerms = isFullAdmin ? defaultFullPerms : (tabPerms.length > 0 ? tabPerms : defaultEditorPerms);
+    const userFeaturePerms = isFullAdmin ? defaultFullPerms : tabPerms;
 
     // userCurrentPermissions holds ALL permissions (tab + granular) for later checks
     userCurrentPermissions = allPerms;

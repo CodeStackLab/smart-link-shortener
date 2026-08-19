@@ -264,7 +264,7 @@ module.exports = {
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
-      const userPerms = Array.isArray(u.permissions) && u.permissions.length > 0 ? u.permissions : defaultPerms;
+      const userPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
       return {
         id: u.id,
         username: u.username,
@@ -283,8 +283,8 @@ module.exports = {
   },
   addUser: (user) => {
     const users = readJson(FILES.users, []);
-    // Only set default permissions when none were explicitly provided
-    if (!Array.isArray(user.permissions) || user.permissions.length === 0) {
+    // Only set default permissions when none were explicitly provided (if array doesn't exist)
+    if (!Array.isArray(user.permissions)) {
       user.permissions = user.role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];

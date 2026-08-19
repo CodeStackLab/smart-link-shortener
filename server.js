@@ -35,7 +35,7 @@ function isAdminRole(role) {
 
 function getUserPermissions(username, role) {
   const user = db.getUserByUsername(username);
-  const storedPerms = (user && Array.isArray(user.permissions) && user.permissions.length > 0)
+  const storedPerms = (user && Array.isArray(user.permissions))
     ? user.permissions
     : null;
 
@@ -70,7 +70,13 @@ function requirePermission(...permissions) {
     };
     const hasImplied = permissions.some(p => {
       const prefix = impliedMap[p];
-      return prefix && userPerms.some(up => up.startsWith(prefix));
+      if (prefix && userPerms.some(up => up.startsWith(prefix))) return true;
+      
+      // Platform permissions also imply 'links' tab access
+      if (p === 'links' && (userPerms.includes('facebook') || userPerms.includes('instagram') || userPerms.includes('custom_website'))) {
+        return true;
+      }
+      return false;
     });
     if (hasImplied) return next();
 
