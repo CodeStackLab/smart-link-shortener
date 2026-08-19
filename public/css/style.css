@@ -2047,3 +2047,37 @@ table *, .card *, .glass-panel * {
   -ms-user-select: none !important;
   user-select: none !important;
 }
+
+/* ── PERMISSION-BASED COLUMN & ELEMENT HIDING (MOBILE & DESKTOP) ── */
+.col-hidden-perm,
+th.col-hidden-perm,
+td.col-hidden-perm,
+table td.col-hidden-perm,
+table th.col-hidden-perm,
+td[data-label].col-hidden-perm,
+td[data-label="Target URL"].col-hidden-perm,
+td[data-label="Fallback URL"].col-hidden-perm,
+td[data-label="Allowed Sources"].col-hidden-perm,
+td[data-label="Settings"].col-hidden-perm,
+td[data-label="Clicks"].col-hidden-perm,
+td[data-label="Actions"].col-hidden-perm {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-bottom: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+td[data-label].col-hidden-perm::before,
+td[data-label].col-hidden-perm > * {
+  display: none !important;
+  content: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}

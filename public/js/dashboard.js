@@ -461,7 +461,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // User requested: "jab tak mai smarlinks select nahi karo tab tak active smartlinks show nhi ho"
       // This means we strictly check allPerms (raw permissions) for 'links', not the auto-granted userPerms
       const showActiveLinks = isFullAdmin || allPerms.includes('links');
-      activeLinksCard.style.display = showActiveLinks ? 'block' : 'none';
+      if (showActiveLinks) {
+        activeLinksCard.style.removeProperty('display');
+        activeLinksCard.classList.remove('col-hidden-perm');
+      } else {
+        activeLinksCard.style.setProperty('display', 'none', 'important');
+        activeLinksCard.classList.add('col-hidden-perm');
+      }
     }
 
     const proAccordion = document.getElementById('pro-accordion');
@@ -583,9 +589,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAdminUser = isFullAdminUser();
 
     sectionPermMap.forEach(({ perm, id }) => {
-      const hasPerm = isAdminUser || userCurrentPermissions.includes(perm);
+      const hasPerm = isAdminUser || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(perm));
       const el = document.getElementById(id);
-      if (el) el.style.display = hasPerm ? '' : 'none';
+      if (el) {
+        if (hasPerm) {
+          el.style.removeProperty('display');
+          el.classList.remove('col-hidden-perm');
+        } else {
+          el.style.setProperty('display', 'none', 'important');
+          el.classList.add('col-hidden-perm');
+        }
+      }
     });
     // ─────────────────────────────────────────────────────────────
 
@@ -946,16 +960,29 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     colMap.forEach(({ perm, thId, tdClass }) => {
-      const hasColPerm = isAdmin || userCurrentPermissions.includes(perm);
-      const display = hasColPerm ? '' : 'none';
+      const hasColPerm = isAdmin || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(perm));
 
       // Header
       const th = document.getElementById(thId);
-      if (th) th.style.display = display;
+      if (th) {
+        if (hasColPerm) {
+          th.style.removeProperty('display');
+          th.classList.remove('col-hidden-perm');
+        } else {
+          th.style.setProperty('display', 'none', 'important');
+          th.classList.add('col-hidden-perm');
+        }
+      }
 
-      // All cells in this column
+      // All cells in this column (Desktop & Mobile cards)
       document.querySelectorAll(`td.${tdClass}`).forEach(td => {
-        td.style.display = display;
+        if (hasColPerm) {
+          td.style.removeProperty('display');
+          td.classList.remove('col-hidden-perm');
+        } else {
+          td.style.setProperty('display', 'none', 'important');
+          td.classList.add('col-hidden-perm');
+        }
       });
     });
   }
