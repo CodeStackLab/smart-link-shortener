@@ -1446,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auto Shield Form Elements & Sync
   const autoShieldForm = document.getElementById('auto-shield-form');
+  const applyFirewallGloballyCb = document.getElementById('apply-firewall-globally');
   const botProtectionCb = document.getElementById('bot-protection-enabled');
   const botLimitClicksInput = document.getElementById('bot-limit-clicks');
   const botLimitMinutesInput = document.getElementById('bot-limit-minutes');
@@ -1463,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) return;
       const settings = await res.json();
 
+      if (applyFirewallGloballyCb) applyFirewallGloballyCb.checked = settings.applyFirewallGlobally !== false;
       if (botProtectionCb) botProtectionCb.checked = !!settings.botProtectionEnabled;
       if (botLimitClicksInput) botLimitClicksInput.value = settings.botLimitClicks || 100;
       if (botLimitMinutesInput) botLimitMinutesInput.value = settings.botLimitMinutes || 1;
@@ -1547,6 +1549,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const payload = {
+        applyFirewallGlobally: applyFirewallGloballyCb ? applyFirewallGloballyCb.checked : true,
         botProtectionEnabled: botProtectionCb.checked,
         botLimitClicks: parseInt(botLimitClicksInput.value || 100, 10),
         botLimitMinutes: parseInt(botLimitMinutesInput.value || 1, 10),
@@ -1567,7 +1570,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert('Shield & Firewall settings updated successfully! Applied globally to all users.');
+          showAlert('🛡️ Shield & Firewall settings updated! Applied globally to all editors & links.');
           loadShieldSettings();
         } else {
           showAlert(data.error || 'Failed to save settings', true);

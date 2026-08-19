@@ -95,7 +95,8 @@ function initDb() {
     blockKnownScrapers: false,
     honeypotProtectionEnabled: false,
     restrictEditorDomains: true,
-    allowedTargetDomains: []
+    allowedTargetDomains: [],
+    applyFirewallGlobally: true
   };
 
   if (!settings) {

@@ -569,11 +569,12 @@ app.get('/api/admin/settings', requireAuth, requirePermission('settings', 'firew
     vpnLimitMinutes: settings.vpnLimitMinutes,
     blockSuspiciousCountries: settings.blockSuspiciousCountries,
     blockKnownScrapers: settings.blockKnownScrapers,
-    honeypotProtectionEnabled: settings.honeypotProtectionEnabled
+    honeypotProtectionEnabled: settings.honeypotProtectionEnabled,
+    applyFirewallGlobally: settings.applyFirewallGlobally !== false
   });
 });
 
-app.post('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {
+app.post('/api/admin/settings', requireAuth, requirePermission('settings', 'firewall'), (req, res) => {
   const {
     rateLimitWindowSeconds,
     rateLimitMaxRequests,
@@ -588,7 +589,8 @@ app.post('/api/admin/settings', requireAuth, requirePermission('settings'), (req
     blockKnownScrapers,
     honeypotProtectionEnabled,
     restrictEditorDomains,
-    allowedTargetDomains
+    allowedTargetDomains,
+    applyFirewallGlobally
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -612,7 +614,8 @@ app.post('/api/admin/settings', requireAuth, requirePermission('settings'), (req
     blockKnownScrapers: blockKnownScrapers !== undefined ? !!blockKnownScrapers : undefined,
     honeypotProtectionEnabled: honeypotProtectionEnabled !== undefined ? !!honeypotProtectionEnabled : undefined,
     restrictEditorDomains: restrictEditorDomains !== undefined ? !!restrictEditorDomains : undefined,
-    allowedTargetDomains: processedAllowedDomains
+    allowedTargetDomains: processedAllowedDomains,
+    applyFirewallGlobally: applyFirewallGlobally !== undefined ? !!applyFirewallGlobally : undefined
   });
 
   res.json({ success: true, settings: updated });
