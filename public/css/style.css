@@ -931,12 +931,27 @@ tbody tr:hover td { background: transparent; }
    UTILITY
 ════════════════════════════════════════ */
 .code-box {
-  display: inline-flex; align-items: center;
+  display: block;
   background: var(--red-soft); border: 1px solid rgba(230,57,70,0.2);
   color: var(--red-dark); padding: 0.18rem 0.5rem;
   border-radius: 5px; font-family: monospace; font-size: 0.78rem; font-weight: 700;
-  word-break: break-all; max-width: 100%;
+  /* ── Key fix: truncate long URLs inside the box ── */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: min(260px, 100%);
 }
+
+/* Constrain the shortlink cell wrapper so it never pushes the table */
+.shortlink-cell-wrap {
+  max-width: 220px;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .url-link {
   color: var(--red-primary); text-decoration: none; font-weight: 600;
   display: block; max-width: 220px;
@@ -947,6 +962,12 @@ tbody tr:hover td { background: transparent; }
 /* Mobile: full width truncation */
 @media (max-width: 768px) {
   .url-link {
+    max-width: calc(100vw - 3rem);
+  }
+  .code-box {
+    max-width: min(200px, calc(100vw - 4rem));
+  }
+  .shortlink-cell-wrap {
     max-width: calc(100vw - 3rem);
   }
 }
