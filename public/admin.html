@@ -376,8 +376,8 @@
       <div class="card" style="padding:1.35rem; height:fit-content;">
         <div class="section-title"><span class="accent">🚫</span> Block IP Address</div>
 
-        <!-- Global Enforcement Toggle -->
-        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(220,38,38,0.08) 100%); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
+        <!-- Global Enforcement Toggle — ADMIN ONLY -->
+        <div id="block-ip-globally-wrap" style="background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(220,38,38,0.08) 100%); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem;">
             <div>
               <label for="block-ip-globally" style="font-weight:800; font-size:0.84rem; color:#dc2626; display:flex; align-items:center; gap:0.4rem; cursor:pointer; text-transform:none; margin-bottom:0.15rem;">
@@ -417,8 +417,8 @@
 
         <form id="auto-shield-form">
 
-          <!-- Apply to All Editors & Links Global Master Toggle -->
-          <div style="background:linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(99,102,241,0.1) 100%); border:1.5px solid rgba(99,102,241,0.3); border-radius:12px; padding:0.85rem 1rem; margin-bottom:1rem;">
+          <!-- Apply to All Editors & Links Global Master Toggle — ADMIN ONLY -->
+          <div id="apply-firewall-globally-wrap" style="background:linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(99,102,241,0.1) 100%); border:1.5px solid rgba(99,102,241,0.3); border-radius:12px; padding:0.85rem 1rem; margin-bottom:1rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem;">
               <div>
                 <label for="apply-firewall-globally" style="font-weight:800; font-size:0.88rem; color:#1d4ed8; display:flex; align-items:center; gap:0.4rem; cursor:pointer; text-transform:none; margin-bottom:0.15rem;">
@@ -489,7 +489,7 @@
             💾 Save &amp; Apply Globally to All Editors
           </button>
           <!-- Shown to Editor viewers only -->
-          <div id="shield-admin-only-note" style="display:none; text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; font-weight:600;">🔒 Only Admin can change global shield settings</div>
+          <div id="shield-admin-only-note" style="display:none; text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; font-weight:600;">🔒 Only Super Admin can change global firewall settings</div>
         </form>
       </div>
 
@@ -497,7 +497,7 @@
       <div class="card" style="padding:1.35rem;">
         <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
           <div><span class="accent">🛡️</span> Blocked IP Addresses</div>
-          <span style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
+          <span id="blocked-ip-global-badge" style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
             🌐 Active for All Editors
           </span>
         </div>

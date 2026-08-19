@@ -450,6 +450,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ─────────────────────────────────────────────────────────────
 
+    // ─── Firewall Global Controls — Super Admin ONLY ─────────────
+    // All "Apply Globally / All Editors" UI elements must be hidden
+    // from Editors and regular Admins. Only Super Admin (username=admin) sees them.
+    const globalFirewallEls = [
+      'block-ip-globally-wrap',       // "Apply Block Globally" toggle in Block IP card
+      'apply-firewall-globally-wrap', // "Apply to All Editors" toggle in Auto Shield card
+      'blocked-ip-global-badge'       // "Active for All Editors" badge in Blocked IPs card
+    ];
+    globalFirewallEls.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = isSuperAdmin ? '' : 'none';
+    });
+
+    // Save button + read-only note in Auto Shield form
+    const saveShieldBtn = document.getElementById('save-shield-btn');
+    const shieldNote = document.getElementById('shield-admin-only-note');
+    // Disable all firewall inputs for non-admins
+    const autoShieldForm = document.getElementById('auto-shield-form');
+    if (autoShieldForm) {
+      autoShieldForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
+        el.disabled = !isSuperAdmin;
+        el.style.opacity = isSuperAdmin ? '' : '0.45';
+        el.style.cursor = isSuperAdmin ? '' : 'not-allowed';
+      });
+    }
+    // Block IP form: disable for non-admin too
+    const blockIpForm = document.getElementById('block-ip-form');
+    if (blockIpForm) {
+      blockIpForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
+        el.disabled = !isSuperAdmin;
+        el.style.opacity = isSuperAdmin ? '' : '0.45';
+        el.style.cursor = isSuperAdmin ? '' : 'not-allowed';
+      });
+    }
+    if (saveShieldBtn) saveShieldBtn.style.display = isSuperAdmin ? '' : 'none';
+    if (shieldNote) shieldNote.style.display = isSuperAdmin ? 'none' : 'block';
+    // ─────────────────────────────────────────────────────────────
+
     // If no tab is currently visible/active, activate the first visible tab
     const allTabBtns = document.querySelectorAll('.tab-btn');
     const anyActive = Array.from(allTabBtns).some(b => b.classList.contains('active') && b.style.display !== 'none');
