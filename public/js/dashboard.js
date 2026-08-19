@@ -673,14 +673,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const isOwner = (link.createdBy || 'admin').toLowerCase() === currentLoggedInUsername.toLowerCase();
       const hasLinksPerm = userCurrentPermissions.includes('links');
       const canManage = currentLoggedInRole === 'Admin' || (isOwner && hasLinksPerm);
+      const isSecurityPaused = !!link.autoPausedForSecurity;
+
+      let toggleBtnHtml = '';
+      if (isSecurityPaused) {
+        if (currentLoggedInRole === 'Admin') {
+          toggleBtnHtml = `<button class="btn btn-sm" onclick="toggleLinkStatus('${link.id}', true)" title="Review and resume security-paused link" style="background:linear-gradient(135deg,#f59e0b,#d97706); border:none; color:#fff; font-weight:800; border-radius:8px; padding:0.3rem 0.65rem;">🔓 Resume Link</button>`;
+        } else {
+          toggleBtnHtml = `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.6; cursor:not-allowed;" title="Auto-paused due to fake traffic detection. Only Primary Admin can review and resume this link.">🔒 Admin Locked</button>`;
+        }
+      } else {
+        toggleBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">${link.active ? 'Pause' : 'Enable'}</button>`;
+      }
 
       const actionsHtml = canManage ? `
         <div class="action-btn-group">
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
-          <button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">
-            ${link.active ? 'Pause' : 'Enable'}
-          </button>
+          ${toggleBtnHtml}
           <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.id}')">🗑️ Delete</button>
         </div>
       ` : `
@@ -690,6 +700,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="badge badge-info" style="font-size:0.7rem; padding:0.35rem 0.65rem; font-weight:700;">👁️ View Only</span>
         </div>
       `;
+
+      const statusBadge = isSecurityPaused
+        ? `<span class="badge badge-danger" style="background:#dc2626; color:#fff; font-weight:800; font-size:0.72rem; padding:0.35rem 0.6rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.25rem;" title="${link.securityPauseReason || 'Auto-Paused due to fake traffic detection'}">⚠️ Auto-Paused (Fake Traffic)</span>`
+        : `<span class="badge ${link.active ? 'badge-success' : 'badge-danger'}">${link.active ? 'Active' : 'Paused'}</span>`;
 
       return `
         <tr>
@@ -723,9 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td data-label="Clicks"><strong style="font-size: 1.1rem; font-family: 'Outfit', sans-serif;">${link.clicks || 0}</strong></td>
           <td data-label="Status">
-            <span class="badge ${link.active ? 'badge-success' : 'badge-danger'}">
-              ${link.active ? 'Active' : 'Paused'}
-            </span>
+            ${statusBadge}
           </td>
           <td data-label="Actions">
             ${actionsHtml}
@@ -1413,15 +1425,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       firewallTbody.innerHTML = blocked.map(item => {
         const timeStr = new Date(item.blockedAt).toLocaleString();
+        const unblockBtnHtml = currentLoggedInRole === 'Admin'
+          ? `<button class="btn btn-secondary btn-sm" onclick="unblockIp('${item.ip}')" style="width:100% !important;">🔓 Unblock IP</button>`
+          : `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.6; cursor:not-allowed; width:100% !important;" title="Only Primary Admin can unblock IPs">🔒 Admin Only</button>`;
+
         return `
           <tr>
             <td data-label="IP Address"><code>${item.ip}</code></td>
-            <td data-label="Reason" style="color: var(--text-secondary);">${item.reason || 'Manual Block'}</td>
+            <td data-label="Reason" style="color: var(--text-secondary); font-size:0.8rem;">${item.reason || 'Manual Block'}</td>
             <td data-label="Blocked At" style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</td>
             <td data-label="Actions">
-              <button class="btn btn-secondary btn-sm" onclick="unblockIp('${item.ip}')" style="width:100% !important;">
-                🔓 Unblock IP
-              </button>
+              ${unblockBtnHtml}
             </td>
           </tr>
         `;
@@ -1432,12 +1446,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.unblockIp = async function(ip) {
+    if (currentLoggedInRole !== 'Admin') {
+      showAlert('⚠️ Only Primary Admin can unblock IP addresses.', true);
+      return;
+    }
     if (!confirm(`Are you sure you want to unblock IP ${ip}?`)) return;
     try {
       const res = await fetch(`/api/admin/blocked-ips/${encodeURIComponent(ip)}`, { method: 'DELETE' });
       if (res.ok) {
-        showAlert(`IP ${ip} has been unblocked.`);
+        showAlert(`✅ IP ${ip} has been unblocked.`);
         loadBlockedIps();
+      } else {
+        const data = await res.json();
+        showAlert(data.error || 'Failed to unblock IP', true);
       }
     } catch (err) {
       showAlert('Error unblocking IP', true);

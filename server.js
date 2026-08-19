@@ -448,7 +448,16 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
       .filter(Boolean);
   }
 
-  const updated = db.updateLink(id, {
+  // Security Check: If link was auto-paused for security (fake traffic detection), only Admin can re-enable it
+  if (existingLink.autoPausedForSecurity && active === true) {
+    if (!isAdminRole(req.session.role)) {
+      return res.status(403).json({
+        error: '⚠️ This shortlink was auto-paused due to suspicious fake/bot traffic detection. Only Primary Admin can review and resume this link.'
+      });
+    }
+  }
+
+  const updateFields = {
     targetUrl: targetUrl ? ensureAbsoluteUrl(targetUrl) : undefined,
     fallbackUrl: 'https://www.google.com/',
     allowedPlatforms: Array.isArray(allowedPlatforms) ? allowedPlatforms : undefined,
@@ -463,7 +472,15 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     androidUrl: androidUrl !== undefined ? (androidUrl ? ensureAbsoluteUrl(androidUrl) : '') : undefined,
     active: typeof active === 'boolean' ? active : undefined,
     domain: domain !== undefined ? (domain ? domain.trim().toLowerCase() : '') : undefined
-  });
+  };
+
+  // If Admin explicitly activates an auto-paused link, clear the security pause lock
+  if (isAdminRole(req.session.role) && active === true) {
+    updateFields.autoPausedForSecurity = false;
+    updateFields.securityPauseReason = null;
+  }
+
+  const updated = db.updateLink(id, updateFields);
 
   res.json({ success: true, link: updated });
 });
@@ -545,7 +562,10 @@ app.post('/api/admin/block-ip', requireAuth, requirePermission('firewall'), (req
   res.json({ success: true, entry: result });
 });
 
-app.delete('/api/admin/blocked-ips/:ip', requireAuth, requirePermission('firewall'), (req, res) => {
+app.delete('/api/admin/blocked-ips/:ip', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Only Primary Admin can unblock IP addresses.' });
+  }
   const { ip } = req.params;
   db.unblockIp(decodeURIComponent(ip));
   res.json({ success: true });
@@ -1038,6 +1058,29 @@ app.get('/api/admin/domains/check', (req, res) => {
 // DYNAMIC SHORTLINK REDIRECT ROUTE (/s/:code & /:code)
 // ----------------------------------------------------
 
+// Link Fake Traffic Strike Tracker — tracks malicious/bot spikes on each link
+const linkFakeTrafficStrikes = new Map();
+
+function triggerSecurityAutoPauseForLink(linkCode, reason, clientIp) {
+  if (!linkCode) return;
+  const targetLink = db.getLinkByCode(linkCode);
+  if (targetLink && targetLink.active) {
+    const currentStrikes = (linkFakeTrafficStrikes.get(targetLink.id) || 0) + 1;
+    linkFakeTrafficStrikes.set(targetLink.id, currentStrikes);
+
+    // Auto-pause immediately on aggressive bot flood, scraper or honeypot (or >= 2 strikes)
+    if (currentStrikes >= 2 || reason.includes('Scraper') || reason.includes('Honey pot') || reason.includes('Bot')) {
+      db.updateLink(targetLink.id, {
+        active: false,
+        autoPausedForSecurity: true,
+        securityPauseReason: `Auto-Paused: Suspicious Fake/Bot Traffic Detected from IP ${clientIp} (${new Date().toLocaleString()})`,
+        securityPausedAt: new Date().toISOString()
+      });
+      console.log(`🚨 [SECURITY SHIELD] Shortlink /${targetLink.code} was AUTO-PAUSED due to fake traffic from IP ${clientIp}. Only Admin can resume it.`);
+    }
+  }
+}
+
 async function handleShortlinkRedirect(req, res) {
   const code = req.params.code;
   if (!code || code === 'admin' || code === 'login' || code.startsWith('api') || code.endsWith('.html') || code.endsWith('.css') || code.endsWith('.js') || code.endsWith('.ico')) {
@@ -1085,6 +1128,7 @@ async function handleShortlinkRedirect(req, res) {
   // A. Check Honeypot trigger
   if (settings.honeypotProtectionEnabled && (code === 'honeypot' || code === 'security-honeypot')) {
     db.blockIp(clientIp, 'Auto Shield: Honey pot trap triggered');
+    triggerSecurityAutoPauseForLink(code, 'Honey pot', clientIp);
     const logEntry = {
       id: logId,
       timestamp: new Date().toISOString(),
@@ -1116,6 +1160,7 @@ async function handleShortlinkRedirect(req, res) {
     const highRiskCountries = ['CN', 'RU', 'KP', 'IR'];
     if (highRiskCountries.includes(geoInfo.countryCode)) {
       db.blockIp(clientIp, `Auto Shield: Restricted Country Access (${geoInfo.countryCode})`);
+      triggerSecurityAutoPauseForLink(code, 'Country Block', clientIp);
       const logEntry = {
         id: logId,
         timestamp: new Date().toISOString(),
@@ -1146,6 +1191,7 @@ async function handleShortlinkRedirect(req, res) {
   // C. Check automatic firewall traffic shields (Bot & VPN Protection)
   const isAutoBlocked = checkAndApplyAutoShield(clientIp, geoInfo.isVpn, userAgent, code);
   if (isAutoBlocked) {
+    triggerSecurityAutoPauseForLink(code, 'Bot/Fake Traffic Shield', clientIp);
     const logEntry = {
       id: logId,
       timestamp: new Date().toISOString(),
