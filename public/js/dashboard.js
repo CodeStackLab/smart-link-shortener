@@ -171,6 +171,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentPermissionsString = '';
   let currentAllowedSitesString = '';
 
+  function isSuperAdminUser() {
+    const r = String(currentLoggedInRole || '').toLowerCase().trim();
+    const u = String(currentLoggedInUsername || '').toLowerCase().trim();
+    return u === 'admin' || r === 'super admin';
+  }
+
+  function isFullAdminUser() {
+    const r = String(currentLoggedInRole || '').toLowerCase().trim();
+    const u = String(currentLoggedInUsername || '').toLowerCase().trim();
+    return u === 'admin' || r === 'admin' || r === 'super admin';
+  }
+
   function syncSessionLive(isInitial = false) {
     fetch('/api/session')
       .then(res => res.json())
@@ -332,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let userCurrentPermissions = ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
 
   function applyRoleUiScoping(role, permissions) {
-    const isFullAdmin = String(role).trim().toLowerCase() === 'admin';
+    const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
     const userPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']);
     userCurrentPermissions = userPerms;
@@ -427,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── Super Admin Gating ─────────────────────────────────────
     // Only the PRIMARY admin account (username 'admin') is the Super Admin.
     // All others (even role=Admin) CANNOT manage team members.
-    const isSuperAdmin = currentLoggedInUsername.toLowerCase() === 'admin';
+    const isSuperAdmin = isSuperAdminUser();
 
     const teamCard = document.getElementById('team-management-card');
     if (teamCard) {
@@ -452,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Firewall Global Controls — Super Admin ONLY ─────────────
     // All "Apply Globally / All Editors" UI elements must be hidden
-    // from Editors and regular Admins. Only Super Admin (username=admin) sees them.
+    // from Editors and regular Admins. Only Super Admin sees them.
     const globalFirewallEls = [
       'block-ip-globally-wrap',       // "Apply Block Globally" toggle in Block IP card
       'apply-firewall-globally-wrap', // "Apply to All Editors" toggle in Auto Shield card
@@ -466,18 +478,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Save button + read-only note in Auto Shield form
     const saveShieldBtn = document.getElementById('save-shield-btn');
     const shieldNote = document.getElementById('shield-admin-only-note');
+    const readonlyNotice = document.getElementById('shield-readonly-notice');
 
     // ── Auto Shield: only Super Admin can change global settings ──
     const autoShieldForm = document.getElementById('auto-shield-form');
     if (autoShieldForm) {
-      autoShieldForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
-        el.disabled = !isSuperAdmin;
-        el.style.opacity = isSuperAdmin ? '' : '0.45';
-        el.style.cursor = isSuperAdmin ? '' : 'not-allowed';
-      });
+      if (isSuperAdmin) {
+        autoShieldForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
+          el.disabled = false;
+          el.style.opacity = '';
+          el.style.cursor = '';
+        });
+        if (typeof toggleSettingsGroup === 'function') {
+          const botProtectionCb = document.getElementById('bot-protection-enabled');
+          const vpnProtectionCb = document.getElementById('vpn-protection-enabled');
+          toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
+          toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
+        }
+      } else {
+        autoShieldForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
+          el.disabled = true;
+          el.style.opacity = '0.45';
+          el.style.cursor = 'not-allowed';
+        });
+      }
     }
     if (saveShieldBtn) saveShieldBtn.style.display = isSuperAdmin ? '' : 'none';
     if (shieldNote) shieldNote.style.display = isSuperAdmin ? 'none' : 'block';
+    if (readonlyNotice) readonlyNotice.style.display = isSuperAdmin ? 'none' : 'block';
 
     // ── Block IP form: Editors CAN use it (for their own links) ──
     // BUT the "Globally for All Editors" label/button must be Admin-only.
@@ -519,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { perm: 'logs_realtime',       id: 'logs-realtime-wrap' }
     ];
 
-    const isAdminUser = isSuperAdmin || currentLoggedInRole.toLowerCase() === 'admin';
+    const isAdminUser = isFullAdminUser();
 
     sectionPermMap.forEach(({ perm, id }) => {
       const hasPerm = isAdminUser || userCurrentPermissions.includes(perm);
@@ -792,12 +820,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const isOwner = (link.createdBy || 'admin').toLowerCase() === currentLoggedInUsername.toLowerCase();
       const hasLinksPerm = userCurrentPermissions.includes('links');
-      const canManage = currentLoggedInRole === 'Admin' || (isOwner && hasLinksPerm);
+      const canManage = isFullAdminUser() || (isOwner && hasLinksPerm);
       const isSecurityPaused = !!link.autoPausedForSecurity;
 
       let toggleBtnHtml = '';
       if (isSecurityPaused) {
-        if (currentLoggedInRole === 'Admin') {
+        if (isFullAdminUser()) {
           toggleBtnHtml = `<button class="btn btn-sm" onclick="toggleLinkStatus('${link.id}', true)" title="Review and resume security-paused link" style="background:linear-gradient(135deg,#f59e0b,#d97706); border:none; color:#fff; font-weight:800; border-radius:8px; padding:0.3rem 0.65rem;">🔓 Resume Link</button>`;
         } else {
           toggleBtnHtml = `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.6; cursor:not-allowed;" title="Auto-paused due to fake traffic detection. Only Primary Admin can review and resume this link.">🔒 Admin Locked</button>`;
@@ -1578,7 +1606,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       firewallTbody.innerHTML = blocked.map(item => {
         const timeStr = new Date(item.blockedAt).toLocaleString();
-        const unblockBtnHtml = currentLoggedInRole === 'Admin'
+        const unblockBtnHtml = isFullAdminUser()
           ? `<button class="btn btn-secondary btn-sm" onclick="unblockIp('${item.ip}')" style="width:100% !important;">🔓 Unblock IP</button>`
           : `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.6; cursor:not-allowed; width:100% !important;" title="Only Primary Admin can unblock IPs">🔒 Admin Only</button>`;
 
@@ -1599,7 +1627,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.unblockIp = async function(ip) {
-    if (currentLoggedInRole !== 'Admin') {
+    if (!isFullAdminUser()) {
       showAlert('⚠️ Only Primary Admin can unblock IP addresses.', true);
       return;
     }
@@ -1655,7 +1683,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
 
       // Apply read-only mode for non-admin users (Editors with firewall permission)
-      const isAdminUser = String(currentLoggedInRole || 'Admin').toLowerCase() === 'admin';
+      const isAdminUser = isSuperAdminUser();
       const readonlyNotice = document.getElementById('shield-readonly-notice');
       const adminOnlyNote = document.getElementById('shield-admin-only-note');
       const saveShieldBtn = document.getElementById('save-shield-btn');
@@ -1668,19 +1696,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (autoShieldForm) {
           autoShieldForm.querySelectorAll('input, select').forEach(el => { el.disabled = true; });
         }
-        // Grey out save button to signal read-only
+        // Hide save button to signal read-only
         if (saveShieldBtn) {
-          saveShieldBtn.style.opacity = '0.5';
-          saveShieldBtn.style.cursor = 'not-allowed';
-          saveShieldBtn.title = 'Only Admin can change global shield settings';
+          saveShieldBtn.style.display = 'none';
         }
       } else {
         // Admin: hide notices, enable everything
         if (readonlyNotice) readonlyNotice.style.display = 'none';
         if (adminOnlyNote) adminOnlyNote.style.display = 'none';
-        if (saveShieldBtn) { saveShieldBtn.style.opacity = ''; saveShieldBtn.style.cursor = ''; saveShieldBtn.title = ''; }
+        if (saveShieldBtn) {
+          saveShieldBtn.style.display = '';
+          saveShieldBtn.style.opacity = '';
+          saveShieldBtn.style.cursor = '';
+          saveShieldBtn.title = '';
+        }
         if (autoShieldForm) {
-          autoShieldForm.querySelectorAll('input, select').forEach(el => { el.disabled = false; });
+          autoShieldForm.querySelectorAll('input, select').forEach(el => {
+            el.disabled = false;
+            el.style.opacity = '';
+            el.style.cursor = '';
+          });
         }
         toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
         toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
@@ -1716,9 +1751,9 @@ document.addEventListener('DOMContentLoaded', () => {
     autoShieldForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Only Admin can save Shield settings — Editors see them as read-only (globally applied by Admin)
-      if (currentLoggedInRole && String(currentLoggedInRole).toLowerCase() !== 'admin') {
-        showAlert('⚠️ Shield settings are managed by Admin and apply globally. You can view them but not change them.', true);
+      // Only Super Admin can save Shield settings
+      if (!isSuperAdminUser()) {
+        showAlert('⚠️ Shield settings are managed by Super Admin and apply globally. You can view them but not change them.', true);
         return;
       }
       
