@@ -41,12 +41,14 @@ function getUserPermissions(username, role) {
     : db.getDefaultPermissions('Editor');
 }
 
-function requirePermission(permission) {
+// Accepts one or more permission strings (OR logic: user needs at least one).
+function requirePermission(...permissions) {
   return (req, res, next) => {
-    if (isAdminRole(req.session.role) || getUserPermissions(req.session.username, req.session.role).includes(permission)) {
-      return next();
-    }
-    return res.status(403).json({ error: `Access denied. Your account does not have ${permission} permission.` });
+    if (isAdminRole(req.session.role)) return next();
+    const userPerms = getUserPermissions(req.session.username, req.session.role);
+    const hasAny = permissions.some(p => userPerms.includes(p));
+    if (hasAny) return next();
+    return res.status(403).json({ error: `Access denied. Required permission: ${permissions.join(' or ')}.` });
   };
 }
 
@@ -549,8 +551,26 @@ app.delete('/api/admin/blocked-ips/:ip', requireAuth, requirePermission('firewal
   res.json({ success: true });
 });
 
-app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {
-  res.json(db.getSettings());
+// GET settings: Admin (full) OR users with 'firewall' permission (to show shield status in firewall tab).
+// Non-admin firewall users only receive firewall-relevant fields (not sensitive settings).
+app.get('/api/admin/settings', requireAuth, requirePermission('settings', 'firewall'), (req, res) => {
+  const settings = db.getSettings();
+  if (isAdminRole(req.session.role) || getUserPermissions(req.session.username, req.session.role).includes('settings')) {
+    // Full settings for admin and settings-permission users
+    return res.json(settings);
+  }
+  // Firewall-only users: return only the firewall-relevant fields (read-only view)
+  return res.json({
+    botProtectionEnabled: settings.botProtectionEnabled,
+    botLimitClicks: settings.botLimitClicks,
+    botLimitMinutes: settings.botLimitMinutes,
+    vpnProtectionEnabled: settings.vpnProtectionEnabled,
+    vpnLimitClicks: settings.vpnLimitClicks,
+    vpnLimitMinutes: settings.vpnLimitMinutes,
+    blockSuspiciousCountries: settings.blockSuspiciousCountries,
+    blockKnownScrapers: settings.blockKnownScrapers,
+    honeypotProtectionEnabled: settings.honeypotProtectionEnabled
+  });
 });
 
 app.post('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {

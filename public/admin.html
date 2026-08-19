@@ -351,7 +351,6 @@
               <th>Location</th>
               <th>Connection</th>
               <th>Referrer</th>
-              <th>Status</th>
               <th>Dwell</th>
               <th>Action</th>
             </tr>
@@ -373,6 +372,7 @@
   <div class="container">
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
 
+      <!-- Block IP Address Card -->
       <div class="card" style="padding:1.35rem; height:fit-content;">
         <div class="section-title"><span class="accent">🚫</span> Block IP Address</div>
         <form id="block-ip-form">
@@ -392,9 +392,15 @@
 
       <!-- Auto Shield & Firewall Settings -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="auto-shield-card">
-        <div class="section-title"><span class="accent">🛡️</span> Auto Shield & Firewall Settings</div>
+        <div class="section-title"><span class="accent">🛡️</span> Auto Shield &amp; Firewall Settings</div>
+
+        <!-- Global Settings Notice — shown to Editors with firewall access (hidden for Admin by JS) -->
+        <div id="shield-readonly-notice" style="display:none; background:rgba(59,130,246,0.08); border:1.5px solid rgba(59,130,246,0.3); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.78rem; font-weight:700; color:#3b82f6;">
+          🌐 These settings are set by <strong>Admin</strong> and apply <strong>globally</strong> to all users &amp; shortlinks. You can view them but only Admin can change them.
+        </div>
+
         <form id="auto-shield-form">
-          
+
           <div style="border-bottom:1px solid var(--border); padding-bottom:0.75rem; margin-bottom:0.75rem;">
             <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; font-weight:700;">
               <input type="checkbox" id="bot-protection-enabled" style="width:16px; height:16px; accent-color:var(--red-primary);">
@@ -429,21 +435,18 @@
             </div>
           </div>
 
-          <!-- Advanced Bot Protection Options (AI recommendations) -->
+          <!-- Advanced Bot Protection Options -->
           <div style="margin-bottom:0.75rem;">
             <div style="font-weight:700; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Advanced Bot Protections (Recommended)</div>
-            
             <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; margin-bottom:0.3rem;">
               <input type="checkbox" id="block-suspicious-countries" style="width:15px; height:15px; accent-color:var(--red-primary);">
               <span style="font-size:0.75rem;">Block High-Risk Countries (CN, RU, etc.)</span>
             </label>
-            
             <br>
             <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; margin-bottom:0.3rem;">
               <input type="checkbox" id="block-known-scrapers" style="width:15px; height:15px; accent-color:var(--red-primary);">
               <span style="font-size:0.75rem;">Strict User-Agent Scraper Check</span>
             </label>
-            
             <br>
             <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; margin-bottom:0.3rem;">
               <input type="checkbox" id="honeypot-protection-enabled" style="width:15px; height:15px; accent-color:var(--red-primary);">
@@ -451,12 +454,15 @@
             </label>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block" style="border:none; background:var(--grad-brand); color:white; box-shadow:var(--shadow-red-sm);">
+          <button type="submit" id="save-shield-btn" class="btn btn-primary btn-block" style="border:none; background:var(--grad-brand); color:white; box-shadow:var(--shadow-red-sm);">
             💾 Save Shield Settings
           </button>
+          <!-- Shown to Editor viewers only -->
+          <div id="shield-admin-only-note" style="display:none; text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; font-weight:600;">🔒 Only Admin can change global shield settings</div>
         </form>
       </div>
 
+      <!-- Blocked IP Addresses Table -->
       <div class="card" style="padding:1.35rem;">
         <div class="section-title"><span class="accent">🛡️</span> Blocked IP Addresses</div>
         <div class="table-wrap">
@@ -479,6 +485,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- ══════════════════════════════
      TAB 5 — SETTINGS

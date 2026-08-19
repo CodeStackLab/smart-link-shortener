@@ -243,13 +243,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const hasCustomWebPerm = perms.includes('custom_website');
     const allowedSites = (sessionData && Array.isArray(sessionData.allowedTargetDomains)) ? sessionData.allowedTargetDomains : [];
 
-    if (String(role).trim().toLowerCase() === 'admin' || hasCustomWebPerm || allowedSites.length === 0) {
+    // FIX: If allowedSites are assigned, always show dropdown (even if custom_website permission is set).
+    // Only show free text input when: admin role, OR no sites assigned (empty list).
+    const isAdmin = String(role).trim().toLowerCase() === 'admin';
+    const hasSites = allowedSites.length > 0;
+
+    if (isAdmin || !hasSites) {
       targetInput.style.display = 'block';
       targetInput.required = true;
       targetSelect.style.display = 'none';
       targetSelect.required = false;
     } else {
-      // Editor with assigned websites (and no custom_website permission) sees Dropdown Select Menu
+      // Editor with assigned websites — always show Dropdown (ignores custom_website permission)
       targetInput.style.display = 'none';
       targetInput.required = false;
       targetSelect.style.display = 'block';
@@ -263,9 +268,28 @@ document.addEventListener('DOMContentLoaded', () => {
         return clean;
       });
 
-      targetSelect.innerHTML = cleanSites.map(s => `<option value="${s}">🌐 ${s}</option>`).join('');
+      // Mask URL for display: show protocol + first 12 chars of domain/path, then ****
+      function maskUrl(url) {
+        try {
+          const u = new URL(url);
+          const proto = u.protocol + '//'; // "https://"
+          const host = u.hostname;          // "behance.net"
+          const path = u.pathname + u.search; // "/search/projects/palour"
+          // Show first 6 chars of host, mask rest
+          const visibleHost = host.length > 6 ? host.substring(0, 6) + '****' : host;
+          // Always mask path fully
+          const maskedPath = path && path !== '/' ? '/****' : '';
+          return proto + visibleHost + maskedPath;
+        } catch {
+          // Fallback: show first 15 chars then ****
+          return url.substring(0, 15) + '****';
+        }
+      }
+
+      targetSelect.innerHTML = cleanSites.map(s => `<option value="${s}">🌐 ${maskUrl(s)}</option>`).join('');
       targetSelect.value = cleanSites[0];
       targetInput.value = cleanSites[0];
+
     }
 
     // Auto-update targetInput when post-url-input or targetSelect changes
@@ -1439,20 +1463,52 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) return;
       const settings = await res.json();
 
-      botProtectionCb.checked = !!settings.botProtectionEnabled;
-      botLimitClicksInput.value = settings.botLimitClicks || 100;
-      botLimitMinutesInput.value = settings.botLimitMinutes || 1;
-      
-      vpnProtectionCb.checked = !!settings.vpnProtectionEnabled;
-      vpnLimitClicksInput.value = settings.vpnLimitClicks || 500;
-      vpnLimitMinutesInput.value = settings.vpnLimitMinutes || 90;
+      if (botProtectionCb) botProtectionCb.checked = !!settings.botProtectionEnabled;
+      if (botLimitClicksInput) botLimitClicksInput.value = settings.botLimitClicks || 100;
+      if (botLimitMinutesInput) botLimitMinutesInput.value = settings.botLimitMinutes || 1;
 
-      blockCountriesCb.checked = !!settings.blockSuspiciousCountries;
-      blockScrapersCb.checked = !!settings.blockKnownScrapers;
-      honeypotCb.checked = !!settings.honeypotProtectionEnabled;
+      if (vpnProtectionCb) vpnProtectionCb.checked = !!settings.vpnProtectionEnabled;
+      if (vpnLimitClicksInput) vpnLimitClicksInput.value = settings.vpnLimitClicks || 500;
+      if (vpnLimitMinutesInput) vpnLimitMinutesInput.value = settings.vpnLimitMinutes || 90;
 
-      toggleSettingsGroup('bot-settings-group', botProtectionCb.checked);
-      toggleSettingsGroup('vpn-settings-group', vpnProtectionCb.checked);
+      if (blockCountriesCb) blockCountriesCb.checked = !!settings.blockSuspiciousCountries;
+      if (blockScrapersCb) blockScrapersCb.checked = !!settings.blockKnownScrapers;
+      if (honeypotCb) honeypotCb.checked = !!settings.honeypotProtectionEnabled;
+
+      toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
+      toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
+
+      // Apply read-only mode for non-admin users (Editors with firewall permission)
+      const isAdminUser = String(currentLoggedInRole || 'Admin').toLowerCase() === 'admin';
+      const readonlyNotice = document.getElementById('shield-readonly-notice');
+      const adminOnlyNote = document.getElementById('shield-admin-only-note');
+      const saveShieldBtn = document.getElementById('save-shield-btn');
+
+      if (!isAdminUser) {
+        // Show global notice banner
+        if (readonlyNotice) readonlyNotice.style.display = 'block';
+        if (adminOnlyNote) adminOnlyNote.style.display = 'block';
+        // Disable all inputs in the shield form (read-only view)
+        if (autoShieldForm) {
+          autoShieldForm.querySelectorAll('input, select').forEach(el => { el.disabled = true; });
+        }
+        // Grey out save button to signal read-only
+        if (saveShieldBtn) {
+          saveShieldBtn.style.opacity = '0.5';
+          saveShieldBtn.style.cursor = 'not-allowed';
+          saveShieldBtn.title = 'Only Admin can change global shield settings';
+        }
+      } else {
+        // Admin: hide notices, enable everything
+        if (readonlyNotice) readonlyNotice.style.display = 'none';
+        if (adminOnlyNote) adminOnlyNote.style.display = 'none';
+        if (saveShieldBtn) { saveShieldBtn.style.opacity = ''; saveShieldBtn.style.cursor = ''; saveShieldBtn.title = ''; }
+        if (autoShieldForm) {
+          autoShieldForm.querySelectorAll('input, select').forEach(el => { el.disabled = false; });
+        }
+        toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
+        toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
+      }
     } catch (err) {
       console.error('Failed to load shield settings:', err);
     }
@@ -1483,6 +1539,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (autoShieldForm) {
     autoShieldForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Only Admin can save Shield settings — Editors see them as read-only (globally applied by Admin)
+      if (currentLoggedInRole && String(currentLoggedInRole).toLowerCase() !== 'admin') {
+        showAlert('⚠️ Shield settings are managed by Admin and apply globally. You can view them but not change them.', true);
+        return;
+      }
       
       const payload = {
         botProtectionEnabled: botProtectionCb.checked,
@@ -1505,7 +1567,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert('Shield & Firewall settings updated successfully!');
+          showAlert('Shield & Firewall settings updated successfully! Applied globally to all users.');
           loadShieldSettings();
         } else {
           showAlert(data.error || 'Failed to save settings', true);
