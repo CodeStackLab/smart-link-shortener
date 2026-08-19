@@ -267,7 +267,7 @@
       </div>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid" id="geo-genuine-organic-wrap">
       <div class="stat-card">
         <div class="stat-icon teal">🌱</div>
         <div class="stat-body">
@@ -278,7 +278,7 @@
       </div>
     </div>
 
-    <div class="card" style="padding:1.1rem;">
+    <div class="card" id="geo-country-distribution-wrap" style="padding:1.1rem;">
       <div class="section-title" style="margin-bottom:0.85rem;"><span class="accent">🌐</span> Country Traffic Distribution</div>
       <div class="table-wrap">
         <table>
@@ -315,7 +315,7 @@
   <div class="container">
 
     <div class="stats-grid">
-      <div class="stat-card">
+      <div class="stat-card" id="logs-organic-wrap">
         <div class="stat-icon teal">✅</div>
         <div class="stat-body">
           <div class="stat-title">Organic Clicks</div>
@@ -323,7 +323,7 @@
           <div class="stat-desc">Social & custom domain</div>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="logs-fallback-wrap">
         <div class="stat-icon amber">↩️</div>
         <div class="stat-body">
           <div class="stat-title">Fallback Clicks</div>
@@ -333,7 +333,7 @@
       </div>
     </div>
 
-    <div class="card" style="padding:1.1rem;">
+    <div class="card" id="logs-realtime-wrap" style="padding:1.1rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
         <div class="section-title" style="margin-bottom:0;"><span class="accent">📊</span> Real-Time Traffic Audit Logs</div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
@@ -594,6 +594,27 @@
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_actions" checked> ⚡ Actions</label>
             </div>
             <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem; padding:0 0.2rem;">💡 Hidden columns are not visible to editor, but shortlinks still work correctly in background.</div>
+          </div>
+
+          <!-- Geo & Analytics Section Visibility -->
+          <div style="margin-bottom:0.85rem;">
+            <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">🌍 Geo &amp; Analytics — Section Visibility:</label>
+            <div style="background:rgba(5,150,105,0.04); border:1px solid rgba(5,150,105,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.4rem;">
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo_organic"> 🌱 Genuine Organic Traffic</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo_country_dist" checked> 🌐 Country Distribution</label>
+            </div>
+            <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem; padding:0 0.2rem;">💡 Control which Geo tab sections the editor can see.</div>
+          </div>
+
+          <!-- Logs/Analytics Section Visibility -->
+          <div style="margin-bottom:0.85rem;">
+            <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📊 Logs Tab — Section Visibility:</label>
+            <div style="background:rgba(180,83,9,0.04); border:1px solid rgba(180,83,9,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.4rem;">
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_organic_clicks"> ✅ Organic Clicks</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_fallback_clicks"> ↩️ Fallback Clicks</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_realtime"> 📊 Real-Time Audit Logs</label>
+            </div>
+            <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem; padding:0 0.2rem;">💡 Hidden sections won't appear in editor's Logs tab.</div>
           </div>
 
           <button type="submit" style="width:100%; margin-top:0.9rem; background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.75rem 1.2rem; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 18px rgba(24,119,242,0.38) !important; text-align:center; min-height:46px; box-sizing:border-box; letter-spacing:0.01em;">

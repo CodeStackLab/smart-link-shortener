@@ -488,6 +488,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (shieldNote) shieldNote.style.display = isSuperAdmin ? 'none' : 'block';
     // ─────────────────────────────────────────────────────────────
 
+    // ─── Geo & Logs Section Visibility — per-editor permissions ──
+    // Admin always sees everything. For editors, check individual perms.
+    const sectionPermMap = [
+      // Geo tab
+      { perm: 'geo_organic',         id: 'geo-genuine-organic-wrap' },
+      { perm: 'geo_country_dist',    id: 'geo-country-distribution-wrap' },
+      // Logs/Analytics tab
+      { perm: 'logs_organic_clicks', id: 'logs-organic-wrap' },
+      { perm: 'logs_fallback_clicks',id: 'logs-fallback-wrap' },
+      { perm: 'logs_realtime',       id: 'logs-realtime-wrap' }
+    ];
+
+    const isAdminUser = isSuperAdmin || currentLoggedInRole.toLowerCase() === 'admin';
+
+    sectionPermMap.forEach(({ perm, id }) => {
+      const hasPerm = isAdminUser || userCurrentPermissions.includes(perm);
+      const el = document.getElementById(id);
+      if (el) el.style.display = hasPerm ? '' : 'none';
+    });
+    // ─────────────────────────────────────────────────────────────
+
     // If no tab is currently visible/active, activate the first visible tab
     const allTabBtns = document.querySelectorAll('.tab-btn');
     const anyActive = Array.from(allTabBtns).some(b => b.classList.contains('active') && b.style.display !== 'none');
