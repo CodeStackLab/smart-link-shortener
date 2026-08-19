@@ -903,18 +903,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <tr>
           <td data-label="Short Link">
-            <div class="shortlink-cell-wrap">
-              <div class="shortlink-top-bar">
-                <div style="display:inline-flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
-                  <strong class="shortlink-code-badge">/${link.code}</strong>
+            <div class="shortlink-card-component">
+              <div class="shortlink-meta-row">
+                <div class="shortlink-code-group">
+                  <span class="shortlink-pill">🔗 /${link.code}</span>
                   ${link.createdBy && link.createdBy.toLowerCase() !== 'admin' ? `<span class="badge badge-custom" style="font-size:0.65rem;">By: ${link.createdBy}</span>` : ''}
                 </div>
-                <button class="btn btn-secondary btn-sm copy-link-btn-cell" onclick="copyToClipboard('${shortUrl}')" title="Copy Shortlink">
+              </div>
+              <div class="shortlink-action-box">
+                <input type="text" class="shortlink-url-display" value="${shortUrl}" readonly onclick="this.select(); copyToClipboard('${shortUrl}')" title="Click to copy link">
+                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Shortlink">
                   📋 Copy
                 </button>
-              </div>
-              <div class="shortlink-box-wrap" onclick="copyToClipboard('${shortUrl}')" title="Click to copy link">
-                <span class="code-box">${shortUrl}</span>
               </div>
             </div>
           </td>
