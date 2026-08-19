@@ -920,6 +920,41 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
 
+      <div style="height:1px; background:var(--border,#e5e7eb); margin:0.85rem 0;"></div>
+
+      <!-- ── Links Table Column Visibility ── -->
+      <div style="margin-bottom:0.85rem;">
+        <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📋 Links Table — Column Visibility:</label>
+        <div style="background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.4rem;">
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_target_url"> 🎯 Target URL</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_fallback_url"> 🔄 Fallback URL</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_sources"> 📌 Allowed Sources</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_settings"> ⚙️ Settings (Pro)</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_clicks"> 👆 Clicks Count</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_actions"> ⚡ Actions</label>
+        </div>
+      </div>
+
+      <!-- ── Geo & Analytics Section Visibility ── -->
+      <div style="margin-bottom:0.85rem;">
+        <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">🌍 Geo &amp; Analytics — Section Visibility:</label>
+        <div style="background:rgba(5,150,105,0.04); border:1px solid rgba(5,150,105,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.4rem;">
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="geo_organic"> 🌱 Genuine Organic Traffic</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="geo_country_dist"> 🌐 Country Distribution</label>
+        </div>
+      </div>
+
+      <!-- ── Logs Tab Section Visibility ── -->
+      <div style="margin-bottom:0.85rem;">
+        <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📊 Logs Tab — Section Visibility:</label>
+        <div style="background:rgba(180,83,9,0.04); border:1px solid rgba(180,83,9,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.4rem;">
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_organic_clicks"> ✅ Organic Clicks</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_fallback_clicks"> ↩️ Fallback Clicks</label>
+          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_realtime"> 📊 Real-Time Audit Logs</label>
+        </div>
+        <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem;">💡 Changes apply immediately when saved.</div>
+      </div>
+
       <button id="edit-user-save-role-btn" style="width:100%; background:linear-gradient(135deg,#059669 0%,#10b981 100%); border:none; color:#fff; border-radius:12px; padding:0.75rem; font-size:0.88rem; font-weight:800; cursor:pointer; letter-spacing:0.02em; box-shadow:0 4px 14px rgba(16,185,129,0.35);">💾 Save Role &amp; Permissions</button>
       <div id="edit-user-role-success" style="display:none; background:rgba(16,185,129,0.1); border:1.5px solid rgba(16,185,129,0.4); border-radius:10px; padding:0.65rem 0.85rem; font-size:0.78rem; font-weight:700; color:#10b981; margin-top:0.75rem; text-align:center;"></div>
     </div>
