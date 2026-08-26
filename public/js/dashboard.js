@@ -16,7 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // QR Modal Elements
   const qrModal = document.getElementById('qr-modal');
-  const qrModalCode = document.getElementById('qr-modal-code');
+  const qrModalCodeBadge = document.getElementById('qr-modal-code-badge');
+  const qrModalUrlInput = document.getElementById('qr-modal-url-input');
+  const qrModalCopyBtn = document.getElementById('qr-modal-copy-btn');
+  const qrModalOpenLink = document.getElementById('qr-modal-open-link');
   const qrModalImg = document.getElementById('qr-modal-img');
   const qrDownloadBtn = document.getElementById('qr-download-btn');
   const closeQrBtn = document.getElementById('close-qr-btn');
@@ -26,6 +29,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (qrModal) qrModal.style.display = 'none';
     });
   }
+
+  if (qrModal) {
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) {
+        qrModal.style.display = 'none';
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && qrModal && (qrModal.style.display === 'flex' || qrModal.style.display === 'block')) {
+      qrModal.style.display = 'none';
+    }
+  });
 
   // Theme Switcher Engine
   let currentTheme = localStorage.getItem('theme') || 'light';
@@ -92,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span style="font-size:1.25rem;">✅</span>
         <div style="flex:1; min-width:0;">
           <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.15rem; letter-spacing:0.02em;">Short Link Created!</div>
-          <div id="copy-link-toast-url" style="font-size:0.75rem; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${shortUrl}</div>
+          <div id="copy-link-toast-url" style="font-size:0.75rem; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${shortUrl || ''}</div>
         </div>
         <button id="copy-link-toast-btn" style="background:#fff; color:#1877f2; border:none; border-radius:8px; padding:0.4rem 0.85rem; font-weight:800; font-size:0.82rem; cursor:pointer; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.12);">📋 Copy</button>
         <button id="copy-link-toast-close" style="background:rgba(255,255,255,0.18); color:#fff; border:none; border-radius:50%; width:26px; height:26px; cursor:pointer; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
@@ -170,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentLoggedInRole = 'Admin';
   let currentPermissionsString = '';
   let currentAllowedSitesString = '';
+  let currentMaskString = '';
 
   function isSuperAdminUser() {
     const r = String(currentLoggedInRole || '').toLowerCase().trim();
@@ -221,11 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const newPermsStr = JSON.stringify(data.permissions || []);
         const newSitesStr = JSON.stringify(data.allowedTargetDomains || []);
+        const newMaskStr = String(data.maskEditorUrls);
 
-        // Real-Time Live Sync: Automatically re-scope UI if permissions or assigned sites change!
-        if (isInitial || newPermsStr !== currentPermissionsString || newSitesStr !== currentAllowedSitesString) {
+        // Real-Time Live Sync: Automatically re-scope UI if permissions, assigned sites or mask setting change!
+        if (isInitial || newPermsStr !== currentPermissionsString || newSitesStr !== currentAllowedSitesString || newMaskStr !== currentMaskString) {
           currentPermissionsString = newPermsStr;
           currentAllowedSitesString = newSitesStr;
+          currentMaskString = newMaskStr;
 
           applyRoleUiScoping(currentLoggedInRole, data.permissions);
           updateTargetUrlFieldForRole(data);
@@ -241,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isInitial) {
           loadLinks();
           loadUsers();
+          loadShieldSettings();
         }
       })
       .catch(() => {
@@ -272,6 +293,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only show free text input when: admin role, OR no sites assigned (empty list).
     const isAdmin = String(role).trim().toLowerCase() === 'admin';
     const hasSites = allowedSites.length > 0;
+    const shouldMask = (sessionData && sessionData.maskEditorUrls !== undefined)
+      ? !!sessionData.maskEditorUrls
+      : true;
+    const isUnmasked = (perms && perms.includes('unmask_target_url')) || shouldMask === false || isAdmin;
 
     if (isAdmin || !hasSites) {
       targetInput.style.display = 'block';
@@ -288,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanSites = allowedSites.map(s => {
         let clean = s.trim();
         if (!/^https?:\/\//i.test(clean)) {
-          clean = 'https://' + clean.replace(/^www\./i, '');
+          clean = 'https://' + clean;
         }
         return clean;
       });
@@ -311,33 +336,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      targetSelect.innerHTML = cleanSites.map(s => `<option value="${s}">🌐 ${maskUrl(s)}</option>`).join('');
+      targetSelect.innerHTML = cleanSites.map(s => {
+        const displayText = isUnmasked ? s : maskUrl(s);
+        return `<option value="${s}">🌐 ${displayText}</option>`;
+      }).join('');
       targetSelect.value = cleanSites[0];
       targetInput.value = cleanSites[0];
 
     }
 
     // Auto-update targetInput when post-url-input or targetSelect changes
+    const updateTargetUrl = () => {
+      const val = postUrlInput ? postUrlInput.value.trim() : '';
+      let base = (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value)
+        ? targetSelect.value.trim()
+        : (targetInput.value || targetInput.placeholder || 'https://website.com');
+      if (base && !/^https?:\/\//i.test(base)) base = 'https://' + base;
+
+      if (val.startsWith('http://') || val.startsWith('https://')) {
+        targetInput.value = val;
+      } else if (val) {
+        let cleanPath = val.startsWith('/') ? val : '/' + val;
+        targetInput.value = base.replace(/\/+$/, '') + cleanPath;
+      } else {
+        targetInput.value = base;
+      }
+    };
+
     if (postUrlInput) {
-      const updateTargetUrl = () => {
-        const val = postUrlInput.value.trim();
-        let base = (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value)
-          ? targetSelect.value.trim()
-          : (targetInput.value || targetInput.placeholder || 'https://website.com');
-        if (base && !/^https?:\/\//i.test(base)) base = 'https://' + base;
-        base = base.split('/')[0] + '//' + base.split('/')[2]; // base domain
-        if (base.endsWith('/undefined') || !base.includes('.')) base = 'https://website.com';
-
-        if (val.startsWith('http://') || val.startsWith('https://')) {
-          targetInput.value = val;
-        } else if (val) {
-          let cleanPath = val.startsWith('/') ? val : '/' + val;
-          targetInput.value = base + cleanPath;
-        }
-      };
-
       postUrlInput.oninput = updateTargetUrl;
-      if (targetSelect) targetSelect.onchange = updateTargetUrl;
+    }
+    if (targetSelect) {
+      targetSelect.onchange = () => {
+        targetInput.value = targetSelect.value;
+        if (postUrlInput) updateTargetUrl();
+      };
     }
   }
 
@@ -409,16 +442,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const navMap = [
-      { key: 'links', tabId: 'tab-links' },
-      { key: 'domains', tabId: 'tab-domains' },
-      { key: 'geo', tabId: 'tab-geo' },
-      { key: 'analytics', tabId: 'tab-analytics' },
-      { key: 'firewall', tabId: 'tab-firewall' },
-      { key: 'settings', tabId: 'tab-settings' }
+      { key: 'links', tabId: 'tab-links', adminOnly: false },
+      { key: 'domains', tabId: 'tab-domains', adminOnly: false },
+      { key: 'geo', tabId: 'tab-geo', adminOnly: false },
+      { key: 'analytics', tabId: 'tab-analytics', adminOnly: false },
+      { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
+      { key: 'settings', tabId: 'tab-settings', adminOnly: false }
     ];
 
     navMap.forEach(item => {
-      const hasAccess = isFullAdmin || userPerms.includes(item.key);
+      const hasAccess = item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -473,6 +506,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const proAccordion = document.getElementById('pro-accordion');
     if (proAccordion) {
       proAccordion.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
+    // ─── Settings Tab Cards Gating ───
+    // 1. Editor URL Display Mode (Force Mask / Force Unhide / Individual Mode) — ADMIN ONLY
+    const editorMaskCard = document.getElementById('editor-url-mask-card');
+    if (editorMaskCard) {
+      editorMaskCard.style.display = isFullAdmin ? '' : 'none';
+    }
+
+    // 2. Google Authenticator 2FA Manager — Visible to anyone with Settings access
+    const twoFaCard = document.getElementById('two-factor-auth-card');
+    if (twoFaCard) {
+      twoFaCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
+    // 3. Change Password — Visible to anyone with Settings access
+    const changePassCard = document.getElementById('change-password-card');
+    if (changePassCard) {
+      changePassCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
+    // If user does not have Settings permission and is currently on Settings tab, switch back to Links tab
+    const hasSettingsPerm = isFullAdmin || userPerms.includes('settings');
+    if (!hasSettingsPerm) {
+      const settingsContent = document.getElementById('tab-settings');
+      if (settingsContent && settingsContent.style.display !== 'none') {
+        settingsContent.style.display = 'none';
+        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
+        if (defaultLinksTab) defaultLinksTab.click();
+      }
     }
 
     // ─── Super Admin Gating ─────────────────────────────────────
@@ -660,11 +723,16 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
 
+      if (targetTab === 'tab-settings' && !(isFullAdminUser() || userCurrentPermissions.includes('settings'))) {
+        return;
+      }
+
       tabBtns.forEach(b => b.classList.remove('active'));
       tabContents.forEach(c => c.style.display = 'none');
 
       btn.classList.add('active');
-      document.getElementById(targetTab).style.display = 'block';
+      const targetElem = document.getElementById(targetTab);
+      if (targetElem) targetElem.style.display = 'block';
 
       // Close mobile navigation drawer
       document.body.classList.remove('menu-open');
@@ -674,7 +742,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetTab === 'tab-geo') loadCountryAnalytics();
       if (targetTab === 'tab-analytics') loadAnalytics();
       if (targetTab === 'tab-firewall') loadBlockedIps();
-      if (targetTab === 'tab-settings') loadUsers();
+      if (targetTab === 'tab-settings') {
+        if (isSuperAdminUser()) loadUsers();
+        load2FAStatus();
+      }
     });
   });
 
@@ -831,21 +902,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const shortUrl = `${window.location.protocol}//${domainToUse}/s/${link.code}`;
       
       const presetBadges = (link.allowedPlatforms || ['facebook']).map(p => {
-        const labels = {
-          facebook: 'Facebook',
-          instagram: 'Instagram'
-        };
-        return `<span class="badge badge-info">${labels[p] || p}</span>`;
+        if (p === 'facebook') {
+          return `<span class="badge" style="background:#1877f2; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(24,119,242,0.25);">
+            <svg width="14" height="14" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+            <span>Facebook</span>
+          </span>`;
+        }
+        if (p === 'instagram') {
+          return `<span class="badge" style="background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(220,39,67,0.25);">
+            <svg width="14" height="14" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <span>Instagram</span>
+          </span>`;
+        }
+        if (p === 'custom_website') {
+          return `<span class="badge" style="background:#6366f1; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(99,102,241,0.25);">
+            <span>🌐 Custom Web</span>
+          </span>`;
+        }
+        return `<span class="badge" style="background:#1877f2; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(24,119,242,0.25);">
+          <span>${p}</span>
+        </span>`;
       }).join(' ');
 
       const customBadges = (link.customDomains || []).map(d => {
-        return `<span class="badge badge-custom">🌐 ${d}</span>`;
+        return `<span class="badge" style="background:#6366f1; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(99,102,241,0.25);">🌐 <span>${d}</span></span>`;
       }).join(' ');
 
-      // Pro Features Badges
+      // Pro Features Badges (Instant works in background, hidden from UI)
       const delayBadge = link.delaySeconds > 0 
         ? `<span class="badge badge-warning">⏱️ ${link.delaySeconds}s Delay</span>`
-        : `<span class="badge badge-info">⏱️ Instant</span>`;
+        : '';
 
       let limitsInfo = [];
       if (link.maxClicks > 0) limitsInfo.push(`Cap: ${link.clicks}/${link.maxClicks}`);
@@ -919,7 +1005,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </td>
           <td data-label="Target URL" class="col-target-url">
-            <a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${link.targetUrl}</a>
+            ${link.targetUrl
+              ? `<a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${link.targetUrl}</a>`
+              : `<span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">— Not set —</span>`
+            }
           </td>
           <td data-label="Fallback URL" class="col-fallback-url">
             <span style="color: var(--text-secondary); font-size: 0.8rem; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${link.fallbackUrl}">${link.fallbackUrl}</span>
@@ -1013,7 +1102,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/api/admin/qrcode/${code}`);
       const data = await res.json();
       if (res.ok && data.qrUrl) {
-        if (qrModalCode) qrModalCode.textContent = `/${data.code} - ${data.fullUrl}`;
+        // Construct single clean full shortlink
+        let shortUrl = data.fullUrl || `${window.location.origin}/s/${data.code}`;
+        if (window.location.protocol === 'https:' && shortUrl.startsWith('http://')) {
+          shortUrl = shortUrl.replace(/^http:\/\//i, 'https://');
+        }
+        
+        if (qrModalCodeBadge) qrModalCodeBadge.textContent = `/${data.code}`;
+        if (qrModalUrlInput) qrModalUrlInput.value = shortUrl;
+        if (qrModalOpenLink) qrModalOpenLink.href = shortUrl;
+
+        if (qrModalCopyBtn) {
+          qrModalCopyBtn.onclick = (e) => {
+            e.stopPropagation();
+            copyToClipboard(shortUrl, qrModalCopyBtn);
+          };
+        }
+
         if (qrModalImg) qrModalImg.src = data.qrUrl;
         
         if (qrDownloadBtn) {
@@ -1027,12 +1132,15 @@ document.addEventListener('DOMContentLoaded', () => {
             a.click();
             document.body.removeChild(a);
             setTimeout(() => {
-              if (blobUrl.startsWith('blob:')) URL.revokeObjectURL(blobUrl);
+              if (blobUrl && blobUrl.startsWith('blob:')) URL.revokeObjectURL(blobUrl);
             }, 1000);
           };
         }
 
-        if (qrModal) { qrModal.style.display = 'flex'; qrModal.style.setProperty('display','flex','important'); }
+        if (qrModal) {
+          qrModal.style.display = 'flex';
+          qrModal.style.setProperty('display','flex','important');
+        }
       } else {
         showAlert('Failed to load QR code', true);
       }
@@ -1179,9 +1287,9 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (postUrlVal && (postUrlVal.startsWith('http://') || postUrlVal.startsWith('https://'))) {
         targetUrl = postUrlVal;
       } else if (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value) {
-        let baseUrl = targetSelect.value.trim().replace(/\/+$/, '');
+        let baseUrl = targetSelect.value.trim();
         let path = postUrlVal ? (postUrlVal.startsWith('/') ? postUrlVal : '/' + postUrlVal) : '';
-        targetUrl = baseUrl + path;
+        targetUrl = path ? baseUrl.replace(/\/+$/, '') + path : baseUrl;
       } else if (targetInput && targetInput.value) {
         targetUrl = targetInput.value.trim();
       }
@@ -1746,6 +1854,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (blockScrapersCb) blockScrapersCb.checked = !!settings.blockKnownScrapers;
       if (honeypotCb) honeypotCb.checked = !!settings.honeypotProtectionEnabled;
 
+      // Populate Editor URL Mask Visibility radios
+      const radioIndividual = document.getElementById('radio-individual-urls');
+      const radioUnmask = document.getElementById('radio-unmask-urls');
+      const radioMask = document.getElementById('radio-mask-urls');
+      if (radioIndividual && radioUnmask && radioMask) {
+        if (settings.maskEditorUrls === false) {
+          radioUnmask.checked = true;
+          radioIndividual.checked = false;
+          radioMask.checked = false;
+        } else if (settings.maskEditorUrls === true) {
+          radioMask.checked = true;
+          radioIndividual.checked = false;
+          radioUnmask.checked = false;
+        } else {
+          radioIndividual.checked = true;
+          radioUnmask.checked = false;
+          radioMask.checked = false;
+        }
+      }
+
       toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
       toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
 
@@ -1790,6 +1918,46 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Failed to load shield settings:', err);
     }
+  }
+
+  // Editor URL Visibility Settings Form Handler
+  const editorUrlMaskForm = document.getElementById('editor-url-mask-form');
+  if (editorUrlMaskForm) {
+    editorUrlMaskForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isFullAdminUser()) {
+        showAlert('⚠️ Only Admin can change URL visibility settings.', true);
+        return;
+      }
+      const selectedRadio = document.querySelector('input[name="maskEditorUrlsRadio"]:checked');
+      let maskVal = selectedRadio ? selectedRadio.value : 'individual';
+      if (maskVal === 'false') maskVal = false;
+      else if (maskVal === 'true') maskVal = true;
+      else maskVal = 'individual';
+
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maskEditorUrls: maskVal })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (maskVal === false) {
+            showAlert('🟢 Force Unhide Active: Sabhi Editors ko real full URLs dikhenge.');
+          } else if (maskVal === true) {
+            showAlert('🔴 Force Mask Active: Sabhi Editors ke URLs me *** stars honge.');
+          } else {
+            showAlert('👤 Individual Mode Active: Har Editor ka URL unhide/mask unki personal profile ke mutabiq chalega.');
+          }
+          syncSessionLive(true);
+        } else {
+          showAlert(data.error || 'Failed to save URL visibility setting', true);
+        }
+      } catch (err) {
+        showAlert('Failed to save URL visibility setting', true);
+      }
+    });
   }
 
   function toggleSettingsGroup(groupId, show) {
@@ -1914,7 +2082,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'form-control user-site-input';
-    input.placeholder = 'e.g. https://yourdomain.com';
+    input.placeholder = 'e.g. https://domain.com, https://youtube.com/watch?v=... or post URL';
     input.value = initialDomain;
     input.style.cssText = 'font-weight:700; font-size:0.8rem; padding:0.45rem 0.65rem; height:36px; min-height:36px; flex:1; min-width:0;';
 
@@ -2023,12 +2191,20 @@ document.addEventListener('DOMContentLoaded', () => {
           actionsBtnHtml = `<span style="font-size:0.7rem;font-weight:700;color:#7c3aed;padding:0.3rem 0.6rem;background:rgba(124,58,237,0.08);border-radius:10px;border:1px solid rgba(124,58,237,0.2);">👑 Protected</span>`;
         }
 
+        const userPerms = Array.isArray(user.permissions) ? user.permissions : [];
+        const isUserUnmasked = userPerms.includes('unmask_target_url') || user.role === 'Admin' || isUserSuperAdmin;
+        const urlVisibilityBadge = isUserUnmasked
+          ? `<span title="Editor sees full real URLs (No *** stars)" style="font-size:0.68rem; font-weight:900; color:#1e40af; background:linear-gradient(135deg,#eff6ff,#dbeafe); border:1.5px solid #60a5fa; padding:0.22rem 0.6rem; border-radius:12px; white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem; flex-shrink:0; box-shadow:0 2px 6px rgba(37,99,235,0.18);">🔵 ⚡ Full URLs</span>`
+          : `<span title="Target URLs are masked with stars (***)" style="font-size:0.68rem; font-weight:900; color:#991b1b; background:linear-gradient(135deg,#fef2f2,#fee2e2); border:1.5px solid #f87171; padding:0.22rem 0.6rem; border-radius:12px; white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem; flex-shrink:0; box-shadow:0 2px 6px rgba(220,38,38,0.18);">🔴 🔒 Masked (***)</span>`;
+
         return `
           <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:var(--input-bg,#f9fafb);border:1.5px solid ${isUserSuperAdmin ? 'rgba(124,58,237,0.25)' : 'var(--border,#e8eaf0)'};border-radius:12px;flex-wrap:wrap;transition:box-shadow 0.18s;max-width:100%;box-sizing:border-box;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
 
             <!-- Avatar + Name -->
-            <div style="display:flex;align-items:center;gap:0.45rem;flex:1;min-width:90px;">
-              <div style="width:32px;height:32px;border-radius:50%;background:${isUserSuperAdmin ? 'linear-gradient(135deg,#ef4444,#7c3aed)' : 'linear-gradient(135deg,#1877f2,#6c3de8)'};display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">${isUserSuperAdmin ? '👑' : '👤'}</div>
+            <div style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:90px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:${isUserSuperAdmin ? 'linear-gradient(135deg,#ef4444,#7c3aed)' : 'linear-gradient(135deg,#1877f2,#6c3de8)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                ${isUserSuperAdmin ? '<span style="font-size:0.95rem;">👑</span>' : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'}
+              </div>
               <div>
                 <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;">${user.username}</div>
                 ${isSelf ? '<div style="font-size:0.6rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.06em;">You</div>' : ''}
@@ -2040,6 +2216,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Assigned Sites Badge -->
             <div style="flex-shrink:0;">${sitesBadge}</div>
+
+            <!-- Target URL Visibility Badge -->
+            <div style="flex-shrink:0;">${urlVisibilityBadge}</div>
 
             <!-- Password chip -->
             <div style="flex-shrink:0;">${passChip}</div>
@@ -2120,6 +2299,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.edit-perm-cb').forEach(cb => {
       cb.checked = perms.includes(cb.value);
     });
+
+    // Sync URL Visibility radios in Edit User modal
+    const hasUnmaskPerm = perms.includes('unmask_target_url');
+    const editRadioUnmask = document.getElementById('edit-radio-unmask');
+    const editRadioMask = document.getElementById('edit-radio-mask');
+    const editUnmaskHiddenCb = document.getElementById('edit-unmask-hidden-cb');
+
+    if (editRadioUnmask && editRadioMask) {
+      editRadioUnmask.checked = hasUnmaskPerm;
+      editRadioMask.checked = !hasUnmaskPerm;
+      if (editUnmaskHiddenCb) editUnmaskHiddenCb.checked = hasUnmaskPerm;
+
+      editRadioUnmask.onchange = () => { if (editUnmaskHiddenCb) editUnmaskHiddenCb.checked = true; };
+      editRadioMask.onchange = () => { if (editUnmaskHiddenCb) editUnmaskHiddenCb.checked = false; };
+    }
 
     // Populate user's individual allowed sites in Edit User modal
     if (editUserSitesList) {
@@ -2304,6 +2498,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const username = document.getElementById('new-user-username').value.trim();
       const password = document.getElementById('new-user-password').value.trim();
       const role = document.getElementById('new-user-role').value;
+      const newRadioUnmask = document.getElementById('new-radio-unmask');
+      const newUnmaskHiddenCb = document.getElementById('new-unmask-hidden-cb');
+      if (newUnmaskHiddenCb && newRadioUnmask) {
+        newUnmaskHiddenCb.checked = newRadioUnmask.checked;
+      }
       const permissions = Array.from(document.querySelectorAll('.new-perm-cb:checked')).map(cb => cb.value);
       const allowedTargetDomains = Array.from(document.querySelectorAll('#invite-sites-list .user-site-input'))
         .map(inp => inp.value.trim())
@@ -2392,12 +2591,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (banner2FAInactive) banner2FAInactive.style.display = 'none';
         if (setup2FABox) setup2FABox.style.display = 'none';
         if (btnStart2FASetup) btnStart2FASetup.style.display = 'none';
-        if (btnDisable2FA) btnDisable2FA.style.display = 'block';
+        if (btnDisable2FA) btnDisable2FA.style.display = 'flex';
       } else {
         if (banner2FAActive) banner2FAActive.style.display = 'none';
         if (banner2FAInactive) banner2FAInactive.style.display = 'block';
         if (setup2FABox) setup2FABox.style.display = 'none';
-        if (btnStart2FASetup) btnStart2FASetup.style.display = 'block';
+        if (btnStart2FASetup) btnStart2FASetup.style.display = 'flex';
         if (btnDisable2FA) btnDisable2FA.style.display = 'none';
       }
     } catch (err) {

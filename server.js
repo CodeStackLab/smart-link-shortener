@@ -84,20 +84,113 @@ function requirePermission(...permissions) {
   };
 }
 
-function normaliseAllowedDomains(domains) {
-  if (!Array.isArray(domains)) return [];
+function normalizeUrlString(urlStr) {
+  if (!urlStr || typeof urlStr !== 'string') return null;
+  let str = urlStr.trim();
+  if (!str) return null;
+  if (!/^https?:\/\//i.test(str)) str = 'https://' + str;
+  try {
+    return new URL(str);
+  } catch {
+    return null;
+  }
+}
 
+function cleanAllowedUrls(domains) {
+  if (!Array.isArray(domains)) return [];
   return [...new Set(domains
     .map(domain => {
       if (typeof domain !== 'string' || !domain.trim()) return '';
-      try {
-        const value = /^https?:\/\//i.test(domain.trim()) ? domain.trim() : `https://${domain.trim()}`;
-        return new URL(value).hostname.toLowerCase().replace(/^www\./, '');
-      } catch {
-        return '';
-      }
+      let val = domain.trim();
+      if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
+      return val;
     })
     .filter(Boolean))];
+}
+
+// Backward compatibility alias
+function normaliseAllowedDomains(domains) {
+  return cleanAllowedUrls(domains);
+}
+
+function isUrlMatchingRule(targetUrlStr, ruleStr) {
+  if (!targetUrlStr || !ruleStr) return false;
+  const cleanTarget = targetUrlStr.trim();
+  const cleanRule = ruleStr.trim();
+
+  // Exact match check (ignoring trailing slash & case-insensitive)
+  if (cleanTarget.toLowerCase().replace(/\/+$/, '') === cleanRule.toLowerCase().replace(/\/+$/, '')) {
+    return true;
+  }
+
+  const targetObj = normalizeUrlString(cleanTarget);
+  const ruleObj = normalizeUrlString(cleanRule);
+  if (!targetObj || !ruleObj) return false;
+
+  const targetHost = targetObj.hostname.toLowerCase().replace(/^www\./, '');
+  const ruleHost = ruleObj.hostname.toLowerCase().replace(/^www\./, '');
+
+  // YouTube cross-domain matching (youtube.com <-> youtu.be, shorts, embeds)
+  const isTargetYt = targetHost === 'youtube.com' || targetHost === 'youtu.be' || targetHost.endsWith('.youtube.com');
+  const isRuleYt = ruleHost === 'youtube.com' || ruleHost === 'youtu.be' || ruleHost.endsWith('.youtube.com');
+
+  if (isTargetYt && isRuleYt) {
+    const getYouTubeId = (u) => {
+      if (u.hostname.includes('youtu.be')) return u.pathname.replace(/^\/+/, '').split('/')[0];
+      if (u.searchParams.has('v')) return u.searchParams.get('v');
+      const parts = u.pathname.split('/');
+      const shortsIdx = parts.indexOf('shorts');
+      if (shortsIdx !== -1 && parts[shortsIdx + 1]) return parts[shortsIdx + 1];
+      const embedIdx = parts.indexOf('embed');
+      if (embedIdx !== -1 && parts[embedIdx + 1]) return parts[embedIdx + 1];
+      return null;
+    };
+    const ruleYtId = getYouTubeId(ruleObj);
+    const targetYtId = getYouTubeId(targetObj);
+    if (ruleYtId && targetYtId) {
+      return ruleYtId === targetYtId;
+    }
+    const rulePath = ruleObj.pathname.replace(/\/+$/, '');
+    if (!rulePath || rulePath === '' || rulePath === '/') {
+      return true;
+    }
+  }
+
+  // Host matching
+  const hostMatches = targetHost === ruleHost || targetHost.endsWith('.' + ruleHost);
+  if (!hostMatches) {
+    return false;
+  }
+
+  const rulePath = ruleObj.pathname.replace(/\/+$/, '');
+  const targetPath = targetObj.pathname.replace(/\/+$/, '');
+
+  // If rule has NO specific sub-path (it is a domain-level rule like "https://example.com" or "example.com"),
+  // then any path/post/query on that domain is permitted!
+  if (!rulePath || rulePath === '') {
+    return true;
+  }
+
+  // If rule HAS a specific sub-path (e.g. post URL "/emergency-surgery-cost..."):
+  const rulePathLower = rulePath.toLowerCase();
+  const targetPathLower = targetPath.toLowerCase();
+
+  if (targetPathLower === rulePathLower || targetPathLower.startsWith(rulePathLower + '/')) {
+    // If rule has query params, verify target matches them
+    if (ruleObj.search && ruleObj.search.length > 1) {
+      let paramsMatch = true;
+      for (const [k, v] of ruleObj.searchParams.entries()) {
+        if (targetObj.searchParams.get(k) !== v) {
+          paramsMatch = false;
+          break;
+        }
+      }
+      if (!paramsMatch) return false;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 function getClientIp(req) {
@@ -158,12 +251,12 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
     return { allowed: true };
   }
 
-  const userAllowed = normaliseAllowedDomains(userObj && userObj.allowedTargetDomains);
+  const userAllowed = cleanAllowedUrls(userObj && userObj.allowedTargetDomains);
   const settings = db.getSettings();
   if (settings.restrictEditorDomains === false) {
     return { allowed: true };
   }
-  const globalAllowed = normaliseAllowedDomains(settings.allowedTargetDomains);
+  const globalAllowed = cleanAllowedUrls(settings.allowedTargetDomains);
 
   const combinedAllowed = userAllowed.length > 0 ? userAllowed : globalAllowed;
 
@@ -171,25 +264,16 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
     return { allowed: true };
   }
 
-  const cleanAllowed = normaliseAllowedDomains(combinedAllowed);
-
-  if (cleanAllowed.length === 0) {
-    return { allowed: true };
-  }
-
   const urlsToCheck = [targetUrl, iosUrl, androidUrl].filter(Boolean);
 
   for (const urlStr of urlsToCheck) {
     try {
-      const parsed = new URL(/^https?:\/\//i.test(urlStr) ? urlStr : 'https://' + urlStr);
-      const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-
-      const isMatched = cleanAllowed.some(cleanAllowedDom => host === cleanAllowedDom || host.endsWith('.' + cleanAllowedDom));
+      const isMatched = combinedAllowed.some(allowedRule => isUrlMatchingRule(urlStr, allowedRule));
 
       if (!isMatched) {
         return {
           allowed: false,
-          error: `Access Denied: Target website '${host}' is not in your assigned allowed websites list (${cleanAllowed.join(', ')}). Contact Admin to assign this website or grant Custom Website permission.`
+          error: `Access Denied: Target URL '${urlStr}' is not permitted by your assigned allowed websites list. Please select an assigned website/URL or contact Admin.`
         };
       }
     } catch (e) {
@@ -301,6 +385,17 @@ app.get('/api/session', (req, res) => {
     const perms = getUserPermissions(req.session.username, role);
     const isSuperAdmin = (req.session.username || '').toLowerCase() === 'admin';
     const effectiveRole = isSuperAdmin ? 'Super Admin' : (role || 'Editor');
+    
+    // URL Masking: If admin -> false; if global unmask -> false; otherwise depends on individual user permission 'unmask_target_url'
+    let maskEditorUrls = false;
+    if (!isAdminRole(role)) {
+      if (settings.maskEditorUrls === false) {
+        maskEditorUrls = false; // Global force unhide
+      } else {
+        // Individual per-user mode (or default mask): unmasked only if user has 'unmask_target_url'
+        maskEditorUrls = !perms.includes('unmask_target_url');
+      }
+    }
 
     return res.json({
       authenticated: true,
@@ -308,7 +403,8 @@ app.get('/api/session', (req, res) => {
       role: effectiveRole,
       isSuperAdmin: isSuperAdmin,
       permissions: perms,
-      allowedTargetDomains: finalAllowed
+      allowedTargetDomains: finalAllowed,
+      maskEditorUrls: maskEditorUrls
     });
   }
   return res.json({ authenticated: false });
@@ -544,7 +640,9 @@ app.get('/api/admin/qrcode/:code', async (req, res) => {
   const link = db.getLinkByCode(code);
   if (!link) return res.status(404).json({ error: 'Link not found' });
 
-  const fullUrl = `${req.protocol}://${req.get('host')}/s/${link.code}`;
+  const domainToUse = link.domain ? link.domain : req.get('host');
+  const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : (req.headers.host && !req.headers.host.includes('localhost') ? 'https' : req.protocol));
+  const fullUrl = `${proto}://${domainToUse}/s/${link.code}`;
   const qrUrl = await generateQrDataUrl(fullUrl, 300);
   res.json({ code: link.code, fullUrl, qrUrl });
 });
@@ -631,7 +729,10 @@ app.get('/api/admin/settings', requireAuth, requirePermission('settings', 'firew
   });
 });
 
-app.post('/api/admin/settings', requireAuth, requirePermission('settings', 'firewall'), (req, res) => {
+app.post('/api/admin/settings', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Only Admin can change settings.' });
+  }
   const {
     rateLimitWindowSeconds,
     rateLimitMaxRequests,
@@ -647,14 +748,13 @@ app.post('/api/admin/settings', requireAuth, requirePermission('settings', 'fire
     honeypotProtectionEnabled,
     restrictEditorDomains,
     allowedTargetDomains,
+    maskEditorUrls,
     applyFirewallGlobally
   } = req.body;
 
   let processedAllowedDomains = undefined;
   if (Array.isArray(allowedTargetDomains)) {
-    processedAllowedDomains = allowedTargetDomains
-      .map(d => (typeof d === 'string' ? d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : ''))
-      .filter(Boolean);
+    processedAllowedDomains = cleanAllowedUrls(allowedTargetDomains);
   }
 
   const updated = db.updateSettings({
@@ -672,6 +772,9 @@ app.post('/api/admin/settings', requireAuth, requirePermission('settings', 'fire
     honeypotProtectionEnabled: honeypotProtectionEnabled !== undefined ? !!honeypotProtectionEnabled : undefined,
     restrictEditorDomains: restrictEditorDomains !== undefined ? !!restrictEditorDomains : undefined,
     allowedTargetDomains: processedAllowedDomains,
+    maskEditorUrls: maskEditorUrls !== undefined
+      ? (maskEditorUrls === false || maskEditorUrls === 'false' ? false : (maskEditorUrls === true || maskEditorUrls === 'true' ? true : 'individual'))
+      : undefined,
     applyFirewallGlobally: applyFirewallGlobally !== undefined ? !!applyFirewallGlobally : undefined
   });
 
@@ -953,15 +1056,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 
   let processedAllowed = [];
   if (Array.isArray(allowedTargetDomains)) {
-    processedAllowed = allowedTargetDomains
-      .map(d => {
-        if (typeof d !== 'string') return '';
-        let val = d.trim();
-        if (!val) return '';
-        if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
-        return val;
-      })
-      .filter(Boolean);
+    processedAllowed = cleanAllowedUrls(allowedTargetDomains);
   }
 
   const newUser = {

@@ -96,6 +96,7 @@ function initDb() {
     honeypotProtectionEnabled: false,
     restrictEditorDomains: true,
     allowedTargetDomains: [],
+    maskEditorUrls: true,
     applyFirewallGlobally: true
   };
 
@@ -170,7 +171,9 @@ module.exports = {
     blockKnownScrapers: false,
     honeypotProtectionEnabled: false,
     restrictEditorDomains: true,
-    allowedTargetDomains: []
+    allowedTargetDomains: [],
+    maskEditorUrls: true,
+    applyFirewallGlobally: true
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -187,7 +190,9 @@ module.exports = {
       blockKnownScrapers: false,
       honeypotProtectionEnabled: false,
       restrictEditorDomains: true,
-      allowedTargetDomains: []
+      allowedTargetDomains: [],
+      maskEditorUrls: true,
+      applyFirewallGlobally: true
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);
@@ -252,7 +257,7 @@ module.exports = {
   // Users CRUD
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
-    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
+    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url'];
     return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']; // Editor default
   },
   getUsersPublic: () => {
@@ -290,15 +295,15 @@ module.exports = {
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
     }
     if (Array.isArray(user.allowedTargetDomains)) {
-      user.allowedTargetDomains = user.allowedTargetDomains
+      user.allowedTargetDomains = [...new Set(user.allowedTargetDomains
         .map(d => {
           if (typeof d !== 'string') return '';
           let val = d.trim();
           if (!val) return '';
-          if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
+          if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
           return val;
         })
-        .filter(Boolean);
+        .filter(Boolean))];
     } else {
       user.allowedTargetDomains = [];
     }
@@ -318,15 +323,15 @@ module.exports = {
       if (role !== undefined) user.role = role;
       if (Array.isArray(permissions)) user.permissions = permissions;
       if (Array.isArray(allowedTargetDomains)) {
-        user.allowedTargetDomains = allowedTargetDomains
+        user.allowedTargetDomains = [...new Set(allowedTargetDomains
           .map(d => {
             if (typeof d !== 'string') return '';
             let val = d.trim();
             if (!val) return '';
-            if (!/^https?:\/\//i.test(val)) val = 'https://' + val.replace(/^www\./i, '');
+            if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
             return val;
           })
-          .filter(Boolean);
+          .filter(Boolean))];
       }
       writeJson(FILES.users, users);
     }

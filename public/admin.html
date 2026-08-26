@@ -412,7 +412,7 @@
 
         <!-- Global Settings Notice — shown to Editors with firewall access (hidden for Admin by JS) -->
         <div id="shield-readonly-notice" style="display:none; background:rgba(59,130,246,0.08); border:1.5px solid rgba(59,130,246,0.3); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.78rem; font-weight:700; color:#3b82f6;">
-          🌐 These settings are set by <strong>Admin</strong> and apply <strong>globally</strong> to all users &amp; shortlinks. You can view them but only Admin can change them.
+          🌐 These settings are set by <strong>Super Admin</strong> and apply <strong>globally</strong> to all users &amp; shortlinks. You can view them but only Super Admin can change them.
         </div>
 
         <form id="auto-shield-form">
@@ -566,6 +566,32 @@
             </div>
           </div>
 
+          <!-- Dedicated Target URL Visibility Box for New User -->
+          <div style="margin-bottom:0.85rem; background:linear-gradient(135deg, rgba(24,119,242,0.08) 0%, rgba(108,61,232,0.1) 100%); border:1.5px solid rgba(24,119,242,0.35); border-radius:12px; padding:0.75rem 0.85rem;">
+            <label style="font-size:0.72rem; font-weight:800; color:var(--text-primary); text-transform:uppercase; display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+              <span>👁️ Target URL Visibility for this Editor:</span>
+            </label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <!-- Option 1: Unhide (Show Full URL) - Tez Royal Blue -->
+              <label id="new-unmask-card-unhide" style="display:flex; align-items:flex-start; gap:0.45rem; padding:0.6rem 0.7rem; border:2px solid #1877f2; border-radius:10px; background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); cursor:pointer; font-weight:800; font-size:0.8rem; color:#1d4ed8; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(24,119,242,0.15);">
+                <input type="radio" name="newEditorUrlMaskRadio" id="new-radio-unmask" value="unhide" style="accent-color:#1877f2; margin-top:0.15rem; transform:scale(1.15);">
+                <div>
+                  <div style="font-weight:900; color:#1e40af;">🔵 ⚡ Unhide Full URL</div>
+                  <div style="font-size:0.68rem; font-weight:700; color:#1d4ed8; margin-top:0.15rem;">No stars (<code>https://pk.com/url</code>)</div>
+                </div>
+              </label>
+
+              <!-- Option 2: Mask (Hide with stars) - Tez Crimson Red -->
+              <label id="new-unmask-card-mask" style="display:flex; align-items:flex-start; gap:0.45rem; padding:0.6rem 0.7rem; border:2px solid #dc2626; border-radius:10px; background:linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); cursor:pointer; font-weight:800; font-size:0.8rem; color:#b91c1c; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(220,38,38,0.15);">
+                <input type="radio" name="newEditorUrlMaskRadio" id="new-radio-mask" value="mask" checked style="accent-color:#dc2626; margin-top:0.15rem; transform:scale(1.15);">
+                <div>
+                  <div style="font-weight:900; color:#991b1b;">🔴 🔒 Mask with Stars</div>
+                  <div style="font-size:0.68rem; font-weight:700; color:#b91c1c; margin-top:0.15rem;">Hidden (<code>https://pk.com*****</code>)</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <!-- Granular Feature Access Permissions -->
           <div style="margin-bottom:0.85rem;">
             <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">Permissions &amp; Traffic Sources:</label>
@@ -579,6 +605,7 @@
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="analytics" checked> 📊 Analytics</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="settings"> ⚙️ Settings</label>
+              <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="unmask_target_url" id="new-unmask-hidden-cb"></label>
             </div>
           </div>
 
@@ -617,9 +644,22 @@
             <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem; padding:0 0.2rem;">💡 Hidden sections won't appear in editor's Logs tab.</div>
           </div>
 
+          <!-- Individual Allowed Target Websites Section for New User -->
+          <div style="margin-bottom:1rem; margin-top:0.75rem;">
+            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:0.5rem;">
+              <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin:0;">Assigned Websites / Target URLs for User (Unlimited):</label>
+              <button type="button" id="btn-add-invite-site" style="width:100%; background:linear-gradient(135deg, #8b5cf6 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.65rem 1rem; font-size:0.88rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 16px rgba(139,92,246,0.38) !important; text-align:center; min-height:44px; box-sizing:border-box;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span style="color:#ffffff !important;">Add Site / URL</span>
+              </button>
+            </div>
+            <div id="invite-sites-list" style="display:flex; flex-direction:column; gap:0.45rem; background:var(--input-bg,#f9fafb); padding:0.65rem; border-radius:12px; border:1.5px solid var(--border,#e5e7eb);">
+              <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:0.4rem 0;" id="invite-sites-empty-msg">No individual sites assigned yet. Click "Add Site / URL" button above.</div>
+            </div>
+          </div>
+
           <button type="submit" style="width:100%; margin-top:0.9rem; background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.75rem 1.2rem; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 18px rgba(24,119,242,0.38) !important; text-align:center; min-height:46px; box-sizing:border-box; letter-spacing:0.01em;">
-            <span style="font-size:1.15rem; line-height:1; color:#ffffff !important;">➕</span>
-            <span style="color:#ffffff !important;">Create New User</span>
+            <span style="color:#ffffff !important; font-size:0.95rem; font-weight:800; text-align:center; width:100%;">Create New User</span>
           </button>
         </form>
 
@@ -652,7 +692,7 @@
       </div>
 
       <!-- Google Authenticator 2FA Manager Card -->
-      <div class="card" style="padding:1.35rem; height:fit-content;">
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="two-factor-auth-card">
         <div class="section-title" style="margin-bottom:1rem;">
           📱 Google Authenticator 2FA Manager
         </div>
@@ -715,18 +755,93 @@
         </div>
 
         <!-- Setup Button -->
-        <button type="button" id="btn-start-2fa-setup" class="btn btn-primary btn-block" style="background:#10b981; border-color:#10b981; color:#fff; font-weight:700;">
-          📱 Setup Google Authenticator 2FA
+        <button type="button" id="btn-start-2fa-setup" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); border:none; color:#ffffff; font-weight:800; min-height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 14px rgba(16,185,129,0.35); font-size:0.92rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+          <span>Setup Google Authenticator 2FA</span>
         </button>
 
         <!-- Disable Button -->
-        <button type="button" id="btn-disable-2fa" class="btn btn-danger btn-block" style="display:none; background:#ef4444; border-color:#ef4444; color:#ffffff; margin-top:0.6rem; font-weight:700;">
-          🔴 Disable 2FA Security
+        <button type="button" id="btn-disable-2fa" class="btn btn-danger btn-block" style="display:none; background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border:none; color:#ffffff; margin-top:0.6rem; font-weight:800; min-height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 14px rgba(239,68,68,0.35); font-size:0.92rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+          <span>Disable 2FA Security</span>
         </button>
       </div>
 
-      <!-- Change Admin Password Card (Matching Mockup Image) -->
-      <div class="card" style="padding:1.35rem; height:fit-content;">
+      <!-- Editor Target URL Display Mode Card -->
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="editor-url-mask-card">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.45rem; font-size:1.1rem; font-weight:800;">
+            <span class="accent">👁️</span> Editor URL Display Settings
+          </div>
+          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#8b5cf6,#6c3de8); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(108,61,232,0.3);">
+            👑 Admin Control
+          </span>
+        </div>
+
+        <div style="background:linear-gradient(135deg, rgba(24,119,242,0.08) 0%, rgba(139,92,246,0.1) 100%); border:1.5px solid rgba(59,130,246,0.3); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:0.9rem;">
+          <div style="font-weight:900; font-size:0.82rem; color:#1d4ed8; display:flex; align-items:center; gap:0.35rem;">
+            <span>💡 Per-User Individual Control:</span>
+          </div>
+          <div style="font-size:0.74rem; color:var(--text-secondary); line-height:1.45; margin-top:0.25rem;">
+            Aap har user ka URL unhide ya mask <strong>alag-alag (individually)</strong> kar sakte hain! Niche <strong>Team Members</strong> list me jakar kisi bhi user ke <strong>"✏️ Edit"</strong> par click karein aur unka URL visibility choose karein.
+          </div>
+        </div>
+
+        <form id="editor-url-mask-form">
+          <div class="form-group" style="margin-bottom:0.85rem;">
+            <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
+              Global Policy Mode:
+            </label>
+            <div style="display:flex; flex-direction:column; gap:0.55rem;">
+              <!-- Option 1: Individual / Per-User (Default) -->
+              <label style="display:flex; align-items:flex-start; gap:0.65rem; padding:0.8rem 0.95rem; border:2px solid #8b5cf6; border-radius:14px; background:linear-gradient(135deg, #fbf7ff 0%, #f5effe 100%); cursor:pointer; transition:all 0.2s ease;">
+                <input type="radio" name="maskEditorUrlsRadio" id="radio-individual-urls" value="individual" checked style="margin-top:0.25rem; transform:scale(1.25); accent-color:#8b5cf6;">
+                <div>
+                  <div style="font-weight:900; font-size:0.88rem; color:#6d28d9; display:flex; align-items:center; gap:0.35rem;">
+                    <span>👤 Individual Mode (Har User Ka Alag Control)</span>
+                  </div>
+                  <div style="font-size:0.73rem; color:#5b21b6; margin-top:0.2rem; line-height:1.4;">
+                    Har Editor ka URL unhide/mask unki personal profile (Edit User) ke mutabiq hoga.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 2: Force Unhide for all - Tez Royal Blue -->
+              <label style="display:flex; align-items:flex-start; gap:0.65rem; padding:0.8rem 0.95rem; border:2px solid #1877f2; border-radius:14px; background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); cursor:pointer; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(24,119,242,0.15);">
+                <input type="radio" name="maskEditorUrlsRadio" id="radio-unmask-urls" value="false" style="margin-top:0.25rem; transform:scale(1.25); accent-color:#1877f2;">
+                <div>
+                  <div style="font-weight:900; font-size:0.88rem; color:#1e40af; display:flex; align-items:center; gap:0.35rem;">
+                    <span>🔵 ⚡ Force Unhide (Sabhi Editors ko Full URL Dikhega)</span>
+                  </div>
+                  <div style="font-size:0.73rem; color:#1d4ed8; margin-top:0.2rem; line-height:1.4; font-weight:600;">
+                    Sabhi Editors bina kisi stars ke apna poora target URL dekh payenge.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 3: Force Mask for all - Tez Crimson Red -->
+              <label style="display:flex; align-items:flex-start; gap:0.65rem; padding:0.8rem 0.95rem; border:2px solid #dc2626; border-radius:14px; background:linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); cursor:pointer; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(220,38,38,0.15);">
+                <input type="radio" name="maskEditorUrlsRadio" id="radio-mask-urls" value="true" style="margin-top:0.25rem; transform:scale(1.25); accent-color:#dc2626;">
+                <div>
+                  <div style="font-weight:900; font-size:0.88rem; color:#991b1b; display:flex; align-items:center; gap:0.35rem;">
+                    <span>🔴 🔒 Force Mask (Sabhi Editors ke URLs me ***** Stars Honge)</span>
+                  </div>
+                  <div style="font-size:0.73rem; color:#b91c1c; margin-top:0.2rem; line-height:1.4; font-weight:600;">
+                    Sabhi Editors ke target URLs asterisks se hide rahenge.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-save-url-mask" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%); min-height:44px; font-weight:800; font-size:0.88rem; margin-top:0.5rem; box-shadow:0 4px 14px rgba(108,61,232,0.3);">
+            💾 Save Global URL Policy
+          </button>
+        </form>
+      </div>
+
+      <!-- Change Admin Password Card (Placed Below at Bottom) -->
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="change-password-card">
         <div class="section-title" style="display:flex; align-items:center; gap:0.5rem; font-size:1.1rem; font-weight:700; margin-bottom:1rem;">
           🔒 Change Admin Password
         </div>
@@ -751,8 +866,6 @@
         </form>
       </div>
 
-
-
     </div>
   </div>
 </div>
@@ -763,17 +876,46 @@
 <!-- ══════════════════════════════
      QR CODE MODAL
 ══════════════════════════════ -->
-<div class="qr-overlay" id="qr-modal">
+<div class="qr-overlay" id="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
   <div class="qr-modal-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-      <h3 style="font-size:1.1rem; font-weight:800;">📱 QR Code</h3>
-      <button id="close-qr-btn" class="btn btn-ghost btn-sm">✕ Close</button>
+    <div class="qr-modal-header">
+      <div style="display:flex; align-items:center; gap:0.45rem;">
+        <h3 id="qr-modal-title" style="font-size:1.05rem; font-weight:800; margin:0; display:flex; align-items:center; gap:0.35rem;">
+          📱 QR Code
+        </h3>
+        <span id="qr-modal-code-badge" class="badge badge-info" style="font-size:0.75rem; font-family:monospace; padding:0.2rem 0.55rem;"></span>
+      </div>
+      <button id="close-qr-btn" type="button" class="btn btn-ghost btn-sm" aria-label="Close QR Modal" style="padding:0.25rem 0.6rem; min-height:32px; font-size:0.85rem; font-weight:700;">✕ Close</button>
     </div>
-    <p id="qr-modal-code" style="color:var(--red-primary); font-size:0.8rem; font-weight:700; margin-bottom:0.5rem;"></p>
+
+    <!-- Clean Single Link Box with 1-Click Copy & Open Option -->
+    <div class="qr-link-box">
+      <div class="qr-link-input-wrap">
+        <span class="qr-link-icon">🔗</span>
+        <input type="text" id="qr-modal-url-input" class="qr-link-input" readonly title="Click to copy link" onclick="this.select(); copyToClipboard(this.value, document.getElementById('qr-modal-copy-btn'))">
+        <button type="button" id="qr-modal-copy-btn" class="btn btn-sm btn-copy-qr" title="Copy Short Link">
+          📋 Copy
+        </button>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:0.2rem; padding:0 0.15rem;">
+        <span style="color:var(--text-muted); font-size:0.72rem; font-weight:600;">Short link URL</span>
+        <a id="qr-modal-open-link" href="#" target="_blank" rel="noopener noreferrer" class="qr-open-link-btn" title="Open shortlink in new tab">
+          ↗️ Open Link
+        </a>
+      </div>
+    </div>
+
+    <!-- QR Image Display -->
     <div class="qr-img-wrapper">
       <img id="qr-modal-img" src="" alt="QR Code">
     </div>
-    <a id="qr-download-btn" href="#" class="btn btn-primary btn-block" style="margin-top:0.25rem;">📥 Download PNG</a>
+
+    <!-- Download PNG Action (Always visible & prominent) -->
+    <div class="qr-modal-actions">
+      <a id="qr-download-btn" href="#" class="btn btn-primary btn-block" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-weight:700; min-height:44px;">
+        📥 Download PNG
+      </a>
+    </div>
   </div>
 </div>
 
@@ -801,7 +943,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=7"></script>
+<script src="/js/dashboard.js?v=12"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -894,6 +1036,32 @@ if ('serviceWorker' in navigator) {
         </select>
       </div>
 
+      <!-- Dedicated Target URL Visibility Box for Selected User -->
+      <div style="margin-bottom:1rem; background:linear-gradient(135deg, rgba(24,119,242,0.08) 0%, rgba(108,61,232,0.1) 100%); border:1.5px solid rgba(24,119,242,0.35); border-radius:12px; padding:0.85rem 1rem;">
+        <label style="font-size:0.75rem; font-weight:900; color:var(--text-primary); text-transform:uppercase; display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+          <span>👁️ Target URL Visibility for this Editor:</span>
+        </label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.55rem;">
+          <!-- Option 1: Unhide (Show Full URL) - Tez Royal Blue -->
+          <label id="edit-unmask-card-unhide" style="display:flex; align-items:flex-start; gap:0.5rem; padding:0.65rem 0.75rem; border:2px solid #1877f2; border-radius:10px; background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); cursor:pointer; font-weight:800; font-size:0.8rem; color:#1d4ed8; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(24,119,242,0.15);">
+            <input type="radio" name="editEditorUrlMaskRadio" id="edit-radio-unmask" value="unhide" style="accent-color:#1877f2; margin-top:0.15rem; transform:scale(1.15);">
+            <div>
+              <div style="font-weight:900; color:#1e40af;">🔵 ⚡ Unhide Full URL</div>
+              <div style="font-size:0.68rem; font-weight:700; color:#1d4ed8; margin-top:0.15rem;">No stars (<code>https://pk.com/url</code>)</div>
+            </div>
+          </label>
+
+          <!-- Option 2: Mask (Hide with stars) - Tez Crimson Red -->
+          <label id="edit-unmask-card-mask" style="display:flex; align-items:flex-start; gap:0.5rem; padding:0.65rem 0.75rem; border:2px solid #dc2626; border-radius:10px; background:linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); cursor:pointer; font-weight:800; font-size:0.8rem; color:#b91c1c; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(220,38,38,0.15);">
+            <input type="radio" name="editEditorUrlMaskRadio" id="edit-radio-mask" value="mask" checked style="accent-color:#dc2626; margin-top:0.15rem; transform:scale(1.15);">
+            <div>
+              <div style="font-weight:900; color:#991b1b;">🔴 🔒 Mask with Stars</div>
+              <div style="font-size:0.68rem; font-weight:700; color:#b91c1c; margin-top:0.15rem;">Hidden (<code>https://pk.com*****</code>)</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div style="margin-bottom:0.85rem;">
         <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">Allowed Features &amp; Traffic Sources:</label>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:0.45rem; background:var(--input-bg,#f9fafb); padding:0.65rem 0.85rem; border-radius:10px; border:1px solid var(--border,#e5e7eb);">
@@ -906,17 +1074,18 @@ if ('serviceWorker' in navigator) {
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="analytics"> 📊 Analytics</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="firewall"> 🛡️ Firewall</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="settings"> ⚙️ Settings</label>
+          <label style="display:none;"><input type="checkbox" class="edit-perm-cb" value="unmask_target_url" id="edit-unmask-hidden-cb"></label>
         </div>
       </div>
 
       <!-- Individual Allowed Target Websites Section -->
       <div style="margin-bottom:1rem; margin-top:0.75rem;">
         <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:0.5rem;">
-          <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin:0;">Assigned Websites for User (Unlimited):</label>
-          <button type="button" id="btn-add-edit-user-site" style="width:100%; background:linear-gradient(135deg, #8b5cf6 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.65rem 1rem; font-size:0.88rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 16px rgba(139,92,246,0.38) !important; text-align:center; min-height:44px; box-sizing:border-box;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span style="color:#ffffff !important;">Add Site</span></button>
+          <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin:0;">Assigned Websites / Target URLs for User (Unlimited):</label>
+          <button type="button" id="btn-add-edit-user-site" style="width:100%; background:linear-gradient(135deg, #8b5cf6 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.65rem 1rem; font-size:0.88rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 16px rgba(139,92,246,0.38) !important; text-align:center; min-height:44px; box-sizing:border-box;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span style="color:#ffffff !important;">Add Site / URL</span></button>
         </div>
         <div id="edit-user-sites-list" style="display:flex; flex-direction:column; gap:0.45rem; background:var(--input-bg,#f9fafb); padding:0.65rem; border-radius:12px; border:1.5px solid var(--border,#e5e7eb);">
-          <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:0.4rem 0;" id="edit-sites-empty-msg">No individual sites assigned yet. Click "Add Site" button above.</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:0.4rem 0;" id="edit-sites-empty-msg">No individual sites assigned yet. Click "Add Site / URL" button above.</div>
         </div>
       </div>
 

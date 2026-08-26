@@ -1130,26 +1130,148 @@ tbody tr:hover td { background: transparent; }
 
 /* QR Modal */
 .qr-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(15,10,10,0.65); backdrop-filter: blur(10px);
-  z-index: 9999; justify-content: center; align-items: center; padding: 1rem;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 100050;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .qr-modal-card {
-  background: var(--surface); border-radius: var(--r-xl);
-  padding: 2rem; text-align: center; max-width: 380px; width: 100%;
-  box-shadow: var(--shadow-lg); border: 1px solid var(--border);
-  animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 1.5rem;
+  text-align: center;
+  max-width: 380px;
+  width: 92%;
+  max-height: min(90vh, 590px);
+  overflow-y: auto;
+  margin: auto;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 @keyframes popIn {
-  from { transform: scale(0.85); opacity: 0; }
+  from { transform: scale(0.88); opacity: 0; }
   to   { transform: scale(1);    opacity: 1; }
 }
-.qr-img-wrapper {
-  background: #ffffff; padding: 1rem; border-radius: var(--r-md);
-  display: inline-block; margin: 1rem 0;
-  border: 2px solid var(--border); box-shadow: var(--shadow-sm);
+.qr-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-subtle, rgba(226, 232, 240, 0.5));
 }
-.qr-img-wrapper img { display: block; width: 200px; height: 200px; }
+.qr-link-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.qr-link-input-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surface-hover, #f8fafc);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: var(--r-md);
+  padding: 0.25rem 0.35rem 0.25rem 0.6rem;
+  gap: 0.4rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+[data-theme="dark"] .qr-link-input-wrap {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.qr-link-input-wrap:focus-within {
+  border-color: var(--primary, #1877f2);
+  box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.18);
+}
+.qr-link-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.qr-link-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text, #0f172a);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: monospace;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-theme="dark"] .qr-link-input {
+  color: #f8fafc;
+}
+.btn-copy-qr {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: var(--r-sm);
+  background: var(--primary, #1877f2);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-copy-qr:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.qr-open-link-btn {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--primary, #1877f2);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+.qr-open-link-btn:hover {
+  text-decoration: underline;
+}
+.qr-img-wrapper {
+  background: #ffffff;
+  padding: 0.75rem;
+  border-radius: var(--r-lg);
+  display: inline-flex;
+  align-self: center;
+  justify-content: center;
+  align-items: center;
+  margin: 0.2rem 0;
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.qr-img-wrapper img {
+  display: block;
+  width: 155px;
+  height: 155px;
+  max-width: 100%;
+  object-fit: contain;
+}
+.qr-modal-actions {
+  width: 100%;
+  margin-top: 0.2rem;
+}
 
 /* ════════════════════════════════════════
    RESPONSIVE DESIGN — MOBILE FIRST
@@ -1260,8 +1382,8 @@ input, select, textarea, button {
   .pro-accordion-header { flex-direction: row; align-items: center; }
 
   /* QR Modal */
-  .qr-modal-card { padding: 1.75rem; }
-  .qr-img-wrapper img { width: 180px; height: 180px; }
+  .qr-modal-card { padding: 1.5rem; max-width: 380px; }
+  .qr-img-wrapper img { width: 155px; height: 155px; }
 }
 
 /* ── MOBILE — max 480px ── */
@@ -1354,19 +1476,33 @@ input, select, textarea, button {
   .pro-accordion-title { font-size: 0.9rem; font-weight: 800; }
   .pro-accordion-icon { font-size: 0.8rem; }
 
-  /* QR Modal: full-screen on mobile */
-  .qr-overlay { padding: 0.75rem; align-items: flex-end; }
+  /* QR Modal: centered, responsive, always visible download button on mobile */
+  .qr-overlay {
+    padding: 0.75rem;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 100050 !important;
+  }
   .qr-modal-card {
-    width: 100%; max-width: 100%;
-    border-radius: var(--r-lg) var(--r-lg) 0 0;
-    padding: 1.5rem;
-    animation: slideUp 0.28s ease-out;
+    width: 92% !important;
+    max-width: 360px !important;
+    border-radius: var(--r-xl) !important;
+    padding: 1.2rem 1rem !important;
+    max-height: 88vh !important;
+    animation: popIn 0.22s ease-out !important;
+    margin: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important;
   }
-  @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
+  .qr-img-wrapper {
+    padding: 0.5rem !important;
+    margin: 0.15rem 0 !important;
   }
-  .qr-img-wrapper img { width: 180px; height: 180px; }
+  .qr-img-wrapper img {
+    width: min(145px, 42vw) !important;
+    height: min(145px, 42vw) !important;
+  }
 
   /* Badge: larger on mobile */
   .badge { font-size: 0.75rem; padding: 0.28rem 0.6rem; font-weight: 800; }
@@ -1742,8 +1878,8 @@ table td:nth-child(3)  /* Fallback URL */ {
     background: #ffffff !important;
     border: 1.5px solid var(--border) !important;
     border-radius: var(--r-md) !important;
-    padding: 1.25rem 1.35rem !important;
-    margin-bottom: 1.4rem !important;
+    padding: 0.85rem 1.1rem !important;
+    margin-bottom: 1rem !important;
     box-shadow: var(--shadow-md) !important;
   }
   
@@ -1752,14 +1888,14 @@ table td:nth-child(3)  /* Fallback URL */ {
     flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 0.75rem 0 !important;
+    padding: 0.42rem 0 !important;
     border: none !important;
-    border-bottom: 1.5px dashed var(--border) !important;
-    min-height: 44px !important;
+    border-bottom: 1px dashed var(--border) !important;
+    min-height: 34px !important;
     white-space: normal !important;
     text-align: right !important;
-    gap: 1rem !important;
-    font-size: 0.95rem !important;
+    gap: 0.6rem !important;
+    font-size: 0.88rem !important;
     background: transparent !important;
   }
   
@@ -1812,24 +1948,18 @@ table td:nth-child(3)  /* Fallback URL */ {
     border-radius: var(--r-sm) !important;
   }
 
-  /* Layout adjustments for long URLs & Short Link cell */
-  td[data-label="Short Link"],
-  td[data-label="Target URL"], 
-  td[data-label="Fallback URL"] {
+  /* Short Link stays column (too long for row) */
+  td[data-label="Short Link"] {
     flex-direction: column !important;
     align-items: flex-start !important;
     text-align: left !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
-  td[data-label="Short Link"]::before,
-  td[data-label="Target URL"]::before, 
-  td[data-label="Fallback URL"]::before {
-    margin-bottom: 0.35rem !important;
+  td[data-label="Short Link"]::before {
+    margin-bottom: 0.25rem !important;
   }
-  td[data-label="Short Link"] > *,
-  td[data-label="Target URL"] > *, 
-  td[data-label="Fallback URL"] > * {
+  td[data-label="Short Link"] > * {
     text-align: left !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -1838,23 +1968,48 @@ table td:nth-child(3)  /* Fallback URL */ {
     box-sizing: border-box !important;
   }
 
-  /* Keep source badges inside narrow mobile link cards. */
-  td[data-label="Allowed Sources"] {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.45rem !important;
-    text-align: left !important;
+  /* Target URL & Fallback URL — compact inline row */
+  td[data-label="Target URL"],
+  td[data-label="Fallback URL"] {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
   }
-  td[data-label="Allowed Sources"] > * {
-    width: 100% !important;
-    min-width: 0 !important;
-    justify-content: flex-start !important;
+  td[data-label="Target URL"] > *,
+  td[data-label="Fallback URL"] > * {
+    text-align: right !important;
+    max-width: 55% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 0.8rem !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Source badges inline — label LEFT, badge RIGHT, same row */
+  td[data-label="Allowed Sources"] {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
     text-align: left !important;
+    flex-wrap: nowrap !important;
+  }
+  td[data-label="Allowed Sources"] > div {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.3rem !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-shrink: 1 !important;
   }
   td[data-label="Allowed Sources"] .badge {
-    max-width: 100% !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+    padding: 0.28rem 0.65rem !important;
   }
 
   /* Referrer & IP / ISP same-line row alignment on mobile */
