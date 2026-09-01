@@ -2957,51 +2957,9 @@ window.deleteDomain = async function(id) {
 // ── Password Change Form Handler ──
 const passwordChangeForm = document.getElementById('password-change-form');
 if (passwordChangeForm) {
-  passwordChangeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newPasswordInput = document.getElementById('new-password');
-    const newPassword = newPasswordInput ? newPasswordInput.value.trim() : '';
-
-    if (!newPassword || newPassword.length < 6) {
-      showAlert('❌ Password must be at least 6 characters long.', true);
-      return;
-    }
-
-    const submitBtn = passwordChangeForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn ? submitBtn.innerHTML : '';
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '⏳ Updating...';
-    }
-
-    try {
-      const res = await fetch('/api/admin/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showAlert('✅ Password changed successfully!');
-        passwordChangeForm.reset();
-        // Instant logout & redirect
-        try {
-          await fetch('/api/logout', { method: 'POST' });
-        } catch (e) {}
-        window.location.href = '/admin';
-      } else {
-        showAlert('❌ ' + (data.error || 'Failed to update password. Please try again.'), true);
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }
-      }
-    } catch (err) {
-      showAlert('❌ Network error. Please check connection and try again.', true);
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-      }
+  passwordChangeForm.addEventListener('submit', (e) => {
+    if (window.submitAdminPasswordChange) {
+      window.submitAdminPasswordChange(e);
     }
   });
 }

@@ -845,14 +845,15 @@
         <div class="section-title" style="display:flex; align-items:center; gap:0.5rem; font-size:1.1rem; font-weight:700; margin-bottom:1rem;">
           🔒 Change Admin Password
         </div>
-        <form id="password-change-form">
+        <form id="password-change-form" onsubmit="event.preventDefault(); window.submitAdminPasswordChange(event); return false;">
           <div class="form-group">
             <label for="new-password" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted);">
               NEW ADMIN PASSWORD
             </label>
             <input type="password" id="new-password" class="form-control" placeholder="Enter new password (min 6 chars)" minlength="6" required autocomplete="new-password">
           </div>
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.75rem; background:#3b82f6; border-color:#3b82f6; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+          <div id="password-change-feedback" style="display:none; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.82rem; font-weight:700; margin-top:0.6rem;"></div>
+          <button type="submit" id="btn-submit-password-change" class="btn btn-primary btn-block" style="margin-top:0.75rem; background:#3b82f6; border-color:#3b82f6; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem;" onclick="event.preventDefault(); window.submitAdminPasswordChange(event);">
             🔑 Update Password
           </button>
         </form>
@@ -1140,12 +1141,109 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<style>
-@keyframes editModalIn {
-  from { opacity:0; transform:scale(0.92) translateY(12px); }
-  to   { opacity:1; transform:scale(1) translateY(0); }
-}
-</style>
+<script>
+window.submitAdminPasswordChange = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  const input = document.getElementById('new-password');
+  const btn = document.getElementById('btn-submit-password-change');
+  const feedback = document.getElementById('password-change-feedback');
+
+  const newPass = input ? input.value.trim() : '';
+
+  if (!newPass || newPass.length < 6) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = '❌ Password must be at least 6 characters long.';
+    } else {
+      alert('Password must be at least 6 characters long.');
+    }
+    return false;
+  }
+
+  const origBtnText = btn ? btn.innerHTML : '🔑 Update Password';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Updating & Logging Out...';
+  }
+
+  if (feedback) {
+    feedback.style.display = 'block';
+    feedback.style.background = '#e0f2fe';
+    feedback.style.color = '#0369a1';
+    feedback.style.border = '1.5px solid #38bdf8';
+    feedback.innerText = '⏳ Updating password in database...';
+  }
+
+  try {
+    const res = await fetch('/api/admin/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword: newPass })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      if (feedback) {
+        feedback.style.background = '#dcfce7';
+        feedback.style.color = '#15803d';
+        feedback.style.border = '1.5px solid #22c55e';
+        feedback.innerText = '✅ Password updated successfully! Redirecting to login...';
+      }
+      if (input) input.value = '';
+
+      // Clear caches and cookies
+      try { await fetch('/api/logout', { method: 'POST' }); } catch (ign) {}
+      try { localStorage.clear(); sessionStorage.clear(); } catch (ign) {}
+      if ('caches' in window) {
+        try {
+          const names = await caches.keys();
+          await Promise.all(names.map(name => caches.delete(name)));
+        } catch (ign) {}
+      }
+
+      // Instant redirect to login page
+      setTimeout(() => {
+        window.location.replace('/login');
+      }, 300);
+      return false;
+    } else {
+      const errMsg = (data && data.error) ? data.error : 'Failed to update password.';
+      if (feedback) {
+        feedback.style.background = '#fee2e2';
+        feedback.style.color = '#dc2626';
+        feedback.style.border = '1.5px solid #ef4444';
+        feedback.innerText = '❌ ' + errMsg;
+      } else {
+        alert(errMsg);
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origBtnText;
+      }
+    }
+  } catch (err) {
+    if (feedback) {
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = '❌ Network error: Could not reach server.';
+    } else {
+      alert('Network error while updating password.');
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
+  }
+  return false;
+};
+</script>
 
 </body>
 </html>

@@ -927,7 +927,10 @@ app.post('/api/admin/change-password', requireAuth, (req, res) => {
   const newHash = bcrypt.hashSync(newPassword.trim(), salt);
   db.updateUserPassword(currentUser.username, newHash, newPassword.trim());
 
-  res.json({ success: true, message: 'Password updated successfully' });
+  // Invalidate session immediately on password change
+  req.session.destroy((err) => {
+    res.json({ success: true, message: 'Password updated successfully. Logged out.' });
+  });
 });
 
 // ----------------------------------------------------

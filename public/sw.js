@@ -1,15 +1,11 @@
-const CACHE_NAME = 'smartlink-v18';
+const CACHE_NAME = 'smartlink-v25';
 const STATIC_ASSETS = [
-  '/admin',
-  '/admin.html',
-  '/css/style.css',
-  '/js/dashboard.js',
   '/icon-192.png',
   '/icon-512.png',
   '/manifest.json'
 ];
 
-// Install: cache static assets
+// Install: cache icons
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS)).catch(() => {})
@@ -17,7 +13,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: delete ALL old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -27,15 +23,15 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static
+// Fetch: Always network first, never cache stale admin.html or dashboard.js
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  // Always fetch API calls from network
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request).catch(() => new Response('{"error":"offline"}', { headers: { 'Content-Type': 'application/json' } })));
+  // Always fetch API and admin scripts from network
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('dashboard') || url.pathname.includes('admin') || url.pathname.includes('login')) {
+    event.respondWith(fetch(event.request));
     return;
   }
-  // Static: try network first, fallback to cache
+  // Static assets (icons)
   event.respondWith(
     fetch(event.request)
       .then(res => {
