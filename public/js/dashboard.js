@@ -2988,7 +2988,7 @@ if (passwordChangeForm) {
         try {
           await fetch('/api/logout', { method: 'POST' });
         } catch (e) {}
-        window.location.href = '/login.html';
+        window.location.href = '/admin';
       } else {
         showAlert('❌ ' + (data.error || 'Failed to update password. Please try again.'), true);
         if (submitBtn) {
