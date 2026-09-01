@@ -2982,15 +2982,13 @@ if (passwordChangeForm) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showAlert('✅ Password changed successfully! Logging out in 2 seconds... Naye password se login karein.');
+        showAlert('✅ Password changed successfully!');
         passwordChangeForm.reset();
-        // Auto-logout after 2 seconds
-        setTimeout(async () => {
-          try {
-            await fetch('/api/logout', { method: 'POST' });
-          } catch (e) {}
-          window.location.href = '/login.html';
-        }, 2000);
+        // Instant logout & redirect
+        try {
+          await fetch('/api/logout', { method: 'POST' });
+        } catch (e) {}
+        window.location.href = '/login.html';
       } else {
         showAlert('❌ ' + (data.error || 'Failed to update password. Please try again.'), true);
         if (submitBtn) {
