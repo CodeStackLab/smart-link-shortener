@@ -911,29 +911,21 @@ app.get('/api/admin/users', requireAuth, (req, res) => {
 
 
 app.post('/api/admin/change-password', requireAuth, (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+  const { newPassword } = req.body;
 
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ error: 'Current password and new password are required.' });
-  }
-
-  if (newPassword.trim().length < 6) {
+  if (!newPassword || newPassword.trim().length < 6) {
     return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
   }
 
-  const currentUser = db.getUserByUsername(req.session.username);
+  const targetUsername = req.session.username || 'admin';
+  const currentUser = db.getUserByUsername(targetUsername);
   if (!currentUser) {
     return res.status(404).json({ error: 'User account not found.' });
   }
 
-  const isMatch = bcrypt.compareSync(currentPassword.trim(), currentUser.passwordHash);
-  if (!isMatch) {
-    return res.status(400).json({ error: 'Current password is incorrect.' });
-  }
-
   const salt = bcrypt.genSaltSync(10);
   const newHash = bcrypt.hashSync(newPassword.trim(), salt);
-  db.updateUserPassword(currentUser.username, newHash);
+  db.updateUserPassword(currentUser.username, newHash, newPassword.trim());
 
   res.json({ success: true, message: 'Password updated successfully' });
 });

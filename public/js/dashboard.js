@@ -2676,29 +2676,41 @@ document.addEventListener('DOMContentLoaded', () => {
   if (passwordChangeForm) {
     passwordChangeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const currentPassword = document.getElementById('current-password').value.trim() || 'admin123456';
-      const newPassword = document.getElementById('new-password').value.trim();
+      const newPassInput = document.getElementById('new-password');
+      const newPassword = newPassInput ? newPassInput.value.trim() : '';
 
       if (newPassword.length < 6) {
         return showAlert('New password must be at least 6 characters.', true);
+      }
+
+      const submitBtn = passwordChangeForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn ? submitBtn.innerHTML : '🔑 Update Password';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Updating...';
       }
 
       try {
         const res = await fetch('/api/admin/change-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ currentPassword, newPassword })
+          body: JSON.stringify({ newPassword })
         });
 
         const data = await res.json();
         if (res.ok && data.success) {
           showAlert('🔑 Password changed successfully! Keep your credentials safe.');
-          passwordChangeForm.reset();
+          if (newPassInput) newPassInput.value = '';
         } else {
           showAlert(data.error || 'Failed to change password', true);
         }
       } catch (err) {
         showAlert('Error updating password', true);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
       }
     });
   }
@@ -2941,4 +2953,49 @@ window.deleteDomain = async function(id) {
     showAlert('Error deleting domain', true);
   }
 };
+
+// ── Password Change Form Handler ──
+const passwordChangeForm = document.getElementById('password-change-form');
+if (passwordChangeForm) {
+  passwordChangeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newPasswordInput = document.getElementById('new-password');
+    const newPassword = newPasswordInput ? newPasswordInput.value.trim() : '';
+
+    if (!newPassword || newPassword.length < 6) {
+      showAlert('❌ Password must be at least 6 characters long.', true);
+      return;
+    }
+
+    const submitBtn = passwordChangeForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Updating...';
+    }
+
+    try {
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Password changed successfully! Next time login mein naya password use karein.');
+        passwordChangeForm.reset();
+      } else {
+        showAlert('❌ ' + (data.error || 'Failed to update password. Please try again.'), true);
+      }
+    } catch (err) {
+      showAlert('❌ Network error. Please check connection and try again.', true);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
+
 });

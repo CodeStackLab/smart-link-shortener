@@ -846,19 +846,11 @@
           🔒 Change Admin Password
         </div>
         <form id="password-change-form">
-          <div class="form-group" style="display:none;">
-            <label for="current-password">Current Password</label>
-            <input type="password" id="current-password" class="form-control" placeholder="Current password" value="admin123456">
-          </div>
           <div class="form-group">
             <label for="new-password" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted);">
               NEW ADMIN PASSWORD
             </label>
-            <input type="password" id="new-password" class="form-control" placeholder="Enter new password" required>
-          </div>
-          <div class="form-group" style="display:none;">
-            <label for="confirm-password">Confirm Password</label>
-            <input type="password" id="confirm-password" class="form-control" placeholder="Confirm password">
+            <input type="password" id="new-password" class="form-control" placeholder="Enter new password (min 6 chars)" minlength="6" required autocomplete="new-password">
           </div>
           <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.75rem; background:#3b82f6; border-color:#3b82f6; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
             🔑 Update Password
