@@ -427,7 +427,7 @@ app.get('/api/admin/links', requireAuth, (req, res) => {
 });
 
 // ── Image Upload API ──
-app.post('/api/admin/upload-image', requireAuth, (req, res) => {
+app.post('/api/admin/upload-image', requireAuth, requirePermission('upload_image'), (req, res) => {
   try {
     const { image } = req.body;
     if (!image || typeof image !== 'string') {

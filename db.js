@@ -257,16 +257,16 @@ module.exports = {
   // Users CRUD
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
-    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url'];
-    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics']; // Editor default
+    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image'];
+    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'upload_image']; // Editor default
   },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);
     return users.map(u => {
       const role = u.role || 'Editor';
       const defaultPerms = role === 'Admin'
-        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'upload_image']
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'upload_image'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
       const userPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;

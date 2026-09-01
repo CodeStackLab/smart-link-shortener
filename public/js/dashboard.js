@@ -441,6 +441,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Image Upload Section Scoping (controlled by 'upload_image' permission)
+    const imageUploadSection = document.getElementById('link-image-upload-section');
+    if (imageUploadSection) {
+      const hasImagePerm = isFullAdmin || allPerms.includes('upload_image');
+      if (hasImagePerm) {
+        imageUploadSection.style.setProperty('display', 'block', 'important');
+      } else {
+        imageUploadSection.style.setProperty('display', 'none', 'important');
+      }
+    }
+
     const navMap = [
       { key: 'links', tabId: 'tab-links', adminOnly: false },
       { key: 'domains', tabId: 'tab-domains', adminOnly: false },
