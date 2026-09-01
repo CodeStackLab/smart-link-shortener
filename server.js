@@ -287,6 +287,8 @@ function isTargetUrlAllowedForUser(username, userRole, targetUrl, iosUrl, androi
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', true);
+
 // Security Middleware
 app.use(helmet({
   contentSecurityPolicy: false
@@ -1558,49 +1560,58 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
-  // 3. Check Social Scrapers — Serve Rich OG Meta Tags fetched from Target URL SILENTLY without logging!
+  // 3. Check Social Scrapers — Serve Rich OG Meta Tags with custom image SILENTLY without logging!
   if (isSocialScraper(userAgent) || isSocialRelayRequest(geoInfo, rawReferer, userAgent)) {
 
-    // Fetch real OG metadata from the target URL
+    // Fetch real OG metadata from the target URL (for title, description, siteName)
     const ogMeta = await fetchOgMeta(link.targetUrl);
     const ogTitle = (ogMeta && ogMeta.title) ? ogMeta.title : `${link.code} - Shared Link`;
     const ogDesc = (ogMeta && ogMeta.description) ? ogMeta.description : 'Click to view full content';
     
+    // Resolve public HTTPS host and short URL
+    const host = link.domain ? link.domain : (req.headers['x-forwarded-host'] || req.get('host') || 'goo33.online');
+    const shortUrl = `https://${host}/s/${link.code}`;
+
     // Priority: custom uploaded image > scraped target OG image
-    let customImgUrl = '';
+    let ogImage = '';
     if (link.imageUrl && typeof link.imageUrl === 'string' && link.imageUrl.trim()) {
       const cleanImg = link.imageUrl.trim();
-      customImgUrl = cleanImg.startsWith('http') ? cleanImg : `${req.protocol}://${req.get('host')}${cleanImg.startsWith('/') ? '' : '/'}${cleanImg}`;
+      ogImage = cleanImg.startsWith('http') ? cleanImg : `https://${host}${cleanImg.startsWith('/') ? '' : '/'}${cleanImg}`;
+    } else if (ogMeta && ogMeta.image) {
+      ogImage = ogMeta.image;
     }
-    const ogImage = customImgUrl || ((ogMeta && ogMeta.image) ? ogMeta.image : '');
-    const ogSiteName = (ogMeta && ogMeta.siteName) ? ogMeta.siteName : '';
-    const shortUrl = `${req.protocol}://${req.get('host')}/s/${link.code}`;
 
-    const ogImageTag = ogImage ? `<meta property="og:image" content="${ogImage}" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-          <meta name="twitter:image" content="${ogImage}" />` : '';
+    const ogSiteName = (ogMeta && ogMeta.siteName) ? ogMeta.siteName : host;
+
+    const ogImageTag = ogImage ? `
+    <meta property="og:image" content="${ogImage}" />
+    <meta property="og:image:secure_url" content="${ogImage}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${ogTitle}" />
+    <meta name="twitter:image" content="${ogImage}" />
+    <meta name="twitter:image:src" content="${ogImage}" />` : '';
+
     const ogSiteTag = ogSiteName ? `<meta property="og:site_name" content="${ogSiteName}" />` : '';
 
     return res.send(`<!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${ogTitle}</title>
+    <meta property="og:type" content="article" />
     <meta property="og:title" content="${ogTitle}" />
     <meta property="og:description" content="${ogDesc}" />
-    <meta property="og:type" content="website" />
     <meta property="og:url" content="${shortUrl}" />
     ${ogImageTag}
     ${ogSiteTag}
     <meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}" />
     <meta name="twitter:title" content="${ogTitle}" />
     <meta name="twitter:description" content="${ogDesc}" />
-    <meta http-equiv="refresh" content="0;url=${link.targetUrl}">
   </head>
   <body>
-    <p>Redirecting... <a href="${link.targetUrl}">Click here if not redirected.</a></p>
+    <p><a href="${link.targetUrl}">${ogTitle}</a></p>
     <a href="/s/honeypot" style="display:none; position:absolute; left:-9999px;" aria-hidden="true" tabindex="-1">Click here for more details</a>
   </body>
 </html>`);
