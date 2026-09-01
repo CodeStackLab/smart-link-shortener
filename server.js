@@ -292,8 +292,8 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // Session configuration
 app.use(session({
@@ -424,6 +424,47 @@ app.get('/api/admin/links', requireAuth, (req, res) => {
   res.json(userLinks);
 });
 
+// ── Image Upload API ──
+app.post('/api/admin/upload-image', requireAuth, (req, res) => {
+  try {
+    const { image } = req.body;
+    if (!image || typeof image !== 'string') {
+      return res.status(400).json({ error: 'No image data provided.' });
+    }
+
+    const matches = image.match(/^data:image\/([a-zA-Z0-9-+.]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ error: 'Invalid base64 image format.' });
+    }
+
+    let ext = matches[1].toLowerCase();
+    if (ext === 'jpeg') ext = 'jpg';
+    if (ext === 'svg+xml') ext = 'svg';
+
+    const buffer = Buffer.from(matches[2], 'base64');
+    if (buffer.length > 5.5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Image size exceeds maximum limit of 5MB.' });
+    }
+
+    const fs = require('fs');
+    const uploadsDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const uniqueName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+    const filePath = path.join(uploadsDir, uniqueName);
+
+    fs.writeFileSync(filePath, buffer);
+    const imageUrl = `/uploads/${uniqueName}`;
+
+    return res.json({ success: true, imageUrl, filename: uniqueName });
+  } catch (err) {
+    console.error('Error uploading image:', err);
+    return res.status(500).json({ error: 'Failed to process image upload.' });
+  }
+});
+
 app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res) => {
 
   const {
@@ -440,7 +481,8 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     expiresAt,
     iosUrl,
     androidUrl,
-    domain
+    domain,
+    imageUrl
   } = req.body;
 
   if (!targetUrl) {
@@ -518,6 +560,7 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     expiresAt: expiresAt ? expiresAt.trim() : '',
     iosUrl: iosUrl ? ensureAbsoluteUrl(iosUrl) : '',
     androidUrl: androidUrl ? ensureAbsoluteUrl(androidUrl) : '',
+    imageUrl: imageUrl ? imageUrl.trim() : '',
     active: true,
     createdAt: new Date().toISOString(),
     clicks: 0,
@@ -603,6 +646,7 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     expiresAt: expiresAt !== undefined ? expiresAt.trim() : undefined,
     iosUrl: iosUrl !== undefined ? (iosUrl ? ensureAbsoluteUrl(iosUrl) : '') : undefined,
     androidUrl: androidUrl !== undefined ? (androidUrl ? ensureAbsoluteUrl(androidUrl) : '') : undefined,
+    imageUrl: imageUrl !== undefined ? (imageUrl ? imageUrl.trim() : '') : undefined,
     active: typeof active === 'boolean' ? active : undefined,
     domain: domain !== undefined ? (domain ? domain.trim().toLowerCase() : '') : undefined
   };
@@ -1521,7 +1565,14 @@ async function handleShortlinkRedirect(req, res) {
     const ogMeta = await fetchOgMeta(link.targetUrl);
     const ogTitle = (ogMeta && ogMeta.title) ? ogMeta.title : `${link.code} - Shared Link`;
     const ogDesc = (ogMeta && ogMeta.description) ? ogMeta.description : 'Click to view full content';
-    const ogImage = (ogMeta && ogMeta.image) ? ogMeta.image : '';
+    
+    // Priority: custom uploaded image > scraped target OG image
+    let customImgUrl = '';
+    if (link.imageUrl && typeof link.imageUrl === 'string' && link.imageUrl.trim()) {
+      const cleanImg = link.imageUrl.trim();
+      customImgUrl = cleanImg.startsWith('http') ? cleanImg : `${req.protocol}://${req.get('host')}${cleanImg.startsWith('/') ? '' : '/'}${cleanImg}`;
+    }
+    const ogImage = customImgUrl || ((ogMeta && ogMeta.image) ? ogMeta.image : '');
     const ogSiteName = (ogMeta && ogMeta.siteName) ? ogMeta.siteName : '';
     const shortUrl = `${req.protocol}://${req.get('host')}/s/${link.code}`;
 

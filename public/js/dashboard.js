@@ -993,6 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="shortlink-meta-row">
                 <div class="shortlink-code-group">
                   <span class="shortlink-pill">🔗 /${link.code}</span>
+                  ${link.imageUrl ? `<a href="${link.imageUrl}" target="_blank" title="View Image" style="display:inline-flex; align-items:center;"><img src="${link.imageUrl}" alt="Img" style="width:24px; height:24px; border-radius:6px; object-fit:cover; border:1.5px solid #3b82f6; vertical-align:middle;"></a>` : ''}
                   ${link.createdBy && link.createdBy.toLowerCase() !== 'admin' ? `<span class="badge badge-custom" style="font-size:0.65rem;">By: ${link.createdBy}</span>` : ''}
                 </div>
               </div>
@@ -1255,6 +1256,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ── Image Upload & Preview Handler ──
+  const imageDropzone = document.getElementById('image-upload-dropzone');
+  const imageFileInput = document.getElementById('link-image-file');
+  const imagePreviewContainer = document.getElementById('image-preview-container');
+  const imagePreviewImg = document.getElementById('image-preview-img');
+  const imagePreviewFilename = document.getElementById('image-preview-filename');
+  const btnRemoveImageTop = document.getElementById('btn-remove-image-top');
+  const btnChangeImage = document.getElementById('btn-change-image');
+  let currentUploadedImageBase64 = '';
+
+  function resetImageUpload() {
+    currentUploadedImageBase64 = '';
+    if (imageFileInput) imageFileInput.value = '';
+    if (imagePreviewImg) imagePreviewImg.src = '';
+    if (imagePreviewContainer) imagePreviewContainer.style.display = 'none';
+    if (imageDropzone) imageDropzone.style.display = 'block';
+  }
+
+  function handleFileSelected(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showAlert('Please select a valid image file (JPG, PNG, WebP, GIF).', true);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showAlert('Image size exceeds the maximum limit of 5MB.', true);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      currentUploadedImageBase64 = e.target.result;
+      if (imagePreviewImg) imagePreviewImg.src = currentUploadedImageBase64;
+      if (imagePreviewFilename) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        imagePreviewFilename.textContent = `${file.name} (${sizeMb} MB)`;
+      }
+      if (imagePreviewContainer) imagePreviewContainer.style.display = 'block';
+      if (imageDropzone) imageDropzone.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (imageDropzone && imageFileInput) {
+    imageDropzone.addEventListener('click', () => imageFileInput.click());
+
+    imageDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageDropzone.style.borderColor = '#1d4ed8';
+      imageDropzone.style.background = 'rgba(59,130,246,0.08)';
+    });
+
+    imageDropzone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      imageDropzone.style.borderColor = '#3b82f6';
+      imageDropzone.style.background = 'rgba(59,130,246,0.03)';
+    });
+
+    imageDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      imageDropzone.style.borderColor = '#3b82f6';
+      imageDropzone.style.background = 'rgba(59,130,246,0.03)';
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelected(e.dataTransfer.files[0]);
+      }
+    });
+
+    imageFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelected(e.target.files[0]);
+      }
+    });
+  }
+
+  if (btnRemoveImageTop) {
+    btnRemoveImageTop.addEventListener('click', (e) => {
+      e.preventDefault();
+      resetImageUpload();
+    });
+  }
+
+  if (btnChangeImage) {
+    btnChangeImage.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (imageFileInput) imageFileInput.click();
+    });
+  }
+
   if (createForm) {
     createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1309,6 +1398,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const androidUrl = getVal('android-url');
       const iosUrl = getVal('ios-url');
 
+      // Upload image if provided
+      let finalImageUrl = '';
+      if (currentUploadedImageBase64) {
+        try {
+          const uploadRes = await fetch('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: currentUploadedImageBase64 })
+          });
+          const uploadData = await uploadRes.json();
+          if (uploadRes.ok && uploadData.imageUrl) {
+            finalImageUrl = uploadData.imageUrl;
+          }
+        } catch (err) {
+          console.error('Error uploading image:', err);
+        }
+      }
+
       // Build allowedPlatforms — only include platforms the user has permission for
       const platformPerms = ['facebook', 'instagram', 'custom_website'];
       const allowedPlatforms = [];
@@ -1346,7 +1453,8 @@ document.addEventListener('DOMContentLoaded', () => {
             expiresAt,
             androidUrl,
             iosUrl,
-            domain
+            domain,
+            imageUrl: finalImageUrl
           })
         });
 
@@ -1357,6 +1465,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const shortUrl = `${location.origin}/s/${generatedCode}`;
           
           createForm.reset();
+          resetImageUpload();
           customDomainsList = [];
           renderDomainTags();
           
