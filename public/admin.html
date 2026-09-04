@@ -359,7 +359,7 @@
 </div>
 
 <!-- ══════════════════════════════
-     TAB 3 — TRAFFIC LOGS
+     TAB 3 — TRAFFIC LOGS & QUALITY AUDIT
 ══════════════════════════════ -->
 <div id="tab-analytics" class="tab-content" style="display:none;">
   <div class="container">
@@ -368,29 +368,57 @@
       <div class="stat-card" id="logs-organic-wrap">
         <div class="stat-icon teal">✅</div>
         <div class="stat-body">
-          <div class="stat-title">Organic Clicks</div>
+          <div class="stat-title">Legitimate Traffic</div>
           <div id="stat-organic-clicks" class="stat-value" style="color:#059669;">0</div>
-          <div class="stat-desc">Social & custom domain</div>
+          <div class="stat-desc">Low Risk &amp; Verified Organic</div>
         </div>
       </div>
-      <div class="stat-card" id="logs-fallback-wrap">
-        <div class="stat-icon amber">↩️</div>
+      <div class="stat-card" id="logs-suspicious-wrap">
+        <div class="stat-icon amber">⚠️</div>
         <div class="stat-body">
-          <div class="stat-title">Fallback Clicks</div>
-          <div id="stat-fallback-clicks" class="stat-value" style="color:#b45309;">0</div>
-          <div class="stat-desc">WhatsApp, direct & unlisted</div>
+          <div class="stat-title">Suspicious Traffic</div>
+          <div id="stat-suspicious-clicks" class="stat-value" style="color:#b45309;">0</div>
+          <div class="stat-desc">Medium Risk / Soft-Blocked</div>
+        </div>
+      </div>
+      <div class="stat-card" id="logs-bot-wrap">
+        <div class="stat-icon red">🤖</div>
+        <div class="stat-body">
+          <div class="stat-title">Bot Shield Blocked</div>
+          <div id="stat-bot-clicks" class="stat-value" style="color:#dc2626;">0</div>
+          <div class="stat-desc">High Risk Bots / Scrapers</div>
+        </div>
+      </div>
+      <div class="stat-card" id="logs-quality-wrap">
+        <div class="stat-icon blue">🛡️</div>
+        <div class="stat-body">
+          <div class="stat-title">Traffic Quality</div>
+          <div id="stat-traffic-quality" class="stat-value" style="color:#2563eb;">100%</div>
+          <div class="stat-desc">Clean Visitors Ratio</div>
         </div>
       </div>
     </div>
 
     <div class="card" id="logs-realtime-wrap" style="padding:1.1rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
-        <div class="section-title" style="margin-bottom:0;"><span class="accent">📊</span> Real-Time Traffic Audit Logs</div>
+        <div>
+          <div class="section-title" style="margin-bottom:0.25rem;"><span class="accent">📊</span> Real-Time Traffic Audit Logs</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">Multi-signal threat analysis, risk scoring, and autonomous filtering breakdown</div>
+        </div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <a href="/api/admin/export-csv" class="btn btn-secondary btn-sm">📥 Export CSV</a>
           <button id="clear-logs-btn" class="btn btn-danger btn-sm">🗑️ Clear Logs</button>
         </div>
       </div>
+
+      <!-- Traffic Quality Filter Pills -->
+      <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.85rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border);">
+        <button type="button" class="btn btn-sm traffic-filter-btn active" data-filter="all" style="font-weight:700; border-radius:20px;">All Traffic (<span id="filter-count-all">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="organic" style="font-weight:700; border-radius:20px; background:rgba(16,185,129,0.1); color:#059669; border:1px solid rgba(16,185,129,0.3);">🟢 Legitimate (<span id="filter-count-organic">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="suspicious" style="font-weight:700; border-radius:20px; background:rgba(245,158,11,0.1); color:#b45309; border:1px solid rgba(245,158,11,0.3);">🟡 Suspicious (<span id="filter-count-suspicious">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="bot" style="font-weight:700; border-radius:20px; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3);">🔴 Bot Blocked (<span id="filter-count-bot">0</span>)</button>
+      </div>
+
       <div class="table-wrap">
         <table>
           <thead>
@@ -399,10 +427,11 @@
               <th>Code</th>
               <th>IP / ISP</th>
               <th>Location</th>
-              <th>Connection</th>
+              <th>Risk Score</th>
+              <th>Status / Action</th>
+              <th>Reason &amp; Signals</th>
               <th>Referrer</th>
-              <th>Dwell</th>
-              <th>Action</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="logs-tbody">
@@ -516,6 +545,37 @@
             </div>
           </div>
 
+          <!-- Traffic Quality, Rate Limits & Sensitivity (Rules 6, 21, 28, 35, 36, 37) -->
+          <div style="border-top:1px solid var(--border); padding-top:0.75rem; margin-bottom:0.75rem;">
+            <div style="font-weight:700; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">⚡ Traffic Quality, Rate Limits &amp; Temporary Blocks</div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="temp-block-duration">Temp Block (Min)</label>
+                <input type="number" id="temp-block-duration" class="form-control form-control-sm" min="1" max="1440" value="30">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="rate-limit-max">Rate Limit (Reqs)</label>
+                <input type="number" id="rate-limit-max" class="form-control form-control-sm" min="1" value="30">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="rate-limit-window">Rate Window (Sec)</label>
+                <input type="number" id="rate-limit-window" class="form-control form-control-sm" min="1" value="60">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="spike-threshold-clicks">Spike Alert Clicks</label>
+                <input type="number" id="spike-threshold-clicks" class="form-control form-control-sm" min="1" value="200">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="spike-window-minutes">Spike Window (Min)</label>
+              <input type="number" id="spike-window-minutes" class="form-control form-control-sm" min="1" value="5">
+            </div>
+          </div>
+
           <!-- Advanced Bot Protection Options -->
           <div style="margin-bottom:0.75rem;">
             <div style="font-weight:700; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Advanced Bot Protections (Recommended)</div>
@@ -546,7 +606,7 @@
       <!-- Blocked IP Addresses Table -->
       <div class="card" style="padding:1.35rem;">
         <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-          <div><span class="accent">🛡️</span> Blocked IP Addresses</div>
+          <div><span class="accent">🛡️</span> Permanently Blocked IPs</div>
           <span id="blocked-ip-global-badge" style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
             🌐 Active for All Editors
           </span>
@@ -554,7 +614,7 @@
 
         <!-- Global Status Notice -->
         <div style="background:rgba(16,185,129,0.06); border:1.5px solid rgba(16,185,129,0.25); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.75rem; font-weight:700; color:#059669; display:flex; align-items:center; gap:0.5rem;">
-          ✅ <span>All IPs listed below are automatically blocked across <strong>all links created by all editors</strong> globally.</span>
+          ✅ <span>All IPs listed below are manually blocked across <strong>all links created by all editors</strong> globally.</span>
         </div>
 
         <div class="table-wrap">
@@ -569,6 +629,66 @@
             </thead>
             <tbody id="firewall-tbody">
               <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Active Temporary Soft-Blocks (Rules 21, 22, 37, 39) -->
+      <div class="card" style="padding:1.35rem;">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div><span class="accent">⏱️</span> Live Temporary Soft-Blocks</div>
+          <span id="temp-blocks-count-badge" style="font-size:0.7rem; font-weight:800; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
+            0 Active
+          </span>
+        </div>
+        <div style="background:rgba(245,158,11,0.06); border:1.5px solid rgba(245,158,11,0.25); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.75rem; font-weight:700; color:#b45309; display:flex; align-items:center; gap:0.5rem;">
+          ℹ️ <span>Auto Shield places suspicious IPs here temporarily. They auto-recover after expiration, or you can release them manually.</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>IP Address</th>
+                <th>Reason</th>
+                <th>Risk Score</th>
+                <th>Expires In</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="temp-blocks-tbody">
+              <tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No active temporary blocks.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Trusted Sources Allowlist (Rule 48) -->
+      <div class="card" style="padding:1.35rem;">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div><span class="accent">✅</span> Trusted Sources Allowlist</div>
+          <span id="allowlist-count-badge" style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
+            0 Whitelisted
+          </span>
+        </div>
+        <div style="background:rgba(16,185,129,0.06); border:1.5px solid rgba(16,185,129,0.25); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.75rem; font-weight:700; color:#059669;">
+          🛡️ <span>Allowlisted IPs bypass all traffic quality checks, rate limits, and bot shields.</span>
+        </div>
+        <form id="allowlist-add-form" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+          <input type="text" id="allowlist-ip-input" class="form-control" placeholder="e.g. 192.168.1.1 or 203.0.113.50" style="flex:1; min-width:200px;" required>
+          <button type="submit" class="btn btn-primary" style="white-space:nowrap;">➕ Add to Allowlist</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Allowlisted IP</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allowlist-tbody">
+              <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No IPs currently allowlisted.</td></tr>
             </tbody>
           </table>
         </div>

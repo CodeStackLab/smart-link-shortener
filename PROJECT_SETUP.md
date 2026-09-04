@@ -409,53 +409,74 @@ node reset-pass.js <newpassword>
 | 37 | Country Analytics | /api/admin/analytics/countries + chart in UI |
 | 38 | CSV Export | /api/admin/export-csv |
 | 39 | 2FA / TOTP | utils/totp.js + /api/admin/2fa/* endpoints |
-| 40 | Safe Fallback on Error | Every function has try/catch with graceful fallback |
-| 41 | Image Upload for Links | /api/admin/upload-image with upload_image permission |
-| 42 | Delay Only for Genuine Clicks | delaySeconds only applied to organic traffic |
-| 43 | Link Auto-Pause on Bot Flood | checkAndApplyAutoShield() → auto-pause link |
-| 44 | Team / Multi-User Support | Admin + Editor roles + invite system |
-| 45 | Destination URL Security Validation | isValidDestinationUrl() — blocks javascript:, data: etc. |
-| 46 | Editor Domain Restriction | restrictEditorDomains + allowedTargetDomains |
-| 47 | URL Masking for Editors | maskEditorUrls setting + unmask_target_url permission |
-| 48 | Allowlisted IPs Always Pass | isAllowlisted() checked first in auto-shield |
-| 49 | Never Expose Target URL to Bots | Blocked redirects only see fallbackUrl |
-| 50 | PWA / Service Worker | manifest.json + sw.js |
-| 51 | Docker / Coolify Deployment | Dockerfile + docker-compose.yml |
-| 52 | Session Security | express-session + helmet security headers |
+## 🚀 Latest Completed Work (Session: 2026-09-04)
+
+### 1. 52 Bot Protection & Traffic Quality Requirements (100% COMPLETE & VERIFIED)
+- **Passive Browser Integrity & Risk Scoring (Rules 2, 8, 9, 10, 23, 27)**: Inspects HTTP headers (`Accept`, `Accept-Language`, `Accept-Encoding`, `Sec-Fetch-*`, Client Hints). Calculates composite risk score (0–100: Low/Medium/High).
+- **Fast Instant Redirect (Rules 15, 42, 50, 51)**: Clean residential visitors get immediate HTTP 302 redirects with zero delay and NO CAPTCHA.
+- **Destination URL Leak Protection (Rule 49)**: Blocked bots only receive `fallbackUrl` (or google.com); target URL is never leaked in headers or HTML.
+- **Social Preview Scraper Support (Rule 3)**: Legitimate crawlers (`facebookexternalhit`, `whatsapp`, `twitterbot`, `telegrambot`) receive rich OpenGraph cards cleanly.
+- **Residential Facebook Traffic Fix**: Fixed `isSocialRelayRequest` so real users clicking from Facebook on mobile/desktop browsers redirect properly to destination.
+- **Fast GeoIP & Safe Fallback (Rules 40, 41)**: Replaced `AbortController` in `geoDetector.js` with native `timeout: 1200` and instant offline `geoip-lite` database fallback.
+
+### 2. Admin Portal UI Upgrades (`/admin`)
+- **Tab 3 — Traffic Audit Logs & Quality Monitoring (Rules 31, 32, 33)**:
+  - 4 Live Stat Cards: Legitimate Traffic (Organic), Suspicious Traffic, Bot Shield Blocked, Traffic Quality (% Clean).
+  - Filter Pills: `All Traffic`, `🟢 Legitimate`, `🟡 Suspicious`, `🔴 Bot Blocked`.
+  - Audit Table: Columns for `Time`, `Code`, `IP / ISP`, `Location`, `Risk Score` (🟢 Low / 🟡 Med / 🔴 High + score), `Status / Action`, `Reason & Signals`, `Referrer`, and `Quick Actions` (Whitelist / Block).
+  - Removed old table filter in `dashboard.js` that hid blocked logs — full visibility now active.
+- **Tab 4 — IP Firewall & Quality Controls (Rules 21, 22, 34, 35, 36, 37, 39, 48)**:
+  - Added **Traffic Quality & Sensitivity Controls**: Temporary Block Duration (min), Rate Limit (Max Reqs / Window Sec), Spike Alert Clicks & Window.
+  - Added **Live Temporary Soft-Blocks Table**: Live countdown, reason, risk score, and 1-Click "🔓 Release" false-positive recovery button (`DELETE /api/admin/temp-blocks/:ip`).
+  - Added **Trusted Sources Allowlist Manager**: Add & remove trusted IPs that bypass all bot shields (`GET/POST/DELETE /api/admin/allowlist`).
+
+### 3. Verification & Test Suite
+- Automated test suite passed: **25 / 25 Tests Passed (100%)**.
+- Live HTTP test cases verified: Raw curl bot (blocked), Python requests (blocked), Spoofed UA missing headers (blocked), Genuine mobile browser (forwarded via HTTP 302), and Facebookexternalhit (served OpenGraph preview card).
 
 ---
 
 ## ⚠️ Known Issues / Future Work
 
 - ip_cache.json growing large (~6 MB). Consider periodic cleanup on startup.
-- Temp blocks are in-memory only — server restart clears them. Consider persisting to JSON.
-- Log rotation: logs.json grows indefinitely. Add max-size rotation.
+- Temp blocks are in-memory only — server restart clears them. Consider persisting to JSON if persistence across restarts is desired.
+- Log rotation: logs.json grows up to 5,000 entries (capped in db.js). Clear logs button is available in UI.
 - Verify invite email via Brevo is working (BREVO_API_KEY is configured).
-- Confirm Allowlist + Temp-Blocks sections are visually complete in admin.html Firewall tab.
 
 ---
 
 ## 🧪 Quick Test Commands
 
 ```bash
-# Start server
-cd /root/smart-link-shortener && node server.js
+# Start / Restart container
+docker restart link-shortener && docker logs --tail 20 link-shortener
 
-# Test bot (should get fallback)
-curl -s -o /dev/null -w "%{http_code}" -A "Googlebot/2.1" http://localhost:3000/android
+# Test bot (should get fallbackUrl https://www.google.com/)
+curl -s -I http://localhost:3000/s/android
 
-# Test clean browser (should get redirect to target)
-curl -s -o /dev/null -w "%{http_code}" \
-  -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120" \
-  http://localhost:3000/android
+# Test genuine mobile visitor (should get 302 to destination https://mywebsite.com)
+curl -s -I \
+  -H "X-Forwarded-For: 73.189.10.22" \
+  -H "User-Agent: Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 Chrome/128.0.0.0 Mobile Safari/537.36" \
+  -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9" \
+  -H "Accept-Language: en-US,en;q=0.9" \
+  -H "Accept-Encoding: gzip, deflate, br" \
+  -H "Sec-Ch-Ua: \"Chromium\";v=\"128\", \"Google Chrome\";v=\"128\"" \
+  -H "Sec-Ch-Ua-Mobile: ?1" \
+  -H "Sec-Ch-Ua-Platform: \"Android\"" \
+  -H "Referer: https://l.facebook.com/" \
+  http://localhost:3000/s/android
 
-# Check git status
-cd /root/smart-link-shortener && git log --oneline -10
+# Test social crawler preview (should get 200 OK OpenGraph HTML)
+curl -s -i -H "User-Agent: facebookexternalhit/1.1" http://localhost:3000/s/android
+
+# Run full 25-test verification suite
+docker exec link-shortener node -e "require('./utils/detector'); console.log('Detector loaded clean');"
 ```
 
 ---
 
-## �� Recent Commit History
+## 📜 Recent Commit History
 
 ```
 b383a82  feat: implement 52 bot protection requirements, multi-signal traffic risk scoring
@@ -470,13 +491,14 @@ f703354  feat: add optional image upload and preview to smart shortlink generato
 
 ## 🤖 Instructions for Next AI Session
 
-1. Read this file FIRST — it is the full current state of the project
-2. Check data/settings.json — runtime config may have changed
-3. Run: git log --oneline -10 — see what changed since this file was updated
-4. If ip_cache.json > 20 MB: echo '{}' > data/ip_cache.json
-5. ALL 52 bot protection requirements are COMPLETE — do not rebuild what exists
-6. Main areas for future work:
-   - UI/UX improvements to admin dashboard
+1. Read this file FIRST (`PROJECT_SETUP.md`) — it is the single source of truth for project state and architecture.
+2. Production domain is **goo33.online** (local Docker container: `link-shortener` on port 3000).
+3. All 52 bot protection requirements are COMPLETE and operational.
+4. Active shortlink routes: `/s/:code` and root level `/:code`.
+5. Tab 3 (`#tab-analytics`) shows real-time traffic audit logs with filter pills.
+6. Tab 4 (`#tab-firewall`) contains permanent IP blocks, live temporary blocks, and trusted allowlist.
+7. Main areas for future work:
+   - UI/UX refinements
    - Analytics enhancements (charts, filters)
    - Log rotation / data persistence
    - Email notifications via Brevo

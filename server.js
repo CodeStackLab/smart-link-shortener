@@ -37,6 +37,19 @@ function ensureAbsoluteUrl(url) {
   return 'https://' + trimmed;
 }
 
+// Destination URL Security Validation (Rule 45)
+function isValidDestinationUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (/^(javascript|data|vbscript|file):/i.test(trimmed)) return false;
+  try {
+    const parsed = new URL(ensureAbsoluteUrl(trimmed));
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function isAdminRole(role) {
   return typeof role === 'string' && role.trim().toLowerCase() === 'admin';
 }
@@ -231,7 +244,7 @@ function isSocialRelayRequest(geoInfo, referer = '', userAgent = '') {
   
   // Any hit from a cloud/datacenter IP that is NOT a genuine mobile in-app browser is a social relay or crawler
   if (isCloudDatacenter && !isFacebookApp) return true;
-  if (fromFacebook && (isCloudDatacenter || !isFacebookApp)) return true;
+  if (fromFacebook && isCloudDatacenter) return true;
   return false;
 }
 
@@ -813,6 +826,14 @@ app.get('/api/admin/temp-blocks', requireAuth, requirePermission('firewall'), (r
   const { getActiveTempBlocks } = require('./utils/detector');
   const blocks = getActiveTempBlocks();
   res.json({ count: blocks.length, blocks });
+});
+
+// Remove / release a temporary block manually (Rule 39: False-positive recovery)
+app.delete('/api/admin/temp-blocks/:ip', requireAuth, requirePermission('firewall'), (req, res) => {
+  const { removeTemporaryBlock } = require('./utils/detector');
+  const targetIp = decodeURIComponent(req.params.ip).replace(/^::ffff:/, '').trim();
+  const success = removeTemporaryBlock(targetIp);
+  res.json({ success: true, removed: success });
 });
 
 // GET settings: Admin (full) OR users with 'firewall' permission (to show shield status in firewall tab).
@@ -1967,37 +1988,9 @@ async function handleShortlinkRedirect(req, res) {
     `);
   }
 
-  // Instant redirect with client pingback tracker and background headless check (Rules 9, 23, 49)
-  return res.send(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Redirecting...</title>
-        <script>
-          // Background Browser Integrity Check (Rules 9, 23, 49)
-          const isHeadless = Boolean(
-            navigator.webdriver || 
-            window.__nightmare || 
-            window.callPhantom || 
-            window._phantom ||
-            (window.outerWidth === 0 && window.outerHeight === 0)
-          );
-          const finalDest = isHeadless ? "${link.fallbackUrl || 'https://www.google.com/'}" : "${destinationUrl}";
-
-          const startTime = Date.now();
-          window.addEventListener('beforeunload', () => {
-            const duration = Math.round((Date.now() - startTime) / 1000);
-            navigator.sendBeacon('/api/pingback', JSON.stringify({ logId: "${logId}", durationSeconds: duration }));
-          });
-          window.location.href = finalDest;
-        </script>
-      </head>
-      <body style="background:#0f172a; color:#f8fafc; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;">
-        <p>Redirecting to destination... <a href="${destinationUrl}" style="color:#93c5fd;">Click here if not redirected.</a></p>
-      </body>
-    </html>
-  `);
+  // Fast Instant Redirect with Minimum Processing Delay (Rules 15, 42, 49, 50, 51)
+  // Blocked traffic receives fallbackUrl; genuine organic receives destinationUrl immediately via HTTP 302.
+  return res.redirect(302, destinationUrl);
 }
 
 app.get('/s/:code', handleShortlinkRedirect);

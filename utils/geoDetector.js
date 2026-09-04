@@ -107,33 +107,31 @@ async function lookupIpAsync(ip = '', headers = {}) {
     return info;
   }
 
-  // 3. Try Real-Time Online API (ip-api.com) with 1.5s timeout
+  // 3. Try Real-Time Online API (ip-api.com) with 1.2s timeout (Rules 40, 41, 42)
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1500);
-    const res = await fetch(`http://ip-api.com/json/${cleanIp}?fields=status,country,countryCode,city,isp,proxy,hosting`, { signal: controller.signal });
-    clearTimeout(timer);
-    const data = await res.json();
-
-    if (data && data.status === 'success' && data.countryCode) {
-      const code = data.countryCode.toUpperCase();
-      const isVpnOrHosting = Boolean(data.proxy || data.hosting);
-      const info = {
-        ip: cleanIp,
-        countryCode: code,
-        countryName: data.country || getCountryName(code),
-        flag: getCountryFlag(code),
-        city: data.city || 'Standard City',
-        isp: data.isp || 'Standard ISP',
-        isVpn: isVpnOrHosting,
-        isProxy: isVpnOrHosting,
-        trafficType: isVpnOrHosting ? 'VPN / Proxy / Datacenter' : 'Residential ISP'
-      };
-      ipGeoCache.set(cleanIp, info);
-      return info;
+    const res = await fetch(`http://ip-api.com/json/${cleanIp}?fields=status,country,countryCode,city,isp,proxy,hosting`, { timeout: 1200 });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.status === 'success' && data.countryCode) {
+        const code = data.countryCode.toUpperCase();
+        const isVpnOrHosting = Boolean(data.proxy || data.hosting);
+        const info = {
+          ip: cleanIp,
+          countryCode: code,
+          countryName: data.country || getCountryName(code),
+          flag: getCountryFlag(code),
+          city: data.city || 'Standard City',
+          isp: data.isp || 'Standard ISP',
+          isVpn: isVpnOrHosting,
+          isProxy: isVpnOrHosting,
+          trafficType: isVpnOrHosting ? 'VPN / Proxy / Datacenter' : 'Residential ISP'
+        };
+        ipGeoCache.set(cleanIp, info);
+        return info;
+      }
     }
   } catch (err) {
-    // API timeout or network error, proceed to geoip-lite
+    // API timeout or network error, proceed to instant offline geoip-lite (Rules 40, 41)
   }
 
   // 4. Offline GeoIP lookup using geoip-lite database

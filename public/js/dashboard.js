@@ -752,7 +752,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetTab === 'tab-domains') loadDomains();
       if (targetTab === 'tab-geo') loadCountryAnalytics();
       if (targetTab === 'tab-analytics') loadAnalytics();
-      if (targetTab === 'tab-firewall') loadBlockedIps();
+      if (targetTab === 'tab-firewall') {
+        loadBlockedIps();
+        loadTempBlocks();
+        loadAllowlist();
+      }
       if (targetTab === 'tab-settings') {
         if (isSuperAdminUser()) loadUsers();
         load2FAStatus();
@@ -1741,96 +1745,178 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let currentTrafficFilter = 'all';
+  let cachedTrafficLogs = [];
+
+  // Traffic Quality Filter Pill Listeners
+  document.querySelectorAll('.traffic-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.traffic-filter-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.boxShadow = 'none';
+      });
+      btn.classList.add('active');
+      btn.style.boxShadow = '0 0 0 2px var(--red-primary)';
+      currentTrafficFilter = btn.getAttribute('data-filter') || 'all';
+      renderTrafficLogsTable();
+    });
+  });
+
+  function renderTrafficLogsTable() {
+    if (!logsTbody) return;
+    const logs = cachedTrafficLogs || [];
+
+    const displayLogs = logs.filter(log => {
+      if (currentTrafficFilter === 'all') return true;
+      const st = (log.status || '').toUpperCase();
+      if (currentTrafficFilter === 'organic') {
+        return st === 'ORGANIC_CLICK';
+      }
+      if (currentTrafficFilter === 'suspicious') {
+        return st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT';
+      }
+      if (currentTrafficFilter === 'bot') {
+        return st.includes('BOT') || st.includes('FIREWALL') || st.includes('RATE_LIMITED') || st.includes('BLOCKED');
+      }
+      return true;
+    });
+
+    if (!Array.isArray(displayLogs) || displayLogs.length === 0) {
+      logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No logs found for this filter.</td></tr>`;
+      return;
+    }
+
+    logsTbody.innerHTML = displayLogs.slice(0, 300).map(log => {
+      const timeStr = new Date(log.timestamp).toLocaleTimeString();
+      const flag = log.flag || '🌐';
+      const location = `${flag} ${log.countryName || 'Unknown'} (${log.city || 'N/A'})`;
+
+      // Risk score badge
+      const score = typeof log.riskScore === 'number' ? log.riskScore : (parseInt(log.riskScore, 10) || 0);
+      let riskBadge = `<span class="badge" style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.3); font-weight:800;">🟢 Low (${score})</span>`;
+      if (score >= 60 || (log.riskLevel === 'high')) {
+        riskBadge = `<span class="badge" style="background:rgba(239,68,68,0.12); color:#dc2626; border:1px solid rgba(239,68,68,0.3); font-weight:800;">🔴 High (${score})</span>`;
+      } else if (score >= 30 || (log.riskLevel === 'medium')) {
+        riskBadge = `<span class="badge" style="background:rgba(245,158,11,0.12); color:#b45309; border:1px solid rgba(245,158,11,0.3); font-weight:800;">🟡 Med (${score})</span>`;
+      }
+
+      // Status badge
+      let statusBadge = `<span class="badge badge-info">${log.status || 'VISIT'}</span>`;
+      const st = (log.status || '').toUpperCase();
+      if (st === 'ORGANIC_CLICK') {
+        statusBadge = `<span class="badge badge-success">✅ Organic</span>`;
+      } else if (st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT') {
+        statusBadge = `<span class="badge badge-warning">↩️ Fallback</span>`;
+      } else if (st.includes('BOT') || st.includes('FIREWALL') || st.includes('BLOCKED')) {
+        statusBadge = `<span class="badge badge-danger">🛡️ Blocked</span>`;
+      } else if (st === 'RATE_LIMITED') {
+        statusBadge = `<span class="badge badge-warning">⏱️ Rate Ltd</span>`;
+      }
+
+      const signalsText = log.signals ? `<div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.15rem; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${log.signals}">🏷️ ${log.signals}</div>` : '';
+      const actionText = log.actionTaken ? `<div style="font-size:0.74rem; font-weight:600; color:var(--text-muted);">${log.actionTaken}</div>` : '';
+
+      return `
+        <tr>
+          <td data-label="Time" style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</td>
+          <td data-label="Code"><strong style="color: var(--accent-primary); font-size: 0.875rem;">/${log.code || '-'}</strong></td>
+          <td data-label="IP / ISP">
+            <div class="ip-isp-cell">
+              <div class="ip-row">
+                <span class="mobile-sublabel">IP</span>
+                <code>${log.ip || '-'}</code>
+              </div>
+              <div class="isp-row">
+                <span class="mobile-sublabel">ISP</span>
+                <small class="isp-text">${log.isp || 'Residential'}</small>
+              </div>
+            </div>
+          </td>
+          <td data-label="Location" style="font-size: 0.775rem;">${location}</td>
+          <td data-label="Risk Score">${riskBadge}</td>
+          <td data-label="Status / Action">${statusBadge}</td>
+          <td data-label="Reason & Signals" style="max-width:240px;">
+            ${actionText}
+            ${signalsText}
+          </td>
+          <td data-label="Referrer">${formatReferrerBadge(log.referer)}</td>
+          <td data-label="Actions">
+            <div style="display:flex; gap:0.25rem;">
+              <button class="btn btn-secondary btn-sm" onclick="quickAllowlistIp('${log.ip}')" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;" title="Add to Allowlist">
+                ➕ Whitelist
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="quickBlockIp('${log.ip}')" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;" title="Permanently Block">
+                🚫 Block
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   async function loadAnalytics() {
     try {
       const res = await fetch('/api/admin/logs');
       const logs = await res.json();
 
       if (!Array.isArray(logs) || logs.length === 0) {
+        cachedTrafficLogs = [];
         if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No traffic logs recorded yet.</td></tr>`;
         const totalEl = document.getElementById('stat-total-clicks');
         if (totalEl) totalEl.textContent = '0';
         const orgEl = document.getElementById('stat-organic-clicks');
         if (orgEl) orgEl.textContent = '0';
-        const fbEl = document.getElementById('stat-fallback-clicks');
-        if (fbEl) fbEl.textContent = '0';
+        const suspEl = document.getElementById('stat-suspicious-clicks');
+        if (suspEl) suspEl.textContent = '0';
+        const botEl = document.getElementById('stat-bot-clicks');
+        if (botEl) botEl.textContent = '0';
+        const qualEl = document.getElementById('stat-traffic-quality');
+        if (qualEl) qualEl.textContent = '100%';
         return;
       }
+
+      cachedTrafficLogs = logs;
 
       let organicCount = 0;
-      let fallbackCount = 0;
+      let suspiciousCount = 0;
+      let botCount = 0;
 
       logs.forEach(log => {
-        if (log.status === 'ORGANIC_CLICK') organicCount++;
-        else if (log.status === 'FALLBACK_REDIRECT') fallbackCount++;
+        const st = (log.status || '').toUpperCase();
+        if (st === 'ORGANIC_CLICK') {
+          organicCount++;
+        } else if (st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT') {
+          suspiciousCount++;
+        } else if (st.includes('BOT') || st.includes('FIREWALL') || st.includes('RATE_LIMITED') || st.includes('BLOCKED')) {
+          botCount++;
+        }
       });
+
+      const totalClicks = logs.length;
+      const qualityPct = totalClicks > 0 ? Math.round((organicCount / totalClicks) * 100) : 100;
 
       const totalEl = document.getElementById('stat-total-clicks');
-      if (totalEl) totalEl.textContent = logs.length;
+      if (totalEl) totalEl.textContent = totalClicks;
       const orgEl = document.getElementById('stat-organic-clicks');
       if (orgEl) orgEl.textContent = organicCount;
-      const fbEl = document.getElementById('stat-fallback-clicks');
-      if (fbEl) fbEl.textContent = fallbackCount;
+      const suspEl = document.getElementById('stat-suspicious-clicks');
+      if (suspEl) suspEl.textContent = suspiciousCount;
+      const botEl = document.getElementById('stat-bot-clicks');
+      if (botEl) botEl.textContent = botCount;
+      const qualEl = document.getElementById('stat-traffic-quality');
+      if (qualEl) qualEl.textContent = qualityPct + '%';
 
-      // Filter out blocked firewall entries from UI table (works in background silently)
-      const displayLogs = logs.filter(log => {
-        if (!log.status) return true;
-        const st = log.status.toUpperCase();
-        return !st.includes('BLOCKED') && !st.includes('FIREWALL') && !st.includes('RATE_LIMITED');
-      });
+      const cntAll = document.getElementById('filter-count-all');
+      if (cntAll) cntAll.textContent = totalClicks;
+      const cntOrg = document.getElementById('filter-count-organic');
+      if (cntOrg) cntOrg.textContent = organicCount;
+      const cntSusp = document.getElementById('filter-count-suspicious');
+      if (cntSusp) cntSusp.textContent = suspiciousCount;
+      const cntBot = document.getElementById('filter-count-bot');
+      if (cntBot) cntBot.textContent = botCount;
 
-      if (!Array.isArray(displayLogs) || displayLogs.length === 0) {
-        if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">No organic traffic logs recorded yet. (Blocked firewall entries run silently in background).</td></tr>`;
-        return;
-      }
-
-      if (logsTbody) {
-        logsTbody.innerHTML = displayLogs.slice(0, 250).map(log => {
-          let badgeClass = 'badge-info';
-          if (log.status === 'ORGANIC_CLICK') badgeClass = 'badge-success';
-          if (log.status === 'FALLBACK_REDIRECT') badgeClass = 'badge-warning';
-
-          const timeStr = new Date(log.timestamp).toLocaleTimeString();
-          const flag = log.flag || '🌐';
-          const location = `${flag} ${log.countryName || 'Unknown'} (${log.city || 'N/A'})`;
-          const isVpn = log.isVpn || log.isVps || false;
-          
-          const connectionBadge = isVpn 
-            ? `<span class="badge badge-warning">🔒 VPN / Proxy</span>`
-            : `<span class="badge badge-info">🌐 Residential</span>`;
-
-          const durationStr = log.durationSeconds ? `${log.durationSeconds}s` : 'Redirected';
-
-          return `
-            <tr>
-              <td data-label="Time" style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</td>
-              <td data-label="Code"><strong style="color: var(--accent-primary); font-size: 0.875rem;">/${log.code || '-'}</strong></td>
-              <td data-label="IP / ISP">
-                <div class="ip-isp-cell">
-                  <div class="ip-row">
-                    <span class="mobile-sublabel">IP</span>
-                    <code>${log.ip || '-'}</code>
-                  </div>
-                  <div class="isp-row">
-                    <span class="mobile-sublabel">ISP</span>
-                    <small class="isp-text">${log.isp || 'ISP'}</small>
-                  </div>
-                </div>
-              </td>
-              <td data-label="Location" style="font-size: 0.775rem;">${location}</td>
-              <td data-label="Connection">${connectionBadge}</td>
-              <td data-label="Referrer">${formatReferrerBadge(log.referer)}</td>
-              <td data-label="Status"><span class="badge ${badgeClass}">${log.status}</span></td>
-              <td data-label="Dwell"><span style="font-weight: 600; color: var(--accent-primary);">${durationStr}</span></td>
-              <td data-label="Action">
-                <button class="btn btn-danger btn-sm" onclick="quickBlockIp('${log.ip}')" style="padding: 0.2rem 0.5rem; font-size: 0.725rem;">
-                  🚫 Block IP
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
+      renderTrafficLogsTable();
     } catch (err) {
       if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="color: var(--danger);">Failed to load analytics.</td></tr>`;
     }
@@ -1841,6 +1927,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeTab = document.querySelector('.tab-btn.active');
     if (activeTab && activeTab.getAttribute('data-tab') === 'tab-analytics') {
       loadAnalytics();
+    }
+    if (activeTab && activeTab.getAttribute('data-tab') === 'tab-firewall') {
+      loadTempBlocks();
     }
   }, 6000);
 
@@ -1890,6 +1979,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadBlockedIps() {
     if (!firewallTbody) return;
     loadShieldSettings();
+    loadTempBlocks();
+    loadAllowlist();
     try {
       const res = await fetch('/api/admin/blocked-ips');
       const blocked = await res.json();
@@ -1973,6 +2064,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (blockCountriesCb) blockCountriesCb.checked = !!settings.blockSuspiciousCountries;
       if (blockScrapersCb) blockScrapersCb.checked = !!settings.blockKnownScrapers;
       if (honeypotCb) honeypotCb.checked = !!settings.honeypotProtectionEnabled;
+
+      const tempBlockDurationInput = document.getElementById('temp-block-duration');
+      const rateLimitMaxInput = document.getElementById('rate-limit-max');
+      const rateLimitWindowInput = document.getElementById('rate-limit-window');
+      const spikeThresholdInput = document.getElementById('spike-threshold-clicks');
+      const spikeWindowInput = document.getElementById('spike-window-minutes');
+
+      if (tempBlockDurationInput) tempBlockDurationInput.value = settings.tempBlockDurationMinutes || 30;
+      if (rateLimitMaxInput) rateLimitMaxInput.value = settings.rateLimitMaxRequests || 30;
+      if (rateLimitWindowInput) rateLimitWindowInput.value = settings.rateLimitWindowSeconds || 60;
+      if (spikeThresholdInput) spikeThresholdInput.value = settings.spikeThresholdClicks || 200;
+      if (spikeWindowInput) spikeWindowInput.value = settings.spikeWindowMinutes || 5;
 
       // Populate Editor URL Mask Visibility radios
       const radioIndividual = document.getElementById('radio-individual-urls');
@@ -2122,7 +2225,12 @@ document.addEventListener('DOMContentLoaded', () => {
         vpnLimitMinutes: parseInt(vpnLimitMinutesInput.value || 90, 10),
         blockSuspiciousCountries: blockCountriesCb.checked,
         blockKnownScrapers: blockScrapersCb.checked,
-        honeypotProtectionEnabled: honeypotCb.checked
+        honeypotProtectionEnabled: honeypotCb.checked,
+        tempBlockDurationMinutes: parseInt(document.getElementById('temp-block-duration')?.value || 30, 10),
+        rateLimitMaxRequests: parseInt(document.getElementById('rate-limit-max')?.value || 30, 10),
+        rateLimitWindowSeconds: parseInt(document.getElementById('rate-limit-window')?.value || 60, 10),
+        spikeThresholdClicks: parseInt(document.getElementById('spike-threshold-clicks')?.value || 200, 10),
+        spikeWindowMinutes: parseInt(document.getElementById('spike-window-minutes')?.value || 5, 10)
       };
 
       try {
@@ -2168,6 +2276,177 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         showAlert('Error blocking IP', true);
+      }
+    });
+  }
+
+  // --------------------------------------------------------
+  // LIVE TEMPORARY SOFT-BLOCKS LOGIC (Rules 21, 22, 37, 39)
+  // --------------------------------------------------------
+  async function loadTempBlocks() {
+    const tbody = document.getElementById('temp-blocks-tbody');
+    const badge = document.getElementById('temp-blocks-count-badge');
+    if (!tbody) return;
+    try {
+      const res = await fetch('/api/admin/temp-blocks');
+      if (!res.ok) return;
+      const data = await res.json();
+      const blocks = Array.isArray(data.blocks) ? data.blocks : [];
+
+      if (badge) badge.textContent = `${blocks.length} Active`;
+
+      if (blocks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No active temporary blocks. All clean!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = blocks.map(item => {
+        const remainingMin = Math.ceil((item.remainingSec || 0) / 60);
+        return `
+          <tr>
+            <td data-label="IP Address"><code>${item.ip}</code></td>
+            <td data-label="Reason" style="font-size:0.8rem; color:var(--text-secondary);">${item.reason || 'Auto-Shield Rule'}</td>
+            <td data-label="Risk Score"><span class="badge badge-danger">🔴 High</span></td>
+            <td data-label="Expires In" style="font-size:0.8rem; font-weight:700; color:#b45309;">⏳ ~${remainingMin} min</td>
+            <td data-label="Actions">
+              <button class="btn btn-secondary btn-sm" onclick="releaseTempBlock('${item.ip}')" style="width:100% !important;">
+                🔓 Release
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to load temp blocks:', err);
+    }
+  }
+
+  window.releaseTempBlock = async function(ip) {
+    if (!confirm(`Are you sure you want to release IP ${ip} from the temporary block?`)) return;
+    try {
+      const res = await fetch(`/api/admin/temp-blocks/${encodeURIComponent(ip)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert(`✅ IP ${ip} temporary block released.`);
+        loadTempBlocks();
+      } else {
+        showAlert(data.error || 'Failed to release temporary block', true);
+      }
+    } catch (err) {
+      showAlert('Error releasing temporary block', true);
+    }
+  };
+
+  // --------------------------------------------------------
+  // TRUSTED SOURCES ALLOWLIST LOGIC (Rule 48)
+  // --------------------------------------------------------
+  async function loadAllowlist() {
+    const tbody = document.getElementById('allowlist-tbody');
+    const badge = document.getElementById('allowlist-count-badge');
+    if (!tbody) return;
+    try {
+      const res = await fetch('/api/admin/allowlist');
+      if (!res.ok) return;
+      const data = await res.json();
+      const list = Array.isArray(data.allowlistedIps) ? data.allowlistedIps : [];
+
+      if (badge) badge.textContent = `${list.length} Whitelisted`;
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No IPs currently allowlisted.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(entry => {
+        const ip = typeof entry === 'string' ? entry : entry.ip;
+        return `
+          <tr>
+            <td data-label="Allowlisted IP"><code>${ip}</code></td>
+            <td data-label="Status"><span class="badge badge-success">🛡️ Active Whitelist</span></td>
+            <td data-label="Actions">
+              <button class="btn btn-danger btn-sm" onclick="removeAllowlistIp('${ip}')" style="width:100% !important;">
+                🗑️ Remove
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to load allowlist:', err);
+    }
+  }
+
+  window.removeAllowlistIp = async function(ip) {
+    if (!isFullAdminUser()) {
+      showAlert('⚠️ Only Admin can manage the allowlist.', true);
+      return;
+    }
+    if (!confirm(`Remove IP ${ip} from allowlist?`)) return;
+    try {
+      const res = await fetch(`/api/admin/allowlist/${encodeURIComponent(ip)}`, { method: 'DELETE' });
+      if (res.ok) {
+        showAlert(`✅ IP ${ip} removed from allowlist.`);
+        loadAllowlist();
+      } else {
+        const data = await res.json();
+        showAlert(data.error || 'Failed to remove from allowlist', true);
+      }
+    } catch (err) {
+      showAlert('Error removing from allowlist', true);
+    }
+  };
+
+  window.quickAllowlistIp = async function(ip) {
+    if (!isFullAdminUser()) {
+      showAlert('⚠️ Only Admin can manage the allowlist.', true);
+      return;
+    }
+    if (!confirm(`Add IP ${ip} to trusted allowlist? It will bypass all bot shields.`)) return;
+    try {
+      const res = await fetch('/api/admin/allowlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert(`✅ IP ${ip} added to allowlist!`);
+        loadAllowlist();
+      } else {
+        showAlert(data.error || 'Failed to allowlist IP', true);
+      }
+    } catch (err) {
+      showAlert('Error adding to allowlist', true);
+    }
+  };
+
+  const allowlistForm = document.getElementById('allowlist-add-form');
+  if (allowlistForm) {
+    allowlistForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isFullAdminUser()) {
+        showAlert('⚠️ Only Admin can manage the allowlist.', true);
+        return;
+      }
+      const ipInput = document.getElementById('allowlist-ip-input');
+      const ip = (ipInput ? ipInput.value : '').trim();
+      if (!ip) return;
+      try {
+        const res = await fetch('/api/admin/allowlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert(`✅ IP ${ip} successfully allowlisted.`);
+          if (ipInput) ipInput.value = '';
+          loadAllowlist();
+        } else {
+          showAlert(data.error || 'Failed to add IP to allowlist', true);
+        }
+      } catch (err) {
+        showAlert('Error adding to allowlist', true);
       }
     });
   }

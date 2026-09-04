@@ -211,6 +211,7 @@ function isHeadlessBrowser(userAgent = '', headers = {}) {
  */
 function evaluateBrowserIntegrity(req = null, userAgent = '') {
   if (!req || !req.headers) return { score: 0, signals: [] };
+  if (isSocialScraper(userAgent)) return { score: 0, signals: [] };
 
   const headers = req.headers;
   const ua = (userAgent || '').toLowerCase().trim();
@@ -458,6 +459,18 @@ function getTemporaryBlockInfo(ip) {
     return null;
   }
   return entry;
+}
+
+/**
+ * Manually removes an IP from temporary block map (Rule 39: False-positive recovery).
+ */
+function removeTemporaryBlock(ip) {
+  const cleanIp = (ip || '').replace(/^::ffff:/, '').trim();
+  const deleted = temporaryBlockMap.delete(cleanIp);
+  if (deleted) {
+    console.log(`[SOFT-BLOCK] IP ${cleanIp} manually unblocked from temporary block`);
+  }
+  return deleted;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -724,6 +737,11 @@ function checkAndApplyAutoShield(ip, isVpn, userAgent, code, geoInfo = {}, req =
     return { blocked: false, softBlock: false, reason: 'Allowlisted', score: 0, level: 'low', riskScore: 0, riskLevel: 'low', signals: ['allowlisted'], action: 'allow' };
   }
 
+  // Legitimate social link crawlers (Facebook, WhatsApp, Telegram, etc.) bypass auto-shield to receive OG cards
+  if (isSocialScraper(userAgent)) {
+    return { blocked: false, softBlock: false, reason: 'Social crawler preview', score: 0, level: 'low', riskScore: 0, riskLevel: 'low', signals: ['social_scraper_preview'], action: 'allow' };
+  }
+
   // Rule 21: Check existing temporary block first
   const tempBlock = getTemporaryBlockInfo(cleanIp);
   if (tempBlock) {
@@ -887,6 +905,7 @@ module.exports = {
   getTemporaryBlockInfo,
   getActiveTempBlocks,
   addTemporaryBlock,
+  removeTemporaryBlock,
   dispatchWebhookNotification,
   checkAndApplyAutoShield
 };
