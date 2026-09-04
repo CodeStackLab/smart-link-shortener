@@ -10,8 +10,16 @@ const { requireAuth } = require('./middleware/auth');
 const {
   isSocialScraper,
   isSpamBot,
+  isHeadlessBrowser,
+  isDatacenterIsp,
+  evaluateBrowserIntegrity,
   parseReferrer,
   checkRateLimit,
+  detectTrafficSpike,
+  computeTrafficRiskScore,
+  isAllowlisted,
+  isTemporarilyBlocked,
+  dispatchWebhookNotification,
   checkAndApplyAutoShield
 } = require('./utils/detector');
 const { lookupIp, lookupIpAsync } = require('./utils/geoDetector');
@@ -604,7 +612,8 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     iosUrl,
     androidUrl,
     active,
-    domain
+    domain,
+    imageUrl
   } = req.body;
 
   if (targetUrl) {
@@ -752,6 +761,60 @@ app.delete('/api/admin/blocked-ips/:ip', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// ----------------------------------------------------
+// ALLOWLIST MANAGEMENT API (Rule 48) — Admin Only
+// ----------------------------------------------------
+
+// Get current allowlisted IPs
+app.get('/api/admin/allowlist', requireAuth, requirePermission('firewall'), (req, res) => {
+  const settings = db.getSettings();
+  res.json({ allowlistedIps: Array.isArray(settings.allowlistedIps) ? settings.allowlistedIps : [] });
+});
+
+// Add an IP to the allowlist
+app.post('/api/admin/allowlist', requireAuth, requirePermission('firewall'), (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Only Admin can manage the allowlist.' });
+  }
+  const { ip, note } = req.body;
+  if (!ip || !ip.trim()) {
+    return res.status(400).json({ error: 'IP address is required.' });
+  }
+  const cleanIp = ip.trim().replace(/^::ffff:/, '');
+  const settings = db.getSettings();
+  const list = Array.isArray(settings.allowlistedIps) ? settings.allowlistedIps : [];
+  const entry = { ip: cleanIp, note: (note || '').trim(), addedAt: new Date().toISOString() };
+  if (list.some(e => (typeof e === 'string' ? e : e.ip) === cleanIp)) {
+    return res.status(400).json({ error: 'IP is already allowlisted.' });
+  }
+  list.push(entry);
+  db.updateSettings({ allowlistedIps: list });
+  res.json({ success: true, entry });
+});
+
+// Remove an IP from the allowlist
+app.delete('/api/admin/allowlist/:ip', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Only Admin can manage the allowlist.' });
+  }
+  const targetIp = decodeURIComponent(req.params.ip).replace(/^::ffff:/, '').trim();
+  const settings = db.getSettings();
+  const list = Array.isArray(settings.allowlistedIps) ? settings.allowlistedIps : [];
+  const filtered = list.filter(e => (typeof e === 'string' ? e : e.ip) !== targetIp);
+  db.updateSettings({ allowlistedIps: filtered });
+  res.json({ success: true });
+});
+
+// ----------------------------------------------------
+// TEMP-BLOCK STATUS API (Rule 21, 22) — Real-time view
+// ----------------------------------------------------
+
+app.get('/api/admin/temp-blocks', requireAuth, requirePermission('firewall'), (req, res) => {
+  const { getActiveTempBlocks } = require('./utils/detector');
+  const blocks = getActiveTempBlocks();
+  res.json({ count: blocks.length, blocks });
+});
+
 // GET settings: Admin (full) OR users with 'firewall' permission (to show shield status in firewall tab).
 // Non-admin firewall users only receive firewall-relevant fields (not sensitive settings).
 app.get('/api/admin/settings', requireAuth, requirePermission('settings', 'firewall'), (req, res) => {
@@ -795,12 +858,25 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     restrictEditorDomains,
     allowedTargetDomains,
     maskEditorUrls,
-    applyFirewallGlobally
+    applyFirewallGlobally,
+    tempBlockDurationMinutes,
+    spikeWindowMinutes,
+    spikeThresholdClicks,
+    allowlistedIps
   } = req.body;
 
   let processedAllowedDomains = undefined;
   if (Array.isArray(allowedTargetDomains)) {
     processedAllowedDomains = cleanAllowedUrls(allowedTargetDomains);
+  }
+
+  // Sanitize allowlistedIps: strip whitespace, remove duplicates
+  let processedAllowlistedIps = undefined;
+  if (Array.isArray(allowlistedIps)) {
+    processedAllowlistedIps = [...new Set(allowlistedIps
+      .map(ip => (ip || '').replace(/^::ffff:/, '').trim())
+      .filter(Boolean)
+    )];
   }
 
   const updated = db.updateSettings({
@@ -821,7 +897,11 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     maskEditorUrls: maskEditorUrls !== undefined
       ? (maskEditorUrls === false || maskEditorUrls === 'false' ? false : (maskEditorUrls === true || maskEditorUrls === 'true' ? true : 'individual'))
       : undefined,
-    applyFirewallGlobally: applyFirewallGlobally !== undefined ? !!applyFirewallGlobally : undefined
+    applyFirewallGlobally: applyFirewallGlobally !== undefined ? !!applyFirewallGlobally : undefined,
+    tempBlockDurationMinutes: tempBlockDurationMinutes !== undefined ? parseInt(tempBlockDurationMinutes, 10) : undefined,
+    spikeWindowMinutes: spikeWindowMinutes !== undefined ? parseInt(spikeWindowMinutes, 10) : undefined,
+    spikeThresholdClicks: spikeThresholdClicks !== undefined ? parseInt(spikeThresholdClicks, 10) : undefined,
+    allowlistedIps: processedAllowlistedIps
   });
 
   res.json({ success: true, settings: updated });
@@ -1363,34 +1443,66 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
-  // C. Check automatic firewall traffic shields (Bot & VPN Protection)
-  const isAutoBlocked = checkAndApplyAutoShield(clientIp, geoInfo.isVpn, userAgent, code);
-  if (isAutoBlocked) {
-    triggerSecurityAutoPauseForLink(code, 'Bot/Fake Traffic Shield', clientIp);
-    const logEntry = {
-      id: logId,
-      timestamp: new Date().toISOString(),
-      code: code,
-      ip: clientIp,
-      countryCode: geoInfo.countryCode,
-      countryName: geoInfo.countryName,
-      flag: geoInfo.flag,
-      city: geoInfo.city,
-      isp: geoInfo.isp,
-      isVpn: geoInfo.isVpn,
-      referer: rawReferer || 'Auto Shield Protection',
-      userAgent: userAgent,
-      status: 'IP_FIREWALL_BLOCKED',
-      actionTaken: 'Auto-Blocked IP via Traffic Shield'
-    };
-    db.addLog(logEntry);
-    return res.status(403).send(`
-      <!DOCTYPE html>
-      <html>
-        <head><title>Access Blocked - IP Firewall</title><style>body{font-family:sans-serif;background:#0f172a;color:#ef4444;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2.5rem;background:#1e293b;border-radius:12px;border:1px solid #ef4444;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
-        <body><div class="box"><h1>🚫 Access Blocked by Security Firewall</h1><p>Your IP address (${clientIp}) has been restricted: Auto Shield auto-block triggered due to suspicious traffic pattern.</p></div></body>
-      </html>
-    `);
+  // C. Multi-signal Auto-Shield (Rules 10-20: never block on single signal, use risk score)
+  // Rule 48: Allowlisted IPs bypass all traffic quality checks
+  if (!isAllowlisted(clientIp)) {
+    const shieldResult = checkAndApplyAutoShield(clientIp, geoInfo.isVpn, userAgent, code, geoInfo, req);
+
+    if (shieldResult.blocked) {
+      // High-risk confirmed block: redirect to fallback (NEVER reveal destination URL — Rule 49)
+      // Use soft redirect, not a hard 403, to avoid false-positive bad UX (Rule 13, 16)
+      const logEntry = {
+        id: logId,
+        timestamp: new Date().toISOString(),
+        code: code,
+        ip: clientIp,
+        countryCode: geoInfo.countryCode,
+        countryName: geoInfo.countryName,
+        flag: geoInfo.flag,
+        city: geoInfo.city,
+        isp: geoInfo.isp,
+        isVpn: geoInfo.isVpn,
+        referer: rawReferer || 'Auto Shield Protection',
+        userAgent: userAgent,
+        status: 'BOT_SHIELD_BLOCKED',
+        riskScore: shieldResult.score,
+        riskLevel: shieldResult.level,
+        signals: (shieldResult.signals || []).join(', '),
+        actionTaken: `Auto Shield Block (Risk: ${shieldResult.level} / Score: ${shieldResult.score})`
+      };
+      db.addLog(logEntry);
+      // Find the link's fallback URL (don't expose destination)
+      const blockedLink = db.getLinkByCode(code);
+      const safeRedirect = (blockedLink && blockedLink.fallbackUrl) ? blockedLink.fallbackUrl : 'https://www.google.com/';
+      return res.redirect(safeRedirect);
+    }
+
+    if (shieldResult.softBlock) {
+      // Medium-risk: log as suspicious and redirect to fallback silently (Rule 20)
+      const logEntry = {
+        id: logId,
+        timestamp: new Date().toISOString(),
+        code: code,
+        ip: clientIp,
+        countryCode: geoInfo.countryCode,
+        countryName: geoInfo.countryName,
+        flag: geoInfo.flag,
+        city: geoInfo.city,
+        isp: geoInfo.isp,
+        isVpn: geoInfo.isVpn,
+        referer: rawReferer || 'Suspicious Traffic',
+        userAgent: userAgent,
+        status: 'SUSPICIOUS_TRAFFIC',
+        riskScore: shieldResult.score,
+        riskLevel: shieldResult.level,
+        signals: (shieldResult.signals || []).join(', '),
+        actionTaken: `Soft-Block Fallback Redirect (Risk: ${shieldResult.level} / Score: ${shieldResult.score})`
+      };
+      db.addLog(logEntry);
+      const softLink = db.getLinkByCode(code);
+      const safeRedirect = (softLink && softLink.fallbackUrl) ? softLink.fallbackUrl : 'https://www.google.com/';
+      return res.redirect(safeRedirect);
+    }
   }
 
   const link = db.getLinkByCode(code);
@@ -1443,7 +1555,7 @@ async function handleShortlinkRedirect(req, res) {
     return res.redirect(link.fallbackUrl);
   }
 
-  // 1. Check Rate Limiter per IP
+  // 1. Check Rate Limiter per IP (Rule 6, 14: redirect to fallback, never show CAPTCHA or error to real users)
   const rateCheck = checkRateLimit(clientIp);
   if (rateCheck.isRateLimited) {
     const logEntry = {
@@ -1460,10 +1572,11 @@ async function handleShortlinkRedirect(req, res) {
       referer: rawReferer || 'None',
       userAgent: userAgent,
       status: 'RATE_LIMITED',
-      actionTaken: 'HTTP 429 / Blocked'
+      actionTaken: 'Rate-Limited → Fallback Redirect'
     };
     db.addLog(logEntry);
-    return res.status(429).send('Too Many Requests. Please try again later.');
+    // Rule 13: real visitors must NOT be blocked — redirect to fallback gracefully
+    return res.redirect(link.fallbackUrl || 'https://www.google.com/');
   }
 
   // 2. Check Link Traffic Quota Limits (Max Total, Hourly, Daily, Monthly)
@@ -1617,8 +1730,26 @@ async function handleShortlinkRedirect(req, res) {
 </html>`);
   }
 
-  // 4. Check Spam Bots
-  if (isSpamBot(userAgent)) {
+  // 4. Traffic Spike Detection (Rule 28, 29, 47)
+  const hasSpike = detectTrafficSpike(link.code);
+  if (hasSpike) {
+    // Log spike but allow legitimate traffic through — only block if combined with other signals
+    console.log(`[SPIKE] Detected on /${link.code} from IP ${clientIp}`);
+    // Dispatch admin alert webhook (Rule 47)
+    dispatchWebhookNotification({
+      reason:   `Traffic Spike Detected on /${link.code}`,
+      code:     link.code,
+      ip:       clientIp,
+      riskScore: 'spike',
+      riskLevel: 'medium',
+      signals:  ['traffic_spike'],
+      userAgent: userAgent
+    });
+  }
+
+  // 5. Spam-Bot & Headless Browser check (Rules 8, 17, 18, 19, 49)
+  if (isSpamBot(userAgent) || isHeadlessBrowser(userAgent, req.headers)) {
+    const extraSignal = geoInfo.isVpn || hasSpike || isDatacenterIsp(geoInfo.isp) || isHeadlessBrowser(userAgent, req.headers);
     const logEntry = {
       id: logId,
       timestamp: new Date().toISOString(),
@@ -1629,24 +1760,36 @@ async function handleShortlinkRedirect(req, res) {
       flag: geoInfo.flag,
       city: geoInfo.city,
       isp: geoInfo.isp,
-      isVpn: true,
+      isVpn: geoInfo.isVpn,
       referer: rawReferer || 'None',
       userAgent: userAgent,
-      status: 'SPAM_BOT_BLOCKED',
-      actionTaken: 'Redirected to Fallback'
+      status: extraSignal ? 'SPAM_BOT_BLOCKED' : 'SUSPICIOUS_UA_REDIRECT',
+      signals: extraSignal ? 'spam_bot_ua,multi_signal' : 'spam_bot_ua_only',
+      actionTaken: 'Redirected to Fallback (Bot/Headless UA)'
     };
     db.addLog(logEntry);
     return res.redirect(link.fallbackUrl);
   }
 
-  // 5. Parse Referrer against Allowed Presets + Custom User Domains
+  // 6. Parse Referrer against Allowed Presets + Custom User Domains
   const parsedRef = parseReferrer(rawReferer, link.allowedPlatforms || ['facebook'], link.customDomains || [], userAgent);
-  
-  // Only genuine residential/mobile users (not Datacenter/VPN) get organic access
-  const isGenuineOrganic = parsedRef.isAllowed && !geoInfo.isVpn;
+
+  // Compute multi-signal traffic risk score (Rules 10, 11, 12, 16, 23, 27)
+  const finalRisk = computeTrafficRiskScore(clientIp, userAgent, geoInfo, rawReferer, link.code, req);
+
+  // Check if ASN belongs to hosting/datacenter/cloud
+  const isDatacenter = isDatacenterIsp(geoInfo.isp);
+
+  // Maximum Traffic Quality & Bot Protection (Rules 11, 12, 13, 16, 49, 50):
+  // Genuine organic traffic MUST be Low-Risk (<30), have allowed referrer, not VPN, and not Datacenter.
+  const isGenuineOrganic = (finalRisk.level === 'low') && 
+                           parsedRef.isAllowed && 
+                           !geoInfo.isVpn && 
+                           !isDatacenter;
+
   let destinationUrl = isGenuineOrganic ? link.targetUrl : link.fallbackUrl;
 
-  // Smart Device OS Targeting (iOS vs Android override)
+  // Smart Device OS Targeting (iOS vs Android override) - ONLY for genuine organic visitors
   if (isGenuineOrganic) {
     const isIos = /iPhone|iPad|iPod/i.test(userAgent);
     const isAndroid = /Android/i.test(userAgent);
@@ -1658,16 +1801,27 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
-  // Mobile in-app browsers and social relays can issue more than one request
-  // for one tap. Count only the first request from the same visitor and link.
+  // Deduplicate rapid repeat clicks from same visitor (Rule 7)
   if (isDuplicateTrafficClick(link.code, clientIp)) {
     return res.redirect(destinationUrl);
   }
 
-  db.incrementClicks(link.code);
+  // ONLY genuine organic visitors increment click counts!
+  if (isGenuineOrganic) {
+    db.incrementClicks(link.code);
+  }
 
-  const clickStatus = isGenuineOrganic ? 'ORGANIC_CLICK' : 'FALLBACK_REDIRECT';
-  const delaySec = link.delaySeconds || 0;
+  let clickStatus = 'FALLBACK_REDIRECT';
+  if (isGenuineOrganic) {
+    clickStatus = 'ORGANIC_CLICK';
+  } else if (finalRisk.level === 'high') {
+    clickStatus = 'BOT_TRAFFIC_BLOCKED';
+  } else if (finalRisk.level === 'medium') {
+    clickStatus = 'SUSPICIOUS_TRAFFIC';
+  }
+
+  // Only genuine organic clicks have custom delay; fallback/blocked redirects never suffer delays (Rule 15, 42)
+  const delaySec = isGenuineOrganic ? (link.delaySeconds || 0) : 0;
 
   const logEntry = {
     id: logId,
@@ -1685,8 +1839,11 @@ async function handleShortlinkRedirect(req, res) {
     status: clickStatus,
     platform: parsedRef.platform,
     matchedDomain: parsedRef.domain,
+    riskScore: finalRisk.score,
+    riskLevel: finalRisk.level,
+    signals: (finalRisk.signals || []).join(', '),
     durationSeconds: 0,
-    actionTaken: `Redirected to ${parsedRef.isAllowed ? 'Target' : 'Fallback'} (${delaySec > 0 ? delaySec + 's Delay' : 'Instant'})`
+    actionTaken: `Redirected to ${isGenuineOrganic ? 'Target' : 'Fallback'} (${delaySec > 0 ? delaySec + 's Delay' : 'Instant'})`
   };
   db.addLog(logEntry);
 
@@ -1810,7 +1967,7 @@ async function handleShortlinkRedirect(req, res) {
     `);
   }
 
-  // Instant redirect with client pingback tracker
+  // Instant redirect with client pingback tracker and background headless check (Rules 9, 23, 49)
   return res.send(`
     <!DOCTYPE html>
     <html>
@@ -1818,12 +1975,22 @@ async function handleShortlinkRedirect(req, res) {
         <meta charset="utf-8">
         <title>Redirecting...</title>
         <script>
+          // Background Browser Integrity Check (Rules 9, 23, 49)
+          const isHeadless = Boolean(
+            navigator.webdriver || 
+            window.__nightmare || 
+            window.callPhantom || 
+            window._phantom ||
+            (window.outerWidth === 0 && window.outerHeight === 0)
+          );
+          const finalDest = isHeadless ? "${link.fallbackUrl || 'https://www.google.com/'}" : "${destinationUrl}";
+
           const startTime = Date.now();
           window.addEventListener('beforeunload', () => {
             const duration = Math.round((Date.now() - startTime) / 1000);
             navigator.sendBeacon('/api/pingback', JSON.stringify({ logId: "${logId}", durationSeconds: duration }));
           });
-          window.location.href = "${destinationUrl}";
+          window.location.href = finalDest;
         </script>
       </head>
       <body style="background:#0f172a; color:#f8fafc; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;">

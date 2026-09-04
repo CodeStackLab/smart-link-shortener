@@ -97,7 +97,11 @@ function initDb() {
     restrictEditorDomains: true,
     allowedTargetDomains: [],
     maskEditorUrls: true,
-    applyFirewallGlobally: true
+    applyFirewallGlobally: true,
+    tempBlockDurationMinutes: 30,
+    spikeWindowMinutes: 5,
+    spikeThresholdClicks: 200,
+    allowlistedIps: []
   };
 
   if (!settings) {
@@ -173,7 +177,11 @@ module.exports = {
     restrictEditorDomains: true,
     allowedTargetDomains: [],
     maskEditorUrls: true,
-    applyFirewallGlobally: true
+    applyFirewallGlobally: true,
+    tempBlockDurationMinutes: 30,
+    spikeWindowMinutes: 5,
+    spikeThresholdClicks: 200,
+    allowlistedIps: []
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -192,7 +200,11 @@ module.exports = {
       restrictEditorDomains: true,
       allowedTargetDomains: [],
       maskEditorUrls: true,
-      applyFirewallGlobally: true
+      applyFirewallGlobally: true,
+      tempBlockDurationMinutes: 30,
+      spikeWindowMinutes: 5,
+      spikeThresholdClicks: 200,
+      allowlistedIps: []
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);
