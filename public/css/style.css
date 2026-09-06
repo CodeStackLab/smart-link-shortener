@@ -844,6 +844,39 @@ td {
 tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: transparent; }
 
+/* Traffic Logs Reason & Signals cell (Desktop) */
+.reason-signals-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 260px;
+}
+.reason-action-text {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.reason-signals-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 0.15rem 0.45rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-theme="dark"] .reason-signals-tag {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
 /* ════════════════════════════════════════
    BADGES
 ════════════════════════════════════════ */
@@ -1981,32 +2014,113 @@ table td:nth-child(3)  /* Fallback URL */ {
     text-align: right !important;
   }
   
-  /* Make action buttons fit nicely in a 2x2 grid at the bottom of the card */
+  /* Make action buttons fit nicely in a 2-column full-width grid at the bottom of the card */
   td[data-label="Actions"] {
     flex-direction: column !important;
     align-items: stretch !important;
     border-bottom: none !important;
-    margin-top: 0.35rem !important;
+    margin-top: 0.4rem !important;
+    padding-bottom: 0.25rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   td[data-label="Actions"]::before {
-    margin-bottom: 0.6rem !important;
+    margin-bottom: 0.5rem !important;
     text-align: left !important;
   }
-  table td .action-btn-group {
+  table td .action-btn-group,
+  td[data-label="Actions"] .action-btn-group,
+  td[data-label="Actions"] > div {
     width: 100% !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 0.45rem !important;
+    gap: 0.5rem !important;
+    box-sizing: border-box !important;
   }
-  table td .action-btn-group .btn {
+  td[data-label="Actions"] .action-btn-group:has(> :only-child),
+  td[data-label="Actions"] > div:has(> :only-child),
+  td[data-label="Actions"] > div:has(> button:only-child) {
+    grid-template-columns: 1fr !important;
+  }
+  table td .action-btn-group .btn,
+  td[data-label="Actions"] .action-btn-group .btn,
+  td[data-label="Actions"] > div > .btn,
+  td[data-label="Actions"] > div > button,
+  td[data-label="Actions"] > button {
     width: 100% !important;
     margin: 0 !important;
-    min-height: 36px !important;
-    padding: 0.35rem 0.6rem !important;
+    min-height: 38px !important;
+    padding: 0.45rem 0.65rem !important;
     font-size: 0.82rem !important;
     font-weight: 700 !important;
     justify-content: center !important;
-    border-radius: var(--r-sm) !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  /* Reason & Signals: Full-width stacked column on mobile (prevents 3-letter vertical wrapping) */
+  td[data-label="Reason & Signals"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    width: 100% !important;
+    padding: 0.6rem 0 !important;
+    gap: 0.35rem !important;
+    box-sizing: border-box !important;
+  }
+  td[data-label="Reason & Signals"]::before {
+    text-align: left !important;
+    margin-bottom: 0.2rem !important;
+  }
+  td[data-label="Reason & Signals"] > *,
+  td[data-label="Reason & Signals"] .reason-signals-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: 0.35rem !important;
+    box-sizing: border-box !important;
+  }
+  td[data-label="Reason & Signals"] .reason-action-text {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary, #1e293b) !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+  td[data-label="Reason & Signals"] .reason-signals-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 7px !important;
+    padding: 0.25rem 0.6rem !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+  }
+  [data-theme="dark"] td[data-label="Reason & Signals"] .reason-action-text {
+    color: #f1f5f9 !important;
+  }
+  [data-theme="dark"] td[data-label="Reason & Signals"] .reason-signals-tag {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
   }
 
   /* Short Link stays column (too long for row) */
@@ -2418,4 +2532,170 @@ td[data-label].col-hidden-perm > * {
   visibility: hidden !important;
   height: 0 !important;
   min-height: 0 !important;
+}
+
+/* ── Facebook Sub-Source Analytics Widget (EXACT Match with Mockup) ── */
+#fb-breakdown-card {
+  padding: 0.5rem 0 1.25rem 0 !important;
+  margin-bottom: 1.15rem !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.fb-subsource-header {
+  margin-bottom: 0.85rem !important;
+  text-align: left !important;
+}
+
+.fb-subsource-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+}
+
+.fb-subsource-target-icon {
+  font-size: 1.35rem !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+}
+
+.fb-subsource-title {
+  margin: 0 !important;
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  color: #0066fe !important;
+  letter-spacing: -0.02em !important;
+}
+
+.fb-subsource-subtitle {
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  margin-top: 0.25rem !important;
+  line-height: 1.35 !important;
+}
+
+.fb-subsource-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.65rem !important;
+  width: 100% !important;
+}
+
+.fb-subsource-row {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+  padding: 0.65rem 1.25rem !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  min-height: 52px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.fb-subsource-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  justify-self: start !important;
+}
+
+.fb-subsource-left span {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.fb-subsource-icon {
+  flex-shrink: 0 !important;
+}
+
+.fb-subsource-center {
+  justify-self: center !important;
+  text-align: center !important;
+  font-size: 1.85rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  padding: 0 0.5rem !important;
+}
+
+.fb-subsource-right {
+  justify-self: end !important;
+  text-align: right !important;
+  color: #475569 !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+/* Individual Color Themes matching image */
+.fb-subsource-row.theme-profile {
+  border: 1.5px solid #60a5fa !important;
+}
+.fb-subsource-row.theme-profile .fb-subsource-left span,
+.fb-subsource-row.theme-profile .fb-subsource-center {
+  color: #0066fe !important;
+}
+
+.fb-subsource-row.theme-group {
+  border: 1.5px solid #c084fc !important;
+}
+.fb-subsource-row.theme-group .fb-subsource-left span,
+.fb-subsource-row.theme-group .fb-subsource-center {
+  color: #7c3aed !important;
+}
+
+.fb-subsource-row.theme-page {
+  border: 1.5px solid #34d399 !important;
+}
+.fb-subsource-row.theme-page .fb-subsource-left span,
+.fb-subsource-row.theme-page .fb-subsource-center {
+  color: #059669 !important;
+}
+
+.fb-subsource-row.theme-story {
+  border: 1.5px solid #fbbf24 !important;
+}
+.fb-subsource-row.theme-story .fb-subsource-left span,
+.fb-subsource-row.theme-story .fb-subsource-center {
+  color: #d97706 !important;
+}
+
+.fb-subsource-row.theme-fake {
+  border: 1.5px solid #f87171 !important;
+}
+.fb-subsource-row.theme-fake .fb-subsource-left span,
+.fb-subsource-row.theme-fake .fb-subsource-center {
+  color: #dc2626 !important;
+}
+
+@media (max-width: 480px) {
+  .fb-subsource-row {
+    padding: 0.6rem 0.95rem !important;
+    border-radius: 15px !important;
+    min-height: 50px !important;
+  }
+  .fb-subsource-left span {
+    font-size: 0.88rem !important;
+  }
+  .fb-subsource-center {
+    font-size: 1.75rem !important;
+  }
+  .fb-subsource-right {
+    font-size: 0.8rem !important;
+  }
+}
+
+[data-theme="dark"] .fb-subsource-row {
+  background: rgba(30, 41, 59, 0.85) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .fb-subsource-right {
+  color: #94a3b8 !important;
+}
+[data-theme="dark"] .fb-subsource-subtitle {
+  color: #94a3b8 !important;
 }

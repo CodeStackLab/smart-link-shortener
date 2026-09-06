@@ -1996,8 +1996,8 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge = `<span class="badge badge-warning">⏱️ Rate Ltd</span>`;
       }
 
-      const signalsText = log.signals ? `<div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.15rem; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${log.signals}">🏷️ ${log.signals}</div>` : '';
-      const actionText = log.actionTaken ? `<div style="font-size:0.74rem; font-weight:600; color:var(--text-muted);">${log.actionTaken}</div>` : '';
+      const signalsText = log.signals ? `<div class="reason-signals-tag" title="${log.signals}">🏷️ ${log.signals}</div>` : '';
+      const actionText = log.actionTaken ? `<div class="reason-action-text">${log.actionTaken}</div>` : '';
 
       return `
         <tr>
@@ -2018,17 +2018,19 @@ document.addEventListener('DOMContentLoaded', () => {
           <td data-label="Location" style="font-size: 0.775rem;">${location}</td>
           <td data-label="Risk Score">${riskBadge}</td>
           <td data-label="Status / Action">${statusBadge}</td>
-          <td data-label="Reason & Signals" style="max-width:240px;">
-            ${actionText}
-            ${signalsText}
+          <td data-label="Reason & Signals">
+            <div class="reason-signals-wrap">
+              ${actionText}
+              ${signalsText}
+            </div>
           </td>
           <td data-label="Referrer">${formatReferrerBadge(log.referer, log)}</td>
           <td data-label="Actions">
-            <div style="display:flex; gap:0.25rem;">
-              <button class="btn btn-secondary btn-sm" onclick="quickAllowlistIp('${log.ip}')" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;" title="Add to Allowlist">
+            <div class="action-btn-group">
+              <button class="btn btn-secondary btn-sm" onclick="quickAllowlistIp('${log.ip}')" title="Add to Allowlist">
                 ➕ Whitelist
               </button>
-              <button class="btn btn-danger btn-sm" onclick="quickBlockIp('${log.ip}')" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;" title="Permanently Block">
+              <button class="btn btn-danger btn-sm" onclick="quickBlockIp('${log.ip}')" title="Permanently Block">
                 🚫 Block
               </button>
             </div>
