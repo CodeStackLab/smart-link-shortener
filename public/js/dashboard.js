@@ -2426,11 +2426,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (editorCountryBlockCb) {
         editorCountryBlockCb.checked = settings.editorCountryBlockEnabled !== false;
       }
-      if (Array.isArray(settings.editorBlockedCountries) && settings.editorBlockedCountries.length > 0) {
-        activeEditorBlockedCountries = new Set(settings.editorBlockedCountries.map(c => String(c).toUpperCase()));
-      } else {
-        activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
-      }
+      const mandatoryCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
+      const loadedCountries = Array.isArray(settings.editorBlockedCountries)
+        ? settings.editorBlockedCountries.map(c => String(c).toUpperCase())
+        : [];
+      activeEditorBlockedCountries = new Set([...loadedCountries, ...mandatoryCountries]);
       renderEditorBlockedCountriesTags();
 
       toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
@@ -2651,6 +2651,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Initial immediate render for Editor blocked countries
+  renderEditorBlockedCountriesTags();
 
   // Save Editor Country Block Form
   const editorCountryBlockForm = document.getElementById('editor-country-block-form');
@@ -3251,8 +3254,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('edit-user-country-block-enabled')) {
       document.getElementById('edit-user-country-block-enabled').checked = (user.countryBlockEnabled !== false);
     }
-    const userBlockedList = Array.isArray(user.blockedCountries) ? user.blockedCountries : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
-    editUserBlockedCountries = new Set(userBlockedList);
+    const userBlockedList = Array.isArray(user.blockedCountries)
+      ? user.blockedCountries.map(c => String(c).toUpperCase())
+      : [];
+    const mandatoryCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
+    editUserBlockedCountries = new Set([...userBlockedList, ...mandatoryCountries]);
     renderEditUserBlockedCountriesTags();
 
     if (editUserModal) { editUserModal.style.display = 'flex'; }
