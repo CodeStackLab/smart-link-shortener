@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=15">
+  <link rel="stylesheet" href="/css/style.css?v=16">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -375,33 +375,21 @@
       justify-self: center !important;
       text-align: center !important;
       display: flex !important;
-      flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
-      padding: 0 0.3rem !important;
-      min-width: 68px !important;
+      padding: 0 !important;
+      min-width: 40px !important;
     }
 
     .fb-subsource-num {
-      font-size: 1.15rem !important;
+      font-size: 1.35rem !important;
       font-weight: 900 !important;
       line-height: 1 !important;
     }
 
-    .fb-subsource-bar-track {
-      width: 100% !important;
-      max-width: 65px !important;
-      height: 3.5px !important;
-      background: rgba(0, 0, 0, 0.06) !important;
-      border-radius: 3px !important;
-      overflow: hidden !important;
-      margin-top: 1px !important;
-    }
-
+    .fb-subsource-bar-track,
     .fb-subsource-bar-fill {
-      height: 100% !important;
-      border-radius: 3px !important;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      display: none !important;
     }
 
     .fb-subsource-right {
@@ -505,17 +493,12 @@
         height: 15px !important;
       }
       .fb-subsource-center {
-        padding: 0 0.2rem !important;
-        min-width: 60px !important;
+        padding: 0 !important;
+        min-width: 35px !important;
       }
       .fb-subsource-num {
-        font-size: 1.05rem !important;
+        font-size: 1.25rem !important;
         line-height: 1 !important;
-      }
-      .fb-subsource-bar-track {
-        max-width: 55px !important;
-        height: 3px !important;
-        margin-top: 1px !important;
       }
       .fb-subsource-right {
         font-size: 0.72rem !important;
@@ -947,9 +930,6 @@
           </div>
           <div class="fb-subsource-center">
             <span id="stat-fb-profiles" class="fb-subsource-num">0</span>
-            <div class="fb-subsource-bar-track">
-              <div id="stat-fb-profiles-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
-            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-profiles-pct">0% of FB</span>
@@ -966,9 +946,6 @@
           </div>
           <div class="fb-subsource-center">
             <span id="stat-fb-groups" class="fb-subsource-num">0</span>
-            <div class="fb-subsource-bar-track">
-              <div id="stat-fb-groups-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
-            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-groups-pct">0% of FB</span>
@@ -985,9 +962,6 @@
           </div>
           <div class="fb-subsource-center">
             <span id="stat-fb-pages" class="fb-subsource-num">0</span>
-            <div class="fb-subsource-bar-track">
-              <div id="stat-fb-pages-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
-            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-pages-pct">0% of FB</span>
@@ -1005,9 +979,6 @@
           </div>
           <div class="fb-subsource-center">
             <span id="stat-fb-stories" class="fb-subsource-num">0</span>
-            <div class="fb-subsource-bar-track">
-              <div id="stat-fb-stories-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
-            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-stories-pct">0% of FB</span>
@@ -1031,9 +1002,6 @@
           </div>
           <div class="fb-subsource-center">
             <span id="stat-fb-automated" class="fb-subsource-num">0</span>
-            <div class="fb-subsource-bar-track">
-              <div id="stat-fb-automated-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
-            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-automated-pct">0% of FB</span>
@@ -2291,7 +2259,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=44"></script>
+<script src="/js/dashboard.js?v=45"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
