@@ -133,22 +133,19 @@
           <input type="file" id="link-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
           <input type="hidden" id="link-image-url-val" value="">
 
-          <!-- Upload Dropzone (Compact) -->
-          <div id="image-upload-dropzone" style="border:1.5px dashed #3b82f6; border-radius:10px; padding:0.4rem 0.65rem; text-align:center; background:rgba(59,130,246,0.03); cursor:pointer; transition:all 0.2s ease;">
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.1rem;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Upload Dropzone -->
+          <div id="image-upload-dropzone" style="border:2px dashed #3b82f6; border-radius:12px; padding:0.65rem 0.85rem; text-align:center; background:rgba(59,130,246,0.03); cursor:pointer; transition:all 0.2s ease;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.25rem;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-              <div style="font-weight:900; font-size:0.85rem; color:var(--text-primary,#0f172a); letter-spacing:0.03em; line-height:1.15;">
+              <div style="font-weight:900; font-size:1.05rem; color:var(--text-primary,#0f172a); letter-spacing:0.04em;">
                 TERMUX
               </div>
-              <div style="font-weight:700; font-size:0.7rem; color:#2563eb; line-height:1.15;">
+              <div style="font-weight:700; font-size:0.82rem; color:#2563eb;">
                 Upload Image (Optional)
-              </div>
-              <div style="font-size:0.62rem; font-weight:600; color:var(--text-muted); line-height:1.15;">
-                JPG, PNG, WebP • Max 5MB
               </div>
             </div>
           </div>
@@ -1525,7 +1522,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=33"></script>
+<script src="/js/dashboard.js?v=34"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
