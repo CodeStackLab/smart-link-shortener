@@ -2546,43 +2546,37 @@ td[data-label].col-hidden-perm > * {
 }
 
 .fb-subsource-header {
-  margin-bottom: 0.85rem !important;
+  margin-bottom: 0.45rem !important;
   text-align: left !important;
-  padding-bottom: 0.75rem !important;
-  border-bottom: 1px solid #f1f5f9 !important;
 }
 
 .fb-subsource-title-row {
   display: flex !important;
   align-items: center !important;
-  gap: 0.45rem !important;
+  gap: 0.4rem !important;
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
 }
 
 .fb-subsource-target-icon {
-  font-size: 1.35rem !important;
+  font-size: 1.25rem !important;
   line-height: 1 !important;
   display: inline-flex !important;
+  flex-shrink: 0 !important;
 }
 
 .fb-subsource-title {
   margin: 0 !important;
-  font-size: 1.12rem !important;
+  font-size: clamp(0.78rem, 3.8vw, 1.05rem) !important;
   font-weight: 800 !important;
   color: #0066fe !important;
-  letter-spacing: -0.02em !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  line-height: 1.1 !important;
 }
 
 .fb-subsource-subtitle {
-  font-size: 0.78rem !important;
-  font-weight: 600 !important;
-  color: #64748b !important;
-  margin-top: 0.2rem !important;
-  line-height: 1.3 !important;
-}
-
-.fb-subsource-header {
-  margin-bottom: 0.35rem !important;
-  text-align: left !important;
+  display: none !important;
 }
 
 .fb-subsource-stack {
@@ -2724,7 +2718,22 @@ td[data-label].col-hidden-perm > * {
     border-radius: 14px !important;
   }
   .fb-subsource-header {
-    margin-bottom: 0.25rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+  .fb-subsource-title-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+  }
+  .fb-subsource-target-icon {
+    font-size: 1.15rem !important;
+  }
+  .fb-subsource-title {
+    font-size: clamp(0.72rem, 3.6vw, 0.95rem) !important;
+    white-space: nowrap !important;
+    line-height: 1.1 !important;
   }
   .fb-subsource-stack {
     gap: 2.5px !important;
