@@ -12,7 +12,58 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=7">
+  <link rel="stylesheet" href="/css/style.css?v=8">
+  <style>
+    /* Strict 2-Column Layout for Real-Time Traffic Audit Logs on ALL Screens (including Mobile) */
+    .traffic-grid-2col,
+    #traffic-filter-cards-grid,
+    #traffic-action-buttons-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 0.65rem !important;
+      width: 100% !important;
+    }
+    @media (max-width: 768px) {
+      .traffic-grid-2col,
+      #traffic-filter-cards-grid,
+      #traffic-action-buttons-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+      }
+      .traffic-filter-btn {
+        padding: 0.65rem 0.55rem !important;
+        gap: 0.45rem !important;
+        border-radius: 14px !important;
+        min-width: 0 !important;
+      }
+      .traffic-filter-btn > div:first-child {
+        width: 36px !important;
+        height: 36px !important;
+        flex-shrink: 0 !important;
+      }
+      .traffic-filter-btn svg {
+        width: 18px !important;
+        height: 18px !important;
+      }
+      .traffic-filter-btn span:first-child {
+        font-size: 0.82rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      .traffic-filter-btn span:last-child {
+        font-size: 0.74rem !important;
+      }
+      #traffic-action-buttons-grid a,
+      #traffic-action-buttons-grid button {
+        padding: 0.75rem 0.6rem !important;
+        font-size: 0.82rem !important;
+        border-radius: 14px !important;
+        min-width: 0 !important;
+      }
+    }
+  </style>
 </head>
 <body data-theme="light">
 
@@ -453,7 +504,7 @@
       </div>
 
       <!-- Action Buttons Row -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.15rem;">
+      <div id="traffic-action-buttons-grid" class="traffic-grid-2col" style="display:grid !important; grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:0.75rem; margin-bottom:1.15rem;">
         <a href="/api/admin/export-csv" style="display:flex; align-items:center; justify-content:center; gap:0.65rem; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:16px; padding:0.85rem 1rem; color:#0f172a; font-weight:700; font-size:0.92rem; text-decoration:none; box-shadow:0 2px 6px rgba(0,0,0,0.03); transition:all 0.2s ease;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066fe" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -479,7 +530,7 @@
       </div>
 
       <!-- 9 Filter Cards Grid (2 Columns) -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.15rem;">
+      <div id="traffic-filter-cards-grid" class="traffic-grid-2col" style="display:grid !important; grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:0.75rem; margin-bottom:1.15rem;">
         <!-- 1. All Traffic -->
         <button type="button" class="traffic-filter-btn active" data-filter="all" data-active-color="#0f172a" style="display:flex; align-items:center; gap:0.85rem; padding:0.85rem 1rem; border-radius:18px; background:#f4f6f8; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
           <div style="width:44px; height:44px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
@@ -1685,7 +1736,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=36"></script>
+<script src="/js/dashboard.js?v=37"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
