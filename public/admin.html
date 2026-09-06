@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=12">
+  <link rel="stylesheet" href="/css/style.css?v=13">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -286,18 +286,22 @@
       }
     }
 
-    /* ── Facebook Sub-Source Analytics Widget (EXACT Match with Mockup) ── */
+    /* ── Facebook Sub-Source Analytics Widget (Seamless & Filled Design) ── */
     #fb-breakdown-card {
-      padding: 0.5rem 0 1.25rem 0 !important;
+      padding: 1.15rem !important;
       margin-bottom: 1.15rem !important;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
+      background: #ffffff !important;
+      border: 1px solid rgba(226, 232, 240, 0.85) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+      box-sizing: border-box !important;
     }
 
     .fb-subsource-header {
       margin-bottom: 0.85rem !important;
       text-align: left !important;
+      padding-bottom: 0.75rem !important;
+      border-bottom: 1px solid #f1f5f9 !important;
     }
 
     .fb-subsource-title-row {
@@ -314,24 +318,24 @@
 
     .fb-subsource-title {
       margin: 0 !important;
-      font-size: 1.2rem !important;
+      font-size: 1.12rem !important;
       font-weight: 800 !important;
       color: #0066fe !important;
       letter-spacing: -0.02em !important;
     }
 
     .fb-subsource-subtitle {
-      font-size: 0.82rem !important;
+      font-size: 0.78rem !important;
       font-weight: 600 !important;
-      color: #475569 !important;
-      margin-top: 0.25rem !important;
-      line-height: 1.35 !important;
+      color: #64748b !important;
+      margin-top: 0.2rem !important;
+      line-height: 1.3 !important;
     }
 
     .fb-subsource-stack {
       display: flex !important;
       flex-direction: column !important;
-      gap: 0.65rem !important;
+      gap: 0.45rem !important;
       width: 100% !important;
     }
 
@@ -339,12 +343,12 @@
       display: grid !important;
       grid-template-columns: 1fr auto 1fr !important;
       align-items: center !important;
-      padding: 0.65rem 1.25rem !important;
-      border-radius: 16px !important;
+      padding: 0.55rem 1rem !important;
+      border-radius: 14px !important;
       background: #ffffff !important;
-      min-height: 52px !important;
+      min-height: 50px !important;
       box-sizing: border-box !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02) !important;
       transition: transform 0.15s ease, box-shadow 0.15s ease !important;
     }
 
@@ -356,7 +360,7 @@
     }
 
     .fb-subsource-left span {
-      font-size: 0.95rem !important;
+      font-size: 0.92rem !important;
       font-weight: 800 !important;
       white-space: nowrap !important;
     }
@@ -368,82 +372,147 @@
     .fb-subsource-center {
       justify-self: center !important;
       text-align: center !important;
-      font-size: 1.85rem !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 0.5rem !important;
+      min-width: 90px !important;
+    }
+
+    .fb-subsource-num {
+      font-size: 1.65rem !important;
       font-weight: 900 !important;
       line-height: 1 !important;
-      padding: 0 0.5rem !important;
+    }
+
+    .fb-subsource-bar-track {
+      width: 100% !important;
+      max-width: 85px !important;
+      height: 5px !important;
+      background: rgba(0, 0, 0, 0.06) !important;
+      border-radius: 4px !important;
+      overflow: hidden !important;
+      margin-top: 3px !important;
+    }
+
+    .fb-subsource-bar-fill {
+      height: 100% !important;
+      border-radius: 4px !important;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     .fb-subsource-right {
       justify-self: end !important;
       text-align: right !important;
       color: #475569 !important;
-      font-size: 0.85rem !important;
+      font-size: 0.82rem !important;
       font-weight: 700 !important;
       white-space: nowrap !important;
     }
 
-    /* Individual Color Themes matching image */
+    /* Individual Color Themes */
     .fb-subsource-row.theme-profile {
       border: 1.5px solid #60a5fa !important;
+      background: rgba(239, 246, 255, 0.35) !important;
     }
     .fb-subsource-row.theme-profile .fb-subsource-left span,
-    .fb-subsource-row.theme-profile .fb-subsource-center {
+    .fb-subsource-row.theme-profile .fb-subsource-num {
       color: #0066fe !important;
+    }
+    .theme-profile .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #3b82f6, #0066fe) !important;
     }
 
     .fb-subsource-row.theme-group {
       border: 1.5px solid #c084fc !important;
+      background: rgba(250, 245, 255, 0.35) !important;
     }
     .fb-subsource-row.theme-group .fb-subsource-left span,
-    .fb-subsource-row.theme-group .fb-subsource-center {
+    .fb-subsource-row.theme-group .fb-subsource-num {
       color: #7c3aed !important;
+    }
+    .theme-group .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #a855f7, #7c3aed) !important;
     }
 
     .fb-subsource-row.theme-page {
       border: 1.5px solid #34d399 !important;
+      background: rgba(240, 253, 250, 0.35) !important;
     }
     .fb-subsource-row.theme-page .fb-subsource-left span,
-    .fb-subsource-row.theme-page .fb-subsource-center {
+    .fb-subsource-row.theme-page .fb-subsource-num {
       color: #059669 !important;
+    }
+    .theme-page .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #10b981, #059669) !important;
     }
 
     .fb-subsource-row.theme-story {
       border: 1.5px solid #fbbf24 !important;
+      background: rgba(255, 251, 235, 0.35) !important;
     }
     .fb-subsource-row.theme-story .fb-subsource-left span,
-    .fb-subsource-row.theme-story .fb-subsource-center {
+    .fb-subsource-row.theme-story .fb-subsource-num {
       color: #d97706 !important;
+    }
+    .theme-story .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #f59e0b, #d97706) !important;
     }
 
     .fb-subsource-row.theme-fake {
       border: 1.5px solid #f87171 !important;
+      background: rgba(254, 242, 242, 0.35) !important;
     }
     .fb-subsource-row.theme-fake .fb-subsource-left span,
-    .fb-subsource-row.theme-fake .fb-subsource-center {
+    .fb-subsource-row.theme-fake .fb-subsource-num {
       color: #dc2626 !important;
+    }
+    .theme-fake .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #ef4444, #dc2626) !important;
     }
 
     @media (max-width: 480px) {
+      #fb-breakdown-card {
+        padding: 0.85rem !important;
+        border-radius: 18px !important;
+      }
+      .fb-subsource-stack {
+        gap: 0.4rem !important;
+      }
       .fb-subsource-row {
-        padding: 0.6rem 0.95rem !important;
-        border-radius: 15px !important;
-        min-height: 50px !important;
+        padding: 0.5rem 0.85rem !important;
+        border-radius: 13px !important;
+        min-height: 48px !important;
       }
       .fb-subsource-left span {
         font-size: 0.88rem !important;
       }
-      .fb-subsource-center {
-        font-size: 1.75rem !important;
+      .fb-subsource-num {
+        font-size: 1.6rem !important;
+      }
+      .fb-subsource-bar-track {
+        max-width: 75px !important;
       }
       .fb-subsource-right {
-        font-size: 0.8rem !important;
+        font-size: 0.78rem !important;
       }
     }
 
+    [data-theme="dark"] #fb-breakdown-card {
+      background: var(--surface) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+    [data-theme="dark"] .fb-subsource-header {
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
     [data-theme="dark"] .fb-subsource-row {
       background: rgba(30, 41, 59, 0.85) !important;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    }
+    [data-theme="dark"] .fb-subsource-bar-track {
+      background: rgba(255, 255, 255, 0.12) !important;
     }
     [data-theme="dark"] .fb-subsource-right {
       color: #94a3b8 !important;
@@ -853,7 +922,10 @@
             <span>FB Profiles</span>
           </div>
           <div class="fb-subsource-center">
-            <span id="stat-fb-profiles">0</span>
+            <span id="stat-fb-profiles" class="fb-subsource-num">0</span>
+            <div class="fb-subsource-bar-track">
+              <div id="stat-fb-profiles-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
+            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-profiles-pct">0% of FB</span>
@@ -869,7 +941,10 @@
             <span>FB Groups</span>
           </div>
           <div class="fb-subsource-center">
-            <span id="stat-fb-groups">0</span>
+            <span id="stat-fb-groups" class="fb-subsource-num">0</span>
+            <div class="fb-subsource-bar-track">
+              <div id="stat-fb-groups-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
+            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-groups-pct">0% of FB</span>
@@ -885,7 +960,10 @@
             <span>FB Pages</span>
           </div>
           <div class="fb-subsource-center">
-            <span id="stat-fb-pages">0</span>
+            <span id="stat-fb-pages" class="fb-subsource-num">0</span>
+            <div class="fb-subsource-bar-track">
+              <div id="stat-fb-pages-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
+            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-pages-pct">0% of FB</span>
@@ -902,7 +980,10 @@
             <span>FB Stories</span>
           </div>
           <div class="fb-subsource-center">
-            <span id="stat-fb-stories">0</span>
+            <span id="stat-fb-stories" class="fb-subsource-num">0</span>
+            <div class="fb-subsource-bar-track">
+              <div id="stat-fb-stories-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
+            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-stories-pct">0% of FB</span>
@@ -925,7 +1006,10 @@
             <span>Fake / Blocked</span>
           </div>
           <div class="fb-subsource-center">
-            <span id="stat-fb-automated">0</span>
+            <span id="stat-fb-automated" class="fb-subsource-num">0</span>
+            <div class="fb-subsource-bar-track">
+              <div id="stat-fb-automated-bar" class="fb-subsource-bar-fill" style="width: 0%;"></div>
+            </div>
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-automated-pct">0% of FB</span>
@@ -2183,7 +2267,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=41"></script>
+<script src="/js/dashboard.js?v=42"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

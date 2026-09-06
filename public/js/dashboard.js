@@ -2075,6 +2075,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const fbAutoEl = document.getElementById('stat-fb-automated');
         if (fbAutoEl) fbAutoEl.textContent = '0';
 
+        ['profiles', 'groups', 'pages', 'stories', 'automated'].forEach(sub => {
+          const bar = document.getElementById(`stat-fb-${sub}-bar`);
+          if (bar) bar.style.width = '0%';
+        });
+
         // Reset filter counters
         ['all', 'organic', 'fb-profile', 'fb-group', 'fb-page', 'fb-story', 'suspicious', 'bot', 'country-block'].forEach(f => {
           const el = document.getElementById(`filter-count-${f}`);
@@ -2146,30 +2151,46 @@ document.addEventListener('DOMContentLoaded', () => {
       if (qualEl) qualEl.textContent = qualityPct + '%';
 
       // Facebook Sub-source Analytics
+      const profPct = fbTotalCount > 0 ? Math.round((fbProfilesCount / fbTotalCount) * 100) : 0;
+      const grpPct = fbTotalCount > 0 ? Math.round((fbGroupsCount / fbTotalCount) * 100) : 0;
+      const pgPct = fbTotalCount > 0 ? Math.round((fbPagesCount / fbTotalCount) * 100) : 0;
+      const stPct = fbTotalCount > 0 ? Math.round((fbStoriesCount / fbTotalCount) * 100) : 0;
+      const autoPct = fbTotalCount > 0 ? Math.round((fbAutomatedCount / fbTotalCount) * 100) : 0;
+
       const fbProfEl = document.getElementById('stat-fb-profiles');
       if (fbProfEl) fbProfEl.textContent = fbProfilesCount;
       const fbProfPctEl = document.getElementById('stat-fb-profiles-pct');
-      if (fbProfPctEl) fbProfPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbProfilesCount / fbTotalCount) * 100) : 0}% of FB`;
+      if (fbProfPctEl) fbProfPctEl.textContent = `${profPct}% of FB`;
+      const fbProfBar = document.getElementById('stat-fb-profiles-bar');
+      if (fbProfBar) fbProfBar.style.width = `${profPct}%`;
 
       const fbGrpEl = document.getElementById('stat-fb-groups');
       if (fbGrpEl) fbGrpEl.textContent = fbGroupsCount;
       const fbGrpPctEl = document.getElementById('stat-fb-groups-pct');
-      if (fbGrpPctEl) fbGrpPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbGroupsCount / fbTotalCount) * 100) : 0}% of FB`;
+      if (fbGrpPctEl) fbGrpPctEl.textContent = `${grpPct}% of FB`;
+      const fbGrpBar = document.getElementById('stat-fb-groups-bar');
+      if (fbGrpBar) fbGrpBar.style.width = `${grpPct}%`;
 
       const fbPgEl = document.getElementById('stat-fb-pages');
       if (fbPgEl) fbPgEl.textContent = fbPagesCount;
       const fbPgPctEl = document.getElementById('stat-fb-pages-pct');
-      if (fbPgPctEl) fbPgPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbPagesCount / fbTotalCount) * 100) : 0}% of FB`;
+      if (fbPgPctEl) fbPgPctEl.textContent = `${pgPct}% of FB`;
+      const fbPgBar = document.getElementById('stat-fb-pages-bar');
+      if (fbPgBar) fbPgBar.style.width = `${pgPct}%`;
 
       const fbStEl = document.getElementById('stat-fb-stories');
       if (fbStEl) fbStEl.textContent = fbStoriesCount;
       const fbStPctEl = document.getElementById('stat-fb-stories-pct');
-      if (fbStPctEl) fbStPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbStoriesCount / fbTotalCount) * 100) : 0}% of FB`;
+      if (fbStPctEl) fbStPctEl.textContent = `${stPct}% of FB`;
+      const fbStBar = document.getElementById('stat-fb-stories-bar');
+      if (fbStBar) fbStBar.style.width = `${stPct}%`;
 
       const fbAutoEl = document.getElementById('stat-fb-automated');
       if (fbAutoEl) fbAutoEl.textContent = fbAutomatedCount;
       const fbAutoPctEl = document.getElementById('stat-fb-automated-pct');
-      if (fbAutoPctEl) fbAutoPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbAutomatedCount / fbTotalCount) * 100) : 0}% of FB`;
+      if (fbAutoPctEl) fbAutoPctEl.textContent = `${autoPct}% of FB`;
+      const fbAutoBar = document.getElementById('stat-fb-automated-bar');
+      if (fbAutoBar) fbAutoBar.style.width = `${autoPct}%`;
 
       // Filter counters
       const cntAll = document.getElementById('filter-count-all');
