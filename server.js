@@ -597,14 +597,28 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     clicks: 0,
     domain: domain ? domain.trim().toLowerCase() : '',
     createdBy: req.session.username || 'admin',
-    // Facebook Traffic & AdX Shield Controls
-    fbTrafficEnabled: fbTrafficEnabled !== undefined ? Boolean(fbTrafficEnabled) : true,
-    allowFbProfiles: allowFbProfiles !== undefined ? Boolean(allowFbProfiles) : true,
-    allowFbGroups: allowFbGroups !== undefined ? Boolean(allowFbGroups) : true,
-    allowFbPages: allowFbPages !== undefined ? Boolean(allowFbPages) : true,
-    allowFbStories: allowFbStories !== undefined ? Boolean(allowFbStories) : true,
-    blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? Boolean(blockAutomatedUnknown) : true,
-    botProtection: botProtection !== undefined ? Boolean(botProtection) : true
+    // Facebook Traffic & AdX Shield Controls (Inherit from Editor user settings or defaults)
+    fbTrafficEnabled: fbTrafficEnabled !== undefined
+      ? Boolean(fbTrafficEnabled)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.fbTrafficEnabled !== false),
+    allowFbProfiles: allowFbProfiles !== undefined
+      ? Boolean(allowFbProfiles)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.allowFbProfiles !== false),
+    allowFbGroups: allowFbGroups !== undefined
+      ? Boolean(allowFbGroups)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.allowFbGroups !== false),
+    allowFbPages: allowFbPages !== undefined
+      ? Boolean(allowFbPages)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.allowFbPages !== false),
+    allowFbStories: allowFbStories !== undefined
+      ? Boolean(allowFbStories)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.allowFbStories !== false),
+    blockAutomatedUnknown: blockAutomatedUnknown !== undefined
+      ? Boolean(blockAutomatedUnknown)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.blockAutomatedUnknown !== false),
+    botProtection: botProtection !== undefined
+      ? Boolean(botProtection)
+      : (db.getUserByUsername(req.session.username)?.fbTrafficSettings?.botProtection !== false)
   };
 
   db.addLink(newLink);
@@ -1248,7 +1262,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can invite/create new users.' });
   }
 
-  const { username, password, role, permissions, allowedTargetDomains } = req.body;
+  const { username, password, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required.' });
   }
@@ -1276,6 +1290,17 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
     role: assignedRole,
     permissions: assignedPerms,
     allowedTargetDomains: processedAllowed,
+    fbTrafficSettings: (fbTrafficSettings && typeof fbTrafficSettings === 'object') ? fbTrafficSettings : {
+      fbTrafficEnabled: true,
+      allowFbProfiles: true,
+      allowFbGroups: true,
+      allowFbPages: true,
+      allowFbStories: true,
+      blockAutomatedUnknown: true,
+      botProtection: true
+    },
+    blockedCountries: Array.isArray(blockedCountries) ? blockedCountries : ['US', 'PK', 'IN', 'BD'],
+    countryBlockEnabled: countryBlockEnabled !== false,
     createdAt: new Date().toISOString()
   };
 
@@ -1293,6 +1318,9 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
       role: newUser.role,
       permissions: newUser.permissions,
       allowedTargetDomains: newUser.allowedTargetDomains,
+      fbTrafficSettings: newUser.fbTrafficSettings,
+      blockedCountries: newUser.blockedCountries,
+      countryBlockEnabled: newUser.countryBlockEnabled,
       directLoginUrl: directLoginUrl,
       createdAt: newUser.createdAt
     }
@@ -1304,7 +1332,7 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can modify user roles & permissions.' });
   }
 
-  const { id, role, permissions, allowedTargetDomains } = req.body;
+  const { id, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled } = req.body;
   const users = db.getUsers();
   const target = users.find(u => u.id === id);
 
@@ -1316,7 +1344,7 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Cannot change role of primary Super Admin account.' });
   }
 
-  db.updateUserRole(id, role, permissions, allowedTargetDomains);
+  db.updateUserRole(id, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled);
   res.json({ success: true });
 });
 
@@ -1582,8 +1610,16 @@ async function handleShortlinkRedirect(req, res) {
   }
 
   // C. Multi-signal Auto-Shield (Rules 10-20: never block on single signal, use risk score)
-  // Check if Bot Protection is active for this link / globally (Rule 7: Bot protection ON/OFF)
-  const isBotProtectionOn = (link.botProtection !== undefined) ? !!link.botProtection : (settings.botProtectionEnabled !== false);
+  // Check if Bot Protection is active for this link / creator / globally (Rule 7: Bot protection ON/OFF)
+  const linkCreator = db.getUserByUsername(link.createdBy);
+  const isEditorLink = linkCreator ? (linkCreator.role === 'Editor') : (link.createdBy && link.createdBy.toLowerCase() !== 'admin');
+  const creatorFbSettings = (isEditorLink && linkCreator && linkCreator.fbTrafficSettings) ? linkCreator.fbTrafficSettings : null;
+
+  const isBotProtectionOn = (link.botProtection !== undefined)
+    ? !!link.botProtection
+    : (creatorFbSettings && creatorFbSettings.botProtection !== undefined
+        ? !!creatorFbSettings.botProtection
+        : (settings.botProtectionEnabled !== false));
   if (isBotProtectionOn && !isAllowlisted(clientIp)) {
     const shieldResult = checkAndApplyAutoShield(clientIp, geoInfo.isVpn, userAgent, code, geoInfo, req);
 
@@ -1855,15 +1891,14 @@ async function handleShortlinkRedirect(req, res) {
   }
 
   // 5.5 Editor Accounts Country Block Check ("only Editor account py apply krna hy unko show na ho")
-  const linkCreator = db.getUserByUsername(link.createdBy);
-  const isEditorLink = linkCreator ? (linkCreator.role === 'Editor') : (link.createdBy && link.createdBy.toLowerCase() !== 'admin');
-
   if (isEditorLink) {
+    const isEditorCountryBlockOn = (linkCreator && linkCreator.countryBlockEnabled !== undefined)
+      ? !!linkCreator.countryBlockEnabled
+      : (settings.editorCountryBlockEnabled !== false);
+
     const effectiveBlockedCountries = (linkCreator && Array.isArray(linkCreator.blockedCountries) && linkCreator.blockedCountries.length > 0)
       ? linkCreator.blockedCountries
       : (settings.editorBlockedCountries || []);
-
-    const isEditorCountryBlockOn = (settings.editorCountryBlockEnabled !== false);
 
     if (isEditorCountryBlockOn && effectiveBlockedCountries.length > 0) {
       const clientCountry = (geoInfo.countryCode || '').trim().toUpperCase();
@@ -1908,13 +1943,42 @@ async function handleShortlinkRedirect(req, res) {
   const finalRisk = computeTrafficRiskScore(clientIp, userAgent, geoInfo, rawReferer, link.code, req);
   const isDatacenter = isDatacenterIsp(geoInfo.isp);
 
-  // Resolve Filtering Policies for this link (with global defaults)
-  const fbTrafficEnabled = (link.fbTrafficEnabled !== undefined) ? !!link.fbTrafficEnabled : (settings.fbTrafficEnabled !== false);
-  const allowFbProfiles = (link.allowFbProfiles !== undefined) ? !!link.allowFbProfiles : (settings.allowFbProfiles !== false);
-  const allowFbGroups = (link.allowFbGroups !== undefined) ? !!link.allowFbGroups : (settings.allowFbGroups !== false);
-  const allowFbPages = (link.allowFbPages !== undefined) ? !!link.allowFbPages : (settings.allowFbPages !== false);
-  const allowFbStories = (link.allowFbStories !== undefined) ? !!link.allowFbStories : (settings.allowFbStories !== false);
-  const blockAutomatedUnknown = (link.blockAutomatedUnknown !== undefined) ? !!link.blockAutomatedUnknown : (settings.blockAutomatedUnknown !== false);
+  // Resolve Filtering Policies for this link (shortlink override -> creator Editor settings -> system global defaults)
+  const fbTrafficEnabled = (link.fbTrafficEnabled !== undefined)
+    ? !!link.fbTrafficEnabled
+    : (creatorFbSettings && creatorFbSettings.fbTrafficEnabled !== undefined
+        ? !!creatorFbSettings.fbTrafficEnabled
+        : (settings.fbTrafficEnabled !== false));
+
+  const allowFbProfiles = (link.allowFbProfiles !== undefined)
+    ? !!link.allowFbProfiles
+    : (creatorFbSettings && creatorFbSettings.allowFbProfiles !== undefined
+        ? !!creatorFbSettings.allowFbProfiles
+        : (settings.allowFbProfiles !== false));
+
+  const allowFbGroups = (link.allowFbGroups !== undefined)
+    ? !!link.allowFbGroups
+    : (creatorFbSettings && creatorFbSettings.allowFbGroups !== undefined
+        ? !!creatorFbSettings.allowFbGroups
+        : (settings.allowFbGroups !== false));
+
+  const allowFbPages = (link.allowFbPages !== undefined)
+    ? !!link.allowFbPages
+    : (creatorFbSettings && creatorFbSettings.allowFbPages !== undefined
+        ? !!creatorFbSettings.allowFbPages
+        : (settings.allowFbPages !== false));
+
+  const allowFbStories = (link.allowFbStories !== undefined)
+    ? !!link.allowFbStories
+    : (creatorFbSettings && creatorFbSettings.allowFbStories !== undefined
+        ? !!creatorFbSettings.allowFbStories
+        : (settings.allowFbStories !== false));
+
+  const blockAutomatedUnknown = (link.blockAutomatedUnknown !== undefined)
+    ? !!link.blockAutomatedUnknown
+    : (creatorFbSettings && creatorFbSettings.blockAutomatedUnknown !== undefined
+        ? !!creatorFbSettings.blockAutomatedUnknown
+        : (settings.blockAutomatedUnknown !== false));
 
   let isGenuineOrganic = false;
   let clickStatus = 'FALLBACK_REDIRECT';

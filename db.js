@@ -316,6 +316,17 @@ module.exports = {
         permissions: userPerms,
         allowedTargetDomains: Array.isArray(u.allowedTargetDomains) ? u.allowedTargetDomains : [],
         twoFactorEnabled: !!u.twoFactorEnabled,
+        fbTrafficSettings: u.fbTrafficSettings || {
+          fbTrafficEnabled: true,
+          allowFbProfiles: true,
+          allowFbGroups: true,
+          allowFbPages: true,
+          allowFbStories: true,
+          blockAutomatedUnknown: true,
+          botProtection: true
+        },
+        blockedCountries: Array.isArray(u.blockedCountries) ? u.blockedCountries : ['US', 'PK', 'IN', 'BD'],
+        countryBlockEnabled: u.countryBlockEnabled !== false,
         createdAt: u.createdAt || new Date().toISOString()
       };
     });
@@ -345,6 +356,34 @@ module.exports = {
     } else {
       user.allowedTargetDomains = [];
     }
+    if (user.fbTrafficSettings && typeof user.fbTrafficSettings === 'object') {
+      user.fbTrafficSettings = {
+        fbTrafficEnabled: user.fbTrafficSettings.fbTrafficEnabled !== false,
+        allowFbProfiles: user.fbTrafficSettings.allowFbProfiles !== false,
+        allowFbGroups: user.fbTrafficSettings.allowFbGroups !== false,
+        allowFbPages: user.fbTrafficSettings.allowFbPages !== false,
+        allowFbStories: user.fbTrafficSettings.allowFbStories !== false,
+        blockAutomatedUnknown: user.fbTrafficSettings.blockAutomatedUnknown !== false,
+        botProtection: user.fbTrafficSettings.botProtection !== false
+      };
+    } else {
+      user.fbTrafficSettings = {
+        fbTrafficEnabled: true,
+        allowFbProfiles: true,
+        allowFbGroups: true,
+        allowFbPages: true,
+        allowFbStories: true,
+        blockAutomatedUnknown: true,
+        botProtection: true
+      };
+    }
+    if (Array.isArray(user.blockedCountries)) {
+      user.blockedCountries = [...new Set(user.blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
+    } else {
+      user.blockedCountries = ['US', 'PK', 'IN', 'BD'];
+    }
+    user.countryBlockEnabled = (user.countryBlockEnabled !== false);
+
     users.push(user);
     writeJson(FILES.users, users);
     return user;
@@ -354,7 +393,7 @@ module.exports = {
     users = users.filter(u => u.id !== id);
     writeJson(FILES.users, users);
   },
-  updateUserRole: (id, role, permissions, allowedTargetDomains) => {
+  updateUserRole: (id, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled) => {
     const users = readJson(FILES.users, []);
     const user = users.find(u => u.id === id);
     if (user) {
@@ -370,6 +409,23 @@ module.exports = {
             return val;
           })
           .filter(Boolean))];
+      }
+      if (fbTrafficSettings !== undefined && typeof fbTrafficSettings === 'object') {
+        user.fbTrafficSettings = {
+          fbTrafficEnabled: fbTrafficSettings.fbTrafficEnabled !== false,
+          allowFbProfiles: fbTrafficSettings.allowFbProfiles !== false,
+          allowFbGroups: fbTrafficSettings.allowFbGroups !== false,
+          allowFbPages: fbTrafficSettings.allowFbPages !== false,
+          allowFbStories: fbTrafficSettings.allowFbStories !== false,
+          blockAutomatedUnknown: fbTrafficSettings.blockAutomatedUnknown !== false,
+          botProtection: fbTrafficSettings.botProtection !== false
+        };
+      }
+      if (Array.isArray(blockedCountries)) {
+        user.blockedCountries = [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
+      }
+      if (countryBlockEnabled !== undefined) {
+        user.countryBlockEnabled = !!countryBlockEnabled;
       }
       writeJson(FILES.users, users);
     }

@@ -3181,8 +3181,116 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Populate Facebook Traffic & AdX Controls in Edit User modal
+    const userFb = user.fbTrafficSettings || {
+      fbTrafficEnabled: true,
+      allowFbProfiles: true,
+      allowFbGroups: true,
+      allowFbPages: true,
+      allowFbStories: true,
+      blockAutomatedUnknown: true,
+      botProtection: true
+    };
+    if (document.getElementById('edit-user-fb-master')) document.getElementById('edit-user-fb-master').checked = userFb.fbTrafficEnabled !== false;
+    if (document.getElementById('edit-user-fb-profiles')) document.getElementById('edit-user-fb-profiles').checked = userFb.allowFbProfiles !== false;
+    if (document.getElementById('edit-user-fb-groups')) document.getElementById('edit-user-fb-groups').checked = userFb.allowFbGroups !== false;
+    if (document.getElementById('edit-user-fb-pages')) document.getElementById('edit-user-fb-pages').checked = userFb.allowFbPages !== false;
+    if (document.getElementById('edit-user-fb-stories')) document.getElementById('edit-user-fb-stories').checked = userFb.allowFbStories !== false;
+    if (document.getElementById('edit-user-fb-automated')) document.getElementById('edit-user-fb-automated').checked = userFb.blockAutomatedUnknown !== false;
+    if (document.getElementById('edit-user-fb-bot')) document.getElementById('edit-user-fb-bot').checked = userFb.botProtection !== false;
+
+    // Populate Country Block settings in Edit User modal
+    if (document.getElementById('edit-user-country-block-enabled')) {
+      document.getElementById('edit-user-country-block-enabled').checked = (user.countryBlockEnabled !== false);
+    }
+    const userBlockedList = Array.isArray(user.blockedCountries) ? user.blockedCountries : ['US', 'PK', 'IN', 'BD'];
+    editUserBlockedCountries = new Set(userBlockedList);
+    renderEditUserBlockedCountriesTags();
+
     if (editUserModal) { editUserModal.style.display = 'flex'; }
   };
+
+  // ── Edit User Country Blocking Management ──
+  let editUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+
+  function renderEditUserBlockedCountriesTags() {
+    const container = document.getElementById('edit-user-blocked-tags');
+    if (!container) return;
+
+    if (editUserBlockedCountries.size === 0) {
+      container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">No countries blocked.</span>';
+    } else {
+      container.innerHTML = Array.from(editUserBlockedCountries).sort().map(code => {
+        return `<span style="display:inline-flex; align-items:center; gap:0.35rem; background:#fee2e2; border:1px solid #f87171; color:#991b1b; padding:0.2rem 0.5rem; border-radius:18px; font-weight:800; font-size:0.72rem;">
+          <span>${code}</span>
+          <button type="button" class="remove-edit-user-country-btn" data-code="${code}" style="background:none; border:none; color:#dc2626; font-weight:900; cursor:pointer; padding:0; line-height:1; font-size:0.8rem;" title="Remove ${code}">✕</button>
+        </span>`;
+      }).join('');
+    }
+
+    // Sync quick pills
+    document.querySelectorAll('.edit-quick-country-btn').forEach(btn => {
+      const code = btn.getAttribute('data-code');
+      if (editUserBlockedCountries.has(code)) {
+        btn.style.background = '#fef2f2';
+        btn.style.borderColor = '#dc2626';
+        btn.style.color = '#991b1b';
+        btn.style.boxShadow = '0 0 0 1px #dc2626';
+      } else {
+        btn.style.background = '#f3f4f6';
+        btn.style.borderColor = '#d1d5db';
+        btn.style.color = '#374151';
+        btn.style.boxShadow = 'none';
+      }
+    });
+  }
+
+  // Quick button clicks for Edit User
+  document.querySelectorAll('.edit-quick-country-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+      if (editUserBlockedCountries.has(code)) editUserBlockedCountries.delete(code);
+      else editUserBlockedCountries.add(code);
+      renderEditUserBlockedCountriesTags();
+    });
+  });
+
+  // Remove tag delegation for Edit User
+  const editUserTagsContainer = document.getElementById('edit-user-blocked-tags');
+  if (editUserTagsContainer) {
+    editUserTagsContainer.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-edit-user-country-btn');
+      if (removeBtn) {
+        const code = removeBtn.getAttribute('data-code');
+        if (code) {
+          editUserBlockedCountries.delete(code);
+          renderEditUserBlockedCountriesTags();
+        }
+      }
+    });
+  }
+
+  // Add custom country code for Edit User
+  const btnAddEditUserCountry = document.getElementById('btn-edit-user-add-country');
+  const inputEditUserCustomCountry = document.getElementById('edit-user-custom-country-code');
+  if (btnAddEditUserCountry && inputEditUserCustomCountry) {
+    const addCountry = () => {
+      const code = inputEditUserCustomCountry.value.trim().toUpperCase();
+      if (!code || code.length !== 2) {
+        showAlert('Please enter a valid 2-letter ISO country code (e.g. GB, CA, SA).', true);
+        return;
+      }
+      editUserBlockedCountries.add(code);
+      inputEditUserCustomCountry.value = '';
+      renderEditUserBlockedCountriesTags();
+    };
+    btnAddEditUserCountry.addEventListener('click', addCountry);
+    inputEditUserCustomCountry.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addCountry(); }
+    });
+  }
 
   if (editUserModalClose) editUserModalClose.addEventListener('click', () => { if (editUserModal) editUserModal.style.display = 'none'; });
   if (editUserModal) editUserModal.addEventListener('click', (e) => { if (e.target === editUserModal) editUserModal.style.display = 'none'; });
@@ -3243,6 +3351,18 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(inp => inp.value.trim())
         .filter(Boolean);
 
+      const fbTrafficSettings = {
+        fbTrafficEnabled: document.getElementById('edit-user-fb-master') ? document.getElementById('edit-user-fb-master').checked : true,
+        allowFbProfiles: document.getElementById('edit-user-fb-profiles') ? document.getElementById('edit-user-fb-profiles').checked : true,
+        allowFbGroups: document.getElementById('edit-user-fb-groups') ? document.getElementById('edit-user-fb-groups').checked : true,
+        allowFbPages: document.getElementById('edit-user-fb-pages') ? document.getElementById('edit-user-fb-pages').checked : true,
+        allowFbStories: document.getElementById('edit-user-fb-stories') ? document.getElementById('edit-user-fb-stories').checked : true,
+        blockAutomatedUnknown: document.getElementById('edit-user-fb-automated') ? document.getElementById('edit-user-fb-automated').checked : true,
+        botProtection: document.getElementById('edit-user-fb-bot') ? document.getElementById('edit-user-fb-bot').checked : true
+      };
+      const countryBlockEnabled = document.getElementById('edit-user-country-block-enabled') ? document.getElementById('edit-user-country-block-enabled').checked : true;
+      const blockedCountries = Array.from(editUserBlockedCountries);
+
       editUserSaveRoleBtn.textContent = '⏳ Saving...';
       editUserSaveRoleBtn.disabled = true;
 
@@ -3250,14 +3370,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/api/admin/users/update-role', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: _editUserId, role, permissions, allowedTargetDomains })
+          body: JSON.stringify({
+            id: _editUserId,
+            role,
+            permissions,
+            allowedTargetDomains,
+            fbTrafficSettings,
+            blockedCountries,
+            countryBlockEnabled
+          })
         });
         const data = await res.json();
         editUserSaveRoleBtn.textContent = '💾 Save Role & Permissions';
         editUserSaveRoleBtn.disabled = false;
         if (res.ok && data.success) {
           if (editUserRoleSuccess) {
-            editUserRoleSuccess.textContent = `✅ Role, Permissions & Assigned Sites updated successfully!`;
+            editUserRoleSuccess.textContent = `✅ Role, Permissions, Facebook Controls & Country Block updated successfully!`;
             editUserRoleSuccess.style.display = 'block';
           }
           showAlert(`✅ Settings Saved Successfully for user '${_editModalUsername}'!`);
@@ -3346,6 +3474,89 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── New User Country Blocking Management ──
+  let newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+
+  function renderNewUserBlockedCountriesTags() {
+    const container = document.getElementById('new-user-blocked-tags');
+    if (!container) return;
+
+    if (newUserBlockedCountries.size === 0) {
+      container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">No countries blocked.</span>';
+    } else {
+      container.innerHTML = Array.from(newUserBlockedCountries).sort().map(code => {
+        return `<span style="display:inline-flex; align-items:center; gap:0.35rem; background:#fee2e2; border:1px solid #f87171; color:#991b1b; padding:0.2rem 0.5rem; border-radius:18px; font-weight:800; font-size:0.72rem;">
+          <span>${code}</span>
+          <button type="button" class="remove-new-user-country-btn" data-code="${code}" style="background:none; border:none; color:#dc2626; font-weight:900; cursor:pointer; padding:0; line-height:1; font-size:0.8rem;" title="Remove ${code}">✕</button>
+        </span>`;
+      }).join('');
+    }
+
+    // Sync quick pills
+    document.querySelectorAll('.new-quick-country-btn').forEach(btn => {
+      const code = btn.getAttribute('data-code');
+      if (newUserBlockedCountries.has(code)) {
+        btn.style.background = '#fef2f2';
+        btn.style.borderColor = '#dc2626';
+        btn.style.color = '#991b1b';
+        btn.style.boxShadow = '0 0 0 1px #dc2626';
+      } else {
+        btn.style.background = '#f3f4f6';
+        btn.style.borderColor = '#d1d5db';
+        btn.style.color = '#374151';
+        btn.style.boxShadow = 'none';
+      }
+    });
+  }
+
+  // Quick button clicks for New User
+  document.querySelectorAll('.new-quick-country-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+      if (newUserBlockedCountries.has(code)) newUserBlockedCountries.delete(code);
+      else newUserBlockedCountries.add(code);
+      renderNewUserBlockedCountriesTags();
+    });
+  });
+
+  // Remove tag delegation for New User
+  const newUserTagsContainer = document.getElementById('new-user-blocked-tags');
+  if (newUserTagsContainer) {
+    newUserTagsContainer.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-new-user-country-btn');
+      if (removeBtn) {
+        const code = removeBtn.getAttribute('data-code');
+        if (code) {
+          newUserBlockedCountries.delete(code);
+          renderNewUserBlockedCountriesTags();
+        }
+      }
+    });
+  }
+
+  // Add custom country code for New User
+  const btnAddNewUserCountry = document.getElementById('btn-new-user-add-country');
+  const inputNewUserCustomCountry = document.getElementById('new-user-custom-country-code');
+  if (btnAddNewUserCountry && inputNewUserCustomCountry) {
+    const addCountry = () => {
+      const code = inputNewUserCustomCountry.value.trim().toUpperCase();
+      if (!code || code.length !== 2) {
+        showAlert('Please enter a valid 2-letter ISO country code (e.g. GB, CA, SA).', true);
+        return;
+      }
+      newUserBlockedCountries.add(code);
+      inputNewUserCustomCountry.value = '';
+      renderNewUserBlockedCountriesTags();
+    };
+    btnAddNewUserCountry.addEventListener('click', addCountry);
+    inputNewUserCustomCountry.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addCountry(); }
+    });
+  }
+  renderNewUserBlockedCountriesTags();
+
   if (inviteUserForm) {
     inviteUserForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -3362,13 +3573,33 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(inp => inp.value.trim())
         .filter(Boolean);
 
+      const fbTrafficSettings = {
+        fbTrafficEnabled: document.getElementById('new-user-fb-master') ? document.getElementById('new-user-fb-master').checked : true,
+        allowFbProfiles: document.getElementById('new-user-fb-profiles') ? document.getElementById('new-user-fb-profiles').checked : true,
+        allowFbGroups: document.getElementById('new-user-fb-groups') ? document.getElementById('new-user-fb-groups').checked : true,
+        allowFbPages: document.getElementById('new-user-fb-pages') ? document.getElementById('new-user-fb-pages').checked : true,
+        allowFbStories: document.getElementById('new-user-fb-stories') ? document.getElementById('new-user-fb-stories').checked : true,
+        blockAutomatedUnknown: document.getElementById('new-user-fb-automated') ? document.getElementById('new-user-fb-automated').checked : true,
+        botProtection: document.getElementById('new-user-fb-bot') ? document.getElementById('new-user-fb-bot').checked : true
+      };
+      const countryBlockEnabled = document.getElementById('new-user-country-block-enabled') ? document.getElementById('new-user-country-block-enabled').checked : true;
+      const blockedCountries = Array.from(newUserBlockedCountries);
+
       try {
         const res = await fetch('/api/admin/users/invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, role, permissions, allowedTargetDomains })
+          body: JSON.stringify({
+            username,
+            password,
+            role,
+            permissions,
+            allowedTargetDomains,
+            fbTrafficSettings,
+            blockedCountries,
+            countryBlockEnabled
+          })
         });
-
 
         const data = await res.json();
         if (res.ok && data.success) {
@@ -3402,6 +3633,16 @@ document.addEventListener('DOMContentLoaded', () => {
           showAlert(`✅ User '${username}' (${role}) created successfully!`);
           
           inviteUserForm.reset();
+          newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+          renderNewUserBlockedCountriesTags();
+          if (document.getElementById('new-user-country-block-enabled')) {
+            document.getElementById('new-user-country-block-enabled').checked = true;
+          }
+          ['new-user-fb-master', 'new-user-fb-profiles', 'new-user-fb-groups', 'new-user-fb-pages', 'new-user-fb-stories', 'new-user-fb-automated', 'new-user-fb-bot'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.checked = true;
+          });
+
           loadUsers();
 
           // Keep user strictly on Settings tab

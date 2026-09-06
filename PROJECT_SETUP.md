@@ -49,8 +49,23 @@ All **7 Facebook Traffic & AdX Monetization Controls** are fully implemented, ve
 | **Visibility** | Hidden from Editors | Editors cannot see the country block card, settings, or log tags. |
 | **Blocked Action** | 302 Redirect to Fallback | Blocked visitor goes straight to `fallbackUrl` (e.g. google.com); target AdX URL is never exposed. |
 | **Audit Status** | `EDITOR_COUNTRY_BLOCKED` | Logged for Admin in Tab 3 with country name/flag. Masked as `FALLBACK_REDIRECT` for Editor views. |
-| **Default Blocked Countries** | `['PK', 'IN', 'BD']` | Fully customizable by Super Admin in Tab 4 (IP Firewall) via quick pills or custom ISO codes. |
-| **Automated Verification** | `node test_editor_country_block.js` | 8/8 automated tests passing (100%). |
+| **Default Blocked Countries** | `['US', 'PK', 'IN', 'BD']` | Fully customizable by Super Admin in Tab 4 (IP Firewall) or per-editor in Tab 5 via quick pills or custom ISO codes. |
+| **Automated Verification** | `node test_editor_country_block.js` & `node test_per_editor_rules.js` | 14/14 automated tests passing (100%). |
+
+## 👥 Implementation Status: Per-Editor Traffic Controls & Clean Link Creation (100% Complete)
+
+> **Key Rule ("1 by 1 Apply & Clean Admin Link Creation"):**
+> 1. Link Creation on Tab 1 is kept **clean, fast, and simple** without the 7 toggle switches cluttering the form.
+> 2. Admin can configure the **7 Facebook Traffic Rules** and **Country Blocking** **1-by-1 per Editor account** in Tab 5 (Settings / Team Management).
+> 3. Each Editor's shortlinks automatically inherit and enforce their specific account's Facebook and Country Block rules.
+
+| Property | Value | Description |
+|---|---|---|
+| **Tab 1 Link Creation** | Clean & Fast | Only Target URL, Platform chips, Upload Image, and Create Shortlink button. No clutter. |
+| **New Editor Invite Form** | Per-User 7 FB Toggles + Country Pills | Full control over Facebook sub-sources and blocked countries when inviting an Editor. |
+| **Edit Editor Modal** | Full 1-by-1 Editing | Admin can edit an existing Editor's Facebook rules and blocked countries anytime. |
+| **Inheritance & Hierarchy** | Link Override → Editor Settings → Global Defaults | Seamless enforcement upon redirect in `server.js`. |
+| **Editor Privacy** | 100% Hidden from Editors | Editors never see firewall rules, country block tags, or block statuses. |
 
 ## 🛡️ Traffic Quality & Bot Protection Features (Previous 52 Requirements)
 

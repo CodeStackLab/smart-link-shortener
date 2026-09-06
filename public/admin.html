@@ -127,114 +127,6 @@
           </div>
         </div>
 
-        <!-- 🎯 Facebook Traffic & AdX Filtering Controls (7 Controls) -->
-        <div class="form-group" id="fb-traffic-controls-section" style="margin-top:0.95rem; background:linear-gradient(135deg, rgba(24,119,242,0.06) 0%, rgba(99,102,241,0.08) 100%); border:1.5px solid rgba(24,119,242,0.3); border-radius:14px; padding:1rem;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.4rem;">
-            <div style="font-weight:900; font-size:0.88rem; color:#1877f2; display:flex; align-items:center; gap:0.4rem; text-transform:uppercase; letter-spacing:0.02em;">
-              <span>🎯 Facebook Traffic &amp; AdX Monetization Controls</span>
-            </div>
-            <span class="badge" style="background:#1877f2; color:#fff; font-weight:800; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:8px;">
-              AdX Protected
-            </span>
-          </div>
-          <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.85rem; line-height:1.4;">
-            Filter and route Facebook sub-sources to your AdX ads target URL. Unallowed or bot traffic is safely sent to Fallback URL.
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:0.6rem;">
-            <!-- 1. Facebook Traffic Master Switch -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1.5px solid #1877f2; border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#1877f2; display:flex; align-items:center; gap:0.35rem;">
-                  <span>🔵 1. Facebook Traffic Master</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Turn ON to route Facebook visitors to AdX. Turn OFF to block all Facebook traffic to Fallback.
-                </div>
-              </div>
-              <input type="checkbox" id="fb-traffic-master" checked style="width:20px; height:20px; accent-color:#1877f2; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-
-            <!-- 2. Profile-Origin Traffic -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#0284c7; display:flex; align-items:center; gap:0.35rem;">
-                  <span>👤 2. Profile-Origin Traffic (Separate Category)</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Visitors from personal timelines/profiles. Analyzed in separate category in Traffic Logs.
-                </div>
-              </div>
-              <input type="checkbox" id="fb-allow-profiles" checked style="width:20px; height:20px; accent-color:#0284c7; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-
-            <!-- 3. Groups Traffic -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#7c3aed; display:flex; align-items:center; gap:0.35rem;">
-                  <span>👥 3. Facebook Groups Traffic</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Allow or block clicks originating from Facebook Groups (/groups/ or group shares).
-                </div>
-              </div>
-              <input type="checkbox" id="fb-allow-groups" checked style="width:20px; height:20px; accent-color:#7c3aed; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-
-            <!-- 4. Pages Traffic -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#059669; display:flex; align-items:center; gap:0.35rem;">
-                  <span>📄 4. Facebook Pages Traffic</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Allow or block visitors originating from Facebook Pages/Ads (/pages/ or page_id).
-                </div>
-              </div>
-              <input type="checkbox" id="fb-allow-pages" checked style="width:20px; height:20px; accent-color:#059669; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-
-            <!-- 5. Stories Traffic -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#d97706; display:flex; align-items:center; gap:0.35rem;">
-                  <span>📱 5. Facebook Stories Traffic</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Allow or block mobile stories traffic (sfnsn notification notes &amp; stories path).
-                </div>
-              </div>
-              <input type="checkbox" id="fb-allow-stories" checked style="width:20px; height:20px; accent-color:#d97706; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-
-            <!-- 6. Unknown / Automated Traffic -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#dc2626; display:flex; align-items:center; gap:0.35rem;">
-                  <span>🛡️ 6. Block Unknown &amp; Automated Traffic</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Auto-block fake FB referrers, datacenter IPs, and headless scrapers to fallback.
-                </div>
-              </div>
-              <input type="checkbox" id="fb-block-automated" checked style="width:20px; height:20px; accent-color:#dc2626; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-
-            <!-- 7. Bot Protection -->
-            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
-              <div>
-                <div style="font-weight:800; font-size:0.84rem; color:#4338ca; display:flex; align-items:center; gap:0.35rem;">
-                  <span>🤖 7. Bot Protection Shield</span>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
-                  Multi-signal real-time threat screening, ASN protection, and crawler filtering.
-                </div>
-              </div>
-              <input type="checkbox" id="fb-bot-protection" checked style="width:20px; height:20px; accent-color:#4338ca; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
-            </label>
-          </div>
-        </div>
-
         <!-- 2. UPLOAD IMAGE (Optional) -->
         <div class="form-group" style="margin-top:0.85rem;" id="link-image-upload-section">
           <label style="font-weight:800; text-transform:uppercase; font-size:0.825rem; letter-spacing:0.04em; color:var(--text-primary); display:block; margin-bottom:0.2rem;">
@@ -1156,6 +1048,101 @@
             </div>
           </div>
 
+          <!-- 🎯 Facebook Traffic & AdX Controls for New User -->
+          <div style="margin-bottom:0.95rem; background:linear-gradient(135deg, rgba(24,119,242,0.06) 0%, rgba(99,102,241,0.08) 100%); border:1.5px solid rgba(24,119,242,0.3); border-radius:12px; padding:0.85rem 0.95rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="font-weight:900; font-size:0.82rem; color:#1877f2; display:flex; align-items:center; gap:0.35rem; text-transform:uppercase; letter-spacing:0.02em;">
+                <span>🎯 Facebook Traffic &amp; AdX Controls for this User:</span>
+              </div>
+              <span class="badge" style="background:#1877f2; color:#fff; font-weight:800; font-size:0.65rem; padding:0.18rem 0.5rem; border-radius:6px;">Per-User Rules</span>
+            </div>
+            <div style="font-size:0.69rem; color:var(--text-muted); margin-bottom:0.65rem;">
+              Configure which Facebook traffic types are routed to AdX vs Fallback on this user's links.
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.45rem;">
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1.5px solid #1877f2; border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#1877f2;">🔵 1. Facebook Traffic Master (ON/OFF)</div>
+                <input type="checkbox" id="new-user-fb-master" checked style="width:18px; height:18px; accent-color:#1877f2; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#0284c7;">👤 2. Profile-Origin Traffic (Separate Category)</div>
+                <input type="checkbox" id="new-user-fb-profiles" checked style="width:18px; height:18px; accent-color:#0284c7; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#7c3aed;">👥 3. Groups Traffic (Allow/Block)</div>
+                <input type="checkbox" id="new-user-fb-groups" checked style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#059669;">📄 4. Pages Traffic (Allow/Block)</div>
+                <input type="checkbox" id="new-user-fb-pages" checked style="width:18px; height:18px; accent-color:#059669; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#d97706;">📱 5. Stories Traffic (Allow/Block)</div>
+                <input type="checkbox" id="new-user-fb-stories" checked style="width:18px; height:18px; accent-color:#d97706; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🛡️ 6. Block Unknown &amp; Automated Traffic</div>
+                <input type="checkbox" id="new-user-fb-automated" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#4338ca;">🤖 7. Bot Protection Shield (ON/OFF)</div>
+                <input type="checkbox" id="new-user-fb-bot" checked style="width:18px; height:18px; accent-color:#4338ca; cursor:pointer;">
+              </label>
+            </div>
+          </div>
+
+          <!-- 🌍 Country Block Controls for New User -->
+          <div style="margin-bottom:0.95rem; background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(185,28,28,0.08) 100%); border:1.5px solid rgba(239,68,68,0.3); border-radius:12px; padding:0.85rem 0.95rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="font-weight:900; font-size:0.82rem; color:#dc2626; display:flex; align-items:center; gap:0.35rem; text-transform:uppercase; letter-spacing:0.02em;">
+                <span>🌍 Country Blocking for this User's Links:</span>
+              </div>
+              <span class="badge" style="background:#dc2626; color:#fff; font-weight:800; font-size:0.65rem; padding:0.18rem 0.5rem; border-radius:6px;">Country Filter</span>
+            </div>
+            <div style="font-size:0.69rem; color:var(--text-muted); margin-bottom:0.65rem;">
+              Block low-performing AdX impression countries specifically on this user's links (visitors redirected to Fallback).
+            </div>
+
+            <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1.5px solid #dc2626; border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer; margin-bottom:0.65rem;">
+              <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🚫 Enable Country Block for this User</div>
+              <input type="checkbox" id="new-user-country-block-enabled" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
+            </label>
+
+            <!-- Quick Pill Buttons -->
+            <div style="margin-bottom:0.55rem;">
+              <label style="font-size:0.68rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Quick Add / Toggle Countries:</label>
+              <div style="display:flex; flex-wrap:wrap; gap:0.3rem;" id="new-user-quick-countries">
+                <button type="button" class="new-quick-country-btn" data-code="US" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.55rem; border-radius:6px; font-weight:900; font-size:0.72rem; cursor:pointer;">🇺🇸 US</button>
+                <button type="button" class="new-quick-country-btn" data-code="PK" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇵🇰 PK</button>
+                <button type="button" class="new-quick-country-btn" data-code="IN" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇮🇳 IN</button>
+                <button type="button" class="new-quick-country-btn" data-code="BD" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇧🇩 BD</button>
+                <button type="button" class="new-quick-country-btn" data-code="NG" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇳🇬 NG</button>
+                <button type="button" class="new-quick-country-btn" data-code="PH" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇵🇭 PH</button>
+                <button type="button" class="new-quick-country-btn" data-code="ID" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇮🇩 ID</button>
+                <button type="button" class="new-quick-country-btn" data-code="EG" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇪🇬 EG</button>
+                <button type="button" class="new-quick-country-btn" data-code="VN" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇻🇳 VN</button>
+                <button type="button" class="new-quick-country-btn" data-code="BR" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇧🇷 BR</button>
+                <button type="button" class="new-quick-country-btn" data-code="RU" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇷🇺 RU</button>
+                <button type="button" class="new-quick-country-btn" data-code="CN" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇨🇳 CN</button>
+                <button type="button" class="new-quick-country-btn" data-code="TR" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇹🇷 TR</button>
+              </div>
+            </div>
+
+            <!-- Blocked tags -->
+            <div style="margin-bottom:0.55rem;">
+              <label style="font-size:0.68rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Active Blocked Countries:</label>
+              <div id="new-user-blocked-tags" style="display:flex; flex-wrap:wrap; gap:0.35rem; min-height:32px; padding:0.45rem 0.65rem; background:#fff; border:1.5px solid var(--border,#e5e7eb); border-radius:8px; align-items:center;">
+                <!-- Tags rendered here -->
+              </div>
+            </div>
+
+            <!-- Custom ISO country code input -->
+            <div style="display:flex; gap:0.4rem;">
+              <input type="text" id="new-user-custom-country-code" class="form-control" placeholder="Add 2-letter code (e.g. GB, CA, SA)" maxlength="2" style="text-transform:uppercase; font-weight:800; font-family:monospace; font-size:0.8rem; padding:0.45rem 0.65rem;">
+              <button type="button" id="btn-new-user-add-country" class="btn btn-secondary" style="font-weight:800; font-size:0.78rem; padding:0.45rem 0.85rem; white-space:nowrap;">➕ Add</button>
+            </div>
+          </div>
+
           <button type="submit" style="width:100%; margin-top:0.9rem; background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%) !important; color:#ffffff !important; border:none !important; border-radius:12px; padding:0.75rem 1.2rem; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; box-shadow:0 4px 18px rgba(24,119,242,0.38) !important; text-align:center; min-height:46px; box-sizing:border-box; letter-spacing:0.01em;">
             <span style="color:#ffffff !important; font-size:0.95rem; font-weight:800; text-align:center; width:100%;">Create New User</span>
           </button>
@@ -1540,7 +1527,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=28"></script>
+<script src="/js/dashboard.js?v=29"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -1720,6 +1707,101 @@ if ('serviceWorker' in navigator) {
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_realtime"> 📊 Real-Time Audit Logs</label>
         </div>
         <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem;">💡 Changes apply immediately when saved.</div>
+      </div>
+
+      <!-- 🎯 Facebook Traffic & AdX Controls for Edited User -->
+      <div style="margin-bottom:0.95rem; background:linear-gradient(135deg, rgba(24,119,242,0.06) 0%, rgba(99,102,241,0.08) 100%); border:1.5px solid rgba(24,119,242,0.3); border-radius:12px; padding:0.85rem 0.95rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; flex-wrap:wrap; gap:0.4rem;">
+          <div style="font-weight:900; font-size:0.82rem; color:#1877f2; display:flex; align-items:center; gap:0.35rem; text-transform:uppercase; letter-spacing:0.02em;">
+            <span>🎯 Facebook Traffic &amp; AdX Controls:</span>
+          </div>
+          <span class="badge" style="background:#1877f2; color:#fff; font-weight:800; font-size:0.65rem; padding:0.18rem 0.5rem; border-radius:6px;">Per-User Rules</span>
+        </div>
+        <div style="font-size:0.69rem; color:var(--text-muted); margin-bottom:0.65rem;">
+          Configure Facebook traffic routing and bot protection for this user's links.
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.45rem;">
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1.5px solid #1877f2; border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#1877f2;">🔵 1. Facebook Traffic Master (ON/OFF)</div>
+            <input type="checkbox" id="edit-user-fb-master" checked style="width:18px; height:18px; accent-color:#1877f2; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#0284c7;">👤 2. Profile-Origin Traffic (Separate Category)</div>
+            <input type="checkbox" id="edit-user-fb-profiles" checked style="width:18px; height:18px; accent-color:#0284c7; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#7c3aed;">👥 3. Groups Traffic (Allow/Block)</div>
+            <input type="checkbox" id="edit-user-fb-groups" checked style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#059669;">📄 4. Pages Traffic (Allow/Block)</div>
+            <input type="checkbox" id="edit-user-fb-pages" checked style="width:18px; height:18px; accent-color:#059669; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#d97706;">📱 5. Stories Traffic (Allow/Block)</div>
+            <input type="checkbox" id="edit-user-fb-stories" checked style="width:18px; height:18px; accent-color:#d97706; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🛡️ 6. Block Unknown &amp; Automated Traffic</div>
+            <input type="checkbox" id="edit-user-fb-automated" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#4338ca;">🤖 7. Bot Protection Shield (ON/OFF)</div>
+            <input type="checkbox" id="edit-user-fb-bot" checked style="width:18px; height:18px; accent-color:#4338ca; cursor:pointer;">
+          </label>
+        </div>
+      </div>
+
+      <!-- 🌍 Country Block Controls for Edited User -->
+      <div style="margin-bottom:0.95rem; background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(185,28,28,0.08) 100%); border:1.5px solid rgba(239,68,68,0.3); border-radius:12px; padding:0.85rem 0.95rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; flex-wrap:wrap; gap:0.4rem;">
+          <div style="font-weight:900; font-size:0.82rem; color:#dc2626; display:flex; align-items:center; gap:0.35rem; text-transform:uppercase; letter-spacing:0.02em;">
+            <span>🌍 Country Blocking for this User's Links:</span>
+          </div>
+          <span class="badge" style="background:#dc2626; color:#fff; font-weight:800; font-size:0.65rem; padding:0.18rem 0.5rem; border-radius:6px;">Country Filter</span>
+        </div>
+        <div style="font-size:0.69rem; color:var(--text-muted); margin-bottom:0.65rem;">
+          Block specified countries specifically on this user's links (visitors redirected to Fallback).
+        </div>
+
+        <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1.5px solid #dc2626; border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer; margin-bottom:0.65rem;">
+          <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🚫 Enable Country Block for this User</div>
+          <input type="checkbox" id="edit-user-country-block-enabled" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
+        </label>
+
+        <!-- Quick Pill Buttons -->
+        <div style="margin-bottom:0.55rem;">
+          <label style="font-size:0.68rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Quick Add / Toggle Countries:</label>
+          <div style="display:flex; flex-wrap:wrap; gap:0.3rem;" id="edit-user-quick-countries">
+            <button type="button" class="edit-quick-country-btn" data-code="US" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.55rem; border-radius:6px; font-weight:900; font-size:0.72rem; cursor:pointer;">🇺🇸 US</button>
+            <button type="button" class="edit-quick-country-btn" data-code="PK" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇵🇰 PK</button>
+            <button type="button" class="edit-quick-country-btn" data-code="IN" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇮🇳 IN</button>
+            <button type="button" class="edit-quick-country-btn" data-code="BD" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇧🇩 BD</button>
+            <button type="button" class="edit-quick-country-btn" data-code="NG" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇳🇬 NG</button>
+            <button type="button" class="edit-quick-country-btn" data-code="PH" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇵🇭 PH</button>
+            <button type="button" class="edit-quick-country-btn" data-code="ID" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇮🇩 ID</button>
+            <button type="button" class="edit-quick-country-btn" data-code="EG" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇪🇬 EG</button>
+            <button type="button" class="edit-quick-country-btn" data-code="VN" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇻🇳 VN</button>
+            <button type="button" class="edit-quick-country-btn" data-code="BR" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇧🇷 BR</button>
+            <button type="button" class="edit-quick-country-btn" data-code="RU" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇷🇺 RU</button>
+            <button type="button" class="edit-quick-country-btn" data-code="CN" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇨🇳 CN</button>
+            <button type="button" class="edit-quick-country-btn" data-code="TR" style="background:#f3f4f6; border:1px solid #d1d5db; color:#374151; padding:0.25rem 0.5rem; border-radius:6px; font-weight:800; font-size:0.72rem; cursor:pointer;">🇹🇷 TR</button>
+          </div>
+        </div>
+
+        <!-- Blocked tags -->
+        <div style="margin-bottom:0.55rem;">
+          <label style="font-size:0.68rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Active Blocked Countries:</label>
+          <div id="edit-user-blocked-tags" style="display:flex; flex-wrap:wrap; gap:0.35rem; min-height:32px; padding:0.45rem 0.65rem; background:var(--input-bg,#f9fafb); border:1.5px solid var(--border,#e5e7eb); border-radius:8px; align-items:center;">
+            <!-- Tags rendered here -->
+          </div>
+        </div>
+
+        <!-- Custom ISO country code input -->
+        <div style="display:flex; gap:0.4rem;">
+          <input type="text" id="edit-user-custom-country-code" class="form-control" placeholder="Add 2-letter code (e.g. GB, CA, SA)" maxlength="2" style="text-transform:uppercase; font-weight:800; font-family:monospace; font-size:0.8rem; padding:0.45rem 0.65rem;">
+          <button type="button" id="btn-edit-user-add-country" class="btn btn-secondary" style="font-weight:800; font-size:0.78rem; padding:0.45rem 0.85rem; white-space:nowrap;">➕ Add</button>
+        </div>
       </div>
 
       <button id="edit-user-save-role-btn" style="width:100%; background:linear-gradient(135deg,#059669 0%,#10b981 100%); border:none; color:#fff; border-radius:12px; padding:0.75rem; font-size:0.88rem; font-weight:800; cursor:pointer; letter-spacing:0.02em; box-shadow:0 4px 14px rgba(16,185,129,0.35);">💾 Save Role &amp; Permissions</button>

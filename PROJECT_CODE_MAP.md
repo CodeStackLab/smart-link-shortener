@@ -255,7 +255,8 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
 
 ### SPA Tabs (`public/admin.html`):
 1. **Tab 1: 🔗 Shortlinks Manager (`#tab-links`)**:
-   - Create shortlink form with the **7 Facebook Traffic & AdX Filtering Controls**.
+   - Clean, streamlined link creation: Target URL, Allowed Platforms chip selectors, and Optional Image Upload.
+   - (Note: Facebook traffic controls are configured per-editor in Tab 5 or globally in Tab 4, keeping link creation clean and fast for Admin).
    - Shortlinks table with search, pagination, stats, QR code viewer, Edit, Delete, and **"🎯 Rules"** button.
 2. **Tab 2: 📊 Analytics & Reporting (`#tab-analytics`)**:
    - Total clicks, unique visitors, conversion rate, and country breakdown.
@@ -267,11 +268,17 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
 4. **Tab 4: 🚫 IP Firewall & Auto-Shield (`#tab-firewall`)**:
    - Manual IP Block form and table of permanently blocked IPs.
    - Auto-Shield & Rate Limit configuration form.
-   - **Global Facebook Traffic & AdX Defaults Card**.
+   - **Global Facebook Traffic & AdX Defaults Card** (System-wide default policy).
+   - **Editor Accounts Country Block System Card** (Quick pills: US, PK, IN, BD, etc. and custom 2-letter codes).
    - Live Temporary Soft-Blocks table with 1-click "🔓 Release" buttons.
    - Trusted Sources Allowlist Manager with 1-click remove buttons.
 5. **Tab 5: ⚙️ Settings & Team Management (`#tab-settings`)**:
-   - Team member invitation & role assignment form with granular permission checkboxes.
+   - Team member invitation & role assignment form (`#invite-user-form`) with:
+     * Granular feature access permissions (Facebook, Instagram, Custom Web, Shortlinks, etc.)
+     * Target URL visibility toggle (Unhide full URL vs Mask with stars)
+     * **🎯 Facebook Traffic & AdX Controls (7 Controls) for this Editor (configured 1-by-1)**
+     * **🌍 Country Blocking for this Editor's Links (Master toggle, Quick pills: US, PK, IN, BD, tag chips & custom ISO code input)**
+     * Assigned allowed target domains list
    - Editor URL Visibility Settings card (Individual Mode, Force Unhide, Force Mask).
    - Google Authenticator 2FA setup & QR code viewer.
    - Change Admin Password card.
@@ -280,7 +287,7 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
 - `#traffic-rules-modal`: Dedicated modal to inspect and edit the 7 Facebook traffic rules for any shortlink.
 - `#qr-modal`: QR code viewer with PNG download and 1-click shortlink copy.
 - `#edit-link-modal`: Edit shortlink target URLs, fallback URL, delay, and domains.
-- `#edit-user-modal`: Edit user password, role, permissions, and URL masking toggle.
+- `#edit-user-modal`: Edit user password, role, permissions, assigned target sites, **the 7 Facebook traffic controls**, and **per-editor country blocking rules**.
 
 ---
 
