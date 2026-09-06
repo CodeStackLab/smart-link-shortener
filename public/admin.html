@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=24">
+  <link rel="stylesheet" href="/css/style.css?v=25">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -854,44 +854,56 @@
         box-sizing: border-box !important;
       }
       .top-stats-stack {
-        gap: 0.4rem !important;
+        gap: 0.65rem !important;
+        margin-bottom: 1.15rem !important;
       }
       .top-stat-row {
-        padding: 0.32rem 0.65rem !important;
-        border-radius: 12px !important;
-        gap: 0.35rem !important;
-        min-height: 42px !important;
+        padding: 0.65rem 0.85rem !important;
+        border-radius: 16px !important;
+        gap: 0.45rem !important;
+        min-height: 54px !important;
       }
       .top-stat-left {
-        gap: 0.45rem !important;
-        flex-shrink: 0 !important;
+        gap: 0.65rem !important;
+        flex-shrink: 1 !important;
+        min-width: 0 !important;
       }
       .top-stat-icon-box {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 1.05rem !important;
-        border-radius: 8px !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.3rem !important;
+        border-radius: 12px !important;
+        flex-shrink: 0 !important;
       }
       .top-stat-title {
-        font-size: clamp(0.64rem, 2.3vw, 0.74rem) !important;
-        white-space: nowrap !important;
-        line-height: 1 !important;
-        letter-spacing: 0.01em !important;
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        letter-spacing: 0.02em !important;
+        text-transform: uppercase !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
       }
       .top-stat-right {
-        gap: 0.45rem !important;
+        gap: 0.55rem !important;
         flex-shrink: 0 !important;
       }
       .top-stat-num {
-        font-size: 1.35rem !important;
-        min-width: 24px !important;
+        font-size: 1.65rem !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        min-width: 32px !important;
       }
       .top-stat-divider {
-        height: 20px !important;
+        height: 28px !important;
+        width: 1.5px !important;
       }
       .top-stat-desc {
-        font-size: 0.62rem !important;
-        line-height: 1.15 !important;
+        font-size: 0.68rem !important;
+        line-height: 1.25 !important;
+        color: #64748b !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
       }
     }
   </style>
@@ -1246,18 +1258,18 @@
 <div id="tab-analytics" class="tab-content" style="display:none;">
   <div class="container">
 
-    <!-- Top Overview Stats Cards (Matching User Mockup) -->
+    <!-- Top Overview Stats Cards (Matching User Favorite Mockup) -->
     <div class="top-stats-stack">
       <!-- 1. Legitimate Traffic -->
       <div class="top-stat-row" id="logs-organic-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box green">✅</div>
-          <span class="top-stat-title" style="white-space:nowrap !important;">LEGITIMATE TRAFFIC</span>
+          <span class="top-stat-title">LEGITIMATE<br>TRAFFIC</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-organic-clicks" class="top-stat-num green">0</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc" style="white-space:nowrap;">
+          <div class="top-stat-desc">
             <span>Low Risk &amp;</span>
             <span>Verified Organic</span>
           </div>
@@ -1268,13 +1280,13 @@
       <div class="top-stat-row" id="logs-suspicious-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box amber">⚠️</div>
-          <span class="top-stat-title" style="white-space:nowrap !important;">SUSPICIOUS TRAFFIC</span>
+          <span class="top-stat-title">SUSPICIOUS<br>TRAFFIC</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-suspicious-clicks" class="top-stat-num amber">0</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc" style="white-space:nowrap;">
-            <span>Medium Risk</span>
+          <div class="top-stat-desc">
+            <span>Medium Risk /</span>
             <span>Soft-Blocked</span>
           </div>
         </div>
@@ -1284,13 +1296,13 @@
       <div class="top-stat-row" id="logs-bot-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box red">🤖</div>
-          <span class="top-stat-title" style="white-space:nowrap !important;">BOT SHIELD BLOCKED</span>
+          <span class="top-stat-title">BOT SHIELD<br>BLOCKED</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-bot-clicks" class="top-stat-num red">0</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc" style="white-space:nowrap;">
-            <span>High Risk Bots</span>
+          <div class="top-stat-desc">
+            <span>High Risk Bots /</span>
             <span>Scrapers</span>
           </div>
         </div>
@@ -1300,12 +1312,12 @@
       <div class="top-stat-row" id="logs-quality-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box blue">🛡️</div>
-          <span class="top-stat-title" style="white-space:nowrap !important;">TRAFFIC QUALITY</span>
+          <span class="top-stat-title">TRAFFIC<br>QUALITY</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-traffic-quality" class="top-stat-num blue">100%</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc" style="white-space:nowrap;">
+          <div class="top-stat-desc">
             <span>Clean Visitors</span>
             <span>Ratio</span>
           </div>
@@ -2669,7 +2681,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=54"></script>
+<script src="/js/dashboard.js?v=55"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
