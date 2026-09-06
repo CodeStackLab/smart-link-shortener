@@ -559,6 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
       teamCard.style.display = isSuperAdmin ? '' : 'none';
     }
 
+    // Editor Accounts Country Block Card is strictly for Admin; completely hidden from Editors ("unko show na ho")
+    const editorCountryBlockCard = document.getElementById('editor-country-block-card');
+    if (editorCountryBlockCard) {
+      editorCountryBlockCard.style.display = isSuperAdmin ? '' : 'none';
+    }
+
     // Role selector in invite form: only Super Admin can see the Admin option
     const roleSelectInvite = document.getElementById('new-user-role');
     if (roleSelectInvite) {
@@ -1929,6 +1935,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentTrafficFilter === 'bot') {
         return st.includes('BOT') || st.includes('FIREWALL') || st.includes('RATE_LIMITED') || st.includes('BLOCKED');
       }
+      if (currentTrafficFilter === 'country-block') {
+        return st === 'EDITOR_COUNTRY_BLOCKED' || (log.signals && log.signals.includes('editor_country_block'));
+      }
       return true;
     });
 
@@ -1962,6 +1971,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (sub === 'page') subText = ' (Page)';
         else if (sub === 'story') subText = ' (Story)';
         statusBadge = `<span class="badge badge-success">✅ Organic${subText}</span>`;
+      } else if (st === 'EDITOR_COUNTRY_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger" style="background:rgba(239,68,68,0.15); color:#dc2626; border:1px solid rgba(239,68,68,0.35); font-weight:800;">🌍 Country Block (${log.countryCode || ''})</span>`;
       } else if (st === 'FB_TRAFFIC_DISABLED') {
         statusBadge = `<span class="badge badge-danger">🔴 FB Off</span>`;
       } else if (st === 'FB_GROUP_BLOCKED') {
@@ -2081,6 +2092,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (st.includes('BOT') || st.includes('FIREWALL') || st.includes('RATE_LIMITED') || st.includes('BLOCKED')) {
           botCount++;
         }
+        if (st === 'EDITOR_COUNTRY_BLOCKED' || (log.signals && log.signals.includes('editor_country_block'))) {
+          countryBlockedCount++;
+        }
 
         const isFb = (log.platform === 'facebook') ||
                      (log.fbSubCategory && log.fbSubCategory !== 'none') ||
@@ -2160,6 +2174,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cntFbPg) cntFbPg.textContent = fbPagesCount;
       const cntFbSt = document.getElementById('filter-count-fb-story');
       if (cntFbSt) cntFbSt.textContent = fbStoriesCount;
+      const cntCtry = document.getElementById('filter-count-country-block');
+      if (cntCtry) cntCtry.textContent = countryBlockedCount;
 
       renderTrafficLogsTable();
     } catch (err) {
@@ -2359,6 +2375,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (globFbBlockAuto) globFbBlockAuto.checked = settings.blockAutomatedUnknown !== false;
       if (globBotProt) globBotProt.checked = settings.botProtectionEnabled !== false;
 
+      // Populate Editor Accounts Country Block settings (Admin only)
+      const editorCountryBlockCb = document.getElementById('editor-country-block-enabled');
+      if (editorCountryBlockCb) {
+        editorCountryBlockCb.checked = settings.editorCountryBlockEnabled !== false;
+      }
+      if (Array.isArray(settings.editorBlockedCountries)) {
+        activeEditorBlockedCountries = new Set(settings.editorBlockedCountries.map(c => String(c).toUpperCase()));
+      }
+      renderEditorBlockedCountriesTags();
+
       toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
       toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
 
@@ -2479,6 +2505,135 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         showAlert('Error saving global Facebook rules', true);
+      }
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // EDITOR ACCOUNTS COUNTRY BLOCK SYSTEM (ADMIN ONLY)
+  // ─────────────────────────────────────────────────────────────
+  let activeEditorBlockedCountries = new Set(['PK', 'IN', 'BD']);
+
+  function renderEditorBlockedCountriesTags() {
+    const container = document.getElementById('editor-blocked-countries-tags');
+    if (!container) return;
+
+    if (activeEditorBlockedCountries.size === 0) {
+      container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">No countries blocked. Click quick pills above or type below to add.</span>';
+    } else {
+      container.innerHTML = Array.from(activeEditorBlockedCountries).sort().map(code => {
+        return `<span style="display:inline-flex; align-items:center; gap:0.35rem; background:#fee2e2; border:1px solid #f87171; color:#991b1b; padding:0.25rem 0.55rem; border-radius:20px; font-weight:800; font-size:0.75rem;">
+          <span>${code}</span>
+          <button type="button" class="remove-editor-country-btn" data-code="${code}" style="background:none; border:none; color:#dc2626; font-weight:900; cursor:pointer; padding:0; line-height:1; font-size:0.85rem;" title="Remove ${code}">✕</button>
+        </span>`;
+      }).join('');
+    }
+
+    // Update styling on quick buttons
+    document.querySelectorAll('.quick-country-btn').forEach(btn => {
+      const code = btn.getAttribute('data-code');
+      if (activeEditorBlockedCountries.has(code)) {
+        btn.style.background = '#fef2f2';
+        btn.style.borderColor = '#dc2626';
+        btn.style.color = '#991b1b';
+        btn.style.boxShadow = '0 0 0 1px #dc2626';
+      } else {
+        btn.style.background = '#f3f4f6';
+        btn.style.borderColor = '#d1d5db';
+        btn.style.color = '#374151';
+        btn.style.boxShadow = 'none';
+      }
+    });
+  }
+
+  // Quick country button clicks
+  document.querySelectorAll('.quick-country-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+      if (activeEditorBlockedCountries.has(code)) {
+        activeEditorBlockedCountries.delete(code);
+      } else {
+        activeEditorBlockedCountries.add(code);
+      }
+      renderEditorBlockedCountriesTags();
+    });
+  });
+
+  // Remove country tag click delegation
+  const editorTagsContainer = document.getElementById('editor-blocked-countries-tags');
+  if (editorTagsContainer) {
+    editorTagsContainer.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-editor-country-btn');
+      if (removeBtn) {
+        const code = removeBtn.getAttribute('data-code');
+        if (code) {
+          activeEditorBlockedCountries.delete(code);
+          renderEditorBlockedCountriesTags();
+        }
+      }
+    });
+  }
+
+  // Add custom country code
+  const btnAddEditorCountry = document.getElementById('btn-add-editor-country');
+  const inputCustomCountry = document.getElementById('editor-custom-country-code');
+  if (btnAddEditorCountry && inputCustomCountry) {
+    const addCustomCode = () => {
+      const val = (inputCustomCountry.value || '').trim().toUpperCase();
+      if (!val || val.length !== 2) {
+        showAlert('⚠️ Please enter a valid 2-letter ISO country code (e.g. US, GB, CA, PK, etc.)', true);
+        return;
+      }
+      activeEditorBlockedCountries.add(val);
+      inputCustomCountry.value = '';
+      renderEditorBlockedCountriesTags();
+    };
+
+    btnAddEditorCountry.addEventListener('click', (e) => {
+      e.preventDefault();
+      addCustomCode();
+    });
+
+    inputCustomCountry.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addCustomCode();
+      }
+    });
+  }
+
+  // Save Editor Country Block Form
+  const editorCountryBlockForm = document.getElementById('editor-country-block-form');
+  if (editorCountryBlockForm) {
+    editorCountryBlockForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isFullAdminUser()) {
+        showAlert('⚠️ Only Admin can configure Editor Country Block rules.', true);
+        return;
+      }
+      const enabled = document.getElementById('editor-country-block-enabled')?.checked ?? true;
+      const countries = Array.from(activeEditorBlockedCountries);
+
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            editorCountryBlockEnabled: enabled,
+            editorBlockedCountries: countries
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert(`🌍 Editor Country Block rules saved! (${countries.length} countries blocked for Editors, hidden from their dashboard).`);
+          loadShieldSettings();
+        } else {
+          showAlert(data.error || 'Failed to save country block rules', true);
+        }
+      } catch (err) {
+        showAlert('Error saving Editor Country Block rules', true);
       }
     });
   }

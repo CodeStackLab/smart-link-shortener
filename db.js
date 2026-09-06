@@ -108,7 +108,10 @@ function initDb() {
     allowFbGroups: true,
     allowFbPages: true,
     allowFbStories: true,
-    blockAutomatedUnknown: true
+    blockAutomatedUnknown: true,
+    // Editor Accounts Country Block System (Admin Only - Hidden from Editors)
+    editorCountryBlockEnabled: true,
+    editorBlockedCountries: ['PK', 'IN', 'BD']
   };
 
   if (!settings) {
@@ -194,7 +197,9 @@ module.exports = {
     allowFbGroups: true,
     allowFbPages: true,
     allowFbStories: true,
-    blockAutomatedUnknown: true
+    blockAutomatedUnknown: true,
+    editorCountryBlockEnabled: true,
+    editorBlockedCountries: ['PK', 'IN', 'BD']
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -223,7 +228,9 @@ module.exports = {
       allowFbGroups: true,
       allowFbPages: true,
       allowFbStories: true,
-      blockAutomatedUnknown: true
+      blockAutomatedUnknown: true,
+      editorCountryBlockEnabled: true,
+      editorBlockedCountries: ['PK', 'IN', 'BD']
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);

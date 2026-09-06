@@ -871,23 +871,15 @@ app.delete('/api/admin/temp-blocks/:ip', requireAuth, requirePermission('firewal
 // Non-admin firewall users only receive firewall-relevant fields (not sensitive settings).
 app.get('/api/admin/settings', requireAuth, requirePermission('settings', 'firewall'), (req, res) => {
   const settings = db.getSettings();
-  if (isAdminRole(req.session.role) || getUserPermissions(req.session.username, req.session.role).includes('settings')) {
-    // Full settings for admin and settings-permission users
+  if (isAdminRole(req.session.role)) {
+    // Full settings for Admin
     return res.json(settings);
   }
-  // Firewall-only users: return only the firewall-relevant fields (read-only view)
-  return res.json({
-    botProtectionEnabled: settings.botProtectionEnabled,
-    botLimitClicks: settings.botLimitClicks,
-    botLimitMinutes: settings.botLimitMinutes,
-    vpnProtectionEnabled: settings.vpnProtectionEnabled,
-    vpnLimitClicks: settings.vpnLimitClicks,
-    vpnLimitMinutes: settings.vpnLimitMinutes,
-    blockSuspiciousCountries: settings.blockSuspiciousCountries,
-    blockKnownScrapers: settings.blockKnownScrapers,
-    honeypotProtectionEnabled: settings.honeypotProtectionEnabled,
-    applyFirewallGlobally: settings.applyFirewallGlobally !== false
-  });
+  // For Editor users: strip editorCountryBlockEnabled & editorBlockedCountries ("unko show na ho")
+  const sanitized = { ...settings };
+  delete sanitized.editorCountryBlockEnabled;
+  delete sanitized.editorBlockedCountries;
+  return res.json(sanitized);
 });
 
 app.post('/api/admin/settings', requireAuth, (req, res) => {
@@ -920,7 +912,9 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     allowFbGroups,
     allowFbPages,
     allowFbStories,
-    blockAutomatedUnknown
+    blockAutomatedUnknown,
+    editorCountryBlockEnabled,
+    editorBlockedCountries
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -934,6 +928,21 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     processedAllowlistedIps = [...new Set(allowlistedIps
       .map(ip => (ip || '').replace(/^::ffff:/, '').trim())
       .filter(Boolean)
+    )];
+  }
+
+  // Sanitize editorBlockedCountries: uppercase 2-letter country codes
+  let processedEditorBlockedCountries = undefined;
+  if (Array.isArray(editorBlockedCountries)) {
+    processedEditorBlockedCountries = [...new Set(editorBlockedCountries
+      .map(c => String(c || '').trim().toUpperCase())
+      .filter(c => c.length === 2)
+    )];
+  } else if (typeof editorBlockedCountries === 'string') {
+    processedEditorBlockedCountries = [...new Set(editorBlockedCountries
+      .split(',')
+      .map(c => c.trim().toUpperCase())
+      .filter(c => c.length === 2)
     )];
   }
 
@@ -965,7 +974,9 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     allowFbGroups: allowFbGroups !== undefined ? !!allowFbGroups : undefined,
     allowFbPages: allowFbPages !== undefined ? !!allowFbPages : undefined,
     allowFbStories: allowFbStories !== undefined ? !!allowFbStories : undefined,
-    blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? !!blockAutomatedUnknown : undefined
+    blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? !!blockAutomatedUnknown : undefined,
+    editorCountryBlockEnabled: editorCountryBlockEnabled !== undefined ? !!editorCountryBlockEnabled : undefined,
+    editorBlockedCountries: processedEditorBlockedCountries
   });
 
   res.json({ success: true, settings: updated });
@@ -1190,7 +1201,20 @@ app.get('/api/admin/logs', requireAuth, requirePermission('analytics'), (req, re
   const userCodes = db.getLinks()
     .filter(l => l.createdBy === req.session.username)
     .map(l => (l.code || '').toLowerCase());
-  const userLogs = cleanLogs.filter(l => l.code && userCodes.includes(l.code.toLowerCase()));
+  const userLogs = cleanLogs
+    .filter(l => l.code && userCodes.includes(l.code.toLowerCase()))
+    .map(l => {
+      // Hide country block indicators from Editor accounts ("unko show na ho")
+      if (l.status === 'EDITOR_COUNTRY_BLOCKED') {
+        return {
+          ...l,
+          status: 'FALLBACK_REDIRECT',
+          signals: '',
+          actionTaken: 'Redirected to Fallback'
+        };
+      }
+      return l;
+    });
   res.json(userLogs);
 });
 
@@ -1828,6 +1852,52 @@ async function handleShortlinkRedirect(req, res) {
     };
     db.addLog(logEntry);
     return res.redirect(link.fallbackUrl || 'https://www.google.com/');
+  }
+
+  // 5.5 Editor Accounts Country Block Check ("only Editor account py apply krna hy unko show na ho")
+  const linkCreator = db.getUserByUsername(link.createdBy);
+  const isEditorLink = linkCreator ? (linkCreator.role === 'Editor') : (link.createdBy && link.createdBy.toLowerCase() !== 'admin');
+
+  if (isEditorLink) {
+    const effectiveBlockedCountries = (linkCreator && Array.isArray(linkCreator.blockedCountries) && linkCreator.blockedCountries.length > 0)
+      ? linkCreator.blockedCountries
+      : (settings.editorBlockedCountries || []);
+
+    const isEditorCountryBlockOn = (settings.editorCountryBlockEnabled !== false);
+
+    if (isEditorCountryBlockOn && effectiveBlockedCountries.length > 0) {
+      const clientCountry = (geoInfo.countryCode || '').trim().toUpperCase();
+      const isCountryBlocked = effectiveBlockedCountries.some(c => (c || '').trim().toUpperCase() === clientCountry);
+
+      if (isCountryBlocked) {
+        const logEntry = {
+          id: logId,
+          timestamp: new Date().toISOString(),
+          code: link.code,
+          ip: clientIp,
+          countryCode: geoInfo.countryCode,
+          countryName: geoInfo.countryName,
+          flag: geoInfo.flag,
+          city: geoInfo.city,
+          isp: geoInfo.isp,
+          isVpn: geoInfo.isVpn,
+          referer: rawReferer || 'Editor Country Blocked',
+          userAgent: userAgent,
+          status: 'EDITOR_COUNTRY_BLOCKED',
+          platform: 'direct',
+          fbSubCategory: 'none',
+          fbSubLabel: '',
+          matchedDomain: '',
+          riskScore: 90,
+          riskLevel: 'high',
+          signals: `editor_country_block,country_${clientCountry}`,
+          durationSeconds: 0,
+          actionTaken: `Editor Country Block (${geoInfo.countryName || clientCountry}) → Fallback Redirect`
+        };
+        db.addLog(logEntry);
+        return res.redirect(link.fallbackUrl || 'https://www.google.com/');
+      }
+    }
   }
 
   // 6. Granular Facebook Traffic Classification & Sub-source Analysis

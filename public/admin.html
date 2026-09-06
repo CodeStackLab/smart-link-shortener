@@ -573,6 +573,7 @@
         <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-story" style="font-weight:700; border-radius:20px; background:rgba(217,119,6,0.1); color:#d97706; border:1px solid rgba(217,119,6,0.3);">📱 FB Stories (<span id="filter-count-fb-story">0</span>)</button>
         <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="suspicious" style="font-weight:700; border-radius:20px; background:rgba(245,158,11,0.1); color:#b45309; border:1px solid rgba(245,158,11,0.3);">🟡 Suspicious (<span id="filter-count-suspicious">0</span>)</button>
         <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="bot" style="font-weight:700; border-radius:20px; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3);">🔴 Blocked (<span id="filter-count-bot">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="country-block" style="font-weight:700; border-radius:20px; background:rgba(220,38,38,0.12); color:#b91c1c; border:1px solid rgba(220,38,38,0.35);">🌍 Country Block (<span id="filter-count-country-block">0</span>)</button>
       </div>
 
       <div class="table-wrap">
@@ -845,6 +846,85 @@
 
           <button type="submit" id="btn-save-global-fb-rules" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%); min-height:44px; font-weight:800; font-size:0.88rem; box-shadow:0 4px 14px rgba(24,119,242,0.3);">
             💾 Save Global Facebook Rules
+          </button>
+        </form>
+      </div>
+
+      <!-- Editor Accounts Country Block System Card (Admin Only - Hidden from Editors) -->
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="editor-country-block-card">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.45rem;">
+            <span class="accent">🌍</span> Editor Accounts Country Block System
+          </div>
+          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#ef4444,#7c3aed); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(239,68,68,0.3);">
+            👑 Admin Only — Hidden From Editors
+          </span>
+        </div>
+
+        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(124,58,237,0.08) 100%); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
+          <div style="font-weight:800; font-size:0.82rem; color:#dc2626; display:flex; align-items:center; gap:0.35rem;">
+            <span>🛡️ Silent Country Block for Editors ("Unko Show Na Ho"):</span>
+          </div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.45; margin-top:0.25rem;">
+            Ye system <strong>sirf Editor accounts</strong> ke banaye hue shortlinks par apply hoga. <strong>Admin links bilkul unaffected rahenge</strong>. Editors ke dashboard me ye feature <strong>bilkul chhupa (hidden)</strong> rahega. Blocked countries se aane wala traffic seedha safe Fallback URL par redirect hoga.
+          </div>
+        </div>
+
+        <form id="editor-country-block-form">
+          <!-- Master Switch for Editor Country Block -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.65rem 0.85rem; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; margin-bottom:0.9rem;">
+            <div>
+              <label for="editor-country-block-enabled" style="font-weight:800; font-size:0.86rem; color:#dc2626; cursor:pointer; display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem;">
+                <span>🚫 Enable Country Block for Editor Accounts</span>
+              </label>
+              <div style="font-size:0.69rem; color:var(--text-muted);">
+                Turn ON to block specified countries on all Editor shortlinks. Turn OFF to allow all countries.
+              </div>
+            </div>
+            <input type="checkbox" id="editor-country-block-enabled" checked style="width:20px; height:20px; accent-color:#dc2626; cursor:pointer; flex-shrink:0;">
+          </div>
+
+          <!-- Quick Toggle Country Pills -->
+          <div style="margin-bottom:0.85rem;">
+            <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
+              Quick Select / Toggle Blocked Countries:
+            </label>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;" id="quick-country-buttons">
+              <button type="button" class="quick-country-btn" data-code="PK" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇰 PK</button>
+              <button type="button" class="quick-country-btn" data-code="IN" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇳 IN</button>
+              <button type="button" class="quick-country-btn" data-code="BD" style="background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇩 BD</button>
+              <button type="button" class="quick-country-btn" data-code="NG" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇳🇬 NG</button>
+              <button type="button" class="quick-country-btn" data-code="PH" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇭 PH</button>
+              <button type="button" class="quick-country-btn" data-code="ID" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇩 ID</button>
+              <button type="button" class="quick-country-btn" data-code="EG" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇪🇬 EG</button>
+              <button type="button" class="quick-country-btn" data-code="VN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇻🇳 VN</button>
+              <button type="button" class="quick-country-btn" data-code="BR" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇷 BR</button>
+              <button type="button" class="quick-country-btn" data-code="RU" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇷🇺 RU</button>
+              <button type="button" class="quick-country-btn" data-code="CN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇨🇳 CN</button>
+              <button type="button" class="quick-country-btn" data-code="TR" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇹🇷 TR</button>
+            </div>
+          </div>
+
+          <!-- Active Blocked Countries List (Pills with ✕) -->
+          <div style="margin-bottom:0.85rem;">
+            <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.4rem;">
+              Currently Blocked Countries for Editors:
+            </label>
+            <div id="editor-blocked-countries-tags" style="display:flex; flex-wrap:wrap; gap:0.45rem; min-height:36px; padding:0.55rem 0.75rem; background:var(--input-bg,#f9fafb); border:1.5px solid var(--border,#e5e7eb); border-radius:10px; align-items:center;">
+              <span style="font-size:0.75rem; color:var(--text-muted);">No countries blocked. Click quick pills above or type below to add.</span>
+            </div>
+          </div>
+
+          <!-- Add Custom Country Code -->
+          <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+            <input type="text" id="editor-custom-country-code" class="form-control" placeholder="Add 2-letter ISO code (e.g. US, GB, CA, SA)" maxlength="2" style="text-transform:uppercase; font-weight:800; font-family:monospace; font-size:0.88rem;">
+            <button type="button" id="btn-add-editor-country" class="btn btn-secondary" style="font-weight:800; white-space:nowrap; padding:0.5rem 1rem;">
+              ➕ Add
+            </button>
+          </div>
+
+          <button type="submit" id="btn-save-editor-country-block" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #ef4444 0%, #7c3aed 100%); min-height:46px; font-weight:800; font-size:0.9rem; border:none; box-shadow:0 4px 14px rgba(239,68,68,0.3);">
+            💾 Save Editor Country Block Rules
           </button>
         </form>
       </div>
@@ -1459,7 +1539,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=26"></script>
+<script src="/js/dashboard.js?v=27"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

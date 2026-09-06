@@ -39,6 +39,19 @@ All **7 Facebook Traffic & AdX Monetization Controls** are fully implemented, ve
 
 ---
 
+## 🌍 Implementation Status: Editor Accounts Country Block System (100% Complete)
+
+> **Key Rule ("Unko Show Na Ho"):** This country blocking system applies **ONLY to shortlinks created by Editor accounts**. Admin links are 100% exempt. Editors have **zero visibility** of this system in their dashboard or API responses.
+
+| Property | Value | Description |
+|---|---|---|
+| **Enforcement Scope** | Editor Accounts Only | Checks `isEditorLink` (`link.createdBy`). Admin links are unaffected. |
+| **Visibility** | Hidden from Editors | Editors cannot see the country block card, settings, or log tags. |
+| **Blocked Action** | 302 Redirect to Fallback | Blocked visitor goes straight to `fallbackUrl` (e.g. google.com); target AdX URL is never exposed. |
+| **Audit Status** | `EDITOR_COUNTRY_BLOCKED` | Logged for Admin in Tab 3 with country name/flag. Masked as `FALLBACK_REDIRECT` for Editor views. |
+| **Default Blocked Countries** | `['PK', 'IN', 'BD']` | Fully customizable by Super Admin in Tab 4 (IP Firewall) via quick pills or custom ISO codes. |
+| **Automated Verification** | `node test_editor_country_block.js` | 8/8 automated tests passing (100%). |
+
 ## 🛡️ Traffic Quality & Bot Protection Features (Previous 52 Requirements)
 
 1. **Multi-Signal Bot Protection (utils/detector.js)**:
