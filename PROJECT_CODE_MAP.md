@@ -255,7 +255,7 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
 
 ### SPA Tabs (`public/admin.html`):
 1. **Tab 1: 🔗 Shortlinks Manager (`#tab-links`)**:
-   - Clean, streamlined link creation: Target URL, Allowed Platforms chip selectors, and Optional Image Upload.
+   - Clean, streamlined link creation: Target URL, Allowed Platforms chip selectors, and Optional Image Upload (branded TERMUX with Upload Image (Optional) dropzone).
    - (Note: Facebook traffic controls are configured per-editor in Tab 5 or globally in Tab 4, keeping link creation clean and fast for Admin).
    - Shortlinks table with search, pagination, stats, QR code viewer, Edit, Delete, and **"🎯 Rules"** button.
 2. **Tab 2: 📊 Analytics & Reporting (`#tab-analytics`)**:
