@@ -552,20 +552,42 @@ header.site-header {
 /* ════════════════════════════════════════
    TOP HEADER BAR BUTTONS (Mockup Accurate)
 ════════════════════════════════════════ */
+.hamburger-menu-btn {
+  width: 38px !important;
+  height: 38px !important;
+  padding: 7px 6px !important;
+  border-radius: 12px !important;
+  border: 1.5px solid #dbeafe !important;
+  background: #f0f7ff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+.hamburger-menu-btn span {
+  display: block !important;
+  width: 18px !important;
+  height: 2.2px !important;
+  background: #0f172a !important;
+  border-radius: 2px !important;
+}
 .top-refresh-btn {
   background: #059669 !important;
   border: none !important;
   color: #ffffff !important;
-  border-radius: 9px !important;
-  width: 34px !important;
-  height: 34px !important;
+  border-radius: 12px !important;
+  width: 38px !important;
+  height: 38px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
   padding: 0 !important;
-  box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25) !important;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
   transition: transform 0.15s ease, background 0.15s ease !important;
 }
 .top-refresh-btn:active {
@@ -575,19 +597,21 @@ header.site-header {
   background: #ffffff !important;
   border: 1.5px solid #d1d5db !important;
   border-radius: 9999px !important;
-  padding: 0.3rem 0.6rem !important;
-  font-size: 0.74rem !important;
+  padding: 0.38rem 0.82rem !important;
+  font-size: 0.82rem !important;
   font-weight: 700 !important;
   color: #1e293b !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.25rem !important;
+  gap: 0.3rem !important;
   cursor: pointer !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.15s ease !important;
+  height: 38px !important;
+  box-sizing: border-box !important;
 }
 .top-pill-btn:hover, .theme-toggle-btn:hover {
   background: #f8fafc !important;
@@ -598,33 +622,37 @@ header.site-header {
   border: 1.5px solid #bfdbfe !important;
   color: #1d4ed8 !important;
   border-radius: 9999px !important;
-  padding: 0.3rem 0.65rem !important;
-  font-size: 0.74rem !important;
+  padding: 0.38rem 0.95rem !important;
+  font-size: 0.84rem !important;
   font-weight: 700 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.25rem !important;
+  gap: 0.35rem !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
   box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
+  height: 38px !important;
+  box-sizing: border-box !important;
 }
 #logout-btn {
   background: #ffffff !important;
   border: 1.5px solid #d1d5db !important;
   border-radius: 9999px !important;
-  padding: 0.3rem 0.6rem !important;
-  font-size: 0.74rem !important;
+  padding: 0.38rem 0.82rem !important;
+  font-size: 0.82rem !important;
   font-weight: 700 !important;
   color: #1e293b !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.25rem !important;
+  gap: 0.3rem !important;
   cursor: pointer !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  height: 38px !important;
+  box-sizing: border-box !important;
 }
 
 [data-theme="dark"] .top-pill-btn,
@@ -1627,25 +1655,26 @@ input, select, textarea, button {
   :root { --base-font-size: 15.5px; }
   .hide-mobile { display: none !important; }
 
-  header.site-header { padding: 0.4rem 0.55rem !important; }
+  header.site-header { padding: 0.5rem 0.65rem !important; }
   .hide-mobile-header, .logo-link { display: none !important; }
-  .header-inner { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.25rem; flex-wrap: nowrap; width: 100%; }
+  .header-inner { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.35rem; flex-wrap: nowrap; width: 100%; }
   .logo-group { gap: 0.45rem; flex-shrink: 0; display: flex; align-items: center; }
-  .hamburger-menu-btn { width: 28px !important; height: 32px !important; padding: 2px !important; }
-  .top-refresh-btn { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
-  .header-actions { gap: 0.22rem; flex-wrap: nowrap; flex-shrink: 0; display: flex; align-items: center; }
-  .theme-toggle-btn, .top-pill-btn, #logout-btn { padding: 0.25rem 0.48rem !important; font-size: 0.72rem !important; min-height: 30px !important; flex-shrink: 0 !important; white-space: nowrap !important; }
+  .hamburger-menu-btn { width: 38px !important; height: 38px !important; border-radius: 12px !important; }
+  .top-refresh-btn { width: 38px !important; height: 38px !important; border-radius: 12px !important; }
+  .header-actions { gap: 0.35rem; flex-wrap: nowrap; flex-shrink: 0; display: flex; align-items: center; }
+  .theme-toggle-btn, .top-pill-btn, #logout-btn { padding: 0.35rem 0.75rem !important; font-size: 0.8rem !important; height: 38px !important; min-height: 38px !important; flex-shrink: 0 !important; white-space: nowrap !important; }
   #user-badge, .user-badge-pill {
     display: inline-flex !important;
-    padding: 0.25rem 0.52rem !important;
-    font-size: 0.72rem !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.82rem !important;
     font-weight: 700 !important;
     color: #1d4ed8 !important;
     background: #eff6ff !important;
     border: 1.5px solid #bfdbfe !important;
     border-radius: 9999px !important;
     flex-shrink: 0 !important;
-    min-height: 30px !important;
+    height: 38px !important;
+    min-height: 38px !important;
     white-space: nowrap !important;
   }
 

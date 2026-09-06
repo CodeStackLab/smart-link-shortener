@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=21">
+  <link rel="stylesheet" href="/css/style.css?v=22">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -544,21 +544,48 @@
       color: #94a3b8 !important;
     }
 
-    /* ── MOCKUP EXACT: TOP HEADER BAR ── */
+    /* ── USER FAVORITE: TOP HEADER BAR (Exact "Perfect" Size) ── */
+    header.site-header {
+      padding: 0.55rem 0.75rem !important;
+      background: #ffffff !important;
+      border-bottom: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+    }
+    .hamburger-menu-btn {
+      width: 38px !important;
+      height: 38px !important;
+      padding: 7px 6px !important;
+      border-radius: 12px !important;
+      border: 1.5px solid #dbeafe !important;
+      background: #f0f7ff !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 4px !important;
+      cursor: pointer !important;
+      flex-shrink: 0 !important;
+    }
+    .hamburger-menu-btn span {
+      display: block !important;
+      width: 18px !important;
+      height: 2.2px !important;
+      background: #0f172a !important;
+      border-radius: 2px !important;
+    }
     .top-refresh-btn {
       background: #059669 !important;
       border: none !important;
       color: #ffffff !important;
-      border-radius: 9px !important;
-      width: 34px !important;
-      height: 34px !important;
+      border-radius: 12px !important;
+      width: 38px !important;
+      height: 38px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       cursor: pointer !important;
       flex-shrink: 0 !important;
       padding: 0 !important;
-      box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25) !important;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
       transition: transform 0.15s ease, background 0.15s ease !important;
     }
     .top-refresh-btn:active {
@@ -568,19 +595,21 @@
       background: #ffffff !important;
       border: 1.5px solid #d1d5db !important;
       border-radius: 9999px !important;
-      padding: 0.3rem 0.6rem !important;
-      font-size: 0.74rem !important;
+      padding: 0.38rem 0.82rem !important;
+      font-size: 0.82rem !important;
       font-weight: 700 !important;
       color: #1e293b !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.25rem !important;
+      gap: 0.3rem !important;
       cursor: pointer !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
       transition: all 0.15s ease !important;
+      height: 38px !important;
+      box-sizing: border-box !important;
     }
     .top-pill-btn:hover, .theme-toggle-btn:hover {
       background: #f8fafc !important;
@@ -591,35 +620,50 @@
       border: 1.5px solid #bfdbfe !important;
       color: #1d4ed8 !important;
       border-radius: 9999px !important;
-      padding: 0.3rem 0.65rem !important;
-      font-size: 0.74rem !important;
+      padding: 0.38rem 0.95rem !important;
+      font-size: 0.84rem !important;
       font-weight: 700 !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.25rem !important;
+      gap: 0.35rem !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
       box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
+      height: 38px !important;
+      box-sizing: border-box !important;
     }
     #logout-btn {
       background: #ffffff !important;
       border: 1.5px solid #d1d5db !important;
       border-radius: 9999px !important;
-      padding: 0.3rem 0.6rem !important;
-      font-size: 0.74rem !important;
+      padding: 0.38rem 0.82rem !important;
+      font-size: 0.82rem !important;
       font-weight: 700 !important;
       color: #1e293b !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.25rem !important;
+      gap: 0.3rem !important;
       cursor: pointer !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      height: 38px !important;
+      box-sizing: border-box !important;
     }
 
+    [data-theme="dark"] header.site-header {
+      background: #0f172a !important;
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    [data-theme="dark"] .hamburger-menu-btn {
+      background: rgba(30, 41, 59, 0.8) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="dark"] .hamburger-menu-btn span {
+      background: #f8fafc !important;
+    }
     [data-theme="dark"] .top-pill-btn,
     [data-theme="dark"] .theme-toggle-btn,
     [data-theme="dark"] #logout-btn {
@@ -749,14 +793,14 @@
         display: none !important;
       }
       .site-header {
-        padding: 0.4rem 0.55rem !important;
+        padding: 0.5rem 0.65rem !important;
       }
       .header-inner {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 0.25rem !important;
+        gap: 0.35rem !important;
         flex-wrap: nowrap !important;
         width: 100% !important;
       }
@@ -767,32 +811,34 @@
         flex-shrink: 0 !important;
       }
       .hamburger-menu-btn {
-        width: 28px !important;
-        height: 32px !important;
-        padding: 2px !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 12px !important;
       }
       .top-refresh-btn {
-        width: 32px !important;
-        height: 32px !important;
-        border-radius: 8px !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 12px !important;
       }
       .header-actions {
         display: flex !important;
         align-items: center !important;
-        gap: 0.22rem !important;
+        gap: 0.35rem !important;
         flex-shrink: 0 !important;
         flex-wrap: nowrap !important;
       }
       .top-pill-btn, .theme-toggle-btn, #logout-btn {
-        padding: 0.25rem 0.48rem !important;
-        font-size: 0.72rem !important;
-        min-height: 30px !important;
+        padding: 0.35rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        height: 38px !important;
+        min-height: 38px !important;
         white-space: nowrap !important;
       }
       .user-badge-pill {
-        padding: 0.25rem 0.52rem !important;
-        font-size: 0.72rem !important;
-        min-height: 30px !important;
+        padding: 0.35rem 0.85rem !important;
+        font-size: 0.82rem !important;
+        height: 38px !important;
+        min-height: 38px !important;
         white-space: nowrap !important;
       }
       .top-stats-stack {
@@ -2604,7 +2650,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=51"></script>
+<script src="/js/dashboard.js?v=52"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
