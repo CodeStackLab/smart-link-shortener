@@ -436,29 +436,183 @@
       </div>
     </div>
 
-    <div class="card" id="logs-realtime-wrap" style="padding:1.1rem;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
-        <div>
-          <div class="section-title" style="margin-bottom:0.25rem;"><span class="accent">📊</span> Real-Time Traffic Audit Logs</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">Multi-signal threat analysis, risk scoring, and autonomous filtering breakdown</div>
+    <div class="card" id="logs-realtime-wrap" style="padding:1.35rem; border-radius:24px; box-shadow:0 10px 35px rgba(0,0,0,0.05); border:1px solid rgba(226,232,240,0.8);">
+      <!-- Header Row -->
+      <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.15rem;">
+        <div style="width:48px; height:48px; border-radius:15px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border:1.5px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="12" width="4" height="8" rx="1.5" fill="#3b82f6"/>
+            <rect x="10" y="8" width="4" height="12" rx="1.5" fill="#10b981"/>
+            <rect x="17" y="4" width="4" height="16" rx="1.5" fill="#8b5cf6"/>
+          </svg>
         </div>
-        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-          <a href="/api/admin/export-csv" class="btn btn-secondary btn-sm">📥 Export CSV</a>
-          <button id="clear-logs-btn" class="btn btn-danger btn-sm">🗑️ Clear Logs</button>
+        <div>
+          <h2 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin:0 0 0.15rem 0; letter-spacing:-0.02em;">Real-Time Traffic Audit Logs</h2>
+          <div style="font-size:0.75rem; color:#64748b; font-weight:500;">Multi-signal threat analysis, risk scoring, and autonomous filtering breakdown</div>
         </div>
       </div>
 
-      <!-- Traffic Quality Filter Pills -->
-      <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.85rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border);">
-        <button type="button" class="btn btn-sm traffic-filter-btn active" data-filter="all" style="font-weight:700; border-radius:20px;">All Traffic (<span id="filter-count-all">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="organic" style="font-weight:700; border-radius:20px; background:rgba(16,185,129,0.1); color:#059669; border:1px solid rgba(16,185,129,0.3);">🟢 Legitimate (<span id="filter-count-organic">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-profile" style="font-weight:700; border-radius:20px; background:rgba(2,132,199,0.1); color:#0284c7; border:1px solid rgba(2,132,199,0.3);">👤 FB Profiles (<span id="filter-count-fb-profile">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-group" style="font-weight:700; border-radius:20px; background:rgba(124,58,237,0.1); color:#7c3aed; border:1px solid rgba(124,58,237,0.3);">👥 FB Groups (<span id="filter-count-fb-group">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-page" style="font-weight:700; border-radius:20px; background:rgba(5,150,105,0.1); color:#059669; border:1px solid rgba(5,150,105,0.3);">📄 FB Pages (<span id="filter-count-fb-page">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-story" style="font-weight:700; border-radius:20px; background:rgba(217,119,6,0.1); color:#d97706; border:1px solid rgba(217,119,6,0.3);">📱 FB Stories (<span id="filter-count-fb-story">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="suspicious" style="font-weight:700; border-radius:20px; background:rgba(245,158,11,0.1); color:#b45309; border:1px solid rgba(245,158,11,0.3);">🟡 Suspicious (<span id="filter-count-suspicious">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="bot" style="font-weight:700; border-radius:20px; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3);">🔴 Blocked (<span id="filter-count-bot">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="country-block" style="font-weight:700; border-radius:20px; background:rgba(220,38,38,0.12); color:#b91c1c; border:1px solid rgba(220,38,38,0.35);">🌍 Country Block (<span id="filter-count-country-block">0</span>)</button>
+      <!-- Action Buttons Row -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.15rem;">
+        <a href="/api/admin/export-csv" style="display:flex; align-items:center; justify-content:center; gap:0.6rem; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:16px; padding:0.8rem 1rem; color:#0f172a; font-weight:700; font-size:0.9rem; text-decoration:none; box-shadow:0 2px 6px rgba(0,0,0,0.03); transition:all 0.2s ease;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export CSV</span>
+        </a>
+        <button id="clear-logs-btn" type="button" style="display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, #0066fe 0%, #0052cc 100%); border:none; border-radius:16px; padding:0.8rem 1.15rem; color:#ffffff; font-weight:700; font-size:0.9rem; cursor:pointer; box-shadow:0 4px 14px rgba(0,102,254,0.3); transition:all 0.2s ease;">
+          <div style="display:flex; align-items:center; gap:0.55rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            <span>Clear Logs</span>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 9 Filter Cards Grid (2 Columns) -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem; margin-bottom:1.15rem;">
+        <!-- 1. All Traffic -->
+        <button type="button" class="traffic-filter-btn active" data-filter="all" data-active-color="#0f172a" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#f1f5f9; border:1.5px solid #0f172a; box-shadow:0 0 0 2px #0f172a, 0 6px 16px rgba(0,0,0,0.06); cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#1e293b; letter-spacing:-0.01em;">All Traffic</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#64748b;">( <span id="filter-count-all">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 2. Legitimate -->
+        <button type="button" class="traffic-filter-btn" data-filter="organic" data-active-color="#059669" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#eefbf4; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#d1f4e0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#059669">
+              <path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.5 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zm3.094 8.016a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#059669; letter-spacing:-0.01em;">Legitimate</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#10b981;">( <span id="filter-count-organic">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 3. FB Profiles -->
+        <button type="button" class="traffic-filter-btn" data-filter="fb-profile" data-active-color="#0284c7" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#f0f7ff; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#dbeafe; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#0284c7">
+              <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#0284c7; letter-spacing:-0.01em;">FB Profiles</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#0284c7;">( <span id="filter-count-fb-profile">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 4. FB Groups -->
+        <button type="button" class="traffic-filter-btn" data-filter="fb-group" data-active-color="#7c3aed" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#f7f3ff; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#ede4ff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#7c3aed">
+              <path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.633 13.067 13.067 0 01-6.761 1.87 13.067 13.067 0 01-6.761-1.87.75.75 0 01-.363-.633l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.66.75.75 0 00.374-.639v-.01a6 6 0 00-5.2-5.905z" />
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#7c3aed; letter-spacing:-0.01em;">FB Groups</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#7c3aed;">( <span id="filter-count-fb-group">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 5. FB Pages -->
+        <button type="button" class="traffic-filter-btn" data-filter="fb-page" data-active-color="#0d9488" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#edfbf7; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#cbf3ea; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#0d9488">
+              <path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm6.905 9.97a.75.75 0 000 1.5h5.5a.75.75 0 000-1.5h-5.5zm0 3.75a.75.75 0 000 1.5h5.5a.75.75 0 000-1.5h-5.5zm-5.5-3.75a.75.75 0 000 1.5h2.5a.75.75 0 000-1.5h-2.5zm0 3.75a.75.75 0 000 1.5h2.5a.75.75 0 000-1.5h-2.5z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#0d9488; letter-spacing:-0.01em;">FB Pages</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#0d9488;">( <span id="filter-count-fb-page">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 6. FB Stories -->
+        <button type="button" class="traffic-filter-btn" data-filter="fb-story" data-active-color="#c2410c" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#fef8ed; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#fde8c8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#ea580c">
+              <path d="M10.5 18.75a.75.75 0 000 1.5h3a.75.75 0 000-1.5h-3z" />
+              <path fill-rule="evenodd" d="M6.75 2.25A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25h10.5A2.25 2.25 0 0019.5 19.5V4.5A2.25 2.25 0 0017.25 2.25H6.75zM6 4.5a.75.75 0 01.75-.75h10.5a.75.75 0 01.75.75v15a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V4.5z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#c2410c; letter-spacing:-0.01em;">FB Stories</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#ea580c;">( <span id="filter-count-fb-story">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 7. Suspicious -->
+        <button type="button" class="traffic-filter-btn" data-filter="suspicious" data-active-color="#b45309" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#fefbe8; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#fef3a3; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#d97706">
+              <path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.5 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zM12 8.25a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#b45309; letter-spacing:-0.01em;">Suspicious</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#d97706;">( <span id="filter-count-suspicious">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 8. Blocked -->
+        <button type="button" class="traffic-filter-btn" data-filter="bot" data-active-color="#dc2626" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#fef2f2; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#fed8d8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#dc2626; letter-spacing:-0.01em;">Blocked</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#ef4444;">( <span id="filter-count-bot">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 9. Country Block -->
+        <button type="button" class="traffic-filter-btn" data-filter="country-block" data-active-color="#b91c1c" style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.85rem; border-radius:16px; background:#fef2f2; border:1.5px solid transparent; cursor:pointer; text-align:left; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#fed8d8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <span style="font-weight:800; font-size:0.86rem; color:#b91c1c; letter-spacing:-0.01em;">Country Block</span>
+            <span style="font-size:0.76rem; font-weight:600; color:#dc2626;">( <span id="filter-count-country-block">0</span> )</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Bottom Stream Status Banner -->
+      <div id="audit-status-banner" style="display:flex; align-items:center; gap:0.75rem; background:#f0f7ff; border:1.5px solid #dbeafe; border-radius:18px; padding:0.85rem 1rem; margin-bottom:1.15rem;">
+        <div style="width:34px; height:34px; border-radius:50%; background:#2563eb; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div id="audit-status-banner-text" style="font-size:0.84rem; font-weight:600; color:#334155;">
+          Real-time traffic audit stream active.
+        </div>
       </div>
 
       <div class="table-wrap">
@@ -1522,7 +1676,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=34"></script>
+<script src="/js/dashboard.js?v=35"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

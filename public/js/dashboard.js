@@ -1897,9 +1897,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.traffic-filter-btn').forEach(b => {
         b.classList.remove('active');
         b.style.boxShadow = 'none';
+        b.style.borderColor = 'transparent';
       });
       btn.classList.add('active');
-      btn.style.boxShadow = '0 0 0 2px var(--red-primary)';
+      const activeColor = btn.getAttribute('data-active-color') || '#0f172a';
+      btn.style.borderColor = activeColor;
+      btn.style.boxShadow = `0 0 0 2px ${activeColor}, 0 6px 16px rgba(0,0,0,0.06)`;
       currentTrafficFilter = btn.getAttribute('data-filter') || 'all';
       renderTrafficLogsTable();
     });
@@ -2042,7 +2045,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!Array.isArray(logs) || logs.length === 0) {
         cachedTrafficLogs = [];
-        if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No traffic logs recorded yet.</td></tr>`;
+        if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding:2rem;">No traffic logs recorded yet.</td></tr>`;
+        const bannerText = document.getElementById('audit-status-banner-text');
+        if (bannerText) bannerText.textContent = 'No traffic logs recorded yet. Waiting for visitors...';
+
         const totalEl = document.getElementById('stat-total-clicks');
         if (totalEl) totalEl.textContent = '0';
         const orgEl = document.getElementById('stat-organic-clicks');
@@ -2067,6 +2073,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const fbAutoEl = document.getElementById('stat-fb-automated');
         if (fbAutoEl) fbAutoEl.textContent = '0';
 
+        // Reset filter counters
+        ['all', 'organic', 'fb-profile', 'fb-group', 'fb-page', 'fb-story', 'suspicious', 'bot', 'country-block'].forEach(f => {
+          const el = document.getElementById(`filter-count-${f}`);
+          if (el) el.textContent = '0';
+        });
+
         return;
       }
 
@@ -2075,6 +2087,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let organicCount = 0;
       let suspiciousCount = 0;
       let botCount = 0;
+      let countryBlockedCount = 0;
 
       let fbProfilesCount = 0;
       let fbGroupsCount = 0;
@@ -2177,9 +2190,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const cntCtry = document.getElementById('filter-count-country-block');
       if (cntCtry) cntCtry.textContent = countryBlockedCount;
 
+      const bannerText = document.getElementById('audit-status-banner-text');
+      if (bannerText) {
+        bannerText.textContent = totalClicks > 0
+          ? `Real-time traffic audit stream active (${totalClicks} recorded events).`
+          : 'Real-time traffic audit stream active.';
+      }
+
       renderTrafficLogsTable();
     } catch (err) {
-      if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="color: var(--danger);">Failed to load analytics.</td></tr>`;
+      console.error('Error loading analytics logs:', err);
+      if (logsTbody) logsTbody.innerHTML = `<tr><td colspan="9" style="color: var(--danger); text-align:center; padding:1.5rem;">Failed to load logs.</td></tr>`;
+      const bannerText = document.getElementById('audit-status-banner-text');
+      if (bannerText) bannerText.textContent = 'Failed to load analytics: ' + (err.message || 'Network error');
     }
   }
 
