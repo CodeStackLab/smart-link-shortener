@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=17">
+  <link rel="stylesheet" href="/css/style.css?v=18">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -543,6 +543,278 @@
     [data-theme="dark"] .fb-subsource-subtitle {
       color: #94a3b8 !important;
     }
+
+    /* ── MOCKUP EXACT: TOP HEADER BAR ── */
+    .top-refresh-btn {
+      background: #059669 !important;
+      border: none !important;
+      color: #ffffff !important;
+      border-radius: 11px !important;
+      width: 38px !important;
+      height: 38px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      flex-shrink: 0 !important;
+      padding: 0 !important;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+      transition: transform 0.15s ease, background 0.15s ease !important;
+    }
+    .top-refresh-btn:active {
+      transform: scale(0.93) !important;
+    }
+    .top-pill-btn, .theme-toggle-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      border-radius: 9999px !important;
+      padding: 0.4rem 0.85rem !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.35rem !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      transition: all 0.15s ease !important;
+    }
+    .top-pill-btn:hover, .theme-toggle-btn:hover {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    .user-badge-pill {
+      background: #eff6ff !important;
+      border: 1.5px solid #bfdbfe !important;
+      color: #1d4ed8 !important;
+      border-radius: 9999px !important;
+      padding: 0.4rem 0.85rem !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.35rem !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
+    }
+
+    [data-theme="dark"] .top-pill-btn,
+    [data-theme="dark"] .theme-toggle-btn {
+      background: #1e293b !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .user-badge-pill {
+      background: rgba(37, 99, 235, 0.2) !important;
+      border-color: rgba(147, 197, 253, 0.3) !important;
+      color: #93c5fd !important;
+    }
+
+    /* ── MOCKUP EXACT: TOP STATS STACK ── */
+    .top-stats-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      width: 100%;
+    }
+    .top-stat-row {
+      background: #ffffff;
+      border: 1.5px solid rgba(226, 232, 240, 0.95);
+      border-radius: 20px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .top-stat-row:hover {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      border-color: rgba(203, 213, 225, 0.95);
+    }
+    .top-stat-left {
+      display: flex;
+      align-items: center;
+      gap: 0.95rem;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    .top-stat-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      flex-shrink: 0;
+    }
+    .top-stat-icon-box.green {
+      background: #dcfce7;
+    }
+    .top-stat-icon-box.amber {
+      background: #fef9c3;
+    }
+    .top-stat-icon-box.red {
+      background: #fee2e2;
+    }
+    .top-stat-icon-box.blue {
+      background: #e0f2fe;
+    }
+    .top-stat-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #1e293b;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      white-space: nowrap;
+    }
+    .top-stat-right {
+      display: flex;
+      align-items: center;
+      gap: 0.95rem;
+      flex-shrink: 0;
+    }
+    .top-stat-num {
+      font-size: 1.95rem;
+      font-weight: 900;
+      line-height: 1;
+      min-width: 44px;
+      text-align: right;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .top-stat-num.green {
+      color: #059669;
+    }
+    .top-stat-num.amber {
+      color: #b45309;
+    }
+    .top-stat-num.red {
+      color: #dc2626;
+    }
+    .top-stat-num.blue {
+      color: #2563eb;
+    }
+    .top-stat-divider {
+      width: 1.5px;
+      height: 34px;
+      background: #e2e8f0;
+    }
+    .top-stat-desc {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      font-size: 0.74rem;
+      line-height: 1.25;
+      color: #64748b;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    [data-theme="dark"] .top-stat-row {
+      background: #1e293b !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+    }
+    [data-theme="dark"] .top-stat-title {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .top-stat-divider {
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+    [data-theme="dark"] .top-stat-desc {
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .top-stat-icon-box.green {
+      background: rgba(16, 185, 129, 0.2) !important;
+    }
+    [data-theme="dark"] .top-stat-icon-box.amber {
+      background: rgba(245, 158, 11, 0.2) !important;
+    }
+    [data-theme="dark"] .top-stat-icon-box.red {
+      background: rgba(239, 68, 68, 0.2) !important;
+    }
+    [data-theme="dark"] .top-stat-icon-box.blue {
+      background: rgba(59, 130, 246, 0.2) !important;
+    }
+
+    /* ── MOBILE VIEW OPTIMIZATION (Single Row Header & Sleek Cards) ── */
+    @media (max-width: 768px) {
+      .hide-mobile-header {
+        display: none !important;
+      }
+      .site-header {
+        padding: 0.55rem 0.75rem !important;
+      }
+      .header-inner {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.35rem !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+      }
+      .logo-group {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.65rem !important;
+        flex-shrink: 0 !important;
+      }
+      .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
+      }
+      .top-pill-btn, .theme-toggle-btn, .user-badge-pill {
+        padding: 0.35rem 0.6rem !important;
+        font-size: 0.76rem !important;
+      }
+      .top-stat-row {
+        padding: 0.65rem 0.85rem !important;
+        border-radius: 16px !important;
+        gap: 0.45rem !important;
+      }
+      .top-stat-left {
+        gap: 0.65rem !important;
+      }
+      .top-stat-icon-box {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.3rem !important;
+        border-radius: 12px !important;
+      }
+      .top-stat-title {
+        font-size: 0.82rem !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
+      }
+      .top-stat-right {
+        gap: 0.55rem !important;
+      }
+      .top-stat-num {
+        font-size: 1.65rem !important;
+        min-width: 34px !important;
+      }
+      .top-stat-divider {
+        height: 28px !important;
+      }
+      .top-stat-desc {
+        font-size: 0.68rem !important;
+        line-height: 1.2 !important;
+      }
+    }
   </style>
 </head>
 <body data-theme="light">
@@ -556,21 +828,28 @@
         <span></span>
         <span></span>
       </button>
-      <a href="/admin" class="logo-link" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none; color:inherit;">
+      <button id="cache-refresh-btn" class="top-refresh-btn" title="Force refresh all data from server" aria-label="Refresh Data">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 2l4 4-4 4"/>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <path d="M7 22l-4-4 4-4"/>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+      </button>
+      <a href="/admin" class="logo-link hide-mobile-header" style="display:flex; align-items:center; gap:0.65rem; text-decoration:none; color:inherit;">
         <div class="logo-badge" style="padding:0; background:none; overflow:hidden;">
           <img src="/icon-192.png" alt="Logo" style="width:36px; height:36px; border-radius:10px; display:block; object-fit:cover;">
         </div>
         <div class="logo-text">
-          <h1>Smart FB <span class="hide-mobile">Link Shortner</span></h1>
+          <h1>Smart FB Link Shortner</h1>
           <p>Referrer &amp; Domain Redirection Engine</p>
         </div>
       </a>
     </div>
     <div class="header-actions">
-      <button id="cache-refresh-btn" title="Force refresh all data from server" style="background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;border-radius:8px;padding:0.3rem 0.65rem;font-size:0.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:0.3rem;white-space:nowrap;">🔄<span class="hide-mobile"> Refresh</span></button>
-      <button id="theme-toggle-btn" class="theme-toggle-btn">☀️ Light</button>
-      <span id="user-badge" class="badge badge-red" style="padding:0.3rem 0.65rem; font-size:0.725rem;">Admin</span>
-      <button id="logout-btn" class="btn btn-secondary btn-sm">🔒 Logout</button>
+      <button id="theme-toggle-btn" class="theme-toggle-btn top-pill-btn">☀️ Light</button>
+      <span id="user-badge" class="badge user-badge-pill">👑 Super Admin</span>
+      <button id="logout-btn" class="btn top-pill-btn">🔒 Logout</button>
     </div>
   </div>
 </header>
@@ -888,37 +1167,69 @@
 <div id="tab-analytics" class="tab-content" style="display:none;">
   <div class="container">
 
-    <div class="stats-grid">
-      <div class="stat-card" id="logs-organic-wrap">
-        <div class="stat-icon teal">✅</div>
-        <div class="stat-body">
-          <div class="stat-title">Legitimate Traffic</div>
-          <div id="stat-organic-clicks" class="stat-value" style="color:#059669;">0</div>
-          <div class="stat-desc">Low Risk &amp; Verified Organic</div>
+    <!-- Top Overview Stats Cards (Matching User Mockup) -->
+    <div class="top-stats-stack">
+      <!-- 1. Legitimate Traffic -->
+      <div class="top-stat-row" id="logs-organic-wrap">
+        <div class="top-stat-left">
+          <div class="top-stat-icon-box green">✅</div>
+          <span class="top-stat-title">LEGITIMATE TRAFFIC</span>
+        </div>
+        <div class="top-stat-right">
+          <span id="stat-organic-clicks" class="top-stat-num green">0</span>
+          <div class="top-stat-divider"></div>
+          <div class="top-stat-desc">
+            <span>Low Risk &amp;</span>
+            <span>Verified Organic</span>
+          </div>
         </div>
       </div>
-      <div class="stat-card" id="logs-suspicious-wrap">
-        <div class="stat-icon amber">⚠️</div>
-        <div class="stat-body">
-          <div class="stat-title">Suspicious Traffic</div>
-          <div id="stat-suspicious-clicks" class="stat-value" style="color:#b45309;">0</div>
-          <div class="stat-desc">Medium Risk / Soft-Blocked</div>
+
+      <!-- 2. Suspicious Traffic -->
+      <div class="top-stat-row" id="logs-suspicious-wrap">
+        <div class="top-stat-left">
+          <div class="top-stat-icon-box amber">⚠️</div>
+          <span class="top-stat-title">SUSPICIOUS TRAFFIC</span>
+        </div>
+        <div class="top-stat-right">
+          <span id="stat-suspicious-clicks" class="top-stat-num amber">0</span>
+          <div class="top-stat-divider"></div>
+          <div class="top-stat-desc">
+            <span>Medium Risk /</span>
+            <span>Soft-Blocked</span>
+          </div>
         </div>
       </div>
-      <div class="stat-card" id="logs-bot-wrap">
-        <div class="stat-icon red">🤖</div>
-        <div class="stat-body">
-          <div class="stat-title">Bot Shield Blocked</div>
-          <div id="stat-bot-clicks" class="stat-value" style="color:#dc2626;">0</div>
-          <div class="stat-desc">High Risk Bots / Scrapers</div>
+
+      <!-- 3. Bot Shield Blocked -->
+      <div class="top-stat-row" id="logs-bot-wrap">
+        <div class="top-stat-left">
+          <div class="top-stat-icon-box red">🤖</div>
+          <span class="top-stat-title">BOT SHIELD BLOCKED</span>
+        </div>
+        <div class="top-stat-right">
+          <span id="stat-bot-clicks" class="top-stat-num red">0</span>
+          <div class="top-stat-divider"></div>
+          <div class="top-stat-desc">
+            <span>High Risk Bots /</span>
+            <span>Scrapers</span>
+          </div>
         </div>
       </div>
-      <div class="stat-card" id="logs-quality-wrap">
-        <div class="stat-icon blue">🛡️</div>
-        <div class="stat-body">
-          <div class="stat-title">Traffic Quality</div>
-          <div id="stat-traffic-quality" class="stat-value" style="color:#2563eb;">100%</div>
-          <div class="stat-desc">Clean Visitors Ratio</div>
+
+      <!-- 4. Traffic Quality -->
+      <div class="top-stat-row" id="logs-quality-wrap">
+        <div class="top-stat-left">
+          <div class="top-stat-icon-box blue">🛡️</div>
+          <span class="top-stat-title">TRAFFIC QUALITY</span>
+        </div>
+        <div class="top-stat-right">
+          <span id="stat-traffic-quality" class="top-stat-num blue">100%</span>
+          <div class="top-stat-divider"></div>
+          <div class="top-stat-desc">
+            <span>Clean Visitors</span>
+            <span>Ratio</span>
+          </div>
         </div>
       </div>
     </div>
@@ -2272,7 +2583,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=47"></script>
+<script src="/js/dashboard.js?v=48"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

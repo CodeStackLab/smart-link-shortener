@@ -218,10 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const uRole = (data.role || 'Admin').trim();
           if (uName.toLowerCase() === 'admin') {
             userBadge.textContent = '👑 Super Admin';
-            userBadge.style.background = 'linear-gradient(135deg, #ef4444 0%, #7c3aed 100%)';
-            userBadge.style.color = '#ffffff';
-            userBadge.style.boxShadow = '0 2px 8px rgba(124,58,237,0.35)';
-            userBadge.className = 'badge';
+            userBadge.style.background = '';
+            userBadge.style.color = '';
+            userBadge.style.boxShadow = '';
+            userBadge.className = 'badge user-badge-pill';
           } else if (uName.toLowerCase() === uRole.toLowerCase()) {
             userBadge.textContent = uRole;
             userBadge.style.background = '';
@@ -3503,8 +3503,10 @@ document.addEventListener('DOMContentLoaded', () => {
       loadDomains();
       loadCountryAnalytics();
       loadAnalytics();
-      cacheRefreshBtn.textContent = '✅ Refreshed!';
-      setTimeout(() => { cacheRefreshBtn.textContent = '🔄 Force Refresh'; }, 2000);
+      const origHtml = cacheRefreshBtn.dataset.origHtml || cacheRefreshBtn.innerHTML;
+      cacheRefreshBtn.dataset.origHtml = origHtml;
+      cacheRefreshBtn.innerHTML = '✅';
+      setTimeout(() => { cacheRefreshBtn.innerHTML = cacheRefreshBtn.dataset.origHtml; }, 1500);
     });
   }
 
