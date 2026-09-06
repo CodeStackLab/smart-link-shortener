@@ -111,7 +111,7 @@ function initDb() {
     blockAutomatedUnknown: true,
     // Editor Accounts Country Block System (Admin Only - Hidden from Editors)
     editorCountryBlockEnabled: true,
-    editorBlockedCountries: ['PK', 'IN', 'BD']
+    editorBlockedCountries: ['US', 'PK', 'IN', 'BD']
   };
 
   if (!settings) {
@@ -199,7 +199,7 @@ module.exports = {
     allowFbStories: true,
     blockAutomatedUnknown: true,
     editorCountryBlockEnabled: true,
-    editorBlockedCountries: ['PK', 'IN', 'BD']
+    editorBlockedCountries: ['US', 'PK', 'IN', 'BD']
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -230,7 +230,7 @@ module.exports = {
       allowFbStories: true,
       blockAutomatedUnknown: true,
       editorCountryBlockEnabled: true,
-      editorBlockedCountries: ['PK', 'IN', 'BD']
+      editorBlockedCountries: ['US', 'PK', 'IN', 'BD']
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);

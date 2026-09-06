@@ -2512,7 +2512,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─────────────────────────────────────────────────────────────
   // EDITOR ACCOUNTS COUNTRY BLOCK SYSTEM (ADMIN ONLY)
   // ─────────────────────────────────────────────────────────────
-  let activeEditorBlockedCountries = new Set(['PK', 'IN', 'BD']);
+  let activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
 
   function renderEditorBlockedCountriesTags() {
     const container = document.getElementById('editor-blocked-countries-tags');

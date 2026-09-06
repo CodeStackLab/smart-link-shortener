@@ -81,10 +81,22 @@ test('2. Editor link blocks visitor from blocked country (IN) to Fallback', () =
   assert.strictEqual(res.destination, 'fallback');
 });
 
-test('3. Editor link allows visitor from clean non-blocked country (US)', () => {
+test('3. Editor link blocks visitor from USA (US) when US is in blocked countries', () => {
   const link = { code: 'edlink3', createdBy: 'pppp', fallbackUrl: 'https://www.google.com/', targetUrl: 'https://adx.com/' };
   const geo = { countryCode: 'US', countryName: 'United States' };
-  const settings = { editorCountryBlockEnabled: true, editorBlockedCountries: ['PK', 'IN', 'BD'] };
+  const settings = { editorCountryBlockEnabled: true, editorBlockedCountries: ['US', 'PK', 'IN', 'BD'] };
+
+  const res = simulateCountryBlockCheck(link, geo, settings);
+  assert.strictEqual(res.blocked, true);
+  assert.strictEqual(res.status, 'EDITOR_COUNTRY_BLOCKED');
+  assert.strictEqual(res.destination, 'fallback');
+  assert.strictEqual(res.country, 'US');
+});
+
+test('3b. Editor link allows visitor from clean non-blocked country (CA)', () => {
+  const link = { code: 'edlink3b', createdBy: 'pppp', fallbackUrl: 'https://www.google.com/', targetUrl: 'https://adx.com/' };
+  const geo = { countryCode: 'CA', countryName: 'Canada' };
+  const settings = { editorCountryBlockEnabled: true, editorBlockedCountries: ['US', 'PK', 'IN', 'BD'] };
 
   const res = simulateCountryBlockCheck(link, geo, settings);
   assert.strictEqual(res.blocked, false);
