@@ -269,7 +269,7 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
    - Manual IP Block form and table of permanently blocked IPs.
    - Auto-Shield & Rate Limit configuration form.
    - **Global Facebook Traffic & AdX Defaults Card** (System-wide default policy).
-   - **Editor Accounts Country Block System Card** (Quick pills: US, PK, IN, BD, etc. and custom 2-letter codes).
+   - **Editor Accounts Country Block System Card** (Quick pills: US, PK, IN, BD, EG, NG, PH, TW, etc. and custom 2-letter codes).
    - Live Temporary Soft-Blocks table with 1-click "🔓 Release" buttons.
    - Trusted Sources Allowlist Manager with 1-click remove buttons.
 5. **Tab 5: ⚙️ Settings & Team Management (`#tab-settings`)**:
@@ -277,7 +277,7 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
      * Granular feature access permissions (Facebook, Instagram, Custom Web, Shortlinks, etc.)
      * Target URL visibility toggle (Unhide full URL vs Mask with stars)
      * **🎯 Facebook Traffic & AdX Controls (7 Controls) for this Editor (configured 1-by-1)**
-     * **🌍 Country Blocking for this Editor's Links (Master toggle, Quick pills: US, PK, IN, BD, tag chips & custom ISO code input)**
+     * **🌍 Country Blocking for this Editor's Links (Master toggle, Quick pills: US, PK, IN, BD, EG, NG, PH, TW, tag chips & custom ISO code input)**
      * Assigned allowed target domains list
    - Editor URL Visibility Settings card (Individual Mode, Force Unhide, Force Mask).
    - Google Authenticator 2FA setup & QR code viewer.

@@ -49,8 +49,8 @@ All **7 Facebook Traffic & AdX Monetization Controls** are fully implemented, ve
 | **Visibility** | Hidden from Editors | Editors cannot see the country block card, settings, or log tags. |
 | **Blocked Action** | 302 Redirect to Fallback | Blocked visitor goes straight to `fallbackUrl` (e.g. google.com); target AdX URL is never exposed. |
 | **Audit Status** | `EDITOR_COUNTRY_BLOCKED` | Logged for Admin in Tab 3 with country name/flag. Masked as `FALLBACK_REDIRECT` for Editor views. |
-| **Default Blocked Countries** | `['US', 'PK', 'IN', 'BD']` | Fully customizable by Super Admin in Tab 4 (IP Firewall) or per-editor in Tab 5 via quick pills or custom ISO codes. |
-| **Automated Verification** | `node test_editor_country_block.js` & `node test_per_editor_rules.js` | 14/14 automated tests passing (100%). |
+| **Default Blocked Countries** | `['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']` | 8 High-risk AdX countries pre-configured: United States (US), Pakistan (PK), India (IN), Bangladesh (BD), Egypt (EG), Nigeria (NG), Philippines (PH), Taiwan (TW). Fully customizable by Super Admin in Tab 4 (IP Firewall) or per-editor in Tab 5 via quick pills or custom ISO codes. |
+| **Automated Verification** | `node test_editor_country_block.js` & `node test_per_editor_rules.js` | 18/18 automated tests passing (100%). |
 
 ## 👥 Implementation Status: Per-Editor Traffic Controls & Clean Link Creation (100% Complete)
 

@@ -111,7 +111,7 @@ function initDb() {
     blockAutomatedUnknown: true,
     // Editor Accounts Country Block System (Admin Only - Hidden from Editors)
     editorCountryBlockEnabled: true,
-    editorBlockedCountries: ['US', 'PK', 'IN', 'BD']
+    editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
   };
 
   if (!settings) {
@@ -199,7 +199,7 @@ module.exports = {
     allowFbStories: true,
     blockAutomatedUnknown: true,
     editorCountryBlockEnabled: true,
-    editorBlockedCountries: ['US', 'PK', 'IN', 'BD']
+    editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -230,7 +230,7 @@ module.exports = {
       allowFbStories: true,
       blockAutomatedUnknown: true,
       editorCountryBlockEnabled: true,
-      editorBlockedCountries: ['US', 'PK', 'IN', 'BD']
+      editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);
@@ -325,7 +325,7 @@ module.exports = {
           blockAutomatedUnknown: true,
           botProtection: true
         },
-        blockedCountries: Array.isArray(u.blockedCountries) ? u.blockedCountries : ['US', 'PK', 'IN', 'BD'],
+        blockedCountries: Array.isArray(u.blockedCountries) ? u.blockedCountries : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
         countryBlockEnabled: u.countryBlockEnabled !== false,
         createdAt: u.createdAt || new Date().toISOString()
       };
@@ -380,7 +380,7 @@ module.exports = {
     if (Array.isArray(user.blockedCountries)) {
       user.blockedCountries = [...new Set(user.blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
     } else {
-      user.blockedCountries = ['US', 'PK', 'IN', 'BD'];
+      user.blockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
     }
     user.countryBlockEnabled = (user.countryBlockEnabled !== false);
 

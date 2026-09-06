@@ -1299,7 +1299,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
       blockAutomatedUnknown: true,
       botProtection: true
     },
-    blockedCountries: Array.isArray(blockedCountries) ? blockedCountries : ['US', 'PK', 'IN', 'BD'],
+    blockedCountries: Array.isArray(blockedCountries) ? blockedCountries : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
     countryBlockEnabled: countryBlockEnabled !== false,
     createdAt: new Date().toISOString()
   };

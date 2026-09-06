@@ -2512,7 +2512,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─────────────────────────────────────────────────────────────
   // EDITOR ACCOUNTS COUNTRY BLOCK SYSTEM (ADMIN ONLY)
   // ─────────────────────────────────────────────────────────────
-  let activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+  let activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
 
   function renderEditorBlockedCountriesTags() {
     const container = document.getElementById('editor-blocked-countries-tags');
@@ -3203,7 +3203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('edit-user-country-block-enabled')) {
       document.getElementById('edit-user-country-block-enabled').checked = (user.countryBlockEnabled !== false);
     }
-    const userBlockedList = Array.isArray(user.blockedCountries) ? user.blockedCountries : ['US', 'PK', 'IN', 'BD'];
+    const userBlockedList = Array.isArray(user.blockedCountries) ? user.blockedCountries : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
     editUserBlockedCountries = new Set(userBlockedList);
     renderEditUserBlockedCountriesTags();
 
@@ -3211,7 +3211,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ── Edit User Country Blocking Management ──
-  let editUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+  let editUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
 
   function renderEditUserBlockedCountriesTags() {
     const container = document.getElementById('edit-user-blocked-tags');
@@ -3475,7 +3475,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── New User Country Blocking Management ──
-  let newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+  let newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
 
   function renderNewUserBlockedCountriesTags() {
     const container = document.getElementById('new-user-blocked-tags');
@@ -3633,7 +3633,7 @@ document.addEventListener('DOMContentLoaded', () => {
           showAlert(`✅ User '${username}' (${role}) created successfully!`);
           
           inviteUserForm.reset();
-          newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD']);
+          newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
           renderNewUserBlockedCountriesTags();
           if (document.getElementById('new-user-country-block-enabled')) {
             document.getElementById('new-user-country-block-enabled').checked = true;
