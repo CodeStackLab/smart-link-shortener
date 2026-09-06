@@ -2426,8 +2426,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (editorCountryBlockCb) {
         editorCountryBlockCb.checked = settings.editorCountryBlockEnabled !== false;
       }
-      if (Array.isArray(settings.editorBlockedCountries)) {
+      if (Array.isArray(settings.editorBlockedCountries) && settings.editorBlockedCountries.length > 0) {
         activeEditorBlockedCountries = new Set(settings.editorBlockedCountries.map(c => String(c).toUpperCase()));
+      } else {
+        activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
       }
       renderEditorBlockedCountriesTags();
 
