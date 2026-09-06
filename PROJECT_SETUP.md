@@ -23,11 +23,24 @@
 
 ---
 
-## 🚀 Recent Implementation Status: All 52 Requirements Complete (100% Working)
+## 🚀 Implementation Status: Facebook Traffic & AdX Monetization Protection (100% Complete)
 
-All 52 requirements for **Maximum Traffic Quality & Bot Protection** are fully implemented, configured, and verified (25/25 automated unit & integration tests passing).
+All **7 Facebook Traffic & AdX Monetization Controls** are fully implemented, verified, and active (21/21 automated tests passing via `node test_fb_filters.js`):
 
-### Key Features Implemented:
+| # | Feature / Requirement | Control Type | Default | Enforcement Location |
+|---|---|---|---|---|
+| 1 | **Facebook Traffic Master** | Master ON/OFF Toggle | `ON` | `server.js` (`handleShortlinkRedirect`), `admin.html` |
+| 2 | **Profile-Origin Traffic** | Separate Analytics & Allow/Block | `Allow` | `utils/detector.js` (`classifyFacebookTraffic`), `dashboard.js` |
+| 3 | **Facebook Groups** | Block / Allow Toggle | `Block/Allow` | `server.js`, `public/admin.html`, `dashboard.js` |
+| 4 | **Facebook Pages** | Block / Allow Toggle | `Block/Allow` | `server.js`, `public/admin.html`, `dashboard.js` |
+| 5 | **Facebook Stories** | Block / Allow Toggle | `Block/Allow` | `server.js`, `public/admin.html`, `dashboard.js` |
+| 6 | **Unknown / Automated Traffic** | Instant Auto-Block | `Block` | `utils/detector.js`, `server.js` |
+| 7 | **Multi-Signal Bot Protection** | ON/OFF Toggle | `ON` | `utils/detector.js`, `server.js` |
+
+---
+
+## 🛡️ Traffic Quality & Bot Protection Features (Previous 52 Requirements)
+
 1. **Multi-Signal Bot Protection (utils/detector.js)**:
    - `evaluateBrowserIntegrity()`: Detects missing headers (`Accept`, `Accept-Language`, `Accept-Encoding`, `Client Hints`). Spoofed UAs without headers are scored high risk and blocked.
    - `isSpamBot()` & `isHeadlessBrowser()`: Detects curl, python-requests, httpx, aiohttp, playwright, puppeteer, selenium, click generators, and scrapers.
@@ -43,20 +56,14 @@ All 52 requirements for **Maximum Traffic Quality & Bot Protection** are fully i
    - Exemption in `evaluateBrowserIntegrity` and `checkAndApplyAutoShield` prevents false-positive blocking of preview bots.
    - `isSocialRelayRequest()` ensures real residential users clicking from Facebook are not misclassified as scrapers.
 4. **Admin Portal — Tab 3: Real-Time Traffic Audit Logs (public/admin.html & dashboard.js)**:
-   - **4 Live Metric Cards**:
-     - 🟢 **Legitimate Traffic** (Organic clicks)
-     - 🟡 **Suspicious Traffic** (Medium-risk / Soft-blocked)
-     - 🔴 **Bot Shield Blocked** (High-risk bots & scrapers)
-     - 🛡️ **Traffic Quality Score** (`% Clean Visitors` ratio)
-   - **Interactive Filter Pills**: `All Traffic`, `🟢 Legitimate`, `🟡 Suspicious`, `🔴 Bot Blocked`.
-   - **Audit Table Columns**: Time, Code, IP / ISP, Location, Risk Score (Low/Med/High badge + score), Status / Action, Reason & Signals, Referrer, Quick Actions (➕ Whitelist / 🚫 Block).
+   - **4 Live Metric Cards**: Legitimate, Suspicious, Bot Shield Blocked, Traffic Quality Score.
+   - **Interactive Filter Pills**: `All Traffic`, `🟢 Legitimate`, `🟡 Suspicious`, `🔴 Bot Blocked`, `👤 FB Profiles`, `👥 FB Groups`, `📄 FB Pages`, `📱 FB Stories`.
+   - **Facebook Traffic Sub-Source Analytics Widget**: Live breakdown of Profiles, Groups, Pages, Stories, and Automated FB visitors.
 5. **Admin Portal — Tab 4: IP Firewall & Quality Controls**:
-   - **Auto Shield Settings**:
-     - `tempBlockDurationMinutes`: Configurable duration for temporary soft-blocks (default: 30 min).
-     - `rateLimitWindowSeconds` & `rateLimitMaxRequests`: Configurable sliding window rate limiter.
-     - `spikeWindowMinutes` & `spikeThresholdClicks`: Click-burst spike detection threshold.
-   - **Live Temporary Soft-Blocks Table**: Live countdown for auto-expiring blocks + **1-Click "🔓 Release" button** (`DELETE /api/admin/temp-blocks/:ip`) for false-positive recovery.
-   - **Trusted Sources Allowlist Manager**: Form to add trusted IPs + table with remove button (`GET/POST/DELETE /api/admin/allowlist`). Allowlisted IPs bypass all shields.
+   - Auto Shield settings, Temporary Soft-Blocks table with 1-click unblock, and Trusted Sources Allowlist Manager.
+   - **Global Facebook Traffic & AdX Defaults Card**: Master switches to configure default policies for all new shortlinks.
+6. **Per-Link Traffic Rules Modal**:
+   - Every shortlink has a **"🎯 Rules"** button in Tab 1 allowing granular custom overrides for all 7 Facebook traffic rules.
 
 ---
 

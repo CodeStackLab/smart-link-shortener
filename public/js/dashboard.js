@@ -984,6 +984,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const actionsHtml = canManage ? `
         <div class="action-btn-group">
+          <button class="btn btn-secondary btn-sm" onclick="showTrafficRulesModal('${link.id}')" title="Configure Facebook & Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
           ${toggleBtnHtml}
@@ -991,6 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       ` : `
         <div class="action-btn-group">
+          <button class="btn btn-secondary btn-sm" onclick="showTrafficRulesModal('${link.id}')" title="View Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
           <span class="badge badge-info" style="font-size:0.7rem; padding:0.35rem 0.65rem; font-weight:700;">👁️ View Only</span>
@@ -1271,6 +1273,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ── Traffic Rules Modal Handlers ──
+  window.showTrafficRulesModal = function(linkId) {
+    const link = (allLinksCache || []).find(l => l.id === linkId);
+    if (!link) return;
+    const idEl = document.getElementById('modal-rule-link-id');
+    const subEl = document.getElementById('traffic-rules-modal-subtitle');
+    if (idEl) idEl.value = link.id;
+    if (subEl) subEl.textContent = `/${link.code} • Target: ${link.targetUrl}`;
+
+    const setChecked = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = (val !== false);
+    };
+
+    setChecked('modal-rule-fb-master', link.fbTrafficEnabled);
+    setChecked('modal-rule-fb-profiles', link.allowFbProfiles);
+    setChecked('modal-rule-fb-groups', link.allowFbGroups);
+    setChecked('modal-rule-fb-pages', link.allowFbPages);
+    setChecked('modal-rule-fb-stories', link.allowFbStories);
+    setChecked('modal-rule-fb-automated', link.blockAutomatedUnknown);
+    setChecked('modal-rule-bot-protection', link.botProtection);
+
+    const modal = document.getElementById('traffic-rules-modal');
+    if (modal) modal.style.display = 'flex';
+  };
+
+  window.closeTrafficRulesModal = function() {
+    const modal = document.getElementById('traffic-rules-modal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.saveTrafficRulesModal = async function() {
+    const linkId = document.getElementById('modal-rule-link-id')?.value;
+    if (!linkId) return;
+
+    const saveBtn = document.getElementById('btn-save-traffic-rules');
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳ Saving...';
+    }
+
+    const payload = {
+      fbTrafficEnabled: !!document.getElementById('modal-rule-fb-master')?.checked,
+      allowFbProfiles: !!document.getElementById('modal-rule-fb-profiles')?.checked,
+      allowFbGroups: !!document.getElementById('modal-rule-fb-groups')?.checked,
+      allowFbPages: !!document.getElementById('modal-rule-fb-pages')?.checked,
+      allowFbStories: !!document.getElementById('modal-rule-fb-stories')?.checked,
+      blockAutomatedUnknown: !!document.getElementById('modal-rule-fb-automated')?.checked,
+      botProtection: !!document.getElementById('modal-rule-bot-protection')?.checked
+    };
+
+    try {
+      const res = await fetch(`/api/admin/links/${linkId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Traffic Rules updated successfully!');
+        window.closeTrafficRulesModal();
+        loadLinks();
+      } else {
+        showAlert(data.error || 'Failed to save rules', true);
+      }
+    } catch (err) {
+      showAlert('Error saving traffic rules', true);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save Rules';
+      }
+    }
+  };
+
   // ── Image Upload & Preview Handler ──
   const imageDropzone = document.getElementById('image-upload-dropzone');
   const imageFileInput = document.getElementById('link-image-file');
@@ -1450,6 +1527,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const finalCustomDomains = customDomainEnableCb && customDomainEnableCb.checked ? customDomainsList : [];
 
+      const fbTrafficMasterCb = document.getElementById('fb-traffic-master');
+      const fbAllowProfilesCb = document.getElementById('fb-allow-profiles');
+      const fbAllowGroupsCb = document.getElementById('fb-allow-groups');
+      const fbAllowPagesCb = document.getElementById('fb-allow-pages');
+      const fbAllowStoriesCb = document.getElementById('fb-allow-stories');
+      const fbBlockAutomatedCb = document.getElementById('fb-block-automated');
+      const fbBotProtectionCb = document.getElementById('fb-bot-protection');
+
+      const fbTrafficEnabled = fbTrafficMasterCb ? fbTrafficMasterCb.checked : true;
+      const allowFbProfiles = fbAllowProfilesCb ? fbAllowProfilesCb.checked : true;
+      const allowFbGroups = fbAllowGroupsCb ? fbAllowGroupsCb.checked : true;
+      const allowFbPages = fbAllowPagesCb ? fbAllowPagesCb.checked : true;
+      const allowFbStories = fbAllowStoriesCb ? fbAllowStoriesCb.checked : true;
+      const blockAutomatedUnknown = fbBlockAutomatedCb ? fbBlockAutomatedCb.checked : true;
+      const botProtection = fbBotProtectionCb ? fbBotProtectionCb.checked : true;
+
       try {
         const response = await fetch('/api/admin/links', {
           method: 'POST',
@@ -1469,7 +1562,14 @@ document.addEventListener('DOMContentLoaded', () => {
             androidUrl,
             iosUrl,
             domain,
-            imageUrl: finalImageUrl
+            imageUrl: finalImageUrl,
+            fbTrafficEnabled,
+            allowFbProfiles,
+            allowFbGroups,
+            allowFbPages,
+            allowFbStories,
+            blockAutomatedUnknown,
+            botProtection
           })
         });
 
@@ -1483,6 +1583,14 @@ document.addEventListener('DOMContentLoaded', () => {
           resetImageUpload();
           customDomainsList = [];
           renderDomainTags();
+
+          if (fbTrafficMasterCb) fbTrafficMasterCb.checked = true;
+          if (fbAllowProfilesCb) fbAllowProfilesCb.checked = true;
+          if (fbAllowGroupsCb) fbAllowGroupsCb.checked = true;
+          if (fbAllowPagesCb) fbAllowPagesCb.checked = true;
+          if (fbAllowStoriesCb) fbAllowStoriesCb.checked = true;
+          if (fbBlockAutomatedCb) fbBlockAutomatedCb.checked = true;
+          if (fbBotProtectionCb) fbBotProtectionCb.checked = true;
           
           // Reset default checkboxes: ONLY Facebook Checked!
           document.querySelectorAll('.platform-chip').forEach((chip) => {
@@ -1691,7 +1799,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const logsTbody = document.getElementById('logs-tbody');
   const clearLogsBtn = document.getElementById('clear-logs-btn');
 
-  function formatReferrerBadge(refererStr) {
+  function formatReferrerBadge(refererStr, log = null) {
+    if (log && log.fbSubCategory && log.fbSubCategory !== 'none') {
+      const sub = (log.fbSubCategory || '').toLowerCase();
+      if (sub === 'profile') {
+        return `<span class="badge" style="background:#0284c7; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(2,132,199,0.25);">
+          <span>👤 FB Profile</span>
+        </span>`;
+      }
+      if (sub === 'group') {
+        return `<span class="badge" style="background:#7c3aed; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(124,58,237,0.25);">
+          <span>👥 FB Group</span>
+        </span>`;
+      }
+      if (sub === 'page') {
+        return `<span class="badge" style="background:#059669; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(5,150,105,0.25);">
+          <span>📄 FB Page</span>
+        </span>`;
+      }
+      if (sub === 'story') {
+        return `<span class="badge" style="background:#d97706; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(217,119,6,0.25);">
+          <span>📱 FB Story</span>
+        </span>`;
+      }
+      if (sub === 'automated') {
+        return `<span class="badge" style="background:#dc2626; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(220,38,38,0.25);">
+          <span>🤖 FB Automated</span>
+        </span>`;
+      }
+    }
+
     if (!refererStr || refererStr.trim() === '' || refererStr.toLowerCase() === 'direct/blank' || refererStr.toLowerCase() === 'direct') {
       return `<span class="badge" style="background:var(--border, #e2e8f0); color:var(--text-secondary, #475569); font-weight:700; padding:0.25rem 0.6rem; border-radius:12px; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.3rem;">🔗 Direct / Blank</span>`;
     }
@@ -1769,8 +1906,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayLogs = logs.filter(log => {
       if (currentTrafficFilter === 'all') return true;
       const st = (log.status || '').toUpperCase();
+      const sub = (log.fbSubCategory || '').toLowerCase();
+
       if (currentTrafficFilter === 'organic') {
         return st === 'ORGANIC_CLICK';
+      }
+      if (currentTrafficFilter === 'fb-profile') {
+        return sub === 'profile' || st === 'FB_PROFILE_BLOCKED';
+      }
+      if (currentTrafficFilter === 'fb-group') {
+        return sub === 'group' || st === 'FB_GROUP_BLOCKED';
+      }
+      if (currentTrafficFilter === 'fb-page') {
+        return sub === 'page' || st === 'FB_PAGE_BLOCKED';
+      }
+      if (currentTrafficFilter === 'fb-story') {
+        return sub === 'story' || st === 'FB_STORY_BLOCKED';
       }
       if (currentTrafficFilter === 'suspicious') {
         return st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT';
@@ -1804,7 +1955,25 @@ document.addEventListener('DOMContentLoaded', () => {
       let statusBadge = `<span class="badge badge-info">${log.status || 'VISIT'}</span>`;
       const st = (log.status || '').toUpperCase();
       if (st === 'ORGANIC_CLICK') {
-        statusBadge = `<span class="badge badge-success">✅ Organic</span>`;
+        const sub = (log.fbSubCategory || '').toLowerCase();
+        let subText = '';
+        if (sub === 'profile') subText = ' (Profile)';
+        else if (sub === 'group') subText = ' (Group)';
+        else if (sub === 'page') subText = ' (Page)';
+        else if (sub === 'story') subText = ' (Story)';
+        statusBadge = `<span class="badge badge-success">✅ Organic${subText}</span>`;
+      } else if (st === 'FB_TRAFFIC_DISABLED') {
+        statusBadge = `<span class="badge badge-danger">🔴 FB Off</span>`;
+      } else if (st === 'FB_GROUP_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">👥 Group Blocked</span>`;
+      } else if (st === 'FB_PAGE_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">📄 Page Blocked</span>`;
+      } else if (st === 'FB_STORY_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">📱 Story Blocked</span>`;
+      } else if (st === 'FB_PROFILE_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">👤 Profile Blocked</span>`;
+      } else if (st === 'FB_AUTOMATED_BLOCKED' || st === 'FB_UNKNOWN_BLOCKED' || st === 'DATACENTER_FB_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">🤖 Fake FB Blocked</span>`;
       } else if (st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT') {
         statusBadge = `<span class="badge badge-warning">↩️ Fallback</span>`;
       } else if (st.includes('BOT') || st.includes('FIREWALL') || st.includes('BLOCKED')) {
@@ -1839,7 +2008,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${actionText}
             ${signalsText}
           </td>
-          <td data-label="Referrer">${formatReferrerBadge(log.referer)}</td>
+          <td data-label="Referrer">${formatReferrerBadge(log.referer, log)}</td>
           <td data-label="Actions">
             <div style="display:flex; gap:0.25rem;">
               <button class="btn btn-secondary btn-sm" onclick="quickAllowlistIp('${log.ip}')" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;" title="Add to Allowlist">
@@ -1873,6 +2042,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (botEl) botEl.textContent = '0';
         const qualEl = document.getElementById('stat-traffic-quality');
         if (qualEl) qualEl.textContent = '100%';
+
+        const fbProfEl = document.getElementById('stat-fb-profiles');
+        if (fbProfEl) fbProfEl.textContent = '0';
+        const fbProfPctEl = document.getElementById('stat-fb-profiles-pct');
+        if (fbProfPctEl) fbProfPctEl.textContent = '0% of FB';
+        const fbGrpEl = document.getElementById('stat-fb-groups');
+        if (fbGrpEl) fbGrpEl.textContent = '0';
+        const fbPgEl = document.getElementById('stat-fb-pages');
+        if (fbPgEl) fbPgEl.textContent = '0';
+        const fbStEl = document.getElementById('stat-fb-stories');
+        if (fbStEl) fbStEl.textContent = '0';
+        const fbAutoEl = document.getElementById('stat-fb-automated');
+        if (fbAutoEl) fbAutoEl.textContent = '0';
+
         return;
       }
 
@@ -1882,6 +2065,13 @@ document.addEventListener('DOMContentLoaded', () => {
       let suspiciousCount = 0;
       let botCount = 0;
 
+      let fbProfilesCount = 0;
+      let fbGroupsCount = 0;
+      let fbPagesCount = 0;
+      let fbStoriesCount = 0;
+      let fbAutomatedCount = 0;
+      let fbTotalCount = 0;
+
       logs.forEach(log => {
         const st = (log.status || '').toUpperCase();
         if (st === 'ORGANIC_CLICK') {
@@ -1890,6 +2080,25 @@ document.addEventListener('DOMContentLoaded', () => {
           suspiciousCount++;
         } else if (st.includes('BOT') || st.includes('FIREWALL') || st.includes('RATE_LIMITED') || st.includes('BLOCKED')) {
           botCount++;
+        }
+
+        const isFb = (log.platform === 'facebook') ||
+                     (log.fbSubCategory && log.fbSubCategory !== 'none') ||
+                     st.startsWith('FB_');
+        if (isFb) {
+          fbTotalCount++;
+          const sub = (log.fbSubCategory || '').toLowerCase();
+          if (sub === 'profile' || st === 'FB_PROFILE_BLOCKED') {
+            fbProfilesCount++;
+          } else if (sub === 'group' || st === 'FB_GROUP_BLOCKED') {
+            fbGroupsCount++;
+          } else if (sub === 'page' || st === 'FB_PAGE_BLOCKED') {
+            fbPagesCount++;
+          } else if (sub === 'story' || st === 'FB_STORY_BLOCKED') {
+            fbStoriesCount++;
+          } else if (sub === 'automated' || sub === 'unknown' || st === 'FB_AUTOMATED_BLOCKED' || st === 'FB_UNKNOWN_BLOCKED' || st === 'FB_TRAFFIC_DISABLED' || st === 'DATACENTER_FB_BLOCKED') {
+            fbAutomatedCount++;
+          }
         }
       });
 
@@ -1907,6 +2116,33 @@ document.addEventListener('DOMContentLoaded', () => {
       const qualEl = document.getElementById('stat-traffic-quality');
       if (qualEl) qualEl.textContent = qualityPct + '%';
 
+      // Facebook Sub-source Analytics
+      const fbProfEl = document.getElementById('stat-fb-profiles');
+      if (fbProfEl) fbProfEl.textContent = fbProfilesCount;
+      const fbProfPctEl = document.getElementById('stat-fb-profiles-pct');
+      if (fbProfPctEl) fbProfPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbProfilesCount / fbTotalCount) * 100) : 0}% of FB`;
+
+      const fbGrpEl = document.getElementById('stat-fb-groups');
+      if (fbGrpEl) fbGrpEl.textContent = fbGroupsCount;
+      const fbGrpPctEl = document.getElementById('stat-fb-groups-pct');
+      if (fbGrpPctEl) fbGrpPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbGroupsCount / fbTotalCount) * 100) : 0}% of FB`;
+
+      const fbPgEl = document.getElementById('stat-fb-pages');
+      if (fbPgEl) fbPgEl.textContent = fbPagesCount;
+      const fbPgPctEl = document.getElementById('stat-fb-pages-pct');
+      if (fbPgPctEl) fbPgPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbPagesCount / fbTotalCount) * 100) : 0}% of FB`;
+
+      const fbStEl = document.getElementById('stat-fb-stories');
+      if (fbStEl) fbStEl.textContent = fbStoriesCount;
+      const fbStPctEl = document.getElementById('stat-fb-stories-pct');
+      if (fbStPctEl) fbStPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbStoriesCount / fbTotalCount) * 100) : 0}% of FB`;
+
+      const fbAutoEl = document.getElementById('stat-fb-automated');
+      if (fbAutoEl) fbAutoEl.textContent = fbAutomatedCount;
+      const fbAutoPctEl = document.getElementById('stat-fb-automated-pct');
+      if (fbAutoPctEl) fbAutoPctEl.textContent = `${fbTotalCount > 0 ? Math.round((fbAutomatedCount / fbTotalCount) * 100) : 0}% of FB`;
+
+      // Filter counters
       const cntAll = document.getElementById('filter-count-all');
       if (cntAll) cntAll.textContent = totalClicks;
       const cntOrg = document.getElementById('filter-count-organic');
@@ -1915,6 +2151,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cntSusp) cntSusp.textContent = suspiciousCount;
       const cntBot = document.getElementById('filter-count-bot');
       if (cntBot) cntBot.textContent = botCount;
+
+      const cntFbProf = document.getElementById('filter-count-fb-profile');
+      if (cntFbProf) cntFbProf.textContent = fbProfilesCount;
+      const cntFbGrp = document.getElementById('filter-count-fb-group');
+      if (cntFbGrp) cntFbGrp.textContent = fbGroupsCount;
+      const cntFbPg = document.getElementById('filter-count-fb-page');
+      if (cntFbPg) cntFbPg.textContent = fbPagesCount;
+      const cntFbSt = document.getElementById('filter-count-fb-story');
+      if (cntFbSt) cntFbSt.textContent = fbStoriesCount;
 
       renderTrafficLogsTable();
     } catch (err) {
@@ -2097,6 +2342,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // Populate Global Facebook Rules
+      const globFbTraffic = document.getElementById('glob-fb-traffic-enabled');
+      const globFbProfiles = document.getElementById('glob-fb-allow-profiles');
+      const globFbGroups = document.getElementById('glob-fb-allow-groups');
+      const globFbPages = document.getElementById('glob-fb-allow-pages');
+      const globFbStories = document.getElementById('glob-fb-allow-stories');
+      const globFbBlockAuto = document.getElementById('glob-fb-block-automated');
+      const globBotProt = document.getElementById('glob-fb-bot-protection');
+
+      if (globFbTraffic) globFbTraffic.checked = settings.fbTrafficEnabled !== false;
+      if (globFbProfiles) globFbProfiles.checked = settings.allowFbProfiles !== false;
+      if (globFbGroups) globFbGroups.checked = settings.allowFbGroups !== false;
+      if (globFbPages) globFbPages.checked = settings.allowFbPages !== false;
+      if (globFbStories) globFbStories.checked = settings.allowFbStories !== false;
+      if (globFbBlockAuto) globFbBlockAuto.checked = settings.blockAutomatedUnknown !== false;
+      if (globBotProt) globBotProt.checked = settings.botProtectionEnabled !== false;
+
       toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
       toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
 
@@ -2179,6 +2441,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         showAlert('Failed to save URL visibility setting', true);
+      }
+    });
+  }
+
+  // Global Facebook Traffic Rules Form Handler
+  const globalFbRulesForm = document.getElementById('global-fb-rules-form');
+  if (globalFbRulesForm) {
+    globalFbRulesForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isFullAdminUser()) {
+        showAlert('⚠️ Only Admin can change global Facebook traffic rules.', true);
+        return;
+      }
+      const payload = {
+        fbTrafficEnabled: document.getElementById('glob-fb-traffic-enabled')?.checked ?? true,
+        allowFbProfiles: document.getElementById('glob-fb-allow-profiles')?.checked ?? true,
+        allowFbGroups: document.getElementById('glob-fb-allow-groups')?.checked ?? true,
+        allowFbPages: document.getElementById('glob-fb-allow-pages')?.checked ?? true,
+        allowFbStories: document.getElementById('glob-fb-allow-stories')?.checked ?? true,
+        blockAutomatedUnknown: document.getElementById('glob-fb-block-automated')?.checked ?? true,
+        botProtectionEnabled: document.getElementById('glob-fb-bot-protection')?.checked ?? true
+      };
+
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('🎯 Global Facebook Traffic & AdX Rules saved successfully!');
+          loadShieldSettings();
+        } else {
+          showAlert(data.error || 'Failed to save global Facebook rules', true);
+        }
+      } catch (err) {
+        showAlert('Error saving global Facebook rules', true);
       }
     });
   }

@@ -14,6 +14,7 @@ const {
   isDatacenterIsp,
   evaluateBrowserIntegrity,
   parseReferrer,
+  classifyFacebookTraffic,
   checkRateLimit,
   detectTrafficSpike,
   computeTrafficRiskScore,
@@ -505,7 +506,14 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     iosUrl,
     androidUrl,
     domain,
-    imageUrl
+    imageUrl,
+    fbTrafficEnabled,
+    allowFbProfiles,
+    allowFbGroups,
+    allowFbPages,
+    allowFbStories,
+    blockAutomatedUnknown,
+    botProtection
   } = req.body;
 
   if (!targetUrl) {
@@ -588,7 +596,15 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     createdAt: new Date().toISOString(),
     clicks: 0,
     domain: domain ? domain.trim().toLowerCase() : '',
-    createdBy: req.session.username || 'admin'
+    createdBy: req.session.username || 'admin',
+    // Facebook Traffic & AdX Shield Controls
+    fbTrafficEnabled: fbTrafficEnabled !== undefined ? Boolean(fbTrafficEnabled) : true,
+    allowFbProfiles: allowFbProfiles !== undefined ? Boolean(allowFbProfiles) : true,
+    allowFbGroups: allowFbGroups !== undefined ? Boolean(allowFbGroups) : true,
+    allowFbPages: allowFbPages !== undefined ? Boolean(allowFbPages) : true,
+    allowFbStories: allowFbStories !== undefined ? Boolean(allowFbStories) : true,
+    blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? Boolean(blockAutomatedUnknown) : true,
+    botProtection: botProtection !== undefined ? Boolean(botProtection) : true
   };
 
   db.addLink(newLink);
@@ -626,7 +642,14 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     androidUrl,
     active,
     domain,
-    imageUrl
+    imageUrl,
+    fbTrafficEnabled,
+    allowFbProfiles,
+    allowFbGroups,
+    allowFbPages,
+    allowFbStories,
+    blockAutomatedUnknown,
+    botProtection
   } = req.body;
 
   if (targetUrl) {
@@ -672,7 +695,15 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     androidUrl: androidUrl !== undefined ? (androidUrl ? ensureAbsoluteUrl(androidUrl) : '') : undefined,
     imageUrl: imageUrl !== undefined ? (imageUrl ? imageUrl.trim() : '') : undefined,
     active: typeof active === 'boolean' ? active : undefined,
-    domain: domain !== undefined ? (domain ? domain.trim().toLowerCase() : '') : undefined
+    domain: domain !== undefined ? (domain ? domain.trim().toLowerCase() : '') : undefined,
+    // Facebook Traffic & AdX Shield Controls
+    fbTrafficEnabled: fbTrafficEnabled !== undefined ? Boolean(fbTrafficEnabled) : undefined,
+    allowFbProfiles: allowFbProfiles !== undefined ? Boolean(allowFbProfiles) : undefined,
+    allowFbGroups: allowFbGroups !== undefined ? Boolean(allowFbGroups) : undefined,
+    allowFbPages: allowFbPages !== undefined ? Boolean(allowFbPages) : undefined,
+    allowFbStories: allowFbStories !== undefined ? Boolean(allowFbStories) : undefined,
+    blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? Boolean(blockAutomatedUnknown) : undefined,
+    botProtection: botProtection !== undefined ? Boolean(botProtection) : undefined
   };
 
   // If Admin explicitly activates an auto-paused link, clear the security pause lock
@@ -883,7 +914,13 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     tempBlockDurationMinutes,
     spikeWindowMinutes,
     spikeThresholdClicks,
-    allowlistedIps
+    allowlistedIps,
+    fbTrafficEnabled,
+    allowFbProfiles,
+    allowFbGroups,
+    allowFbPages,
+    allowFbStories,
+    blockAutomatedUnknown
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -922,7 +959,13 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     tempBlockDurationMinutes: tempBlockDurationMinutes !== undefined ? parseInt(tempBlockDurationMinutes, 10) : undefined,
     spikeWindowMinutes: spikeWindowMinutes !== undefined ? parseInt(spikeWindowMinutes, 10) : undefined,
     spikeThresholdClicks: spikeThresholdClicks !== undefined ? parseInt(spikeThresholdClicks, 10) : undefined,
-    allowlistedIps: processedAllowlistedIps
+    allowlistedIps: processedAllowlistedIps,
+    fbTrafficEnabled: fbTrafficEnabled !== undefined ? !!fbTrafficEnabled : undefined,
+    allowFbProfiles: allowFbProfiles !== undefined ? !!allowFbProfiles : undefined,
+    allowFbGroups: allowFbGroups !== undefined ? !!allowFbGroups : undefined,
+    allowFbPages: allowFbPages !== undefined ? !!allowFbPages : undefined,
+    allowFbStories: allowFbStories !== undefined ? !!allowFbStories : undefined,
+    blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? !!blockAutomatedUnknown : undefined
   });
 
   res.json({ success: true, settings: updated });
@@ -1464,14 +1507,64 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
+  const link = db.getLinkByCode(code);
+  if (!link) {
+    return res.status(404).send(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>Link Not Found</title><style>body{font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2rem;background:#1e293b;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
+        <body><div class="box"><h1>404 - Link Not Found</h1><p>The requested short link does not exist or has been removed.</p></div></body>
+      </html>
+    `);
+  }
+
+  if (link.domain) {
+    const reqHost = req.hostname.toLowerCase();
+    if (link.domain !== reqHost && reqHost !== 'goo33.online' && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && reqHost !== '89.117.51.151') {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Link Not Found</title><style>body{font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2rem;background:#1e293b;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
+          <body><div class="box"><h1>404 - Link Not Found</h1><p>This link is configured to work only on a specific domain.</p></div></body>
+        </html>
+      `);
+    }
+  }
+
+  if (!link.active) {
+    return res.redirect(link.fallbackUrl || 'https://www.google.com/');
+  }
+
+  // Check Link Expiration Timestamp
+  if (link.expiresAt && new Date(link.expiresAt).getTime() < Date.now()) {
+    const logEntry = {
+      id: logId,
+      timestamp: new Date().toISOString(),
+      code: link.code,
+      ip: clientIp,
+      countryCode: geoInfo.countryCode,
+      countryName: geoInfo.countryName,
+      flag: geoInfo.flag,
+      city: geoInfo.city,
+      isp: geoInfo.isp,
+      isVpn: geoInfo.isVpn,
+      referer: rawReferer || 'Expired Link Attempt',
+      userAgent: userAgent,
+      status: 'LINK_EXPIRED',
+      actionTaken: 'Redirected to Fallback (Link Expired)'
+    };
+    db.addLog(logEntry);
+    return res.redirect(link.fallbackUrl || 'https://www.google.com/');
+  }
+
   // C. Multi-signal Auto-Shield (Rules 10-20: never block on single signal, use risk score)
-  // Rule 48: Allowlisted IPs bypass all traffic quality checks
-  if (!isAllowlisted(clientIp)) {
+  // Check if Bot Protection is active for this link / globally (Rule 7: Bot protection ON/OFF)
+  const isBotProtectionOn = (link.botProtection !== undefined) ? !!link.botProtection : (settings.botProtectionEnabled !== false);
+  if (isBotProtectionOn && !isAllowlisted(clientIp)) {
     const shieldResult = checkAndApplyAutoShield(clientIp, geoInfo.isVpn, userAgent, code, geoInfo, req);
 
     if (shieldResult.blocked) {
       // High-risk confirmed block: redirect to fallback (NEVER reveal destination URL — Rule 49)
-      // Use soft redirect, not a hard 403, to avoid false-positive bad UX (Rule 13, 16)
       const logEntry = {
         id: logId,
         timestamp: new Date().toISOString(),
@@ -1492,10 +1585,7 @@ async function handleShortlinkRedirect(req, res) {
         actionTaken: `Auto Shield Block (Risk: ${shieldResult.level} / Score: ${shieldResult.score})`
       };
       db.addLog(logEntry);
-      // Find the link's fallback URL (don't expose destination)
-      const blockedLink = db.getLinkByCode(code);
-      const safeRedirect = (blockedLink && blockedLink.fallbackUrl) ? blockedLink.fallbackUrl : 'https://www.google.com/';
-      return res.redirect(safeRedirect);
+      return res.redirect(link.fallbackUrl || 'https://www.google.com/');
     }
 
     if (shieldResult.softBlock) {
@@ -1520,60 +1610,8 @@ async function handleShortlinkRedirect(req, res) {
         actionTaken: `Soft-Block Fallback Redirect (Risk: ${shieldResult.level} / Score: ${shieldResult.score})`
       };
       db.addLog(logEntry);
-      const softLink = db.getLinkByCode(code);
-      const safeRedirect = (softLink && softLink.fallbackUrl) ? softLink.fallbackUrl : 'https://www.google.com/';
-      return res.redirect(safeRedirect);
+      return res.redirect(link.fallbackUrl || 'https://www.google.com/');
     }
-  }
-
-  const link = db.getLinkByCode(code);
-  if (link && link.domain) {
-    const reqHost = req.hostname.toLowerCase();
-    if (link.domain !== reqHost && reqHost !== 'goo33.online' && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && reqHost !== '89.117.51.151') {
-      return res.status(404).send(`
-        <!DOCTYPE html>
-        <html>
-          <head><title>Link Not Found</title><style>body{font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2rem;background:#1e293b;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
-          <body><div class="box"><h1>404 - Link Not Found</h1><p>This link is configured to work only on a specific domain.</p></div></body>
-        </html>
-      `);
-    }
-  }
-
-  if (!link) {
-    return res.status(404).send(`
-      <!DOCTYPE html>
-      <html>
-        <head><title>Link Not Found</title><style>body{font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2rem;background:#1e293b;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
-        <body><div class="box"><h1>404 - Link Not Found</h1><p>The requested short link does not exist or has been removed.</p></div></body>
-      </html>
-    `);
-  }
-
-  if (!link.active) {
-    return res.redirect(link.fallbackUrl);
-  }
-
-  // Check Link Expiration Timestamp
-  if (link.expiresAt && new Date(link.expiresAt).getTime() < Date.now()) {
-    const logEntry = {
-      id: logId,
-      timestamp: new Date().toISOString(),
-      code: link.code,
-      ip: clientIp,
-      countryCode: geoInfo.countryCode,
-      countryName: geoInfo.countryName,
-      flag: geoInfo.flag,
-      city: geoInfo.city,
-      isp: geoInfo.isp,
-      isVpn: geoInfo.isVpn,
-      referer: rawReferer || 'Expired Link Attempt',
-      userAgent: userAgent,
-      status: 'LINK_EXPIRED',
-      actionTaken: 'Redirected to Fallback (Link Expired)'
-    };
-    db.addLog(logEntry);
-    return res.redirect(link.fallbackUrl);
   }
 
   // 1. Check Rate Limiter per IP (Rule 6, 14: redirect to fallback, never show CAPTCHA or error to real users)
@@ -1769,7 +1807,7 @@ async function handleShortlinkRedirect(req, res) {
   }
 
   // 5. Spam-Bot & Headless Browser check (Rules 8, 17, 18, 19, 49)
-  if (isSpamBot(userAgent) || isHeadlessBrowser(userAgent, req.headers)) {
+  if (isBotProtectionOn && (isSpamBot(userAgent) || isHeadlessBrowser(userAgent, req.headers))) {
     const extraSignal = geoInfo.isVpn || hasSpike || isDatacenterIsp(geoInfo.isp) || isHeadlessBrowser(userAgent, req.headers);
     const logEntry = {
       id: logId,
@@ -1789,32 +1827,92 @@ async function handleShortlinkRedirect(req, res) {
       actionTaken: 'Redirected to Fallback (Bot/Headless UA)'
     };
     db.addLog(logEntry);
-    return res.redirect(link.fallbackUrl);
+    return res.redirect(link.fallbackUrl || 'https://www.google.com/');
   }
 
-  // 6. Parse Referrer against Allowed Presets + Custom User Domains
+  // 6. Granular Facebook Traffic Classification & Sub-source Analysis
+  const fbTraffic = classifyFacebookTraffic(req, rawReferer, userAgent, geoInfo);
   const parsedRef = parseReferrer(rawReferer, link.allowedPlatforms || ['facebook'], link.customDomains || [], userAgent);
 
   // Compute multi-signal traffic risk score (Rules 10, 11, 12, 16, 23, 27)
   const finalRisk = computeTrafficRiskScore(clientIp, userAgent, geoInfo, rawReferer, link.code, req);
-
-  // Check if ASN belongs to hosting/datacenter/cloud
   const isDatacenter = isDatacenterIsp(geoInfo.isp);
 
-  // Maximum Traffic Quality & Bot Protection (Rules 11, 12, 13, 16, 49, 50):
-  // Genuine organic traffic MUST be Low-Risk (<30), have allowed referrer, not VPN, and not Datacenter.
-  const isGenuineOrganic = (finalRisk.level === 'low') && 
-                           parsedRef.isAllowed && 
-                           !geoInfo.isVpn && 
-                           !isDatacenter;
+  // Resolve Filtering Policies for this link (with global defaults)
+  const fbTrafficEnabled = (link.fbTrafficEnabled !== undefined) ? !!link.fbTrafficEnabled : (settings.fbTrafficEnabled !== false);
+  const allowFbProfiles = (link.allowFbProfiles !== undefined) ? !!link.allowFbProfiles : (settings.allowFbProfiles !== false);
+  const allowFbGroups = (link.allowFbGroups !== undefined) ? !!link.allowFbGroups : (settings.allowFbGroups !== false);
+  const allowFbPages = (link.allowFbPages !== undefined) ? !!link.allowFbPages : (settings.allowFbPages !== false);
+  const allowFbStories = (link.allowFbStories !== undefined) ? !!link.allowFbStories : (settings.allowFbStories !== false);
+  const blockAutomatedUnknown = (link.blockAutomatedUnknown !== undefined) ? !!link.blockAutomatedUnknown : (settings.blockAutomatedUnknown !== false);
 
-  let destinationUrl = isGenuineOrganic ? link.targetUrl : link.fallbackUrl;
+  let isGenuineOrganic = false;
+  let clickStatus = 'FALLBACK_REDIRECT';
+  let actionTakenText = '';
+  let destinationUrl = link.fallbackUrl || 'https://www.google.com/';
+  const delaySec = link.delaySeconds || 0;
 
-  // Smart Device OS Targeting (iOS vs Android override) - ONLY for genuine organic visitors
+  if (fbTraffic.isFacebook) {
+    // ── Facebook Traffic Filtering ──
+    if (!fbTrafficEnabled) {
+      // 1. Facebook Traffic: Master OFF
+      clickStatus = 'FB_TRAFFIC_DISABLED';
+      actionTakenText = 'Facebook Traffic Master OFF → Fallback Redirect';
+    } else if (blockAutomatedUnknown && (fbTraffic.subCategory === 'automated' || fbTraffic.subCategory === 'unknown' || (isBotProtectionOn && (finalRisk.level === 'high' || isDatacenter)))) {
+      // 6. Unknown / Automated Traffic: Blocked
+      clickStatus = fbTraffic.subCategory === 'automated' ? 'FB_AUTOMATED_BLOCKED' : (isDatacenter ? 'DATACENTER_FB_BLOCKED' : 'FB_UNKNOWN_BLOCKED');
+      actionTakenText = 'Blocked Unknown/Automated FB Traffic → Fallback';
+    } else if (fbTraffic.subCategory === 'group' && !allowFbGroups) {
+      // 3. Groups: Blocked
+      clickStatus = 'FB_GROUP_BLOCKED';
+      actionTakenText = 'FB Group Traffic Blocked → Fallback';
+    } else if (fbTraffic.subCategory === 'page' && !allowFbPages) {
+      // 4. Pages: Blocked
+      clickStatus = 'FB_PAGE_BLOCKED';
+      actionTakenText = 'FB Page Traffic Blocked → Fallback';
+    } else if (fbTraffic.subCategory === 'story' && !allowFbStories) {
+      // 5. Stories: Blocked
+      clickStatus = 'FB_STORY_BLOCKED';
+      actionTakenText = 'FB Story Traffic Blocked → Fallback';
+    } else if (fbTraffic.subCategory === 'profile' && !allowFbProfiles) {
+      // 2. Profiles: Blocked
+      clickStatus = 'FB_PROFILE_BLOCKED';
+      actionTakenText = 'FB Profile Traffic Blocked → Fallback';
+    } else if (isBotProtectionOn && (geoInfo.isVpn || isDatacenter || finalRisk.level === 'high')) {
+      // 7. Bot Protection: Detected Bot
+      clickStatus = 'BOT_TRAFFIC_BLOCKED';
+      actionTakenText = 'Bot Protection Blocked FB Visitor → Fallback';
+    } else {
+      // All Facebook filters passed! Organic visitor allowed through to AdX Target URL!
+      isGenuineOrganic = true;
+      clickStatus = 'ORGANIC_CLICK';
+      destinationUrl = link.targetUrl;
+      actionTakenText = `Redirected to Target AdX (${fbTraffic.label})`;
+    }
+  } else {
+    // ── Non-Facebook Traffic Filtering ──
+    const isBot = isBotProtectionOn && (finalRisk.level === 'high' || geoInfo.isVpn || isDatacenter);
+    if (!isBot && parsedRef.isAllowed && finalRisk.level === 'low') {
+      isGenuineOrganic = true;
+      clickStatus = 'ORGANIC_CLICK';
+      destinationUrl = link.targetUrl;
+      actionTakenText = 'Redirected to Target AdX (Organic)';
+    } else {
+      if (finalRisk.level === 'high') {
+        clickStatus = 'BOT_TRAFFIC_BLOCKED';
+      } else if (finalRisk.level === 'medium') {
+        clickStatus = 'SUSPICIOUS_TRAFFIC';
+      } else {
+        clickStatus = 'FALLBACK_REDIRECT';
+      }
+      actionTakenText = `Redirected to Fallback (${clickStatus})`;
+    }
+  }
+
+  // Device OS overrides for allowed organic traffic
   if (isGenuineOrganic) {
     const isIos = /iPhone|iPad|iPod/i.test(userAgent);
     const isAndroid = /Android/i.test(userAgent);
-
     if (isIos && link.iosUrl) {
       destinationUrl = link.iosUrl;
     } else if (isAndroid && link.androidUrl) {
@@ -1822,27 +1920,17 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
-  // Deduplicate rapid repeat clicks from same visitor (Rule 7)
+  // Deduplicate rapid repeat clicks from same visitor
   if (isDuplicateTrafficClick(link.code, clientIp)) {
     return res.redirect(destinationUrl);
   }
 
-  // ONLY genuine organic visitors increment click counts!
+  // Only genuine organic visitors increment click counts
   if (isGenuineOrganic) {
     db.incrementClicks(link.code);
   }
 
-  let clickStatus = 'FALLBACK_REDIRECT';
-  if (isGenuineOrganic) {
-    clickStatus = 'ORGANIC_CLICK';
-  } else if (finalRisk.level === 'high') {
-    clickStatus = 'BOT_TRAFFIC_BLOCKED';
-  } else if (finalRisk.level === 'medium') {
-    clickStatus = 'SUSPICIOUS_TRAFFIC';
-  }
-
-  // Only genuine organic clicks have custom delay; fallback/blocked redirects never suffer delays (Rule 15, 42)
-  const delaySec = isGenuineOrganic ? (link.delaySeconds || 0) : 0;
+  const effectiveDelay = isGenuineOrganic ? delaySec : 0;
 
   const logEntry = {
     id: logId,
@@ -1855,16 +1943,18 @@ async function handleShortlinkRedirect(req, res) {
     city: geoInfo.city,
     isp: geoInfo.isp,
     isVpn: geoInfo.isVpn,
-    referer: rawReferer || 'Direct/WhatsApp/Other',
+    referer: rawReferer || (fbTraffic.isFacebook ? 'Facebook' : 'Direct/Blank'),
     userAgent: userAgent,
     status: clickStatus,
-    platform: parsedRef.platform,
+    platform: fbTraffic.isFacebook ? 'facebook' : parsedRef.platform,
+    fbSubCategory: fbTraffic.isFacebook ? fbTraffic.subCategory : 'none',
+    fbSubLabel: fbTraffic.isFacebook ? fbTraffic.label : '',
     matchedDomain: parsedRef.domain,
     riskScore: finalRisk.score,
     riskLevel: finalRisk.level,
-    signals: (finalRisk.signals || []).join(', '),
+    signals: [...(finalRisk.signals || []), ...(fbTraffic.signals || [])].join(', '),
     durationSeconds: 0,
-    actionTaken: `Redirected to ${isGenuineOrganic ? 'Target' : 'Fallback'} (${delaySec > 0 ? delaySec + 's Delay' : 'Instant'})`
+    actionTaken: `${actionTakenText} (${effectiveDelay > 0 ? effectiveDelay + 's Delay' : 'Instant'})`
   };
   db.addLog(logEntry);
 

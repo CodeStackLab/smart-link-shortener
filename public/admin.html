@@ -127,6 +127,114 @@
           </div>
         </div>
 
+        <!-- 🎯 Facebook Traffic & AdX Filtering Controls (7 Controls) -->
+        <div class="form-group" id="fb-traffic-controls-section" style="margin-top:0.95rem; background:linear-gradient(135deg, rgba(24,119,242,0.06) 0%, rgba(99,102,241,0.08) 100%); border:1.5px solid rgba(24,119,242,0.3); border-radius:14px; padding:1rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.4rem;">
+            <div style="font-weight:900; font-size:0.88rem; color:#1877f2; display:flex; align-items:center; gap:0.4rem; text-transform:uppercase; letter-spacing:0.02em;">
+              <span>🎯 Facebook Traffic &amp; AdX Monetization Controls</span>
+            </div>
+            <span class="badge" style="background:#1877f2; color:#fff; font-weight:800; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:8px;">
+              AdX Protected
+            </span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.85rem; line-height:1.4;">
+            Filter and route Facebook sub-sources to your AdX ads target URL. Unallowed or bot traffic is safely sent to Fallback URL.
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+            <!-- 1. Facebook Traffic Master Switch -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1.5px solid #1877f2; border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#1877f2; display:flex; align-items:center; gap:0.35rem;">
+                  <span>🔵 1. Facebook Traffic Master</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Turn ON to route Facebook visitors to AdX. Turn OFF to block all Facebook traffic to Fallback.
+                </div>
+              </div>
+              <input type="checkbox" id="fb-traffic-master" checked style="width:20px; height:20px; accent-color:#1877f2; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+
+            <!-- 2. Profile-Origin Traffic -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#0284c7; display:flex; align-items:center; gap:0.35rem;">
+                  <span>👤 2. Profile-Origin Traffic (Separate Category)</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Visitors from personal timelines/profiles. Analyzed in separate category in Traffic Logs.
+                </div>
+              </div>
+              <input type="checkbox" id="fb-allow-profiles" checked style="width:20px; height:20px; accent-color:#0284c7; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+
+            <!-- 3. Groups Traffic -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#7c3aed; display:flex; align-items:center; gap:0.35rem;">
+                  <span>👥 3. Facebook Groups Traffic</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Allow or block clicks originating from Facebook Groups (/groups/ or group shares).
+                </div>
+              </div>
+              <input type="checkbox" id="fb-allow-groups" checked style="width:20px; height:20px; accent-color:#7c3aed; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+
+            <!-- 4. Pages Traffic -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#059669; display:flex; align-items:center; gap:0.35rem;">
+                  <span>📄 4. Facebook Pages Traffic</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Allow or block visitors originating from Facebook Pages/Ads (/pages/ or page_id).
+                </div>
+              </div>
+              <input type="checkbox" id="fb-allow-pages" checked style="width:20px; height:20px; accent-color:#059669; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+
+            <!-- 5. Stories Traffic -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#d97706; display:flex; align-items:center; gap:0.35rem;">
+                  <span>📱 5. Facebook Stories Traffic</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Allow or block mobile stories traffic (sfnsn notification notes &amp; stories path).
+                </div>
+              </div>
+              <input type="checkbox" id="fb-allow-stories" checked style="width:20px; height:20px; accent-color:#d97706; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+
+            <!-- 6. Unknown / Automated Traffic -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#dc2626; display:flex; align-items:center; gap:0.35rem;">
+                  <span>🛡️ 6. Block Unknown &amp; Automated Traffic</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Auto-block fake FB referrers, datacenter IPs, and headless scrapers to fallback.
+                </div>
+              </div>
+              <input type="checkbox" id="fb-block-automated" checked style="width:20px; height:20px; accent-color:#dc2626; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+
+            <!-- 7. Bot Protection -->
+            <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:#ffffff; border:1px solid var(--border,#e2e8f0); border-radius:10px; padding:0.6rem 0.75rem; cursor:pointer;">
+              <div>
+                <div style="font-weight:800; font-size:0.84rem; color:#4338ca; display:flex; align-items:center; gap:0.35rem;">
+                  <span>🤖 7. Bot Protection Shield</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Multi-signal real-time threat screening, ASN protection, and crawler filtering.
+                </div>
+              </div>
+              <input type="checkbox" id="fb-bot-protection" checked style="width:20px; height:20px; accent-color:#4338ca; cursor:pointer; flex-shrink:0; margin-top:0.15rem;">
+            </label>
+          </div>
+        </div>
+
         <!-- 2. UPLOAD IMAGE (Optional) -->
         <div class="form-group" style="margin-top:0.85rem;" id="link-image-upload-section">
           <label style="font-weight:800; text-transform:uppercase; font-size:0.825rem; letter-spacing:0.04em; color:var(--text-primary); display:block; margin-bottom:0.2rem;">
@@ -399,6 +507,50 @@
       </div>
     </div>
 
+    <!-- Facebook Sub-Category Traffic Breakdown Widget -->
+    <div class="card" id="fb-breakdown-card" style="padding:1.1rem; margin-bottom:1rem; background:linear-gradient(135deg, rgba(24,119,242,0.04) 0%, rgba(99,102,241,0.06) 100%); border:1.5px solid rgba(24,119,242,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+        <div style="font-weight:900; font-size:0.95rem; color:#1877f2; display:flex; align-items:center; gap:0.4rem;">
+          <span>🎯 Facebook Traffic Sub-Source Analytics</span>
+        </div>
+        <span style="font-size:0.72rem; font-weight:700; color:var(--text-muted);">
+          Profile-Origin vs Groups vs Pages vs Stories Breakdown
+        </span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.65rem;">
+        <!-- Profile Origin -->
+        <div style="background:#ffffff; border:1.5px solid rgba(2,132,199,0.3); border-radius:12px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="font-size:0.75rem; font-weight:800; color:#0284c7;">👤 FB Profiles</div>
+          <div id="stat-fb-profiles" style="font-size:1.35rem; font-weight:900; color:#0284c7; margin:0.2rem 0;">0</div>
+          <div id="stat-fb-profiles-pct" style="font-size:0.68rem; font-weight:700; color:var(--text-muted);">0% of FB</div>
+        </div>
+        <!-- Groups -->
+        <div style="background:#ffffff; border:1.5px solid rgba(124,58,237,0.3); border-radius:12px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="font-size:0.75rem; font-weight:800; color:#7c3aed;">👥 FB Groups</div>
+          <div id="stat-fb-groups" style="font-size:1.35rem; font-weight:900; color:#7c3aed; margin:0.2rem 0;">0</div>
+          <div id="stat-fb-groups-pct" style="font-size:0.68rem; font-weight:700; color:var(--text-muted);">0% of FB</div>
+        </div>
+        <!-- Pages -->
+        <div style="background:#ffffff; border:1.5px solid rgba(5,150,105,0.3); border-radius:12px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="font-size:0.75rem; font-weight:800; color:#059669;">📄 FB Pages</div>
+          <div id="stat-fb-pages" style="font-size:1.35rem; font-weight:900; color:#059669; margin:0.2rem 0;">0</div>
+          <div id="stat-fb-pages-pct" style="font-size:0.68rem; font-weight:700; color:var(--text-muted);">0% of FB</div>
+        </div>
+        <!-- Stories -->
+        <div style="background:#ffffff; border:1.5px solid rgba(217,119,6,0.3); border-radius:12px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="font-size:0.75rem; font-weight:800; color:#d97706;">📱 FB Stories</div>
+          <div id="stat-fb-stories" style="font-size:1.35rem; font-weight:900; color:#d97706; margin:0.2rem 0;">0</div>
+          <div id="stat-fb-stories-pct" style="font-size:0.68rem; font-weight:700; color:var(--text-muted);">0% of FB</div>
+        </div>
+        <!-- Automated / Fake -->
+        <div style="background:#ffffff; border:1.5px solid rgba(220,38,38,0.3); border-radius:12px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="font-size:0.75rem; font-weight:800; color:#dc2626;">🤖 Fake / Blocked</div>
+          <div id="stat-fb-automated" style="font-size:1.35rem; font-weight:900; color:#dc2626; margin:0.2rem 0;">0</div>
+          <div id="stat-fb-automated-pct" style="font-size:0.68rem; font-weight:700; color:var(--text-muted);">0% of FB</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card" id="logs-realtime-wrap" style="padding:1.1rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.85rem;">
         <div>
@@ -415,8 +567,12 @@
       <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.85rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border);">
         <button type="button" class="btn btn-sm traffic-filter-btn active" data-filter="all" style="font-weight:700; border-radius:20px;">All Traffic (<span id="filter-count-all">0</span>)</button>
         <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="organic" style="font-weight:700; border-radius:20px; background:rgba(16,185,129,0.1); color:#059669; border:1px solid rgba(16,185,129,0.3);">🟢 Legitimate (<span id="filter-count-organic">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-profile" style="font-weight:700; border-radius:20px; background:rgba(2,132,199,0.1); color:#0284c7; border:1px solid rgba(2,132,199,0.3);">👤 FB Profiles (<span id="filter-count-fb-profile">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-group" style="font-weight:700; border-radius:20px; background:rgba(124,58,237,0.1); color:#7c3aed; border:1px solid rgba(124,58,237,0.3);">👥 FB Groups (<span id="filter-count-fb-group">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-page" style="font-weight:700; border-radius:20px; background:rgba(5,150,105,0.1); color:#059669; border:1px solid rgba(5,150,105,0.3);">📄 FB Pages (<span id="filter-count-fb-page">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="fb-story" style="font-weight:700; border-radius:20px; background:rgba(217,119,6,0.1); color:#d97706; border:1px solid rgba(217,119,6,0.3);">📱 FB Stories (<span id="filter-count-fb-story">0</span>)</button>
         <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="suspicious" style="font-weight:700; border-radius:20px; background:rgba(245,158,11,0.1); color:#b45309; border:1px solid rgba(245,158,11,0.3);">🟡 Suspicious (<span id="filter-count-suspicious">0</span>)</button>
-        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="bot" style="font-weight:700; border-radius:20px; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3);">🔴 Bot Blocked (<span id="filter-count-bot">0</span>)</button>
+        <button type="button" class="btn btn-sm traffic-filter-btn" data-filter="bot" style="font-weight:700; border-radius:20px; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3);">🔴 Blocked (<span id="filter-count-bot">0</span>)</button>
       </div>
 
       <div class="table-wrap">
@@ -600,6 +756,96 @@
           </button>
           <!-- Shown to Editor viewers only -->
           <div id="shield-admin-only-note" style="display:none; text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; font-weight:600;">🔒 Only Super Admin can change global firewall settings</div>
+        </form>
+      </div>
+
+      <!-- Global Facebook Traffic & AdX Filtering Defaults Card -->
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="global-fb-rules-card">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.45rem;">
+            <span class="accent">🎯</span> Global Facebook Traffic &amp; AdX Defaults
+          </div>
+          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#1877f2,#6c3de8); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(24,119,242,0.3);">
+            👑 Admin Defaults
+          </span>
+        </div>
+
+        <div style="background:linear-gradient(135deg, rgba(24,119,242,0.06) 0%, rgba(108,61,232,0.08) 100%); border:1.5px solid rgba(24,119,242,0.25); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
+          <div style="font-weight:800; font-size:0.82rem; color:#1877f2; display:flex; align-items:center; gap:0.35rem;">
+            <span>💡 System-Wide Facebook Traffic Policy</span>
+          </div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4; margin-top:0.2rem;">
+            In rules ke zariye aap pure system ke liye Facebook traffic ka default control set kar sakte hain. Jab koi new shortlink banta hai, yehi settings apply hongi.
+          </div>
+        </div>
+
+        <form id="global-fb-rules-form">
+          <!-- 1. Facebook Traffic Master Switch -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.75rem; background:rgba(24,119,242,0.06); border:1px solid rgba(24,119,242,0.2); border-radius:10px; margin-bottom:0.65rem;">
+            <div>
+              <div style="font-weight:800; font-size:0.84rem; color:#1877f2;">🔵 1. Facebook Traffic Master</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Turn ON to allow Facebook traffic to AdX. Turn OFF to send all Facebook traffic to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-traffic-enabled" checked style="width:20px; height:20px; accent-color:#1877f2; cursor:pointer;">
+          </div>
+
+          <!-- 2. Profile-Origin Traffic -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:var(--text-primary);">👤 2. FB Profiles Traffic (Analyzed Separately)</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Personal timeline &amp; profile shares. Forward to AdX target site.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-allow-profiles" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <!-- 3. Facebook Groups -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:var(--text-primary);">👥 3. FB Groups Traffic</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Traffic coming from Facebook groups. Uncheck to redirect groups to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-allow-groups" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <!-- 4. Facebook Pages -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:var(--text-primary);">📄 4. FB Pages Traffic</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Traffic coming from Facebook pages &amp; page feeds. Uncheck to redirect pages to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-allow-pages" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <!-- 5. Facebook Stories -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:var(--text-primary);">📱 5. FB Stories Traffic</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Traffic originating from Facebook stories (sfnsn parameter). Uncheck to redirect stories to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-allow-stories" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <!-- 6. Unknown / Automated Traffic -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:#dc2626;">🤖 6. Block Unknown / Automated Traffic</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Instantly blocks fake FB referrers, datacenter IPs, and headless scrapers to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-block-automated" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
+          </div>
+
+          <!-- 7. Bot Protection -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); border-radius:10px; margin-bottom:0.85rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:#059669;">🛡️ 7. Multi-Signal Bot Protection</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">VPN detection, browser header integrity, rate limiting, and risk scoring.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-bot-protection" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <button type="submit" id="btn-save-global-fb-rules" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #1877f2 0%, #6c3de8 100%); min-height:44px; font-weight:800; font-size:0.88rem; box-shadow:0 4px 14px rgba(24,119,242,0.3);">
+            💾 Save Global Facebook Rules
+          </button>
         </form>
       </div>
 
@@ -1083,6 +1329,112 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════
+     EDIT TRAFFIC RULES MODAL
+══════════════════════════════ -->
+<div id="traffic-rules-modal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.65); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:0.75rem;">
+  <div style="background:var(--card-bg,#fff); border-radius:20px; width:min(95vw,520px); max-height:92vh; display:flex; flex-direction:column; box-shadow:0 32px 80px rgba(0,0,0,0.25); overflow:hidden;">
+    <!-- Modal Header -->
+    <div style="background:linear-gradient(135deg, #1877f2 0%, #0284c7 100%); color:#fff; padding:1.1rem 1.25rem; position:relative;">
+      <div style="font-weight:900; font-size:1.05rem; display:flex; align-items:center; gap:0.45rem;">
+        <span>🎯 Facebook Traffic &amp; AdX Rules</span>
+      </div>
+      <div id="traffic-rules-modal-subtitle" style="font-size:0.78rem; color:rgba(255,255,255,0.85); margin-top:0.2rem; font-weight:600;">
+        Configuring Traffic Rules
+      </div>
+      <button id="traffic-rules-modal-close" type="button" onclick="closeTrafficRulesModal()" style="position:absolute; top:0.85rem; right:1rem; background:rgba(255,255,255,0.2); border:none; color:#fff; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1rem; font-weight:700; display:flex; align-items:center; justify-content:center;">✕</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding:1.2rem; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:0.75rem;">
+      <input type="hidden" id="modal-rule-link-id" value="">
+
+      <!-- 1. Facebook Traffic Master Switch -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1.5px solid #1877f2; border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#1877f2;">🔵 1. Facebook Traffic Master</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Turn ON to forward Facebook visitors to target AdX. Turn OFF to redirect all FB traffic to Fallback URL.
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-master" style="width:22px; height:22px; accent-color:#1877f2; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 2. Profile-Origin Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#0284c7;">👤 2. Profile-Origin Traffic (Separate Category)</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Visitors from personal profiles/timelines. Tracked &amp; analyzed in separate category.
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-profiles" style="width:22px; height:22px; accent-color:#0284c7; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 3. Groups Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#7c3aed;">👥 3. Facebook Groups Traffic</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Allow or block traffic originating from Facebook Groups.
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-groups" style="width:22px; height:22px; accent-color:#7c3aed; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 4. Pages Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#059669;">📄 4. Facebook Pages Traffic</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Allow or block traffic originating from Facebook Pages or Ads.
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-pages" style="width:22px; height:22px; accent-color:#059669; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 5. Stories Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#d97706;">📱 5. Facebook Stories Traffic</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Allow or block traffic from Facebook Stories (sfnsn shares).
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-stories" style="width:22px; height:22px; accent-color:#d97706; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 6. Unknown / Automated Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#dc2626;">🛡️ 6. Block Unknown &amp; Automated Traffic</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Auto-block fake FB referrers, datacenter IPs, and headless scrapers to Fallback.
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-automated" style="width:22px; height:22px; accent-color:#dc2626; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 7. Bot Protection -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#4338ca;">🤖 7. Multi-Signal Bot Protection</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Strict ASN screening, behavioral analysis, and rate-limiting shield.
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-bot-protection" style="width:22px; height:22px; accent-color:#4338ca; cursor:pointer; flex-shrink:0;">
+      </label>
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="padding:0.9rem 1.2rem; border-top:1px solid var(--border,#e2e8f0); display:flex; gap:0.65rem; background:var(--card-bg,#fff);">
+      <button type="button" onclick="closeTrafficRulesModal()" class="btn btn-secondary" style="flex:1; font-weight:700;">Cancel</button>
+      <button type="button" id="btn-save-traffic-rules" onclick="saveTrafficRulesModal()" class="btn btn-primary" style="flex:2; font-weight:800; background:linear-gradient(135deg, #1877f2 0%, #0284c7 100%); border:none;">💾 Save Rules</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MOBILE BOTTOM NAVIGATION BAR ── -->
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
   <button class="mobile-nav-item active" data-tab="tab-links">
@@ -1107,7 +1459,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=13"></script>
+<script src="/js/dashboard.js?v=26"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

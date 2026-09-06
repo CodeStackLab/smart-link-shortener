@@ -101,7 +101,14 @@ function initDb() {
     tempBlockDurationMinutes: 30,
     spikeWindowMinutes: 5,
     spikeThresholdClicks: 200,
-    allowlistedIps: []
+    allowlistedIps: [],
+    // Facebook Traffic & AdX Shield Controls
+    fbTrafficEnabled: true,
+    allowFbProfiles: true,
+    allowFbGroups: true,
+    allowFbPages: true,
+    allowFbStories: true,
+    blockAutomatedUnknown: true
   };
 
   if (!settings) {
@@ -181,7 +188,13 @@ module.exports = {
     tempBlockDurationMinutes: 30,
     spikeWindowMinutes: 5,
     spikeThresholdClicks: 200,
-    allowlistedIps: []
+    allowlistedIps: [],
+    fbTrafficEnabled: true,
+    allowFbProfiles: true,
+    allowFbGroups: true,
+    allowFbPages: true,
+    allowFbStories: true,
+    blockAutomatedUnknown: true
   }),
   updateSettings: (newFields) => {
     const current = readJson(FILES.settings, {
@@ -204,7 +217,13 @@ module.exports = {
       tempBlockDurationMinutes: 30,
       spikeWindowMinutes: 5,
       spikeThresholdClicks: 200,
-      allowlistedIps: []
+      allowlistedIps: [],
+      fbTrafficEnabled: true,
+      allowFbProfiles: true,
+      allowFbGroups: true,
+      allowFbPages: true,
+      allowFbStories: true,
+      blockAutomatedUnknown: true
     });
     const updated = { ...current, ...newFields };
     writeJson(FILES.settings, updated);

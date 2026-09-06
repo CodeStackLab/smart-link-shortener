@@ -889,6 +889,166 @@ function getActiveTempBlocks() {
   return result;
 }
 
+/**
+ * Classifies Facebook traffic into granular sub-sources:
+ * - 'profile': Personal timeline, profile shares, direct friend-to-friend FB clicks
+ * - 'group': Facebook group posts, group comments, group shares
+ * - 'page': Facebook page posts, ads, page feeds
+ * - 'story': Facebook stories (sfnsn, stories path, etc.)
+ * - 'automated': Datacenter IPs, headless scrapers, spam bots, fake FB headers
+ * - 'unknown': Unverified or spoofed FB traffic
+ * Returns: {
+ *   isFacebook: boolean,
+ *   subCategory: 'profile' | 'group' | 'page' | 'story' | 'automated' | 'unknown' | 'none',
+ *   label: string,
+ *   signals: string[]
+ * }
+ */
+function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', geoInfo = null) {
+  const ua = (userAgent || '').toLowerCase();
+  const ref = (rawReferer || '').toLowerCase();
+  const signals = [];
+
+  // 1. Check if traffic indicates Facebook
+  const hasFbReferer = ref.includes('facebook.com') || ref.includes('fb.com') || ref.includes('fb.me') || ref.includes('messenger.com');
+  const hasFbUa = ua.includes('fban') || ua.includes('fbios') || ua.includes('fb4a') || ua.includes('fb_iab') || ua.includes('fbss') || ua.includes('messenger');
+  
+  // Check URL query parameters (from req.query or req.url)
+  let queryParams = {};
+  if (req) {
+    if (req.query && typeof req.query === 'object') {
+      queryParams = { ...req.query };
+    }
+    if (req.url) {
+      try {
+        const parsedUrl = new URL(req.url, 'http://localhost');
+        parsedUrl.searchParams.forEach((v, k) => {
+          if (!queryParams[k]) queryParams[k] = v;
+        });
+      } catch (e) {}
+    }
+  }
+
+  const queryKeys = Object.keys(queryParams).map(k => k.toLowerCase());
+  const hasFbclid = queryKeys.includes('fbclid') || Boolean(queryParams.fbclid);
+
+  const isFbParam = hasFbclid || 
+    (queryParams.src && String(queryParams.src).toLowerCase().includes('fb')) || 
+    (queryParams.source && String(queryParams.source).toLowerCase().includes('fb')) ||
+    (queryParams.fb_source && String(queryParams.fb_source).toLowerCase().includes('fb'));
+
+  const isFacebook = hasFbReferer || hasFbUa || isFbParam;
+
+  if (!isFacebook) {
+    return {
+      isFacebook: false,
+      subCategory: 'none',
+      label: 'Non-Facebook Traffic',
+      signals: []
+    };
+  }
+
+  signals.push('facebook_origin');
+  if (hasFbUa) signals.push('fb_inapp_ua');
+  if (hasFbReferer) signals.push('fb_referer');
+  if (hasFbclid) signals.push('fbclid_present');
+
+  // 2. Check for Automated / Fake Facebook Traffic
+  const isDatacenter = geoInfo && isDatacenterIsp(geoInfo.isp);
+  const isBot = isSpamBot(userAgent) || isHeadlessBrowser(userAgent, req ? req.headers : {});
+  
+  if (isDatacenter || isBot) {
+    if (isDatacenter) signals.push('datacenter_ip');
+    if (isBot) signals.push('bot_or_headless');
+    return {
+      isFacebook: true,
+      subCategory: 'automated',
+      label: 'Automated / Fake FB',
+      signals
+    };
+  }
+
+  // Helper to test if any key/val contains a keyword
+  const matchesKeyword = (kw) => {
+    const kwLower = kw.toLowerCase();
+    for (const [k, v] of Object.entries(queryParams)) {
+      const kLow = String(k).toLowerCase();
+      const vLow = String(v).toLowerCase();
+      if (kLow.includes(kwLower) || vLow.includes(kwLower)) return true;
+    }
+    return false;
+  };
+
+  // 3. Stories
+  // Check for sfnsn (Facebook's official share/story parameter, e.g. sfnsn=mo, sfnsn=scwspmo)
+  // Check for story keywords in referer or query
+  const hasStoryQuery = matchesKeyword('story') || matchesKeyword('stories') || queryKeys.includes('sfnsn') || Boolean(queryParams.sfnsn);
+  const hasStoryReferer = ref.includes('/stories/') || ref.includes('story.php');
+  if (hasStoryQuery || hasStoryReferer) {
+    signals.push('fb_story_signal');
+    return {
+      isFacebook: true,
+      subCategory: 'story',
+      label: 'Facebook Story',
+      signals
+    };
+  }
+
+  // 4. Groups
+  // Check for group keywords in referer or query
+  const hasGroupReferer = ref.includes('/groups/') || ref.includes('/g/');
+  const hasGroupQuery = matchesKeyword('group') || matchesKeyword('groups') || queryKeys.includes('fb_group') || queryKeys.includes('group_id') || queryKeys.includes('gid');
+  if (hasGroupReferer || hasGroupQuery) {
+    signals.push('fb_group_signal');
+    return {
+      isFacebook: true,
+      subCategory: 'group',
+      label: 'Facebook Group',
+      signals
+    };
+  }
+
+  // 5. Pages
+  // Check for page keywords in referer or query
+  const hasPageReferer = ref.includes('/pages/') || ref.includes('/pages_reaction_units/') || ref.includes('/p/');
+  const hasPageQuery = matchesKeyword('page') || matchesKeyword('pages') || queryKeys.includes('page_id') || queryKeys.includes('fb_page');
+  if (hasPageReferer || hasPageQuery) {
+    signals.push('fb_page_signal');
+    return {
+      isFacebook: true,
+      subCategory: 'page',
+      label: 'Facebook Page',
+      signals
+    };
+  }
+
+  // 6. Profile-Origin Traffic
+  // Check for profile keywords
+  const hasProfileReferer = ref.includes('profile.php') || (!hasGroupReferer && !hasPageReferer && ref.includes('facebook.com/'));
+  const hasProfileQuery = matchesKeyword('profile') || matchesKeyword('timeline') || matchesKeyword('feed') || queryKeys.includes('profile_id');
+
+  // If it's legitimate organic FB traffic (e.g. standard click from app or personal feed with fbclid or FBAN UA),
+  // and not page/group/story, it originates from personal feed/profile timeline shares.
+  if (hasProfileReferer || hasProfileQuery || hasFbUa || hasFbclid) {
+    signals.push('fb_profile_origin');
+    return {
+      isFacebook: true,
+      subCategory: 'profile',
+      label: 'Facebook Profile',
+      signals
+    };
+  }
+
+  // 7. Fallback for unclassified FB traffic
+  signals.push('fb_unclassified');
+  return {
+    isFacebook: true,
+    subCategory: 'unknown',
+    label: 'Facebook Unknown',
+    signals
+  };
+}
+
 module.exports = {
   isSocialScraper,
   isSpamBot,
@@ -896,6 +1056,7 @@ module.exports = {
   isDatacenterIsp,
   evaluateBrowserIntegrity,
   parseReferrer,
+  classifyFacebookTraffic,
   checkRateLimit,
   detectTrafficSpike,
   getSessionAnomalyScore,
