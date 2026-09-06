@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=9">
+  <link rel="stylesheet" href="/css/style.css?v=10">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -25,6 +25,10 @@
       display: grid !important;
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 0.5rem !important;
+      width: 100% !important;
+    }
+    .traffic-filter-btn[data-filter="country-block"] {
+      grid-column: 1 / -1 !important;
       width: 100% !important;
     }
     .traffic-filter-btn {
@@ -720,7 +724,7 @@
         </button>
 
         <!-- 9. Country Block -->
-        <button type="button" class="traffic-filter-btn" data-filter="country-block" data-active-color="#b91c1c" style="display:flex !important; align-items:center !important; gap:0.5rem !important; padding:0.45rem 0.65rem !important; border-radius:14px !important; background:#fef0f2; border:1.5px solid transparent; cursor:pointer !important; text-align:left !important; min-height:48px !important; box-sizing:border-box !important;">
+        <button type="button" class="traffic-filter-btn" data-filter="country-block" data-active-color="#b91c1c" style="display:flex !important; align-items:center !important; gap:0.5rem !important; padding:0.45rem 0.65rem !important; border-radius:14px !important; background:#fef0f2; border:1.5px solid transparent; cursor:pointer !important; text-align:left !important; min-height:48px !important; box-sizing:border-box !important; grid-column: 1 / -1 !important; width: 100% !important;">
           <div style="width:34px !important; height:34px !important; min-width:34px !important; border-radius:50% !important; background:#fdd6db; display:flex !important; align-items:center !important; justify-content:center !important; flex-shrink:0 !important;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="9.5"></circle>
@@ -1810,7 +1814,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=38"></script>
+<script src="/js/dashboard.js?v=39"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
