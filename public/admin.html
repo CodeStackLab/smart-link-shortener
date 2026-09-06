@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=18">
+  <link rel="stylesheet" href="/css/style.css?v=20">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -549,16 +549,16 @@
       background: #059669 !important;
       border: none !important;
       color: #ffffff !important;
-      border-radius: 11px !important;
-      width: 38px !important;
-      height: 38px !important;
+      border-radius: 9px !important;
+      width: 34px !important;
+      height: 34px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       cursor: pointer !important;
       flex-shrink: 0 !important;
       padding: 0 !important;
-      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+      box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25) !important;
       transition: transform 0.15s ease, background 0.15s ease !important;
     }
     .top-refresh-btn:active {
@@ -568,14 +568,14 @@
       background: #ffffff !important;
       border: 1.5px solid #d1d5db !important;
       border-radius: 9999px !important;
-      padding: 0.4rem 0.85rem !important;
-      font-size: 0.82rem !important;
+      padding: 0.3rem 0.6rem !important;
+      font-size: 0.74rem !important;
       font-weight: 700 !important;
       color: #1e293b !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.35rem !important;
+      gap: 0.25rem !important;
       cursor: pointer !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
@@ -591,20 +591,38 @@
       border: 1.5px solid #bfdbfe !important;
       color: #1d4ed8 !important;
       border-radius: 9999px !important;
-      padding: 0.4rem 0.85rem !important;
-      font-size: 0.82rem !important;
+      padding: 0.3rem 0.65rem !important;
+      font-size: 0.74rem !important;
       font-weight: 700 !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.35rem !important;
+      gap: 0.25rem !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
       box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
     }
+    #logout-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      border-radius: 9999px !important;
+      padding: 0.3rem 0.6rem !important;
+      font-size: 0.74rem !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.25rem !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
 
     [data-theme="dark"] .top-pill-btn,
-    [data-theme="dark"] .theme-toggle-btn {
+    [data-theme="dark"] .theme-toggle-btn,
+    [data-theme="dark"] #logout-btn {
       background: #1e293b !important;
       border-color: rgba(255, 255, 255, 0.15) !important;
       color: #f1f5f9 !important;
@@ -615,106 +633,92 @@
       color: #93c5fd !important;
     }
 
-    /* ── MOCKUP EXACT: TOP STATS STACK ── */
+    /* ── MOCKUP EXACT: TOP STATS STACK (Compact & Single-Line) ── */
     .top-stats-stack {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
+      gap: 0.45rem;
+      margin-bottom: 1rem;
       width: 100%;
     }
     .top-stat-row {
       background: #ffffff;
       border: 1.5px solid rgba(226, 232, 240, 0.95);
-      border-radius: 20px;
-      padding: 0.75rem 1.25rem;
+      border-radius: 14px;
+      padding: 0.38rem 0.85rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
       transition: all 0.2s ease;
       width: 100%;
       box-sizing: border-box;
+      min-height: 44px;
     }
     .top-stat-row:hover {
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
       border-color: rgba(203, 213, 225, 0.95);
     }
     .top-stat-left {
       display: flex;
       align-items: center;
-      gap: 0.95rem;
-      flex-shrink: 1;
+      gap: 0.55rem;
+      flex-shrink: 0;
       min-width: 0;
     }
     .top-stat-icon-box {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.45rem;
+      font-size: 1.15rem;
       flex-shrink: 0;
     }
-    .top-stat-icon-box.green {
-      background: #dcfce7;
-    }
-    .top-stat-icon-box.amber {
-      background: #fef9c3;
-    }
-    .top-stat-icon-box.red {
-      background: #fee2e2;
-    }
-    .top-stat-icon-box.blue {
-      background: #e0f2fe;
-    }
+    .top-stat-icon-box.green { background: #dcfce7; }
+    .top-stat-icon-box.amber { background: #fef9c3; }
+    .top-stat-icon-box.red   { background: #fee2e2; }
+    .top-stat-icon-box.blue  { background: #e0f2fe; }
     .top-stat-title {
-      font-size: 0.92rem;
+      font-size: 0.78rem;
       font-weight: 800;
       color: #1e293b;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      white-space: nowrap;
+      white-space: nowrap !important;
+      line-height: 1;
     }
     .top-stat-right {
       display: flex;
       align-items: center;
-      gap: 0.95rem;
+      gap: 0.55rem;
       flex-shrink: 0;
     }
     .top-stat-num {
-      font-size: 1.95rem;
+      font-size: 1.45rem;
       font-weight: 900;
       line-height: 1;
-      min-width: 44px;
+      min-width: 28px;
       text-align: right;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .top-stat-num.green {
-      color: #059669;
-    }
-    .top-stat-num.amber {
-      color: #b45309;
-    }
-    .top-stat-num.red {
-      color: #dc2626;
-    }
-    .top-stat-num.blue {
-      color: #2563eb;
-    }
+    .top-stat-num.green { color: #059669; }
+    .top-stat-num.amber { color: #b45309; }
+    .top-stat-num.red   { color: #dc2626; }
+    .top-stat-num.blue  { color: #2563eb; }
     .top-stat-divider {
       width: 1.5px;
-      height: 34px;
+      height: 24px;
       background: #e2e8f0;
     }
     .top-stat-desc {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      font-size: 0.74rem;
-      line-height: 1.25;
+      font-size: 0.65rem;
+      line-height: 1.2;
       color: #64748b;
       font-weight: 600;
       white-space: nowrap;
@@ -734,85 +738,102 @@
     [data-theme="dark"] .top-stat-desc {
       color: #94a3b8 !important;
     }
-    [data-theme="dark"] .top-stat-icon-box.green {
-      background: rgba(16, 185, 129, 0.2) !important;
-    }
-    [data-theme="dark"] .top-stat-icon-box.amber {
-      background: rgba(245, 158, 11, 0.2) !important;
-    }
-    [data-theme="dark"] .top-stat-icon-box.red {
-      background: rgba(239, 68, 68, 0.2) !important;
-    }
-    [data-theme="dark"] .top-stat-icon-box.blue {
-      background: rgba(59, 130, 246, 0.2) !important;
-    }
+    [data-theme="dark"] .top-stat-icon-box.green { background: rgba(16, 185, 129, 0.2) !important; }
+    [data-theme="dark"] .top-stat-icon-box.amber { background: rgba(245, 158, 11, 0.2) !important; }
+    [data-theme="dark"] .top-stat-icon-box.red   { background: rgba(239, 68, 68, 0.2) !important; }
+    [data-theme="dark"] .top-stat-icon-box.blue  { background: rgba(59, 130, 246, 0.2) !important; }
 
-    /* ── MOBILE VIEW OPTIMIZATION (Single Row Header & Sleek Cards) ── */
+    /* ── MOBILE VIEW OPTIMIZATION (Strict 1-Line Title & Ultra-Compact Box) ── */
     @media (max-width: 768px) {
-      .hide-mobile-header {
+      .hide-mobile-header, .logo-link {
         display: none !important;
       }
       .site-header {
-        padding: 0.55rem 0.75rem !important;
+        padding: 0.4rem 0.55rem !important;
       }
       .header-inner {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 0.35rem !important;
+        gap: 0.25rem !important;
         flex-wrap: nowrap !important;
         width: 100% !important;
       }
       .logo-group {
         display: flex !important;
         align-items: center !important;
-        gap: 0.65rem !important;
+        gap: 0.45rem !important;
         flex-shrink: 0 !important;
+      }
+      .hamburger-menu-btn {
+        width: 28px !important;
+        height: 32px !important;
+        padding: 2px !important;
+      }
+      .top-refresh-btn {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
       }
       .header-actions {
         display: flex !important;
         align-items: center !important;
-        gap: 0.35rem !important;
+        gap: 0.22rem !important;
         flex-shrink: 0 !important;
         flex-wrap: nowrap !important;
       }
-      .top-pill-btn, .theme-toggle-btn, .user-badge-pill {
-        padding: 0.35rem 0.6rem !important;
-        font-size: 0.76rem !important;
+      .top-pill-btn, .theme-toggle-btn, #logout-btn {
+        padding: 0.25rem 0.48rem !important;
+        font-size: 0.72rem !important;
+        min-height: 30px !important;
+        white-space: nowrap !important;
+      }
+      .user-badge-pill {
+        padding: 0.25rem 0.52rem !important;
+        font-size: 0.72rem !important;
+        min-height: 30px !important;
+        white-space: nowrap !important;
+      }
+      .top-stats-stack {
+        gap: 0.4rem !important;
       }
       .top-stat-row {
-        padding: 0.65rem 0.85rem !important;
-        border-radius: 16px !important;
-        gap: 0.45rem !important;
+        padding: 0.32rem 0.65rem !important;
+        border-radius: 12px !important;
+        gap: 0.35rem !important;
+        min-height: 42px !important;
       }
       .top-stat-left {
-        gap: 0.65rem !important;
+        gap: 0.45rem !important;
+        flex-shrink: 0 !important;
       }
       .top-stat-icon-box {
-        width: 42px !important;
-        height: 42px !important;
-        font-size: 1.3rem !important;
-        border-radius: 12px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 1.05rem !important;
+        border-radius: 8px !important;
       }
       .top-stat-title {
-        font-size: 0.82rem !important;
-        white-space: normal !important;
-        line-height: 1.2 !important;
+        font-size: clamp(0.64rem, 2.3vw, 0.74rem) !important;
+        white-space: nowrap !important;
+        line-height: 1 !important;
+        letter-spacing: 0.01em !important;
       }
       .top-stat-right {
-        gap: 0.55rem !important;
+        gap: 0.45rem !important;
+        flex-shrink: 0 !important;
       }
       .top-stat-num {
-        font-size: 1.65rem !important;
-        min-width: 34px !important;
+        font-size: 1.35rem !important;
+        min-width: 24px !important;
       }
       .top-stat-divider {
-        height: 28px !important;
+        height: 20px !important;
       }
       .top-stat-desc {
-        font-size: 0.68rem !important;
-        line-height: 1.2 !important;
+        font-size: 0.62rem !important;
+        line-height: 1.15 !important;
       }
     }
   </style>
@@ -1173,12 +1194,12 @@
       <div class="top-stat-row" id="logs-organic-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box green">✅</div>
-          <span class="top-stat-title">LEGITIMATE TRAFFIC</span>
+          <span class="top-stat-title" style="white-space:nowrap !important;">LEGITIMATE TRAFFIC</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-organic-clicks" class="top-stat-num green">0</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc">
+          <div class="top-stat-desc" style="white-space:nowrap;">
             <span>Low Risk &amp;</span>
             <span>Verified Organic</span>
           </div>
@@ -1189,12 +1210,12 @@
       <div class="top-stat-row" id="logs-suspicious-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box amber">⚠️</div>
-          <span class="top-stat-title">SUSPICIOUS TRAFFIC</span>
+          <span class="top-stat-title" style="white-space:nowrap !important;">SUSPICIOUS TRAFFIC</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-suspicious-clicks" class="top-stat-num amber">0</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc">
+          <div class="top-stat-desc" style="white-space:nowrap;">
             <span>Medium Risk /</span>
             <span>Soft-Blocked</span>
           </div>
@@ -1205,12 +1226,12 @@
       <div class="top-stat-row" id="logs-bot-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box red">🤖</div>
-          <span class="top-stat-title">BOT SHIELD BLOCKED</span>
+          <span class="top-stat-title" style="white-space:nowrap !important;">BOT SHIELD BLOCKED</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-bot-clicks" class="top-stat-num red">0</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc">
+          <div class="top-stat-desc" style="white-space:nowrap;">
             <span>High Risk Bots /</span>
             <span>Scrapers</span>
           </div>
@@ -1221,12 +1242,12 @@
       <div class="top-stat-row" id="logs-quality-wrap">
         <div class="top-stat-left">
           <div class="top-stat-icon-box blue">🛡️</div>
-          <span class="top-stat-title">TRAFFIC QUALITY</span>
+          <span class="top-stat-title" style="white-space:nowrap !important;">TRAFFIC QUALITY</span>
         </div>
         <div class="top-stat-right">
           <span id="stat-traffic-quality" class="top-stat-num blue">100%</span>
           <div class="top-stat-divider"></div>
-          <div class="top-stat-desc">
+          <div class="top-stat-desc" style="white-space:nowrap;">
             <span>Clean Visitors</span>
             <span>Ratio</span>
           </div>
@@ -2583,7 +2604,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=48"></script>
+<script src="/js/dashboard.js?v=50"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
