@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=40">
+  <link rel="stylesheet" href="/css/style.css?v=41">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -2318,13 +2318,10 @@
 
       <!-- Add Custom Domain / Subdomain Card (Settings Section) -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="custom-domains-card">
-        <div class="section-title" style="display:flex; align-items:center; gap:0.45rem; font-size:1.15rem; font-weight:800; margin-bottom:1rem;">
-          <span class="accent">🌐</span> Add Custom Domain / Subdomain
-        </div>
         <form id="add-domain-form">
           <div class="form-group" style="margin-bottom:0.75rem;">
-            <label for="new-domain-input" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
-              DOMAIN OR SUBDOMAIN
+            <label for="new-domain-input" style="font-size:clamp(0.88rem, 3.6vw, 1rem); font-weight:800; display:block; margin-bottom:0.55rem; color:var(--text-primary); cursor:pointer; white-space:nowrap;">
+              Add Domain Or Sub Domain
             </label>
             <input type="text" id="new-domain-input" class="form-control" placeholder="e.g. go.yourbrand.com or link.site" required autocomplete="off" style="font-size:0.95rem; padding:0.75rem 1rem; border-radius:12px; border:1.5px solid var(--border,#e5e7eb); width:100%; box-sizing:border-box;">
             <small style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.45rem; line-height:1.45;">
@@ -2702,7 +2699,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=73"></script>
+<script src="/js/dashboard.js?v=74"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
