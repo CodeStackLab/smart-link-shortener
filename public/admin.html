@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=27">
+  <link rel="stylesheet" href="/css/style.css?v=28">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -1103,6 +1103,7 @@
               <th id="th-target-url">Target URL</th>
               <th id="th-fallback-url">Fallback</th>
               <th id="th-sources">Sources</th>
+              <th id="th-blocked-countries">Blocked Countries</th>
               <th id="th-settings">Pro</th>
               <th id="th-clicks">Clicks</th>
               <th>Status</th>
@@ -1110,7 +1111,7 @@
             </tr>
           </thead>
           <tbody id="links-tbody">
-            <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading links…</td></tr>
+            <tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading links…</td></tr>
           </tbody>
         </table>
       </div>
@@ -2712,7 +2713,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=60"></script>
+<script src="/js/dashboard.js?v=61"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

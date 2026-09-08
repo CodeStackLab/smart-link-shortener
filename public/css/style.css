@@ -2494,6 +2494,32 @@ table td:nth-child(3)  /* Fallback URL */ {
     padding: 0.28rem 0.65rem !important;
   }
 
+  /* Blocked Countries badges mobile styling — label LEFT, badge RIGHT, same row */
+  td[data-label="Blocked Countries"] {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+    text-align: left !important;
+    flex-wrap: nowrap !important;
+  }
+  td[data-label="Blocked Countries"] > div {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-shrink: 1 !important;
+    max-width: 65% !important;
+  }
+  td[data-label="Blocked Countries"] .badge {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+    padding: 0.22rem 0.45rem !important;
+  }
+
   /* Status / Action & Risk Score mobile row alignment — prevents badge overflowing card edge */
   td[data-label="Status / Action"],
   td[data-label="Risk Score"] {

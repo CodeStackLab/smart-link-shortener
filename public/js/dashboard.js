@@ -1017,17 +1017,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('search-links');
   let allLinksCache = [];
 
+  function getCountryFlagEmoji(code) {
+    if (!code) return '🌐';
+    const upper = String(code).trim().toUpperCase();
+    if (upper.length === 2) {
+      try {
+        return String.fromCodePoint(...[...upper].map(c => 127397 + c.charCodeAt(0)));
+      } catch (e) {
+        return '🌐';
+      }
+    }
+    return '🌐';
+  }
+
   async function loadLinks() {
     try {
       const res = await fetch('/api/admin/links');
       if (!res.ok) {
-        if (linksTbody) linksTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">Please log in to view links.</td></tr>`;
+        if (linksTbody) linksTbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2rem;">Please log in to view links.</td></tr>`;
         return;
       }
       allLinksCache = await res.json();
       renderLinksTable(allLinksCache);
     } catch (err) {
-      if (linksTbody) linksTbody.innerHTML = `<tr><td colspan="8" style="color: var(--danger);">Failed to load links.</td></tr>`;
+      if (linksTbody) linksTbody.innerHTML = `<tr><td colspan="9" style="color: var(--danger);">Failed to load links.</td></tr>`;
     }
   }
 
@@ -1035,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!linksTbody) return;
 
     if (!Array.isArray(links) || links.length === 0) {
-      linksTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No smart links found. Create your first link above!</td></tr>`;
+      linksTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No smart links found. Create your first link above!</td></tr>`;
       return;
     }
 
@@ -1115,6 +1128,24 @@ document.addEventListener('DOMContentLoaded', () => {
         ? `<button class="btn btn-secondary btn-sm btn-traffic-rules" onclick="showTrafficRulesModal('${link.id}')" title="Configure Facebook & Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>`
         : '';
 
+      const blockedList = Array.isArray(link.blockedCountries) ? link.blockedCountries : [];
+      const isBlockOn = link.countryBlockEnabled !== false && blockedList.length > 0;
+
+      const blockedCountriesBadges = isBlockOn ? `
+        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; align-items: center;">
+          ${blockedList.map(c => `
+            <span class="badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; font-weight:800; font-size:0.75rem; padding:0.22rem 0.45rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">
+              <span>${getCountryFlagEmoji(c)}</span>
+              <span>${c}</span>
+            </span>
+          `).join('')}
+        </div>
+      ` : `
+        <span class="badge" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; font-weight:800; font-size:0.72rem; padding:0.22rem 0.5rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">
+          <span>🌐 None</span>
+        </span>
+      `;
+
       const actionsHtml = canManage ? `
         <div class="action-btn-group">
           ${trafficRulesBtn}
@@ -1169,6 +1200,9 @@ document.addEventListener('DOMContentLoaded', () => {
               ${presetBadges}
               ${customBadges}
             </div>
+          </td>
+          <td data-label="Blocked Countries" class="col-blocked-countries">
+            ${blockedCountriesBadges}
           </td>
           <td data-label="Settings" class="col-settings">
             <div style="display: flex; flex-direction: column; gap: 0.2rem;">

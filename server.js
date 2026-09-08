@@ -425,6 +425,20 @@ app.get('/api/session', (req, res) => {
       }
     }
 
+    const hasCustomCountry = userObj && (userObj.hasCustomCountryRules || userObj.hasCustomBlockedCountries);
+    let myBlockedCountries = [];
+    let myCountryBlockEnabled = false;
+    if (hasCustomCountry) {
+      myBlockedCountries = Array.isArray(userObj.blockedCountries) ? userObj.blockedCountries : [];
+      myCountryBlockEnabled = userObj.countryBlockEnabled !== false;
+    } else if (settings.applyFirewallGlobally !== false) {
+      myBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
+      myCountryBlockEnabled = settings.editorCountryBlockEnabled !== false;
+    } else {
+      myBlockedCountries = Array.isArray(userObj.blockedCountries) ? userObj.blockedCountries : [];
+      myCountryBlockEnabled = !!userObj.countryBlockEnabled;
+    }
+
     return res.json({
       authenticated: true,
       username: req.session.username,
@@ -433,7 +447,9 @@ app.get('/api/session', (req, res) => {
       permissions: perms,
       allowedTargetDomains: finalAllowed,
       maskEditorUrls: maskEditorUrls,
-      fbTrafficSettings: userObj?.fbTrafficSettings || null
+      fbTrafficSettings: userObj?.fbTrafficSettings || null,
+      blockedCountries: myCountryBlockEnabled ? myBlockedCountries : [],
+      countryBlockEnabled: myCountryBlockEnabled
     });
   }
   return res.json({ authenticated: false });
@@ -446,11 +462,43 @@ app.get('/api/session', (req, res) => {
 
 app.get('/api/admin/links', requireAuth, (req, res) => {
   const links = db.getLinks();
+  const settings = db.getSettings();
+  const allUsers = db.getUsers();
+
+  const enrichLinkWithBlockedCountries = (l) => {
+    const creator = allUsers.find(u => u.username && u.username.toLowerCase() === (l.createdBy || 'admin').toLowerCase());
+    let effectiveBlockedCountries = [];
+    let effectiveCountryBlockEnabled = false;
+
+    if (creator && creator.role === 'Editor') {
+      const hasCustom = creator.hasCustomCountryRules || creator.hasCustomBlockedCountries;
+      if (hasCustom) {
+        effectiveBlockedCountries = Array.isArray(creator.blockedCountries) ? creator.blockedCountries : [];
+        effectiveCountryBlockEnabled = creator.countryBlockEnabled !== false;
+      } else if (settings.applyFirewallGlobally !== false) {
+        effectiveBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
+        effectiveCountryBlockEnabled = settings.editorCountryBlockEnabled !== false;
+      } else {
+        effectiveBlockedCountries = Array.isArray(creator.blockedCountries) ? creator.blockedCountries : [];
+        effectiveCountryBlockEnabled = !!creator.countryBlockEnabled;
+      }
+    } else if (Array.isArray(l.blockedCountries)) {
+      effectiveBlockedCountries = l.blockedCountries;
+      effectiveCountryBlockEnabled = l.countryBlockEnabled !== false;
+    }
+
+    return {
+      ...l,
+      blockedCountries: effectiveCountryBlockEnabled ? effectiveBlockedCountries : [],
+      countryBlockEnabled: effectiveCountryBlockEnabled
+    };
+  };
+
   if (isAdminRole(req.session.role)) {
-    return res.json(links);
+    return res.json(links.map(enrichLinkWithBlockedCountries));
   }
   const userLinks = links.filter(l => l.createdBy === req.session.username);
-  res.json(userLinks);
+  res.json(userLinks.map(enrichLinkWithBlockedCountries));
 });
 
 // ── Image Upload API ──
