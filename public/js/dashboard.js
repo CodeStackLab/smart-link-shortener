@@ -2697,46 +2697,62 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Global Fallback Redirect URL Form Handler
+  window.saveDefaultFallbackUrl = async function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    if (!isFullAdminUser()) {
+      showAlert('⚠️ Only Admin can change global Fallback URL settings.', true);
+      return false;
+    }
+    const fallbackInput = document.getElementById('setting-default-fallback-url');
+    const fallbackVal = fallbackInput ? fallbackInput.value.trim() : '';
+    if (!fallbackVal) {
+      showAlert('⚠️ Please enter a valid URL (e.g. https://www.yourdomain.com/)', true);
+      return false;
+    }
+
+    const btnSaveDefaultFallback = document.getElementById('btn-save-default-fallback');
+    if (btnSaveDefaultFallback) {
+      btnSaveDefaultFallback.disabled = true;
+      btnSaveDefaultFallback.textContent = '⏳ Saving...';
+    }
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ defaultFallbackUrl: fallbackVal })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Global Fallback Redirect URL updated successfully!');
+        if (data.settings && data.settings.defaultFallbackUrl && fallbackInput) {
+          fallbackInput.value = data.settings.defaultFallbackUrl;
+        }
+        loadShieldSettings();
+        loadLinks();
+      } else {
+        showAlert(data.error || 'Failed to update Fallback URL', true);
+      }
+    } catch (err) {
+      showAlert('Failed to update Fallback URL: ' + (err.message || err), true);
+    } finally {
+      if (btnSaveDefaultFallback) {
+        btnSaveDefaultFallback.disabled = false;
+        btnSaveDefaultFallback.textContent = '💾 Save Fallback URL';
+      }
+    }
+    return false;
+  };
+
   const defaultFallbackForm = document.getElementById('default-fallback-form');
   const btnSaveDefaultFallback = document.getElementById('btn-save-default-fallback');
   if (defaultFallbackForm) {
-    defaultFallbackForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!isFullAdminUser()) {
-        showAlert('⚠️ Only Admin can change global Fallback URL settings.', true);
-        return;
-      }
-      const fallbackVal = document.getElementById('setting-default-fallback-url')?.value.trim();
-      if (!fallbackVal) return;
-
-      if (btnSaveDefaultFallback) {
-        btnSaveDefaultFallback.disabled = true;
-        btnSaveDefaultFallback.textContent = '⏳ Saving...';
-      }
-
-      try {
-        const res = await fetch('/api/admin/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ defaultFallbackUrl: fallbackVal })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          showAlert('✅ Global Fallback Redirect URL updated successfully!');
-          loadShieldSettings();
-          loadLinks();
-        } else {
-          showAlert(data.error || 'Failed to update Fallback URL', true);
-        }
-      } catch (err) {
-        showAlert('Failed to update Fallback URL', true);
-      } finally {
-        if (btnSaveDefaultFallback) {
-          btnSaveDefaultFallback.disabled = false;
-          btnSaveDefaultFallback.textContent = '💾 Save Fallback URL';
-        }
-      }
-    });
+    defaultFallbackForm.addEventListener('submit', window.saveDefaultFallbackUrl);
+  }
+  if (btnSaveDefaultFallback) {
+    btnSaveDefaultFallback.addEventListener('click', window.saveDefaultFallbackUrl);
   }
 
   // Global Facebook Traffic Rules Form Handler

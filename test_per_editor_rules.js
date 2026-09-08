@@ -239,7 +239,7 @@ test('8. db.updateAllEditorsFbSettings synchronizes all Editor accounts in datab
     botProtection: true
   });
 
-  const editors = db.getUsers().filter(u => u.role === 'Editor');
+  const editors = db.getUsers().filter(u => u.role === 'Editor' && !u.hasCustomFbRules);
   for (const ed of editors) {
     assert.strictEqual(ed.fbTrafficSettings.allowFbGroups, false);
     assert.strictEqual(ed.fbTrafficSettings.allowFbPages, false);
@@ -270,7 +270,7 @@ test('9. db.updateAllEditorLinksFbSettings synchronizes all Editor shortlinks in
   });
 
   const links = db.getLinks();
-  const editorUsernames = new Set(db.getUsers().filter(u => u.role === 'Editor').map(u => u.username.toLowerCase()));
+  const editorUsernames = new Set(db.getUsers().filter(u => u.role === 'Editor' && !u.hasCustomFbRules).map(u => u.username.toLowerCase()));
   const editorLinks = links.filter(l => editorUsernames.has((l.createdBy || '').toLowerCase()));
   if (editorLinks.length > 0) {
     for (const el of editorLinks) {

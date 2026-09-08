@@ -193,6 +193,7 @@ test('6. Fallback input removed from create link form and present ONLY in Settin
 // 7. db.updateAllLinksFallbackUrl updates all links
 // ─────────────────────────────────────────────────────────────
 test('7. db.updateAllLinksFallbackUrl synchronizes all links with new global fallback', () => {
+  const originalFallback = db.getSettings().defaultFallbackUrl || 'https://www.google.com/';
   const testFallback = 'https://custom-safe-fallback.com/';
   db.updateAllLinksFallbackUrl(testFallback);
 
@@ -202,12 +203,11 @@ test('7. db.updateAllLinksFallbackUrl synchronizes all links with new global fal
     assert.strictEqual(l.fallbackUrl, testFallback, `${l.code} fallbackUrl must match`);
   }
 
-  // Restore default fallback
-  const restoredFallback = 'https://www.google.com/';
-  db.updateAllLinksFallbackUrl(restoredFallback);
+  // Restore previous fallback
+  db.updateAllLinksFallbackUrl(originalFallback);
   const freshLinks = db.getLinks();
   for (const l of freshLinks) {
-    assert.strictEqual(l.fallbackUrl, restoredFallback, `${l.code} fallbackUrl restored`);
+    assert.strictEqual(l.fallbackUrl, originalFallback, `${l.code} fallbackUrl restored`);
   }
 });
 
@@ -215,14 +215,15 @@ test('7. db.updateAllLinksFallbackUrl synchronizes all links with new global fal
 // 8. db.updateSettings persists defaultFallbackUrl
 // ─────────────────────────────────────────────────────────────
 test('8. db.updateSettings persists defaultFallbackUrl cleanly', () => {
+  const original = db.getSettings().defaultFallbackUrl || 'https://www.google.com/';
   db.updateSettings({ defaultFallbackUrl: 'https://global-fallback-test.org/' });
   let s = db.getSettings();
   assert.strictEqual(s.defaultFallbackUrl, 'https://global-fallback-test.org/');
 
   // Restore
-  db.updateSettings({ defaultFallbackUrl: 'https://www.google.com/' });
+  db.updateSettings({ defaultFallbackUrl: original });
   s = db.getSettings();
-  assert.strictEqual(s.defaultFallbackUrl, 'https://www.google.com/');
+  assert.strictEqual(s.defaultFallbackUrl, original);
 });
 
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);

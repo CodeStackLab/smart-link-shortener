@@ -1,6 +1,8 @@
 const assert = require('assert');
 const db = require('./db');
 
+const initialSettings = { ...db.getSettings() };
+
 console.log('🧪 Starting Unblock Persistence & Settings Fix Unit Tests...\n');
 
 let passedTests = 0;
@@ -123,11 +125,6 @@ test('8. Fallback card title in admin.html is Fallback Redirect (without cuatmoi
 });
 
 // Clean up and restore healthy defaults for test suite
-db.updateSettings({
-  defaultFallbackUrl: 'https://www.google.com/',
-  botLimitClicks: 100,
-  editorCountryBlockEnabled: true,
-  editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
-});
+db.updateSettings(initialSettings);
 
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);
