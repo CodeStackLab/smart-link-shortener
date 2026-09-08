@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=30">
+  <link rel="stylesheet" href="/css/style.css?v=31">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -2468,35 +2468,49 @@
       </div>
 
       <!-- Global Fallback Redirect URL Card -->
-      <div class="card" style="padding:1.35rem; height:fit-content;" id="default-fallback-url-card">
-        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-          <div style="display:flex; align-items:center; gap:0.45rem; font-size:1.1rem; font-weight:800;">
-            <span class="accent">🔀</span> Fallback Redirect
+      <div class="card" id="default-fallback-url-card" style="height:fit-content;">
+        <!-- Centered Header & Badge matching Mobile Mockup -->
+        <div class="fallback-header-wrap">
+          <div class="fallback-title-row">
+            <div class="fallback-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 3 21 3 21 8"></polyline>
+                <line x1="4" y1="20" x2="21" y2="3"></line>
+                <polyline points="21 16 21 21 16 21"></polyline>
+                <line x1="15" y1="15" x2="21" y2="21"></line>
+                <line x1="4" y1="4" x2="9" y2="9"></line>
+              </svg>
+            </div>
+            <h2 class="fallback-title-text">Fallback Redirect</h2>
           </div>
-          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#f59e0b,#ea580c); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(234,88,12,0.3);">
-            👑 Global Fallback
-          </span>
+          <div class="fallback-badge-wrap">
+            <span class="fallback-global-pill">
+              <span style="font-size:1.15rem; line-height:1;">👑</span>
+              <span>Global Fallback</span>
+            </span>
+          </div>
         </div>
 
-        <div style="background:linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(234,88,12,0.1) 100%); border:1.5px solid rgba(245,158,11,0.3); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:0.9rem;">
-          <div style="font-weight:900; font-size:0.82rem; color:#b45309; display:flex; align-items:center; gap:0.35rem;">
-            <span>💡 System Fallback Destination:</span>
+        <!-- System Fallback Destination Notice Box -->
+        <div class="fallback-notice-box">
+          <div class="fallback-notice-title">
+            <span>💡</span> <span>System Fallback Destination:</span>
           </div>
-          <div style="font-size:0.74rem; color:var(--text-secondary); line-height:1.45; margin-top:0.25rem;">
+          <p class="fallback-notice-desc">
             Tamam blocked, bot/VPN, country-blocked, ya filtered visitors automatically is Fallback URL par redirect honge. Yeh setting pure system aur sabhi shortlinks ke liye default fallback URL set karegi.
-          </div>
+          </p>
         </div>
 
         <form id="default-fallback-form" onsubmit="event.preventDefault(); if(window.saveDefaultFallbackUrl) window.saveDefaultFallbackUrl(event); return false;">
-          <div class="form-group" style="margin-bottom:0.85rem;">
-            <label for="setting-default-fallback-url" style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
+          <div class="form-group" style="margin-bottom:0.95rem;">
+            <label for="setting-default-fallback-url" style="font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); display:block; margin-bottom:0.45rem; text-align:center;">
               Global Fallback Redirect URL:
             </label>
-            <input type="url" id="setting-default-fallback-url" class="form-control" placeholder="https://www.google.com/" value="" required autocomplete="url" inputmode="url" spellcheck="false" style="font-size:0.9rem; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid var(--border,#e5e7eb); font-weight:700;">
+            <input type="url" id="setting-default-fallback-url" class="form-control" placeholder="https://www.google.com/" value="" required autocomplete="url" inputmode="url" spellcheck="false" style="font-size:0.95rem; padding:0.75rem 1rem; border-radius:12px; border:1.5px solid var(--border,#e5e7eb); font-weight:700; text-align:center; width:100%; box-sizing:border-box;">
           </div>
 
-          <button type="submit" id="btn-save-default-fallback" class="btn btn-primary btn-block" onclick="event.preventDefault(); if(window.saveDefaultFallbackUrl) window.saveDefaultFallbackUrl(event);" style="background:linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); min-height:44px; font-weight:800; font-size:0.88rem; margin-top:0.5rem; box-shadow:0 4px 14px rgba(234,88,12,0.3); border:none; color:#fff; cursor:pointer;">
-            💾 Save Fallback URL
+          <button type="submit" id="btn-save-default-fallback" class="btn btn-primary btn-block" onclick="event.preventDefault(); if(window.saveDefaultFallbackUrl) window.saveDefaultFallbackUrl(event);" style="background:linear-gradient(135deg, #f97316 0%, #ea580c 100%); min-height:48px; border-radius:12px; font-weight:800; font-size:0.95rem; margin-top:0.6rem; box-shadow:0 4px 16px rgba(234,88,12,0.35); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%;">
+            <span>💾 Save Fallback URL</span>
           </button>
         </form>
       </div>
@@ -2713,7 +2727,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=63"></script>
+<script src="/js/dashboard.js?v=64"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
