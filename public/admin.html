@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=35">
+  <link rel="stylesheet" href="/css/style.css?v=36">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -2396,13 +2396,15 @@
 
       <!-- Editor Target URL Display Mode Card -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="editor-url-mask-card">
-        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-          <div style="display:flex; align-items:center; gap:0.45rem; font-size:1.1rem; font-weight:800;">
+        <div class="section-title" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:0.45rem; margin-bottom:0.85rem;">
+          <div style="display:flex; align-items:center; justify-content:center; gap:0.45rem; font-size:1.15rem; font-weight:800; text-align:center;">
             <span class="accent">👁️</span> Editor URL Display Settings
           </div>
-          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#8b5cf6,#6c3de8); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(108,61,232,0.3);">
-            👑 Admin Control
-          </span>
+          <div style="display:flex; justify-content:center; width:100%;">
+            <span style="font-size:0.75rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#8b5cf6,#6c3de8); padding:0.28rem 0.8rem; border-radius:20px; box-shadow:0 2px 8px rgba(108,61,232,0.3); display:inline-flex; align-items:center; gap:0.35rem;">
+              👑 Admin Control
+            </span>
+          </div>
         </div>
 
         <div style="background:linear-gradient(135deg, rgba(24,119,242,0.08) 0%, rgba(139,92,246,0.1) 100%); border:1.5px solid rgba(59,130,246,0.3); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:0.9rem;">
@@ -2469,13 +2471,15 @@
 
       <!-- Global Fallback Redirect URL Card -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="default-fallback-url-card">
-        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-          <div style="display:flex; align-items:center; gap:0.45rem; font-size:1.1rem; font-weight:800;">
+        <div class="section-title" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:0.45rem; margin-bottom:0.85rem;">
+          <div style="display:flex; align-items:center; justify-content:center; gap:0.45rem; font-size:1.15rem; font-weight:800; text-align:center;">
             <span class="accent">🔀</span> Fallback Redirect
           </div>
-          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#f59e0b,#ea580c); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(234,88,12,0.3);">
-            👑 Global Fallback
-          </span>
+          <div style="display:flex; justify-content:center; width:100%;">
+            <span style="font-size:0.75rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#f59e0b,#ea580c); padding:0.28rem 0.8rem; border-radius:20px; box-shadow:0 2px 8px rgba(234,88,12,0.3); display:inline-flex; align-items:center; gap:0.35rem;">
+              👑 Global Fallback
+            </span>
+          </div>
         </div>
 
         <div style="background:linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(234,88,12,0.1) 100%); border:1.5px solid rgba(245,158,11,0.3); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:0.9rem;">
@@ -2713,7 +2717,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=68"></script>
+<script src="/js/dashboard.js?v=69"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
