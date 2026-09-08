@@ -752,8 +752,8 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   if (typeof active === 'boolean') updateFields.active = active;
   if (domain !== undefined) updateFields.domain = domain ? domain.trim().toLowerCase() : '';
 
-  // Facebook Traffic & AdX Shield Controls (Admin or the link's creator Editor can modify rules per shortlink)
-  const canEditRules = isAdminRole(req.session.role) || (existingLink.createdBy === req.session.username);
+  // Facebook Traffic & AdX Shield Controls (Only Admin can modify traffic rules per shortlink)
+  const canEditRules = isAdminRole(req.session.role);
   if (canEditRules) {
     const isEditor = !isAdminRole(req.session.role);
     const creatorUser = isEditor ? db.getUserByUsername(req.session.username) : null;

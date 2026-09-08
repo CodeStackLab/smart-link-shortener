@@ -1111,9 +1111,13 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">${link.active ? 'Pause' : 'Enable'}</button>`;
       }
 
+      const trafficRulesBtn = isFullAdminUser()
+        ? `<button class="btn btn-secondary btn-sm btn-traffic-rules" onclick="showTrafficRulesModal('${link.id}')" title="Configure Facebook & Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>`
+        : '';
+
       const actionsHtml = canManage ? `
         <div class="action-btn-group">
-          <button class="btn btn-secondary btn-sm" onclick="showTrafficRulesModal('${link.id}')" title="Configure Facebook & Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>
+          ${trafficRulesBtn}
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
           ${toggleBtnHtml}
@@ -1121,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       ` : `
         <div class="action-btn-group">
-          <button class="btn btn-secondary btn-sm" onclick="showTrafficRulesModal('${link.id}')" title="View Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>
+          ${trafficRulesBtn}
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
           <span class="badge badge-info" style="font-size:0.7rem; padding:0.35rem 0.65rem; font-weight:700;">👁️ View Only</span>
@@ -1402,8 +1406,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ── Traffic Rules Modal Handlers ──
+  // ── Traffic Rules Modal Handlers (Admin Only) ──
   window.showTrafficRulesModal = function(linkId) {
+    if (!isFullAdminUser()) {
+      showAlert('Traffic rules can only be configured by Admin.', true);
+      return;
+    }
     const link = (allLinksCache || []).find(l => l.id === linkId);
     if (!link) return;
     const idEl = document.getElementById('modal-rule-link-id');
@@ -1475,6 +1483,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.saveTrafficRulesModal = async function() {
+    if (!isFullAdminUser()) {
+      showAlert('Only Admin can modify Facebook Traffic & AdX rules.', true);
+      return;
+    }
     const linkId = document.getElementById('modal-rule-link-id')?.value;
     if (!linkId) return;
 

@@ -3168,5 +3168,15 @@ body.is-editor #default-fallback-url-card {
   display: none !important;
 }
 
+/* ── Facebook Traffic & AdX Rules: Super Admin Only ── */
+/* In Editor accounts: completely hide Facebook Traffic & AdX Rules button and modal from editor dashboard.
+   Rules are configured only by Admin and execute in the backend */
+body:not(.is-admin) .btn-traffic-rules,
+body:not(.is-admin) #traffic-rules-modal,
+body.is-editor .btn-traffic-rules,
+body.is-editor #traffic-rules-modal {
+  display: none !important;
+}
+
 
 
