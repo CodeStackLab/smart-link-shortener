@@ -247,6 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
           currentAllowedSitesString = newSitesStr;
           currentMaskString = newMaskStr;
 
+          if (isFullAdminUser()) {
+            document.body.classList.add('is-admin');
+            document.body.classList.remove('is-editor');
+          } else {
+            document.body.classList.remove('is-admin');
+            document.body.classList.add('is-editor');
+          }
+
           applyRoleUiScoping(currentLoggedInRole, data.permissions);
           updateTargetUrlFieldForRole(data);
 
@@ -553,16 +561,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If non-admin user is currently on Firewall tab, switch back to Links tab
     if (!isFullAdmin) {
+      document.body.classList.remove('is-admin');
+      document.body.classList.add('is-editor');
+      const fwBtn = document.querySelector('.tab-btn[data-tab="tab-firewall"]');
+      if (fwBtn) fwBtn.style.setProperty('display', 'none', 'important');
+      const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
+      if (fwMobileBtn) fwMobileBtn.style.setProperty('display', 'none', 'important');
       const firewallContent = document.getElementById('tab-firewall');
+      if (firewallContent) {
+        firewallContent.style.setProperty('display', 'none', 'important');
+        firewallContent.removeAttribute('data-active');
+      }
       const activeFirewallTab = document.querySelector('.tab-btn.active[data-tab="tab-firewall"]');
       const activeMobileFirewall = document.querySelector('.mobile-nav-item.active[data-tab="tab-firewall"]');
-      if (activeFirewallTab || activeMobileFirewall || (firewallContent && firewallContent.style.display !== 'none')) {
+      if (activeFirewallTab || activeMobileFirewall) {
         if (activeFirewallTab) activeFirewallTab.classList.remove('active');
         if (activeMobileFirewall) activeMobileFirewall.classList.remove('active');
-        if (firewallContent) firewallContent.style.display = 'none';
         const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
         if (defaultLinksTab) defaultLinksTab.click();
       }
+    } else {
+      document.body.classList.add('is-admin');
+      document.body.classList.remove('is-editor');
+      const fwBtn = document.querySelector('.tab-btn[data-tab="tab-firewall"]');
+      if (fwBtn) fwBtn.style.removeProperty('display');
+      const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
+      if (fwMobileBtn) fwMobileBtn.style.removeProperty('display');
     }
 
     // ─── Super Admin Gating ─────────────────────────────────────
@@ -756,8 +780,15 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
 
-      if (targetTab === 'tab-firewall' && !isFullAdminUser()) {
-        return;
+      if (targetTab === 'tab-firewall') {
+        if (!isFullAdminUser()) {
+          return;
+        }
+        const fwContent = document.getElementById('tab-firewall');
+        if (fwContent) fwContent.setAttribute('data-active', 'true');
+      } else {
+        const fwContent = document.getElementById('tab-firewall');
+        if (fwContent) fwContent.removeAttribute('data-active');
       }
 
       if (targetTab === 'tab-settings' && !(isFullAdminUser() || userCurrentPermissions.includes('settings'))) {

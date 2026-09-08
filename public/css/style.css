@@ -3098,3 +3098,28 @@ td[data-label].col-hidden-perm > * {
 [data-theme="dark"] .fb-subsource-subtitle {
   color: #94a3b8 !important;
 }
+
+/* ── Firewall Tab: Strictly Super Admin Only ── */
+/* Hidden by default on ALL screen sizes, devices, and roles */
+.admin-only-tab,
+.tab-btn[data-tab="tab-firewall"],
+.mobile-nav-item[data-tab="tab-firewall"],
+#tab-firewall {
+  display: none !important;
+}
+
+/* ONLY visible when body explicitly has .is-admin class */
+body.is-admin .tab-btn[data-tab="tab-firewall"] {
+  display: inline-flex !important;
+}
+
+@media (max-width: 768px) {
+  body.is-admin .mobile-nav-item[data-tab="tab-firewall"] {
+    display: flex !important;
+  }
+}
+
+body.is-admin #tab-firewall.active,
+body.is-admin #tab-firewall[data-active="true"] {
+  display: block !important;
+}

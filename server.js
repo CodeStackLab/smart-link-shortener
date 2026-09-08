@@ -2358,6 +2358,9 @@ app.get('/s/:code', handleShortlinkRedirect);
 
 // Serve Admin UI directly at /admin
 app.get('/admin', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   if (req.session && req.session.isAdmin) {
     return res.sendFile(path.join(__dirname, 'public', 'admin.html'));
   }
@@ -2365,6 +2368,9 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   if (req.session && req.session.isAdmin) {
     return res.redirect('/admin');
   }

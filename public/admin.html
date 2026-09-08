@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=25">
+  <link rel="stylesheet" href="/css/style.css?v=26">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -954,7 +954,7 @@
   <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
   <button class="tab-btn" data-tab="tab-geo">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
-  <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
+  <button class="tab-btn admin-only-tab" data-tab="tab-firewall" style="display:none;">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
 </div>
 
@@ -1641,7 +1641,7 @@
 <!-- ══════════════════════════════
      TAB 4 — IP FIREWALL
 ══════════════════════════════ -->
-<div id="tab-firewall" class="tab-content" style="display:none;">
+<div id="tab-firewall" class="tab-content admin-only-tab" style="display:none;">
   <div class="container">
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
 
@@ -1683,10 +1683,7 @@
       <div class="card" style="padding:1.35rem; height:fit-content;" id="auto-shield-card">
         <div class="section-title"><span class="accent">🛡️</span> Auto Shield &amp; Firewall Settings</div>
 
-        <!-- Global Settings Notice — shown to Editors with firewall access (hidden for Admin by JS) -->
-        <div id="shield-readonly-notice" style="display:none; background:rgba(59,130,246,0.08); border:1.5px solid rgba(59,130,246,0.3); border-radius:10px; padding:0.6rem 0.85rem; margin-bottom:0.85rem; font-size:0.78rem; font-weight:700; color:#3b82f6;">
-          🌐 These settings are set by <strong>Super Admin</strong> and apply <strong>globally</strong> to all users &amp; shortlinks. You can view them but only Super Admin can change them.
-        </div>
+        <div id="shield-readonly-notice" style="display:none !important;"></div>
 
         <form id="auto-shield-form">
 
@@ -2671,7 +2668,7 @@
     <span class="nav-icon">📊</span>
     <span>Logs</span>
   </button>
-  <button class="mobile-nav-item" data-tab="tab-firewall">
+  <button class="mobile-nav-item admin-only-tab" data-tab="tab-firewall" style="display:none;">
     <span class="nav-icon">🛡️</span>
     <span>Firewall</span>
   </button>
@@ -2681,7 +2678,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=56"></script>
+<script src="/js/dashboard.js?v=57"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -2708,6 +2705,9 @@ if ('serviceWorker' in navigator) {
   mobileNavItems.forEach(item => {
     item.addEventListener('click', () => {
       const targetTabId = item.dataset.tab;
+      if (targetTabId === 'tab-firewall' && !document.body.classList.contains('is-admin')) {
+        return;
+      }
       const matchingTabBtn = document.querySelector(`.tab-btn[data-tab="${targetTabId}"]`);
       if (matchingTabBtn) {
         matchingTabBtn.click();
