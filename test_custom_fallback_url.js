@@ -147,16 +147,17 @@ test('5. Fallback URL cleanly defaults to google.com when none is provided', () 
 // ─────────────────────────────────────────────────────────────
 // 6. UI Check: Fallback input removed from create-link-form & added to tab-settings
 // ─────────────────────────────────────────────────────────────
-test('6. Fallback input in create link form has clean label Fallback Redirect with no (CUSTOMIZE)', () => {
+test('6. Fallback input removed from create link form and present ONLY in Settings tab for Admin', () => {
   const fs = require('fs');
   const html = fs.readFileSync('./public/admin.html', 'utf8');
+  const css = fs.readFileSync('./public/css/style.css', 'utf8');
+  const js = fs.readFileSync('./public/js/dashboard.js', 'utf8');
 
-  // Verify create link form has Fallback Redirect and does NOT have (CUSTOMIZE)
+  // Verify create link form does NOT contain fallback-url or Fallback Redirect input
   const createFormMatch = html.match(/<form id="create-link-form"[\s\S]*?<\/form>/);
   assert.ok(createFormMatch, 'create-link-form must exist');
-  assert.ok(createFormMatch[0].includes('Fallback Redirect'), 'Must have Fallback Redirect label');
-  assert.strictEqual(createFormMatch[0].toLowerCase().includes('(customize)'), false, 'Must NOT contain (CUSTOMIZE)');
-  assert.strictEqual(createFormMatch[0].includes('FALLBACK REDIRECT URL'), false, 'Old label must be removed');
+  assert.strictEqual(createFormMatch[0].includes('id="fallback-url"'), false, 'Create Link form must NOT contain fallback-url');
+  assert.strictEqual(createFormMatch[0].includes('Fallback Redirect'), false, 'Create Link form must NOT contain Fallback Redirect');
 
   // Verify Settings tab has default-fallback-url-card
   assert.ok(
@@ -172,11 +173,20 @@ test('6. Fallback input in create link form has clean label Fallback Redirect wi
     'Settings tab must have btn-save-default-fallback button'
   );
 
-  // Verify Rules modal has clean Fallback Redirect: without (Customize)
-  const rulesModalMatch = html.match(/<div id="traffic-rules-modal"[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/);
-  if (rulesModalMatch) {
-    assert.strictEqual(rulesModalMatch[0].toLowerCase().includes('(customize)'), false, 'Rules modal must NOT contain (Customize)');
-  }
+  // Verify modal has modal-rule-fallback-wrap
+  assert.ok(
+    html.includes('id="modal-rule-fallback-wrap"'),
+    'Rules modal must have modal-rule-fallback-wrap'
+  );
+
+  // Verify CSS strictly hides fallback elements from Editors / Non-Admins
+  assert.ok(css.includes('body:not(.is-admin) #modal-rule-fallback-wrap'), 'CSS must hide modal fallback for non-admin');
+  assert.ok(css.includes('body:not(.is-admin) #default-fallback-url-card'), 'CSS must hide settings fallback for non-admin');
+  assert.ok(css.includes('body.is-editor #modal-rule-fallback-wrap'), 'CSS must hide modal fallback for editor');
+
+  // Verify JS gates fallback card and wrap
+  assert.ok(js.includes("document.getElementById('default-fallback-url-card')"), 'JS must gate fallback card');
+  assert.ok(js.includes("document.getElementById('modal-rule-fallback-wrap')"), 'JS must gate modal fallback wrap');
 });
 
 // ─────────────────────────────────────────────────────────────

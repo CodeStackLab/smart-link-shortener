@@ -635,7 +635,7 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     id: 'link_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     code: cleanCode,
     targetUrl: ensureAbsoluteUrl(targetUrl),
-    fallbackUrl: (fallbackUrl && fallbackUrl.trim()) ? ensureAbsoluteUrl(fallbackUrl.trim()) : (systemSettings.defaultFallbackUrl || 'https://www.google.com/'),
+    fallbackUrl: (!isCreatorEditor && fallbackUrl && fallbackUrl.trim()) ? ensureAbsoluteUrl(fallbackUrl.trim()) : (systemSettings.defaultFallbackUrl || 'https://www.google.com/'),
     allowedPlatforms: finalAllowedPlatforms,
     customDomains: processedCustomDomains,
     delaySeconds: Math.max(0, parseInt(delaySeconds || 0, 10)),
@@ -737,7 +737,7 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
 
   const updateFields = {};
   if (targetUrl !== undefined && targetUrl.trim()) updateFields.targetUrl = ensureAbsoluteUrl(targetUrl);
-  if (fallbackUrl !== undefined) updateFields.fallbackUrl = fallbackUrl ? ensureAbsoluteUrl(fallbackUrl) : 'https://www.google.com/';
+  if (fallbackUrl !== undefined && isAdminRole(req.session.role)) updateFields.fallbackUrl = fallbackUrl ? ensureAbsoluteUrl(fallbackUrl) : 'https://www.google.com/';
   if (Array.isArray(allowedPlatforms)) updateFields.allowedPlatforms = allowedPlatforms;
   if (processedCustomDomains !== undefined) updateFields.customDomains = processedCustomDomains;
   if (delaySeconds !== undefined) updateFields.delaySeconds = Math.max(0, parseInt(delaySeconds, 10));

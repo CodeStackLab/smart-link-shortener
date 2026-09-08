@@ -540,6 +540,12 @@ document.addEventListener('DOMContentLoaded', () => {
       editorMaskCard.style.display = isFullAdmin ? '' : 'none';
     }
 
+    // Global Fallback Redirect URL Card — ADMIN ONLY
+    const fallbackCard = document.getElementById('default-fallback-url-card');
+    if (fallbackCard) {
+      fallbackCard.style.display = isFullAdmin ? '' : 'none';
+    }
+
     // 2. Google Authenticator 2FA Manager — Visible to anyone with Settings access
     const twoFaCard = document.getElementById('two-factor-auth-card');
     if (twoFaCard) {
@@ -576,7 +582,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'editor-country-block-card',
         'permanently-blocked-card',
         'temp-blocks-card',
-        'allowlist-card'
+        'allowlist-card',
+        'default-fallback-url-card',
+        'modal-rule-fallback-wrap',
+        'create-fallback-url-group'
       ];
       adminOnlyFirewallCards.forEach(id => {
         const el = document.getElementById(id);
@@ -1446,6 +1455,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setRuleCheckbox('modal-rule-fb-automated', 'blockAutomatedUnknown', resolveRule('blockAutomatedUnknown', link.blockAutomatedUnknown, sysSettings.blockAutomatedUnknown));
     setRuleCheckbox('modal-rule-bot-protection', 'botProtection', resolveRule('botProtection', link.botProtection, sysSettings.botProtectionEnabled));
 
+    const fallbackWrap = document.getElementById('modal-rule-fallback-wrap');
+    if (fallbackWrap) {
+      fallbackWrap.style.display = isEditor ? 'none' : '';
+    }
+
     const fallbackEl = document.getElementById('modal-rule-fallback-url');
     if (fallbackEl) {
       fallbackEl.value = link.fallbackUrl || 'https://www.google.com/';
@@ -1470,10 +1484,12 @@ document.addEventListener('DOMContentLoaded', () => {
       saveBtn.textContent = '⏳ Saving...';
     }
 
+    const isEditorUser = !isFullAdminUser();
+    const existingLink = (allLinksCache || []).find(l => l.id === linkId);
     const fallbackInputVal = document.getElementById('modal-rule-fallback-url')?.value.trim();
 
     const payload = {
-      fallbackUrl: fallbackInputVal || 'https://www.google.com/',
+      fallbackUrl: isEditorUser ? (existingLink?.fallbackUrl || 'https://www.google.com/') : (fallbackInputVal || existingLink?.fallbackUrl || 'https://www.google.com/'),
       fbTrafficEnabled: !!document.getElementById('modal-rule-fb-master')?.checked,
       allowFbProfiles: !!document.getElementById('modal-rule-fb-profiles')?.checked,
       allowFbGroups: !!document.getElementById('modal-rule-fb-groups')?.checked,

@@ -3129,4 +3129,19 @@ body:not(.is-admin) #fb-breakdown-card {
   display: none !important;
 }
 
+/* ── Fallback Redirect: Editor Protection ── */
+/* In Editor accounts: completely hide any fallback redirect inputs across the entire dashboard.
+   Fallback redirect is ONLY configured in Super Admin Settings */
+body:not(.is-admin) #create-fallback-url-group,
+body:not(.is-admin) #fallback-url,
+body:not(.is-admin) #modal-rule-fallback-wrap,
+body:not(.is-admin) #default-fallback-url-card,
+body.is-editor #create-fallback-url-group,
+body.is-editor #fallback-url,
+body.is-editor #modal-rule-fallback-wrap,
+body.is-editor #default-fallback-url-card {
+  display: none !important;
+}
+
+
 
