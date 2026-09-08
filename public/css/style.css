@@ -2556,25 +2556,32 @@ table td {
     padding: 0.28rem 0.65rem !important;
   }
 
-  /* Blocked Countries mobile card layout — Label on TOP, chips BELOW ("nechay") in horizontal grid */
+  /* Blocked Countries mobile card layout — Label on TOP centered, chips BELOW ("nechay") centered in horizontal grid */
   td[data-label="Blocked Countries"] {
     flex-direction: column !important;
-    align-items: flex-start !important;
-    text-align: left !important;
+    align-items: center !important;
+    text-align: center !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    gap: 0.4rem !important;
-    padding-top: 0.6rem !important;
-    padding-bottom: 0.6rem !important;
+    gap: 0.45rem !important;
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
   }
   td[data-label="Blocked Countries"]::before {
-    margin-bottom: 0.25rem !important;
+    margin-bottom: 0.35rem !important;
     display: block !important;
-    text-align: left !important;
+    text-align: center !important;
     width: 100% !important;
+    font-size: 0.86rem !important;
+    font-weight: 900 !important;
+    color: #1e293b !important;
+    letter-spacing: 0.05em !important;
+  }
+  [data-theme="dark"] td[data-label="Blocked Countries"]::before {
+    color: #cbd5e1 !important;
   }
   td[data-label="Blocked Countries"] > * {
-    text-align: left !important;
+    text-align: center !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -2583,30 +2590,32 @@ table td {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: wrap !important;
-    gap: 0.45rem !important;
+    gap: 0.5rem !important;
     align-items: center !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
     width: 100% !important;
   }
-  td[data-label="Blocked Countries"] .blocked-country-chip {
+  td[data-label="Blocked Countries"] .blocked-country-pill {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 0.4rem !important;
+    justify-content: center !important;
+    gap: 0.45rem !important;
     background: #ffffff !important;
-    border: 1.5px solid #d1d5db !important;
-    color: #1f2937 !important;
-    padding: 0.32rem 0.65rem !important;
-    border-radius: 8px !important;
+    border: 1.5px solid #fecaca !important;
+    color: #111827 !important;
+    padding: 0.35rem 0.72rem !important;
+    border-radius: 10px !important;
     font-weight: 800 !important;
-    font-size: 0.8rem !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    font-size: 0.84rem !important;
+    letter-spacing: 0.02em !important;
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.08) !important;
     flex-shrink: 0 !important;
   }
 
-  [data-theme="dark"] td[data-label="Blocked Countries"] .blocked-country-chip {
+  [data-theme="dark"] td[data-label="Blocked Countries"] .blocked-country-pill {
     background: #1e293b !important;
-    border-color: #475569 !important;
-    color: #f1f5f9 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #f8fafc !important;
   }
 
   /* Status / Action & Risk Score mobile row alignment — prevents badge overflowing card edge */

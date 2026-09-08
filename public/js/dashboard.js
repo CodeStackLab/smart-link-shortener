@@ -3415,8 +3415,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Password chip -->
             <div style="flex-shrink:0;">${passChip}</div>
 
-            <!-- Actions -->
-            <div style="display:flex;gap:0.5rem;margin-left:auto;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
+            <!-- Actions (Centered) -->
+            <div style="display:flex;gap:0.65rem;margin:0.45rem auto 0 auto;flex-shrink:0;flex-wrap:wrap;justify-content:center;width:100%;">
               ${actionsBtnHtml}
             </div>
           </div>
@@ -3465,6 +3465,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editUserModalSubtitle = document.getElementById('edit-user-modal-subtitle');
   const editUserRoleSelect = document.getElementById('edit-user-role-select');
   const editUserSaveRoleBtn = document.getElementById('edit-user-save-role-btn');
+  const editUserRoleSuccess = document.getElementById('edit-user-role-success');
   // ── Edit User Country Blocking Management ──
   let editUserBlockedCountries = new Set();
 
