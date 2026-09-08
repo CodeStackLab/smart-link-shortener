@@ -432,7 +432,8 @@ app.get('/api/session', (req, res) => {
       isSuperAdmin: isSuperAdmin,
       permissions: perms,
       allowedTargetDomains: finalAllowed,
-      maskEditorUrls: maskEditorUrls
+      maskEditorUrls: maskEditorUrls,
+      fbTrafficSettings: userObj?.fbTrafficSettings || null
     });
   }
   return res.json({ authenticated: false });
@@ -584,39 +585,51 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
   const isCreatorEditor = !isAdminRole(req.session.role);
   const creatorUser = db.getUserByUsername(req.session.username);
 
-  // If Creator is Editor and has custom settings with applyFirewallGlobally == false, use editor's settings;
+  // If Creator is Editor and has custom settings configured by Super Admin, use editor's assigned settings;
   // Otherwise inherit from systemSettings (Global Facebook Rules)
-  const defaultFbSource = (isCreatorEditor && systemSettings.applyFirewallGlobally === false && creatorUser?.fbTrafficSettings)
+  const defaultFbSource = (isCreatorEditor && creatorUser?.fbTrafficSettings)
     ? creatorUser.fbTrafficSettings
     : systemSettings;
 
-  const linkFbTrafficEnabled = (fbTrafficEnabled !== undefined)
+  let linkFbTrafficEnabled = (fbTrafficEnabled !== undefined)
     ? Boolean(fbTrafficEnabled)
     : (defaultFbSource.fbTrafficEnabled !== false);
 
-  const linkAllowFbProfiles = (allowFbProfiles !== undefined)
+  let linkAllowFbProfiles = (allowFbProfiles !== undefined)
     ? Boolean(allowFbProfiles)
     : (defaultFbSource.allowFbProfiles !== false);
 
-  const linkAllowFbGroups = (allowFbGroups !== undefined)
+  let linkAllowFbGroups = (allowFbGroups !== undefined)
     ? Boolean(allowFbGroups)
     : (defaultFbSource.allowFbGroups !== false);
 
-  const linkAllowFbPages = (allowFbPages !== undefined)
+  let linkAllowFbPages = (allowFbPages !== undefined)
     ? Boolean(allowFbPages)
     : (defaultFbSource.allowFbPages !== false);
 
-  const linkAllowFbStories = (allowFbStories !== undefined)
+  let linkAllowFbStories = (allowFbStories !== undefined)
     ? Boolean(allowFbStories)
     : (defaultFbSource.allowFbStories !== false);
 
-  const linkBlockAutomatedUnknown = (blockAutomatedUnknown !== undefined)
+  let linkBlockAutomatedUnknown = (blockAutomatedUnknown !== undefined)
     ? Boolean(blockAutomatedUnknown)
     : (defaultFbSource.blockAutomatedUnknown !== false);
 
-  const linkBotProtection = (botProtection !== undefined)
+  let linkBotProtection = (botProtection !== undefined)
     ? Boolean(botProtection)
     : ((defaultFbSource.botProtection !== undefined ? defaultFbSource.botProtection : defaultFbSource.botProtectionEnabled) !== false);
+
+  // Enforce editor ceiling: An editor can NEVER enable options that Super Admin turned OFF for them!
+  if (isCreatorEditor && creatorUser?.fbTrafficSettings) {
+    const userFb = creatorUser.fbTrafficSettings;
+    if (userFb.fbTrafficEnabled === false) linkFbTrafficEnabled = false;
+    if (userFb.allowFbProfiles === false) linkAllowFbProfiles = false;
+    if (userFb.allowFbGroups === false) linkAllowFbGroups = false;
+    if (userFb.allowFbPages === false) linkAllowFbPages = false;
+    if (userFb.allowFbStories === false) linkAllowFbStories = false;
+    if (userFb.blockAutomatedUnknown === false) linkBlockAutomatedUnknown = false;
+    if (userFb.botProtection === false) linkBotProtection = false;
+  }
 
   const newLink = {
     id: 'link_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -742,13 +755,38 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   // Facebook Traffic & AdX Shield Controls (Admin or the link's creator Editor can modify rules per shortlink)
   const canEditRules = isAdminRole(req.session.role) || (existingLink.createdBy === req.session.username);
   if (canEditRules) {
-    if (fbTrafficEnabled !== undefined) updateFields.fbTrafficEnabled = Boolean(fbTrafficEnabled);
-    if (allowFbProfiles !== undefined) updateFields.allowFbProfiles = Boolean(allowFbProfiles);
-    if (allowFbGroups !== undefined) updateFields.allowFbGroups = Boolean(allowFbGroups);
-    if (allowFbPages !== undefined) updateFields.allowFbPages = Boolean(allowFbPages);
-    if (allowFbStories !== undefined) updateFields.allowFbStories = Boolean(allowFbStories);
-    if (blockAutomatedUnknown !== undefined) updateFields.blockAutomatedUnknown = Boolean(blockAutomatedUnknown);
-    if (botProtection !== undefined) updateFields.botProtection = Boolean(botProtection);
+    const isEditor = !isAdminRole(req.session.role);
+    const creatorUser = isEditor ? db.getUserByUsername(req.session.username) : null;
+    const userFb = creatorUser?.fbTrafficSettings;
+
+    if (fbTrafficEnabled !== undefined) {
+      updateFields.fbTrafficEnabled = Boolean(fbTrafficEnabled);
+      if (isEditor && userFb && userFb.fbTrafficEnabled === false) updateFields.fbTrafficEnabled = false;
+    }
+    if (allowFbProfiles !== undefined) {
+      updateFields.allowFbProfiles = Boolean(allowFbProfiles);
+      if (isEditor && userFb && userFb.allowFbProfiles === false) updateFields.allowFbProfiles = false;
+    }
+    if (allowFbGroups !== undefined) {
+      updateFields.allowFbGroups = Boolean(allowFbGroups);
+      if (isEditor && userFb && userFb.allowFbGroups === false) updateFields.allowFbGroups = false;
+    }
+    if (allowFbPages !== undefined) {
+      updateFields.allowFbPages = Boolean(allowFbPages);
+      if (isEditor && userFb && userFb.allowFbPages === false) updateFields.allowFbPages = false;
+    }
+    if (allowFbStories !== undefined) {
+      updateFields.allowFbStories = Boolean(allowFbStories);
+      if (isEditor && userFb && userFb.allowFbStories === false) updateFields.allowFbStories = false;
+    }
+    if (blockAutomatedUnknown !== undefined) {
+      updateFields.blockAutomatedUnknown = Boolean(blockAutomatedUnknown);
+      if (isEditor && userFb && userFb.blockAutomatedUnknown === false) updateFields.blockAutomatedUnknown = false;
+    }
+    if (botProtection !== undefined) {
+      updateFields.botProtection = Boolean(botProtection);
+      if (isEditor && userFb && userFb.botProtection === false) updateFields.botProtection = false;
+    }
   }
 
   // If Admin explicitly activates an auto-paused link, clear the security pause lock
@@ -1736,12 +1774,12 @@ async function handleShortlinkRedirect(req, res) {
 
   const enforceGlobal = (settings.applyFirewallGlobally !== false && isEditorLink);
 
-  const isBotProtectionOn = enforceGlobal
-    ? (settings.botProtectionEnabled !== false)
-    : ((link.botProtection !== undefined)
-        ? !!link.botProtection
-        : (creatorFbSettings && creatorFbSettings.botProtection !== undefined
-            ? !!creatorFbSettings.botProtection
+  const isBotProtectionOn = (creatorFbSettings && creatorFbSettings.botProtection !== undefined)
+    ? (creatorFbSettings.botProtection && (link.botProtection !== false))
+    : (enforceGlobal
+        ? (settings.botProtectionEnabled !== false)
+        : ((link.botProtection !== undefined)
+            ? !!link.botProtection
             : (settings.botProtectionEnabled !== false)));
   if (isBotProtectionOn && !isAllowlisted(clientIp)) {
     const shieldResult = checkAndApplyAutoShield(clientIp, geoInfo.isVpn, userAgent, code, geoInfo, req);
@@ -2072,54 +2110,26 @@ async function handleShortlinkRedirect(req, res) {
   const isDatacenter = isDatacenterIsp(geoInfo.isp);
 
   // Resolve Filtering Policies for this link
-  // When applyFirewallGlobally !== false, Global Facebook Rules apply strictly to all Editor links
-  const fbTrafficEnabled = enforceGlobal
-    ? (settings.fbTrafficEnabled !== false)
-    : ((link.fbTrafficEnabled !== undefined)
-        ? !!link.fbTrafficEnabled
-        : (creatorFbSettings && creatorFbSettings.fbTrafficEnabled !== undefined
-            ? !!creatorFbSettings.fbTrafficEnabled
-            : (settings.fbTrafficEnabled !== false)));
+  // If the editor has specific per-user rules assigned by Admin (creatorFbSettings), those rules strictly govern this editor's links!
+  // If Super Admin disabled an option for that editor (e.g. allowFbGroups === false), it CANNOT be enabled by global or link rules.
+  const resolveEditorRule = (ruleKey, linkVal, globalVal) => {
+    if (creatorFbSettings && creatorFbSettings[ruleKey] !== undefined) {
+      if (creatorFbSettings[ruleKey] === false) return false;
+      return (linkVal !== undefined) ? (linkVal !== false) : true;
+    }
+    if (enforceGlobal) {
+      return (globalVal !== undefined) ? (globalVal !== false) : true;
+    }
+    if (linkVal !== undefined) return linkVal !== false;
+    return (globalVal !== undefined) ? (globalVal !== false) : true;
+  };
 
-  const allowFbProfiles = enforceGlobal
-    ? (settings.allowFbProfiles !== false)
-    : ((link.allowFbProfiles !== undefined)
-        ? !!link.allowFbProfiles
-        : (creatorFbSettings && creatorFbSettings.allowFbProfiles !== undefined
-            ? !!creatorFbSettings.allowFbProfiles
-            : (settings.allowFbProfiles !== false)));
-
-  const allowFbGroups = enforceGlobal
-    ? (settings.allowFbGroups !== false)
-    : ((link.allowFbGroups !== undefined)
-        ? !!link.allowFbGroups
-        : (creatorFbSettings && creatorFbSettings.allowFbGroups !== undefined
-            ? !!creatorFbSettings.allowFbGroups
-            : (settings.allowFbGroups !== false)));
-
-  const allowFbPages = enforceGlobal
-    ? (settings.allowFbPages !== false)
-    : ((link.allowFbPages !== undefined)
-        ? !!link.allowFbPages
-        : (creatorFbSettings && creatorFbSettings.allowFbPages !== undefined
-            ? !!creatorFbSettings.allowFbPages
-            : (settings.allowFbPages !== false)));
-
-  const allowFbStories = enforceGlobal
-    ? (settings.allowFbStories !== false)
-    : ((link.allowFbStories !== undefined)
-        ? !!link.allowFbStories
-        : (creatorFbSettings && creatorFbSettings.allowFbStories !== undefined
-            ? !!creatorFbSettings.allowFbStories
-            : (settings.allowFbStories !== false)));
-
-  const blockAutomatedUnknown = enforceGlobal
-    ? (settings.blockAutomatedUnknown !== false)
-    : ((link.blockAutomatedUnknown !== undefined)
-        ? !!link.blockAutomatedUnknown
-        : (creatorFbSettings && creatorFbSettings.blockAutomatedUnknown !== undefined
-            ? !!creatorFbSettings.blockAutomatedUnknown
-            : (settings.blockAutomatedUnknown !== false)));
+  const fbTrafficEnabled = resolveEditorRule('fbTrafficEnabled', link.fbTrafficEnabled, settings.fbTrafficEnabled);
+  const allowFbProfiles = resolveEditorRule('allowFbProfiles', link.allowFbProfiles, settings.allowFbProfiles);
+  const allowFbGroups = resolveEditorRule('allowFbGroups', link.allowFbGroups, settings.allowFbGroups);
+  const allowFbPages = resolveEditorRule('allowFbPages', link.allowFbPages, settings.allowFbPages);
+  const allowFbStories = resolveEditorRule('allowFbStories', link.allowFbStories, settings.allowFbStories);
+  const blockAutomatedUnknown = resolveEditorRule('blockAutomatedUnknown', link.blockAutomatedUnknown, settings.blockAutomatedUnknown);
 
   let isGenuineOrganic = false;
   let clickStatus = 'FALLBACK_REDIRECT';

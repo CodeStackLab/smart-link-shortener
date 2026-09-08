@@ -186,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentLoggedInUsername = '';
   let currentLoggedInRole = '';
+  let currentLoggedInFbTrafficSettings = null;
   let currentPermissionsString = '';
   let currentAllowedSitesString = '';
   let currentMaskString = '';
@@ -213,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentLoggedInUsername = data.username || 'admin';
         currentLoggedInRole = data.role || 'Admin';
+        currentLoggedInFbTrafficSettings = data.fbTrafficSettings || null;
 
         if (userBadge) {
           const uName = (data.username || 'admin').trim();
@@ -1403,25 +1405,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Get current active settings as default fallback
     const sysSettings = (typeof currentSettingsCache === 'object' && currentSettingsCache !== null) ? currentSettingsCache : {};
+    const isEditor = !isFullAdminUser();
+    const editorFb = isEditor ? (currentLoggedInFbTrafficSettings || null) : null;
 
-    const resolveRule = (linkVal, sysVal) => {
+    const resolveRule = (ruleKey, linkVal, sysVal) => {
+      // If current user is Editor and Super Admin turned OFF this option, it is strictly false
+      if (editorFb && editorFb[ruleKey] === false) return false;
       if (linkVal !== undefined) return Boolean(linkVal);
+      if (editorFb && editorFb[ruleKey] !== undefined) return Boolean(editorFb[ruleKey]);
       if (sysVal !== undefined) return Boolean(sysVal);
       return true;
     };
 
-    const setChecked = (id, checked) => {
+    const setRuleCheckbox = (id, ruleKey, isChecked) => {
       const el = document.getElementById(id);
-      if (el) el.checked = !!checked;
+      if (!el) return;
+      el.checked = !!isChecked;
+
+      const card = el.closest('div[style*="border"]') || el.parentElement;
+      if (editorFb && editorFb[ruleKey] === false) {
+        el.disabled = true;
+        if (card) {
+          card.style.opacity = '0.55';
+          card.title = 'Option not granted by Super Admin for your account';
+        }
+      } else {
+        el.disabled = false;
+        if (card) {
+          card.style.opacity = '1';
+          card.title = '';
+        }
+      }
     };
 
-    setChecked('modal-rule-fb-master', resolveRule(link.fbTrafficEnabled, sysSettings.fbTrafficEnabled));
-    setChecked('modal-rule-fb-profiles', resolveRule(link.allowFbProfiles, sysSettings.allowFbProfiles));
-    setChecked('modal-rule-fb-groups', resolveRule(link.allowFbGroups, sysSettings.allowFbGroups));
-    setChecked('modal-rule-fb-pages', resolveRule(link.allowFbPages, sysSettings.allowFbPages));
-    setChecked('modal-rule-fb-stories', resolveRule(link.allowFbStories, sysSettings.allowFbStories));
-    setChecked('modal-rule-fb-automated', resolveRule(link.blockAutomatedUnknown, sysSettings.blockAutomatedUnknown));
-    setChecked('modal-rule-bot-protection', resolveRule(link.botProtection, sysSettings.botProtectionEnabled));
+    setRuleCheckbox('modal-rule-fb-master', 'fbTrafficEnabled', resolveRule('fbTrafficEnabled', link.fbTrafficEnabled, sysSettings.fbTrafficEnabled));
+    setRuleCheckbox('modal-rule-fb-profiles', 'allowFbProfiles', resolveRule('allowFbProfiles', link.allowFbProfiles, sysSettings.allowFbProfiles));
+    setRuleCheckbox('modal-rule-fb-groups', 'allowFbGroups', resolveRule('allowFbGroups', link.allowFbGroups, sysSettings.allowFbGroups));
+    setRuleCheckbox('modal-rule-fb-pages', 'allowFbPages', resolveRule('allowFbPages', link.allowFbPages, sysSettings.allowFbPages));
+    setRuleCheckbox('modal-rule-fb-stories', 'allowFbStories', resolveRule('allowFbStories', link.allowFbStories, sysSettings.allowFbStories));
+    setRuleCheckbox('modal-rule-fb-automated', 'blockAutomatedUnknown', resolveRule('blockAutomatedUnknown', link.blockAutomatedUnknown, sysSettings.blockAutomatedUnknown));
+    setRuleCheckbox('modal-rule-bot-protection', 'botProtection', resolveRule('botProtection', link.botProtection, sysSettings.botProtectionEnabled));
 
     const fallbackEl = document.getElementById('modal-rule-fallback-url');
     if (fallbackEl) {
@@ -3574,6 +3597,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           showAlert(`✅ Settings Saved Successfully for user '${_editModalUsername}'!`);
           loadUsers();
+          loadLinks();
           setTimeout(() => {
             if (editUserModal) editUserModal.style.display = 'none';
           }, 1200);

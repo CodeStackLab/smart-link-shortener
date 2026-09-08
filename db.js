@@ -163,21 +163,23 @@ function initDb() {
       }
     }
 
-    // Ensure all Editor accounts have fbTrafficSettings initialized/synchronized from global settings
+    // Ensure all Editor accounts have fbTrafficSettings initialized if not already set
     const activeSettings = readJson(FILES.settings, defaultSettings);
-    if (activeSettings && activeSettings.applyFirewallGlobally !== false) {
+    if (activeSettings) {
       for (const u of users) {
         if (u && u.role === 'Editor') {
-          u.fbTrafficSettings = {
-            fbTrafficEnabled: activeSettings.fbTrafficEnabled !== false,
-            allowFbProfiles: activeSettings.allowFbProfiles !== false,
-            allowFbGroups: activeSettings.allowFbGroups !== false,
-            allowFbPages: activeSettings.allowFbPages !== false,
-            allowFbStories: activeSettings.allowFbStories !== false,
-            blockAutomatedUnknown: activeSettings.blockAutomatedUnknown !== false,
-            botProtection: activeSettings.botProtectionEnabled !== false
-          };
-          usersChanged = true;
+          if (!u.fbTrafficSettings) {
+            u.fbTrafficSettings = {
+              fbTrafficEnabled: activeSettings.fbTrafficEnabled !== false,
+              allowFbProfiles: activeSettings.allowFbProfiles !== false,
+              allowFbGroups: activeSettings.allowFbGroups !== false,
+              allowFbPages: activeSettings.allowFbPages !== false,
+              allowFbStories: activeSettings.allowFbStories !== false,
+              blockAutomatedUnknown: activeSettings.blockAutomatedUnknown !== false,
+              botProtection: activeSettings.botProtectionEnabled !== false
+            };
+            usersChanged = true;
+          }
         }
       }
     }
@@ -509,6 +511,7 @@ module.exports = {
           blockAutomatedUnknown: fbTrafficSettings.blockAutomatedUnknown !== false,
           botProtection: fbTrafficSettings.botProtection !== false
         };
+        user.hasCustomFbRules = true;
       }
       if (Array.isArray(blockedCountries)) {
         user.blockedCountries = [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
@@ -517,6 +520,33 @@ module.exports = {
         user.countryBlockEnabled = !!countryBlockEnabled;
       }
       writeJson(FILES.users, users);
+
+      if (user.fbTrafficSettings) {
+        module.exports.updateUserLinksFbSettings(user.username, user.fbTrafficSettings);
+      }
+    }
+  },
+
+  updateUserLinksFbSettings: (username, fbTrafficSettings) => {
+    if (!username || !fbTrafficSettings || typeof fbTrafficSettings !== 'object') return;
+    const links = readJson(FILES.links, []);
+    let modified = false;
+    const targetUser = String(username).toLowerCase().trim();
+    links.forEach(link => {
+      const creator = String(link.createdBy || '').toLowerCase().trim();
+      if (creator === targetUser) {
+        link.fbTrafficEnabled = fbTrafficSettings.fbTrafficEnabled !== false;
+        link.allowFbProfiles = fbTrafficSettings.allowFbProfiles !== false;
+        link.allowFbGroups = fbTrafficSettings.allowFbGroups !== false;
+        link.allowFbPages = fbTrafficSettings.allowFbPages !== false;
+        link.allowFbStories = fbTrafficSettings.allowFbStories !== false;
+        link.blockAutomatedUnknown = fbTrafficSettings.blockAutomatedUnknown !== false;
+        link.botProtection = (fbTrafficSettings.botProtection !== undefined ? fbTrafficSettings.botProtection !== false : (fbTrafficSettings.botProtectionEnabled !== false));
+        modified = true;
+      }
+    });
+    if (modified) {
+      writeJson(FILES.links, links);
     }
   },
 
@@ -525,7 +555,7 @@ module.exports = {
     const users = readJson(FILES.users, []);
     let modified = false;
     users.forEach(u => {
-      if (u && u.role === 'Editor') {
+      if (u && u.role === 'Editor' && !u.hasCustomFbRules) {
         u.fbTrafficSettings = {
           fbTrafficEnabled: fbSettings.fbTrafficEnabled !== false,
           allowFbProfiles: fbSettings.allowFbProfiles !== false,
@@ -547,12 +577,17 @@ module.exports = {
     if (!fbSettings || typeof fbSettings !== 'object') return;
     const links = readJson(FILES.links, []);
     const users = readJson(FILES.users, []);
+    const customRuleEditors = new Set(
+      users.filter(u => u && u.role === 'Editor' && u.hasCustomFbRules).map(u => (u.username || '').toLowerCase().trim())
+    );
     const editorUsernames = new Set(
       users.filter(u => u && u.role === 'Editor').map(u => (u.username || '').toLowerCase())
     );
     let modified = false;
     links.forEach(link => {
-      const creator = (link.createdBy || '').toLowerCase();
+      const creator = (link.createdBy || '').toLowerCase().trim();
+      if (customRuleEditors.has(creator)) return;
+
       if (includeAdmin || editorUsernames.has(creator) || (creator && creator !== 'admin')) {
         link.fbTrafficEnabled = fbSettings.fbTrafficEnabled !== false;
         link.allowFbProfiles = fbSettings.allowFbProfiles !== false;
