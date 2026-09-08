@@ -3247,14 +3247,44 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------
   // TAB 5: TEAM MEMBERS & USER INVITES LOGIC
   // --------------------------------------------------------
+  // Password Requirements Validator (Max 8 chars, 1 uppercase, numbers, symbol from @,#,$,%,!)
+  function validateUserPassword(password) {
+    const p = (password || '').trim();
+    if (!p) return 'Password is required.';
+    if (p.length > 8) return 'Password cannot exceed 8 characters (maximum 8 characters).';
+    if (!/[A-Z]/.test(p)) return 'Password must contain at least 1 uppercase letter (A-Z).';
+    if (!/[0-9]/.test(p)) return 'Password must contain at least 1 number (0-9).';
+    if (!/[@#$%!]/.test(p)) return 'Password must contain at least 1 symbol (@, #, $, %, !).';
+    return null;
+  }
+
+  // Password Generator (Guaranteed 8 chars with uppercase, lowercase, number, symbol)
+  function generateCompliantUserPassword() {
+    const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lowers = 'abcdefghjkmnpqrstuvwxyz';
+    const numbers = '23456789';
+    const symbols = '!@#$%';
+    const all = uppers + lowers + numbers + symbols;
+    const res = [
+      uppers[Math.floor(Math.random() * uppers.length)],
+      numbers[Math.floor(Math.random() * numbers.length)],
+      symbols[Math.floor(Math.random() * symbols.length)],
+      lowers[Math.floor(Math.random() * lowers.length)]
+    ];
+    while (res.length < 8) {
+      res.push(all[Math.floor(Math.random() * all.length)]);
+    }
+    for (let i = res.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [res[i], res[j]] = [res[j], res[i]];
+    }
+    return res.join('');
+  }
+
   const btnGenPass = document.getElementById('btn-gen-pass');
   if (btnGenPass) {
     btnGenPass.addEventListener('click', () => {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
-      let pass = '';
-      for (let i = 0; i < 10; i++) {
-        pass += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
+      const pass = generateCompliantUserPassword();
       const passInput = document.getElementById('new-user-password');
       if (passInput) passInput.value = pass;
     });
@@ -3429,9 +3459,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   window.resetUserPassword = async function(username, newPassword) {
-    if (!newPassword || newPassword.trim().length < 6) {
-      showAlert('Password must be at least 6 characters long.', true);
-      return;
+    const passErr = validateUserPassword(newPassword);
+    if (passErr) {
+      showAlert('⚠️ ' + passErr, true);
+      return { success: false, error: passErr };
     }
     try {
       const res = await fetch('/api/admin/users/reset-password', {
@@ -3649,9 +3680,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (editUserGenPass) {
     editUserGenPass.addEventListener('click', () => {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
-      let pass = '';
-      for (let i = 0; i < 10; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+      const pass = generateCompliantUserPassword();
       if (editUserNewPass) editUserNewPass.value = pass;
     });
   }
@@ -3659,8 +3688,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (editUserSavePassBtn) {
     editUserSavePassBtn.addEventListener('click', async () => {
       const newPass = editUserNewPass ? editUserNewPass.value.trim() : '';
-      if (!newPass || newPass.length < 6) {
-        if (editUserPassError) { editUserPassError.textContent = '⚠️ Password must be at least 6 characters.'; editUserPassError.style.display = 'block'; }
+      const passErr = validateUserPassword(newPass);
+      if (passErr) {
+        if (editUserPassError) { editUserPassError.textContent = '⚠️ ' + passErr; editUserPassError.style.display = 'block'; }
+        if (editUserNewPass) editUserNewPass.focus();
         return;
       }
       if (editUserPassError) editUserPassError.style.display = 'none';
@@ -3903,8 +3934,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (inviteUserForm) {
     inviteUserForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const username = document.getElementById('new-user-username').value.trim();
-      const password = document.getElementById('new-user-password').value.trim();
+      const usernameInput = document.getElementById('new-user-username');
+      const passwordInput = document.getElementById('new-user-password');
+      const username = usernameInput ? usernameInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+
+      if (!username) {
+        showAlert('⚠️ Please enter a username.', true);
+        if (usernameInput) usernameInput.focus();
+        return;
+      }
+      if (username.length < 5) {
+        showAlert('⚠️ Username must be at least 5 characters long.', true);
+        if (usernameInput) usernameInput.focus();
+        return;
+      }
+
+      const passErr = validateUserPassword(password);
+      if (passErr) {
+        showAlert('⚠️ ' + passErr, true);
+        if (passwordInput) passwordInput.focus();
+        return;
+      }
       const role = document.getElementById('new-user-role').value;
       const newRadioUnmask = document.getElementById('new-radio-unmask');
       const newUnmaskHiddenCb = document.getElementById('new-unmask-hidden-cb');

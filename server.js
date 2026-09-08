@@ -1446,17 +1446,36 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
 });
 
 
+// Password Requirements Validator (Max 8 chars, 1 uppercase, numbers, symbol from @,#,$,%,!)
+function validatePasswordRequirements(password) {
+  const p = (password || '').trim();
+  if (!p) return 'Password is required.';
+  if (p.length > 8) return 'Password cannot exceed 8 characters (maximum 8 characters).';
+  if (!/[A-Z]/.test(p)) return 'Password must contain at least 1 uppercase letter (A-Z).';
+  if (!/[0-9]/.test(p)) return 'Password must contain at least 1 number (0-9).';
+  if (!/[@#$%!]/.test(p)) return 'Password must contain at least 1 symbol (@, #, $, %, !).';
+  return null;
+}
+
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   if ((req.session.username || '').toLowerCase() !== 'admin') {
     return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can invite/create new users.' });
   }
 
   const { username, password, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required.' });
+  const cleanUser = (username || '').trim().toLowerCase();
+  if (!cleanUser) {
+    return res.status(400).json({ error: 'Username is required.' });
+  }
+  if (cleanUser.length < 5) {
+    return res.status(400).json({ error: 'Username must be at least 5 characters long.' });
   }
 
-  const cleanUser = username.trim().toLowerCase();
+  const passErr = validatePasswordRequirements(password);
+  if (passErr) {
+    return res.status(400).json({ error: passErr });
+  }
+
   if (db.getUserByUsername(cleanUser)) {
     return res.status(400).json({ error: 'Username already exists. Choose another.' });
   }
@@ -1547,8 +1566,13 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can reset user passwords.' });
   }
 
-  if (!username || !newPassword || newPassword.trim().length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+  if (!username || !newPassword) {
+    return res.status(400).json({ error: 'Username and new password are required.' });
+  }
+
+  const passErr = validatePasswordRequirements(newPassword);
+  if (passErr) {
+    return res.status(400).json({ error: passErr });
   }
 
   const user = db.getUserByUsername(username);

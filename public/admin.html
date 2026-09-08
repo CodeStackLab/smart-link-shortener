@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=33">
+  <link rel="stylesheet" href="/css/style.css?v=34">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -2076,16 +2076,16 @@
         </div>
         <form id="invite-user-form" style="margin-bottom:1.5rem;">
           <div class="form-group">
-            <label for="new-user-username">Username</label>
-            <input type="text" id="new-user-username" class="form-control" placeholder="e.g. john_editor" required>
+            <label for="new-user-username">Username <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">(min 5 characters)</span></label>
+            <input type="text" id="new-user-username" class="form-control" placeholder="e.g. john_editor (min 5 chars)" minlength="5" required>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
             <div class="form-group">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
-                <label for="new-user-password" style="margin-bottom:0;">Password</label>
+                <label for="new-user-password" style="margin-bottom:0;">Password <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">(max 8 chars)</span></label>
                 <button type="button" id="btn-gen-pass" style="background:none; border:none; color:#1877f2; font-size:0.7rem; font-weight:700; cursor:pointer; padding:0;">🎲 Auto Gen</button>
               </div>
-              <input type="text" id="new-user-password" class="form-control" placeholder="Enter password" required>
+              <input type="text" id="new-user-password" class="form-control" placeholder="Max 8 chars (A-Z, 0-9, @#$%!)" maxlength="8" required>
             </div>
             <div class="form-group">
               <label for="new-user-role">Role Access Level</label>
@@ -2727,7 +2727,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=66"></script>
+<script src="/js/dashboard.js?v=67"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -2804,7 +2804,7 @@ if ('serviceWorker' in navigator) {
       <!-- Change Password -->
       <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem;">🔑 Change Password</div>
       <div style="position:relative; margin-bottom:0.75rem;">
-        <input type="text" id="edit-user-new-pass" placeholder="Enter new password (min. 6 chars)" style="width:100%; box-sizing:border-box; padding:0.65rem 2.8rem 0.65rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-size:0.83rem; font-weight:600; background:var(--input-bg,#f9fafb); color:var(--text-primary,#111); outline:none;" />
+        <input type="text" id="edit-user-new-pass" placeholder="Max 8 chars (A-Z, 0-9, @#$%!)" maxlength="8" style="width:100%; box-sizing:border-box; padding:0.65rem 2.8rem 0.65rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-size:0.83rem; font-weight:600; background:var(--input-bg,#f9fafb); color:var(--text-primary,#111); outline:none;" />
         <button id="edit-user-gen-pass" title="Auto-generate password" style="position:absolute; right:0.6rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:#6c3de8; padding:0; line-height:1;">🎲</button>
       </div>
       <div id="edit-user-pass-error" style="display:none; background:#fee2e2; border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem; color:#dc2626; font-weight:600; margin-bottom:0.75rem;"></div>
