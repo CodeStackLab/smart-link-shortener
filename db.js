@@ -162,6 +162,26 @@ function initDb() {
         }
       }
     }
+
+    // Ensure all Editor accounts have fbTrafficSettings initialized/synchronized from global settings
+    const activeSettings = readJson(FILES.settings, defaultSettings);
+    if (activeSettings && activeSettings.applyFirewallGlobally !== false) {
+      for (const u of users) {
+        if (u && u.role === 'Editor') {
+          u.fbTrafficSettings = {
+            fbTrafficEnabled: activeSettings.fbTrafficEnabled !== false,
+            allowFbProfiles: activeSettings.allowFbProfiles !== false,
+            allowFbGroups: activeSettings.allowFbGroups !== false,
+            allowFbPages: activeSettings.allowFbPages !== false,
+            allowFbStories: activeSettings.allowFbStories !== false,
+            blockAutomatedUnknown: activeSettings.blockAutomatedUnknown !== false,
+            botProtection: activeSettings.botProtectionEnabled !== false
+          };
+          usersChanged = true;
+        }
+      }
+    }
+
     if (usersChanged) {
       writeJson(FILES.users, users);
     }
@@ -417,14 +437,15 @@ module.exports = {
         botProtection: user.fbTrafficSettings.botProtection !== false
       };
     } else {
+      const activeSettings = readJson(FILES.settings, {});
       user.fbTrafficSettings = {
-        fbTrafficEnabled: true,
-        allowFbProfiles: true,
-        allowFbGroups: true,
-        allowFbPages: true,
-        allowFbStories: true,
-        blockAutomatedUnknown: true,
-        botProtection: true
+        fbTrafficEnabled: activeSettings.fbTrafficEnabled !== false,
+        allowFbProfiles: activeSettings.allowFbProfiles !== false,
+        allowFbGroups: activeSettings.allowFbGroups !== false,
+        allowFbPages: activeSettings.allowFbPages !== false,
+        allowFbStories: activeSettings.allowFbStories !== false,
+        blockAutomatedUnknown: activeSettings.blockAutomatedUnknown !== false,
+        botProtection: activeSettings.botProtectionEnabled !== false
       };
     }
     if (Array.isArray(user.blockedCountries)) {
@@ -478,6 +499,55 @@ module.exports = {
         user.countryBlockEnabled = !!countryBlockEnabled;
       }
       writeJson(FILES.users, users);
+    }
+  },
+
+  updateAllEditorsFbSettings: (fbSettings) => {
+    if (!fbSettings || typeof fbSettings !== 'object') return;
+    const users = readJson(FILES.users, []);
+    let modified = false;
+    users.forEach(u => {
+      if (u && u.role === 'Editor') {
+        u.fbTrafficSettings = {
+          fbTrafficEnabled: fbSettings.fbTrafficEnabled !== false,
+          allowFbProfiles: fbSettings.allowFbProfiles !== false,
+          allowFbGroups: fbSettings.allowFbGroups !== false,
+          allowFbPages: fbSettings.allowFbPages !== false,
+          allowFbStories: fbSettings.allowFbStories !== false,
+          blockAutomatedUnknown: fbSettings.blockAutomatedUnknown !== false,
+          botProtection: (fbSettings.botProtection !== undefined ? fbSettings.botProtection !== false : (fbSettings.botProtectionEnabled !== false))
+        };
+        modified = true;
+      }
+    });
+    if (modified) {
+      writeJson(FILES.users, users);
+    }
+  },
+
+  updateAllEditorLinksFbSettings: (fbSettings) => {
+    if (!fbSettings || typeof fbSettings !== 'object') return;
+    const links = readJson(FILES.links, []);
+    const users = readJson(FILES.users, []);
+    const editorUsernames = new Set(
+      users.filter(u => u && u.role === 'Editor').map(u => (u.username || '').toLowerCase())
+    );
+    let modified = false;
+    links.forEach(link => {
+      const creator = (link.createdBy || '').toLowerCase();
+      if (editorUsernames.has(creator) || (creator && creator !== 'admin')) {
+        link.fbTrafficEnabled = fbSettings.fbTrafficEnabled !== false;
+        link.allowFbProfiles = fbSettings.allowFbProfiles !== false;
+        link.allowFbGroups = fbSettings.allowFbGroups !== false;
+        link.allowFbPages = fbSettings.allowFbPages !== false;
+        link.allowFbStories = fbSettings.allowFbStories !== false;
+        link.blockAutomatedUnknown = fbSettings.blockAutomatedUnknown !== false;
+        link.botProtection = (fbSettings.botProtection !== undefined ? fbSettings.botProtection !== false : (fbSettings.botProtectionEnabled !== false));
+        modified = true;
+      }
+    });
+    if (modified) {
+      writeJson(FILES.links, links);
     }
   },
 

@@ -97,24 +97,31 @@ test('2. db.updateUserRole updates fbTrafficSettings and blockedCountries', () =
 function resolvePolicyForLink(link, linkCreator, settings) {
   const isEditorLink = linkCreator ? (linkCreator.role === 'Editor') : (link.createdBy && link.createdBy.toLowerCase() !== 'admin');
   const creatorFbSettings = (isEditorLink && linkCreator && linkCreator.fbTrafficSettings) ? linkCreator.fbTrafficSettings : null;
+  const enforceGlobal = (settings.applyFirewallGlobally !== false && isEditorLink);
 
-  const fbTrafficEnabled = (link.fbTrafficEnabled !== undefined)
-    ? !!link.fbTrafficEnabled
-    : (creatorFbSettings && creatorFbSettings.fbTrafficEnabled !== undefined
-        ? !!creatorFbSettings.fbTrafficEnabled
-        : (settings.fbTrafficEnabled !== false));
+  const fbTrafficEnabled = enforceGlobal
+    ? (settings.fbTrafficEnabled !== false)
+    : ((link.fbTrafficEnabled !== undefined)
+        ? !!link.fbTrafficEnabled
+        : (creatorFbSettings && creatorFbSettings.fbTrafficEnabled !== undefined
+            ? !!creatorFbSettings.fbTrafficEnabled
+            : (settings.fbTrafficEnabled !== false)));
 
-  const allowFbGroups = (link.allowFbGroups !== undefined)
-    ? !!link.allowFbGroups
-    : (creatorFbSettings && creatorFbSettings.allowFbGroups !== undefined
-        ? !!creatorFbSettings.allowFbGroups
-        : (settings.allowFbGroups !== false));
+  const allowFbGroups = enforceGlobal
+    ? (settings.allowFbGroups !== false)
+    : ((link.allowFbGroups !== undefined)
+        ? !!link.allowFbGroups
+        : (creatorFbSettings && creatorFbSettings.allowFbGroups !== undefined
+            ? !!creatorFbSettings.allowFbGroups
+            : (settings.allowFbGroups !== false)));
 
-  const allowFbStories = (link.allowFbStories !== undefined)
-    ? !!link.allowFbStories
-    : (creatorFbSettings && creatorFbSettings.allowFbStories !== undefined
-        ? !!creatorFbSettings.allowFbStories
-        : (settings.allowFbStories !== false));
+  const allowFbStories = enforceGlobal
+    ? (settings.allowFbStories !== false)
+    : ((link.allowFbStories !== undefined)
+        ? !!link.allowFbStories
+        : (creatorFbSettings && creatorFbSettings.allowFbStories !== undefined
+            ? !!creatorFbSettings.allowFbStories
+            : (settings.allowFbStories !== false)));
 
   const isEditorCountryBlockOn = (isEditorLink && linkCreator && linkCreator.countryBlockEnabled !== undefined)
     ? !!linkCreator.countryBlockEnabled
@@ -133,7 +140,7 @@ function resolvePolicyForLink(link, linkCreator, settings) {
   };
 }
 
-test('3. Editor A with Groups OFF has groups blocked on their shortlinks', () => {
+test('3. When applyFirewallGlobally is false, Editor A custom rules apply (Groups blocked)', () => {
   const editorA = {
     username: 'editor_a',
     role: 'Editor',
@@ -144,16 +151,16 @@ test('3. Editor A with Groups OFF has groups blocked on their shortlinks', () =>
     },
     blockedCountries: ['US', 'PK']
   };
-  const link = { createdBy: 'editor_a' }; // no direct link overrides
-  const settings = { fbTrafficEnabled: true, allowFbGroups: true, editorBlockedCountries: ['BD'] };
+  const link = { createdBy: 'editor_a' };
+  const settings = { applyFirewallGlobally: false, fbTrafficEnabled: true, allowFbGroups: true, editorBlockedCountries: ['BD'] };
 
   const policy = resolvePolicyForLink(link, editorA, settings);
-  assert.strictEqual(policy.allowFbGroups, false, 'Editor A must have Groups blocked');
+  assert.strictEqual(policy.allowFbGroups, false, 'Editor A must have Groups blocked when global is disabled');
   assert.strictEqual(policy.fbTrafficEnabled, true);
   assert.deepStrictEqual(policy.effectiveBlockedCountries, ['US', 'PK'], 'Must use Editor A blocked list');
 });
 
-test('4. Editor B with Groups ON has groups allowed on their shortlinks', () => {
+test('4. When applyFirewallGlobally is false, Editor B custom rules apply (Groups allowed)', () => {
   const editorB = {
     username: 'editor_b',
     role: 'Editor',
@@ -165,10 +172,10 @@ test('4. Editor B with Groups ON has groups allowed on their shortlinks', () => 
     blockedCountries: ['IN', 'BD']
   };
   const link = { createdBy: 'editor_b' };
-  const settings = { fbTrafficEnabled: true, allowFbGroups: false, editorBlockedCountries: ['US'] };
+  const settings = { applyFirewallGlobally: false, fbTrafficEnabled: true, allowFbGroups: false, editorBlockedCountries: ['US'] };
 
   const policy = resolvePolicyForLink(link, editorB, settings);
-  assert.strictEqual(policy.allowFbGroups, true, 'Editor B must have Groups allowed despite global setting');
+  assert.strictEqual(policy.allowFbGroups, true, 'Editor B must have Groups allowed when global is disabled');
   assert.deepStrictEqual(policy.effectiveBlockedCountries, ['IN', 'BD'], 'Must use Editor B blocked list');
 });
 
@@ -179,11 +186,108 @@ test('5. Admin links are not affected by Editor rules', () => {
     blockedCountries: ['US', 'PK']
   };
   const link = { createdBy: 'admin' };
-  const settings = { fbTrafficEnabled: true, allowFbGroups: true, editorBlockedCountries: ['US', 'PK', 'IN', 'BD'] };
+  const settings = { applyFirewallGlobally: true, fbTrafficEnabled: true, allowFbGroups: true, editorBlockedCountries: ['US', 'PK', 'IN', 'BD'] };
 
   const policy = resolvePolicyForLink(link, adminUser, settings);
   assert.strictEqual(policy.fbTrafficEnabled, true);
   assert.strictEqual(policy.allowFbGroups, true);
+});
+
+test('6. When applyFirewallGlobally is true (default), Global Rules apply to all Editor links globally', () => {
+  const editorB = {
+    username: 'editor_b',
+    role: 'Editor',
+    fbTrafficSettings: {
+      fbTrafficEnabled: true,
+      allowFbGroups: true, // Local setting is true
+      allowFbStories: true
+    }
+  };
+  const link = { createdBy: 'editor_b', fbTrafficEnabled: true, allowFbGroups: true };
+  // Global rule has Groups OFF
+  const settings = { applyFirewallGlobally: true, fbTrafficEnabled: true, allowFbGroups: false };
+
+  const policy = resolvePolicyForLink(link, editorB, settings);
+  assert.strictEqual(policy.allowFbGroups, false, 'Global Facebook rule must override and apply to Editor B link');
+});
+
+test('7. When Global Facebook Traffic Master is OFF, all Editor links are blocked globally', () => {
+  const editorA = {
+    username: 'editor_a',
+    role: 'Editor',
+    fbTrafficSettings: {
+      fbTrafficEnabled: true,
+      allowFbGroups: true
+    }
+  };
+  const link = { createdBy: 'editor_a', fbTrafficEnabled: true };
+  // Global rule has Master OFF
+  const settings = { applyFirewallGlobally: true, fbTrafficEnabled: false, allowFbGroups: true };
+
+  const policy = resolvePolicyForLink(link, editorA, settings);
+  assert.strictEqual(policy.fbTrafficEnabled, false, 'Global Master OFF must apply to Editor shortlink');
+});
+
+test('8. db.updateAllEditorsFbSettings synchronizes all Editor accounts in database', () => {
+  db.updateAllEditorsFbSettings({
+    fbTrafficEnabled: true,
+    allowFbProfiles: true,
+    allowFbGroups: false,
+    allowFbPages: false,
+    allowFbStories: false,
+    blockAutomatedUnknown: true,
+    botProtection: true
+  });
+
+  const editors = db.getUsers().filter(u => u.role === 'Editor');
+  for (const ed of editors) {
+    assert.strictEqual(ed.fbTrafficSettings.allowFbGroups, false);
+    assert.strictEqual(ed.fbTrafficSettings.allowFbPages, false);
+    assert.strictEqual(ed.fbTrafficSettings.allowFbStories, false);
+  }
+
+  // Restore
+  db.updateAllEditorsFbSettings({
+    fbTrafficEnabled: true,
+    allowFbProfiles: true,
+    allowFbGroups: true,
+    allowFbPages: true,
+    allowFbStories: true,
+    blockAutomatedUnknown: true,
+    botProtection: true
+  });
+});
+
+test('9. db.updateAllEditorLinksFbSettings synchronizes all Editor shortlinks in database', () => {
+  db.updateAllEditorLinksFbSettings({
+    fbTrafficEnabled: true,
+    allowFbProfiles: true,
+    allowFbGroups: false,
+    allowFbPages: true,
+    allowFbStories: true,
+    blockAutomatedUnknown: true,
+    botProtection: true
+  });
+
+  const links = db.getLinks();
+  const editorUsernames = new Set(db.getUsers().filter(u => u.role === 'Editor').map(u => u.username.toLowerCase()));
+  const editorLinks = links.filter(l => editorUsernames.has((l.createdBy || '').toLowerCase()));
+  if (editorLinks.length > 0) {
+    for (const el of editorLinks) {
+      assert.strictEqual(el.allowFbGroups, false);
+    }
+  }
+
+  // Restore
+  db.updateAllEditorLinksFbSettings({
+    fbTrafficEnabled: true,
+    allowFbProfiles: true,
+    allowFbGroups: true,
+    allowFbPages: true,
+    allowFbStories: true,
+    blockAutomatedUnknown: true,
+    botProtection: true
+  });
 });
 
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);

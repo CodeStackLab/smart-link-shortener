@@ -2546,7 +2546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert('🎯 Global Facebook Traffic & AdX Rules saved successfully!');
+          showAlert('🎯 Global Facebook Traffic & AdX Rules saved and applied to all Editors globally!');
           loadShieldSettings();
         } else {
           showAlert(data.error || 'Failed to save global Facebook rules', true);
