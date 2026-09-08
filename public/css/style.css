@@ -3302,6 +3302,26 @@ body.is-editor #traffic-rules-modal {
   display: none !important;
 }
 
+/* ── Google Authenticator 2FA Manager: Single-line Title ── */
+#two-factor-auth-card .section-title {
+  white-space: nowrap !important;
+  font-size: clamp(0.78rem, 3.8vw, 1.05rem) !important;
+  letter-spacing: -0.015em !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+}
+
+@media (max-width: 480px) {
+  #two-factor-auth-card {
+    padding: 1.25rem 1rem !important;
+  }
+  #two-factor-auth-card .section-title {
+    font-size: clamp(0.74rem, 3.7vw, 0.95rem) !important;
+    white-space: nowrap !important;
+  }
+}
+
 
 
 
