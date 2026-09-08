@@ -290,5 +290,18 @@ test('9. db.updateAllEditorLinksFbSettings synchronizes all Editor shortlinks in
   });
 });
 
+test('10. db.updateAllEditorsBlockedCountries synchronizes all Editor accounts blocked countries in database', () => {
+  db.updateAllEditorsBlockedCountries(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW', 'ID'], true);
+
+  const editors = db.getUsers().filter(u => u.role === 'Editor');
+  for (const ed of editors) {
+    assert(ed.blockedCountries.includes('ID'), 'Editor must have ID added');
+    assert.strictEqual(ed.countryBlockEnabled, true);
+  }
+
+  // Restore
+  db.updateAllEditorsBlockedCountries(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'], true);
+});
+
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);
 if (passedTests !== totalTests) process.exit(1);

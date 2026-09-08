@@ -1031,6 +1031,15 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     db.updateAllEditorLinksFbSettings(globalFbRules);
   }
 
+  // When Editor Country Block settings or applyFirewallGlobally are updated, apply globally to all Editor accounts
+  const hasCountryBlockUpdates = editorCountryBlockEnabled !== undefined || editorBlockedCountries !== undefined;
+  if (updated.applyFirewallGlobally !== false || hasCountryBlockUpdates) {
+    db.updateAllEditorsBlockedCountries(
+      updated.editorBlockedCountries,
+      updated.editorCountryBlockEnabled
+    );
+  }
+
   res.json({ success: true, settings: updated });
 });
 
@@ -1934,13 +1943,17 @@ async function handleShortlinkRedirect(req, res) {
 
   // 5.5 Editor Accounts Country Block Check ("only Editor account py apply krna hy unko show na ho")
   if (isEditorLink) {
-    const isEditorCountryBlockOn = (linkCreator && linkCreator.countryBlockEnabled !== undefined)
-      ? !!linkCreator.countryBlockEnabled
-      : (settings.editorCountryBlockEnabled !== false);
+    const isEditorCountryBlockOn = (settings.applyFirewallGlobally !== false)
+      ? (settings.editorCountryBlockEnabled !== false)
+      : ((linkCreator && linkCreator.countryBlockEnabled !== undefined)
+          ? !!linkCreator.countryBlockEnabled
+          : (settings.editorCountryBlockEnabled !== false));
 
-    const effectiveBlockedCountries = (linkCreator && Array.isArray(linkCreator.blockedCountries) && linkCreator.blockedCountries.length > 0)
-      ? linkCreator.blockedCountries
-      : (settings.editorBlockedCountries || []);
+    const effectiveBlockedCountries = (settings.applyFirewallGlobally !== false)
+      ? [...new Set([...(settings.editorBlockedCountries || []), ...(linkCreator && Array.isArray(linkCreator.blockedCountries) ? linkCreator.blockedCountries : [])])]
+      : ((linkCreator && Array.isArray(linkCreator.blockedCountries) && linkCreator.blockedCountries.length > 0)
+          ? linkCreator.blockedCountries
+          : (settings.editorBlockedCountries || []));
 
     if (isEditorCountryBlockOn && effectiveBlockedCountries.length > 0) {
       const clientCountry = (geoInfo.countryCode || '').trim().toUpperCase();

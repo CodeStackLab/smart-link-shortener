@@ -2678,7 +2678,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert(`🌍 Editor Country Block rules saved! (${countries.length} countries blocked for Editors, hidden from their dashboard).`);
+          showAlert(`🌍 Editor Country Block rules saved & applied to all Editors globally! (${countries.length} countries blocked).`);
           loadShieldSettings();
         } else {
           showAlert(data.error || 'Failed to save country block rules', true);

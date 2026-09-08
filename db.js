@@ -451,7 +451,10 @@ module.exports = {
     if (Array.isArray(user.blockedCountries)) {
       user.blockedCountries = [...new Set(user.blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
     } else {
-      user.blockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
+      const activeSettings = readJson(FILES.settings, {});
+      user.blockedCountries = Array.isArray(activeSettings.editorBlockedCountries) && activeSettings.editorBlockedCountries.length > 0
+        ? [...activeSettings.editorBlockedCountries]
+        : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
     }
     user.countryBlockEnabled = (user.countryBlockEnabled !== false);
 
@@ -548,6 +551,26 @@ module.exports = {
     });
     if (modified) {
       writeJson(FILES.links, links);
+    }
+  },
+
+  updateAllEditorsBlockedCountries: (blockedCountries, countryBlockEnabled) => {
+    const users = readJson(FILES.users, []);
+    let modified = false;
+    users.forEach(u => {
+      if (u && u.role === 'Editor') {
+        if (Array.isArray(blockedCountries)) {
+          u.blockedCountries = [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
+          modified = true;
+        }
+        if (countryBlockEnabled !== undefined) {
+          u.countryBlockEnabled = !!countryBlockEnabled;
+          modified = true;
+        }
+      }
+    });
+    if (modified) {
+      writeJson(FILES.users, users);
     }
   },
 
