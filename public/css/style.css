@@ -2309,11 +2309,11 @@ table td:nth-child(3)  /* Fallback URL */ {
     content: attr(data-label) !important;
     font-weight: 800 !important;
     color: var(--text-secondary) !important;
-    font-size: 0.85rem !important;
+    font-size: 0.78rem !important;
     text-transform: uppercase !important;
     text-align: left !important;
     flex-shrink: 0 !important;
-    letter-spacing: 0.04em !important;
+    letter-spacing: 0.03em !important;
   }
 
   /* Align values properly on the right */
@@ -2492,6 +2492,31 @@ table td:nth-child(3)  /* Fallback URL */ {
     white-space: nowrap !important;
     font-size: 0.75rem !important;
     padding: 0.28rem 0.65rem !important;
+  }
+
+  /* Status / Action & Risk Score mobile row alignment — prevents badge overflowing card edge */
+  td[data-label="Status / Action"],
+  td[data-label="Risk Score"] {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  td[data-label="Status / Action"] .badge,
+  td[data-label="Risk Score"] .badge {
+    max-width: 62% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 0.72rem !important;
+    padding: 0.22rem 0.52rem !important;
+    flex-shrink: 1 !important;
+    box-sizing: border-box !important;
+    text-align: right !important;
   }
 
   /* Referrer & IP / ISP same-line row alignment on mobile */

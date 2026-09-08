@@ -1122,7 +1122,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
       botProtection: updated.botProtectionEnabled !== false
     };
     db.updateAllEditorsFbSettings(globalFbRules);
-    db.updateAllEditorLinksFbSettings(globalFbRules, true);
+    db.updateAllEditorLinksFbSettings(globalFbRules);
   }
 
   // When Editor Country Block settings or applyFirewallGlobally are updated, apply globally to all Editor accounts
@@ -2072,8 +2072,8 @@ async function handleShortlinkRedirect(req, res) {
           : (settings.editorCountryBlockEnabled !== false));
 
     const effectiveBlockedCountries = (settings.applyFirewallGlobally !== false)
-      ? [...new Set([...(settings.editorBlockedCountries || []), ...(linkCreator && Array.isArray(linkCreator.blockedCountries) ? linkCreator.blockedCountries : [])])]
-      : ((linkCreator && Array.isArray(linkCreator.blockedCountries) && linkCreator.blockedCountries.length > 0)
+      ? (settings.editorBlockedCountries || [])
+      : ((linkCreator && Array.isArray(linkCreator.blockedCountries))
           ? linkCreator.blockedCountries
           : (settings.editorBlockedCountries || []));
 

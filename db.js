@@ -102,6 +102,7 @@ function initDb() {
     spikeWindowMinutes: 5,
     spikeThresholdClicks: 200,
     allowlistedIps: [],
+    defaultFallbackUrl: 'https://www.google.com/',
     // Facebook Traffic & AdX Shield Controls
     fbTrafficEnabled: true,
     allowFbProfiles: true,
@@ -125,40 +126,24 @@ function initDb() {
         changed = true;
       }
     }
-    // Mandatory high-risk countries that MUST always be blocked for Editors
-    const mandatoryBlocked = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
-    if (!Array.isArray(settings.editorBlockedCountries) || settings.editorBlockedCountries.length === 0) {
-      settings.editorBlockedCountries = [...mandatoryBlocked];
+    if (!Array.isArray(settings.editorBlockedCountries)) {
+      settings.editorBlockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
       changed = true;
-    } else {
-      let added = false;
-      for (const c of mandatoryBlocked) {
-        if (!settings.editorBlockedCountries.includes(c)) {
-          settings.editorBlockedCountries.push(c);
-          added = true;
-        }
-      }
-      if (added) changed = true;
     }
     if (changed) {
       writeJson(FILES.settings, settings);
     }
 
-    // Ensure all Editor accounts also have mandatory countries active in their blocked list
+    // Initialize blockedCountries array for Editor accounts if missing
     const users = readJson(FILES.users, []);
     let usersChanged = false;
     for (const u of users) {
       if (u && u.role === 'Editor') {
-        if (!Array.isArray(u.blockedCountries) || u.blockedCountries.length === 0) {
-          u.blockedCountries = [...mandatoryBlocked];
+        if (!Array.isArray(u.blockedCountries)) {
+          u.blockedCountries = Array.isArray(settings.editorBlockedCountries)
+            ? [...settings.editorBlockedCountries]
+            : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
           usersChanged = true;
-        } else {
-          for (const c of mandatoryBlocked) {
-            if (!u.blockedCountries.includes(c)) {
-              u.blockedCountries.push(c);
-              usersChanged = true;
-            }
-          }
         }
       }
     }
@@ -265,53 +250,24 @@ module.exports = {
       allowFbPages: true,
       allowFbStories: true,
       blockAutomatedUnknown: true,
+      defaultFallbackUrl: 'https://www.google.com/',
       editorCountryBlockEnabled: true,
       editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
     });
-    const mandatoryBlocked = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
-    if (!Array.isArray(s.editorBlockedCountries) || s.editorBlockedCountries.length === 0) {
-      s.editorBlockedCountries = [...mandatoryBlocked];
-    } else {
-      for (const c of mandatoryBlocked) {
-        if (!s.editorBlockedCountries.includes(c)) {
-          s.editorBlockedCountries.push(c);
-        }
-      }
+    if (!Array.isArray(s.editorBlockedCountries)) {
+      s.editorBlockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
     }
     return s;
   },
   updateSettings: (newFields) => {
-    const current = readJson(FILES.settings, {
-      rateLimitWindowSeconds: 60,
-      rateLimitMaxRequests: 30,
-      webhookUrl: '',
-      botProtectionEnabled: true,
-      vpnProtectionEnabled: true,
-      botLimitClicks: 100,
-      botLimitMinutes: 1,
-      vpnLimitClicks: 500,
-      vpnLimitMinutes: 90,
-      blockSuspiciousCountries: false,
-      blockKnownScrapers: false,
-      honeypotProtectionEnabled: false,
-      restrictEditorDomains: true,
-      allowedTargetDomains: [],
-      maskEditorUrls: true,
-      applyFirewallGlobally: true,
-      tempBlockDurationMinutes: 30,
-      spikeWindowMinutes: 5,
-      spikeThresholdClicks: 200,
-      allowlistedIps: [],
-      fbTrafficEnabled: true,
-      allowFbProfiles: true,
-      allowFbGroups: true,
-      allowFbPages: true,
-      allowFbStories: true,
-      blockAutomatedUnknown: true,
-      editorCountryBlockEnabled: true,
-      editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
-    });
-    const updated = { ...current, ...newFields };
+    const current = module.exports.getSettings();
+    const filtered = {};
+    for (const [k, v] of Object.entries(newFields || {})) {
+      if (v !== undefined) {
+        filtered[k] = v;
+      }
+    }
+    const updated = { ...current, ...filtered };
     writeJson(FILES.settings, updated);
     return updated;
   },

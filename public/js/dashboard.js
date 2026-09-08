@@ -2141,7 +2141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (sub === 'story') subText = ' (Story)';
         statusBadge = `<span class="badge badge-success">✅ Organic${subText}</span>`;
       } else if (st === 'EDITOR_COUNTRY_BLOCKED') {
-        statusBadge = `<span class="badge badge-danger" style="background:rgba(239,68,68,0.15); color:#dc2626; border:1px solid rgba(239,68,68,0.35); font-weight:800;">🌍 Country Block (${log.countryCode || ''})</span>`;
+        statusBadge = `<span class="badge badge-danger" style="background:rgba(239,68,68,0.15); color:#dc2626; border:1px solid rgba(239,68,68,0.35); font-weight:800; font-size:0.75rem; padding:0.22rem 0.52rem;" title="Country Block (${log.countryCode || ''})">🌍 Block (${log.countryCode || ''})</span>`;
       } else if (st === 'FB_TRAFFIC_DISABLED') {
         statusBadge = `<span class="badge badge-danger">🔴 FB Off</span>`;
       } else if (st === 'FB_GROUP_BLOCKED') {
@@ -2603,11 +2603,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (editorCountryBlockCb) {
         editorCountryBlockCb.checked = settings.editorCountryBlockEnabled !== false;
       }
-      const mandatoryCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
-      const loadedCountries = Array.isArray(settings.editorBlockedCountries)
-        ? settings.editorBlockedCountries.map(c => String(c).toUpperCase())
-        : [];
-      activeEditorBlockedCountries = new Set([...loadedCountries, ...mandatoryCountries]);
+      if (Array.isArray(settings.editorBlockedCountries)) {
+        activeEditorBlockedCountries = new Set(settings.editorBlockedCountries.map(c => String(c).toUpperCase()));
+      } else {
+        activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+      }
       renderEditorBlockedCountriesTags();
 
       toggleSettingsGroup('bot-settings-group', botProtectionCb ? botProtectionCb.checked : false);
@@ -2780,7 +2780,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─────────────────────────────────────────────────────────────
   // EDITOR ACCOUNTS COUNTRY BLOCK SYSTEM (ADMIN ONLY)
   // ─────────────────────────────────────────────────────────────
-  let activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+  let activeEditorBlockedCountries = new Set();
 
   function renderEditorBlockedCountriesTags() {
     const container = document.getElementById('editor-blocked-countries-tags');
@@ -3476,18 +3476,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('edit-user-country-block-enabled')) {
       document.getElementById('edit-user-country-block-enabled').checked = (user.countryBlockEnabled !== false);
     }
-    const userBlockedList = Array.isArray(user.blockedCountries)
-      ? user.blockedCountries.map(c => String(c).toUpperCase())
-      : [];
-    const mandatoryCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
-    editUserBlockedCountries = new Set([...userBlockedList, ...mandatoryCountries]);
+    if (Array.isArray(user.blockedCountries)) {
+      editUserBlockedCountries = new Set(user.blockedCountries.map(c => String(c).toUpperCase()));
+    } else {
+      editUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+    }
     renderEditUserBlockedCountriesTags();
 
     if (editUserModal) { editUserModal.style.display = 'flex'; }
   };
 
   // ── Edit User Country Blocking Management ──
-  let editUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+  let editUserBlockedCountries = new Set();
 
   function renderEditUserBlockedCountriesTags() {
     const container = document.getElementById('edit-user-blocked-tags');
