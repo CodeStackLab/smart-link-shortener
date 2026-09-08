@@ -2247,12 +2247,74 @@ table td {
   max-width: 250px;
   word-break: break-all;
 }
-table td:nth-child(2), /* Target URL */
-table td:nth-child(3)  /* Fallback URL */ {
-  max-width: 260px;
-  white-space: normal !important;
-  word-wrap: break-word;
-  word-break: break-all;
+/* ── Blocked Countries Pills Component (Matches Exact Mockup) ── */
+.blocked-countries-wrap {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+}
+
+.blocked-country-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  background: #ffffff !important;
+  border: 1.5px solid #fecaca !important;
+  color: #111827 !important;
+  padding: 0.35rem 0.72rem !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  font-size: 0.84rem !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.08) !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.blocked-country-pill:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(239, 68, 68, 0.15) !important;
+}
+
+.blocked-country-pill .country-flag {
+  font-size: 1.05rem !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+}
+
+.blocked-country-pill .country-code {
+  font-weight: 800 !important;
+  color: #111827 !important;
+  font-family: 'Outfit', sans-serif !important;
+}
+
+.blocked-country-pill-none {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  background: #ecfdf5 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  color: #059669 !important;
+  padding: 0.32rem 0.65rem !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  font-size: 0.78rem !important;
+}
+
+[data-theme="dark"] .blocked-country-pill {
+  background: #1e293b !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .blocked-country-pill .country-code {
+  color: #f8fafc !important;
 }
 
 @media (max-width: 768px) {
@@ -2494,30 +2556,57 @@ table td:nth-child(3)  /* Fallback URL */ {
     padding: 0.28rem 0.65rem !important;
   }
 
-  /* Blocked Countries badges mobile styling — label LEFT, badge RIGHT, same row */
+  /* Blocked Countries mobile card layout — Label on TOP, chips BELOW ("nechay") in horizontal grid */
   td[data-label="Blocked Countries"] {
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 0.5rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
     text-align: left !important;
-    flex-wrap: nowrap !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    gap: 0.4rem !important;
+    padding-top: 0.6rem !important;
+    padding-bottom: 0.6rem !important;
   }
-  td[data-label="Blocked Countries"] > div {
+  td[data-label="Blocked Countries"]::before {
+    margin-bottom: 0.25rem !important;
+    display: block !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  td[data-label="Blocked Countries"] > * {
+    text-align: left !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  td[data-label="Blocked Countries"] .blocked-countries-wrap {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: wrap !important;
-    gap: 0.25rem !important;
+    gap: 0.45rem !important;
     align-items: center !important;
-    justify-content: flex-end !important;
-    flex-shrink: 1 !important;
-    max-width: 65% !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
   }
-  td[data-label="Blocked Countries"] .badge {
+  td[data-label="Blocked Countries"] .blocked-country-chip {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    background: #ffffff !important;
+    border: 1.5px solid #d1d5db !important;
+    color: #1f2937 !important;
+    padding: 0.32rem 0.65rem !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+    font-size: 0.8rem !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     flex-shrink: 0 !important;
-    white-space: nowrap !important;
-    font-size: 0.75rem !important;
-    padding: 0.22rem 0.45rem !important;
+  }
+
+  [data-theme="dark"] td[data-label="Blocked Countries"] .blocked-country-chip {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+    color: #f1f5f9 !important;
   }
 
   /* Status / Action & Risk Score mobile row alignment — prevents badge overflowing card edge */

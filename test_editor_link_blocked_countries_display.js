@@ -24,8 +24,8 @@ test('1. admin.html includes Blocked Countries th header and updated colspan=9',
   const html = fs.readFileSync('./public/admin.html', 'utf8');
   assert(html.includes('<th id="th-blocked-countries">Blocked Countries</th>'), 'Must have th-blocked-countries');
   assert(html.includes('colspan="9"'), 'Must have colspan=9 for links-tbody');
-  assert(html.includes('dashboard.js?v=61'), 'Must have dashboard.js?v=61 cache busting');
-  assert(html.includes('style.css?v=28'), 'Must have style.css?v=28 cache busting');
+  assert(html.includes('dashboard.js?v=62'), 'Must have dashboard.js?v=62 cache busting');
+  assert(html.includes('style.css?v=29'), 'Must have style.css?v=29 cache busting');
 });
 
 test('2. dashboard.js renders col-blocked-countries with flag emojis and country badges', () => {
@@ -33,12 +33,13 @@ test('2. dashboard.js renders col-blocked-countries with flag emojis and country
   assert(js.includes('col-blocked-countries'), 'Must render col-blocked-countries cell');
   assert(js.includes('data-label="Blocked Countries"'), 'Must have data-label="Blocked Countries"');
   assert(js.includes('getCountryFlagEmoji'), 'Must have getCountryFlagEmoji helper');
-  assert(js.includes('🌐 None'), 'Must have None fallback when no countries blocked');
+  assert(js.includes('blocked-country-pill'), 'Must use blocked-country-pill class');
 });
 
 test('3. style.css includes responsive mobile styling for td[data-label="Blocked Countries"]', () => {
   const css = fs.readFileSync('./public/css/style.css', 'utf8');
   assert(css.includes('td[data-label="Blocked Countries"]'), 'Must have td[data-label="Blocked Countries"] styles');
+  assert(css.includes('.blocked-country-pill'), 'Must have .blocked-country-pill styles matching mockup');
 });
 
 test('4. server.js enriches editor links in /api/admin/links with creator blockedCountries', () => {

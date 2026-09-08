@@ -1132,18 +1132,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const isBlockOn = link.countryBlockEnabled !== false && blockedList.length > 0;
 
       const blockedCountriesBadges = isBlockOn ? `
-        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; align-items: center;">
+        <div class="blocked-countries-wrap">
           ${blockedList.map(c => `
-            <span class="badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; font-weight:800; font-size:0.75rem; padding:0.22rem 0.45rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">
-              <span>${getCountryFlagEmoji(c)}</span>
-              <span>${c}</span>
-            </span>
+            <div class="blocked-country-pill">
+              <span class="country-flag">${getCountryFlagEmoji(c)}</span>
+              <span class="country-code">${c}</span>
+            </div>
           `).join('')}
         </div>
       ` : `
-        <span class="badge" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; font-weight:800; font-size:0.72rem; padding:0.22rem 0.5rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">
-          <span>🌐 None</span>
-        </span>
+        <div class="blocked-countries-wrap">
+          <div class="blocked-country-pill-none">
+            <span>🌐</span>
+            <span>None (All Allowed)</span>
+          </div>
+        </div>
       `;
 
       const actionsHtml = canManage ? `
