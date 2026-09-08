@@ -991,6 +991,15 @@
           <input type="hidden" id="link-code" value="">
           <!-- Hidden Domain (Backend functionality preserved) -->
           <input type="hidden" id="link-domain" value="">
+
+          <div class="form-group" style="margin-top:0.25rem;">
+            <label for="fallback-url" style="font-weight:800; text-transform:uppercase; font-size:0.825rem; letter-spacing:0.04em; display:flex; align-items:center; gap:0.35rem;">
+              <span>🔀</span>
+              <span>Fallback Redirect</span>
+            </label>
+            <input type="url" id="fallback-url" class="form-control" placeholder="https://www.google.com/" value="https://www.google.com/" autocomplete="url" inputmode="url" spellcheck="false" style="font-size:0.85rem; padding:0.65rem 0.85rem; border-radius:10px; border:1.5px solid var(--border,#e5e7eb); font-weight:600;">
+            <small style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem; display:block;">Non-genuine, proxy/VPN, country-blocked, or filtered visitors will be redirected to this Fallback URL.</small>
+          </div>
         </div>
 
         <!-- Row 2: traffic sources -->
@@ -2605,7 +2614,7 @@
       <div style="background:var(--input-bg,#f8fafc); border:1.5px solid rgba(24,119,242,0.35); border-radius:12px; padding:0.75rem 0.85rem;">
         <label style="font-weight:800; font-size:0.825rem; color:#1877f2; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.03em;">
           <span>🔀</span>
-          <span>Fallback Redirect URL (Customize):</span>
+          <span>Fallback Redirect:</span>
         </label>
         <input type="url" id="modal-rule-fallback-url" class="form-control" placeholder="https://www.google.com/" style="font-size:0.85rem; padding:0.6rem 0.8rem; border-radius:8px; border:1.5px solid var(--border,#e2e8f0); background:#fff; font-weight:600; width:100%; box-sizing:border-box;">
         <small style="font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem; display:block;">Traffic blocked by Facebook rules, proxies, or firewalls will be redirected to this Fallback URL.</small>

@@ -147,22 +147,18 @@ test('5. Fallback URL cleanly defaults to google.com when none is provided', () 
 // ─────────────────────────────────────────────────────────────
 // 6. UI Check: Fallback input removed from create-link-form & added to tab-settings
 // ─────────────────────────────────────────────────────────────
-test('6. Fallback input removed from create link form and present in Settings tab', () => {
+test('6. Fallback input in create link form has clean label Fallback Redirect with no (CUSTOMIZE)', () => {
   const fs = require('fs');
   const html = fs.readFileSync('./public/admin.html', 'utf8');
 
-  // Verify it is NOT in the create link form
+  // Verify create link form has Fallback Redirect and does NOT have (CUSTOMIZE)
   const createFormMatch = html.match(/<form id="create-link-form"[\s\S]*?<\/form>/);
   assert.ok(createFormMatch, 'create-link-form must exist');
-  assert.strictEqual(
-    createFormMatch[0].includes('FALLBACK REDIRECT URL (CUSTOMIZE)'),
-    false,
-    'Create Link form must NOT contain FALLBACK REDIRECT URL'
-  );
+  assert.ok(createFormMatch[0].includes('Fallback Redirect'), 'Must have Fallback Redirect label');
+  assert.strictEqual(createFormMatch[0].toLowerCase().includes('(customize)'), false, 'Must NOT contain (CUSTOMIZE)');
+  assert.strictEqual(createFormMatch[0].includes('FALLBACK REDIRECT URL'), false, 'Old label must be removed');
 
-  // Verify it IS in tab-settings
-  const tabSettingsMatch = html.match(/<div id="tab-settings"[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/);
-  assert.ok(tabSettingsMatch, 'tab-settings must exist');
+  // Verify Settings tab has default-fallback-url-card
   assert.ok(
     html.includes('id="default-fallback-url-card"'),
     'Settings tab must have default-fallback-url-card'
@@ -175,6 +171,12 @@ test('6. Fallback input removed from create link form and present in Settings ta
     html.includes('id="btn-save-default-fallback"'),
     'Settings tab must have btn-save-default-fallback button'
   );
+
+  // Verify Rules modal has clean Fallback Redirect: without (Customize)
+  const rulesModalMatch = html.match(/<div id="traffic-rules-modal"[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/);
+  if (rulesModalMatch) {
+    assert.strictEqual(rulesModalMatch[0].toLowerCase().includes('(customize)'), false, 'Rules modal must NOT contain (Customize)');
+  }
 });
 
 // ─────────────────────────────────────────────────────────────

@@ -2560,6 +2560,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fallbackSettingInput) {
         fallbackSettingInput.value = settings.defaultFallbackUrl || 'https://www.google.com/';
       }
+      const createFallbackInput = document.getElementById('fallback-url');
+      if (createFallbackInput && (!createFallbackInput.value || createFallbackInput.value === 'https://www.google.com/')) {
+        createFallbackInput.value = settings.defaultFallbackUrl || 'https://www.google.com/';
+      }
 
       // Populate Global Facebook Rules
       const globFbTraffic = document.getElementById('glob-fb-traffic-enabled');
