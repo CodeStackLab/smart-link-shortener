@@ -1423,6 +1423,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setChecked('modal-rule-fb-automated', resolveRule(link.blockAutomatedUnknown, sysSettings.blockAutomatedUnknown));
     setChecked('modal-rule-bot-protection', resolveRule(link.botProtection, sysSettings.botProtectionEnabled));
 
+    const fallbackEl = document.getElementById('modal-rule-fallback-url');
+    if (fallbackEl) {
+      fallbackEl.value = link.fallbackUrl || 'https://www.google.com/';
+    }
+
     const modal = document.getElementById('traffic-rules-modal');
     if (modal) modal.style.display = 'flex';
   };
@@ -1442,7 +1447,10 @@ document.addEventListener('DOMContentLoaded', () => {
       saveBtn.textContent = '⏳ Saving...';
     }
 
+    const fallbackInputVal = document.getElementById('modal-rule-fallback-url')?.value.trim();
+
     const payload = {
+      fallbackUrl: fallbackInputVal || 'https://www.google.com/',
       fbTrafficEnabled: !!document.getElementById('modal-rule-fb-master')?.checked,
       allowFbProfiles: !!document.getElementById('modal-rule-fb-profiles')?.checked,
       allowFbGroups: !!document.getElementById('modal-rule-fb-groups')?.checked,
@@ -1703,6 +1711,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const shortUrl = `${location.origin}/s/${generatedCode}`;
           
           createForm.reset();
+          const fbInputReset = document.getElementById('fallback-url');
+          if (fbInputReset) fbInputReset.value = 'https://www.google.com/';
           resetImageUpload();
           customDomainsList = [];
           renderDomainTags();

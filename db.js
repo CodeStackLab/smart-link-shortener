@@ -239,6 +239,7 @@ module.exports = {
       rateLimitWindowSeconds: 60,
       rateLimitMaxRequests: 30,
       webhookUrl: '',
+      defaultFallbackUrl: 'https://www.google.com/',
       botProtectionEnabled: true,
       vpnProtectionEnabled: true,
       botLimitClicks: 100,
