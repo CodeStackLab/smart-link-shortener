@@ -260,8 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isInitial) {
           loadLinks();
-          loadUsers();
-          loadShieldSettings();
+          if (isSuperAdminUser()) {
+            loadUsers();
+            loadShieldSettings();
+          }
         }
       })
       .catch(() => {
@@ -457,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'domains', tabId: 'tab-domains', adminOnly: false },
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
       { key: 'analytics', tabId: 'tab-analytics', adminOnly: false },
-      { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
+      { key: 'firewall', tabId: 'tab-firewall', adminOnly: true },
       { key: 'settings', tabId: 'tab-settings', adminOnly: false }
     ];
 
@@ -544,6 +546,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const settingsContent = document.getElementById('tab-settings');
       if (settingsContent && settingsContent.style.display !== 'none') {
         settingsContent.style.display = 'none';
+        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
+        if (defaultLinksTab) defaultLinksTab.click();
+      }
+    }
+
+    // If non-admin user is currently on Firewall tab, switch back to Links tab
+    if (!isFullAdmin) {
+      const firewallContent = document.getElementById('tab-firewall');
+      const activeFirewallTab = document.querySelector('.tab-btn.active[data-tab="tab-firewall"]');
+      const activeMobileFirewall = document.querySelector('.mobile-nav-item.active[data-tab="tab-firewall"]');
+      if (activeFirewallTab || activeMobileFirewall || (firewallContent && firewallContent.style.display !== 'none')) {
+        if (activeFirewallTab) activeFirewallTab.classList.remove('active');
+        if (activeMobileFirewall) activeMobileFirewall.classList.remove('active');
+        if (firewallContent) firewallContent.style.display = 'none';
         const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
         if (defaultLinksTab) defaultLinksTab.click();
       }
@@ -739,6 +755,10 @@ document.addEventListener('DOMContentLoaded', () => {
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
+
+      if (targetTab === 'tab-firewall' && !isFullAdminUser()) {
+        return;
+      }
 
       if (targetTab === 'tab-settings' && !(isFullAdminUser() || userCurrentPermissions.includes('settings'))) {
         return;

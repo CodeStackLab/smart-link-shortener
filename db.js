@@ -377,7 +377,8 @@ module.exports = {
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'upload_image'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
-      const userPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
+      const rawUserPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
+      const userPerms = role === 'Admin' ? rawUserPerms : rawUserPerms.filter(p => p !== 'firewall');
       return {
         id: u.id,
         username: u.username,
@@ -412,6 +413,9 @@ module.exports = {
       user.permissions = user.role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+    }
+    if (user.role !== 'Admin' && Array.isArray(user.permissions)) {
+      user.permissions = user.permissions.filter(p => p !== 'firewall');
     }
     if (Array.isArray(user.allowedTargetDomains)) {
       user.allowedTargetDomains = [...new Set(user.allowedTargetDomains
@@ -472,7 +476,11 @@ module.exports = {
     const user = users.find(u => u.id === id);
     if (user) {
       if (role !== undefined) user.role = role;
-      if (Array.isArray(permissions)) user.permissions = permissions;
+      if (Array.isArray(permissions)) {
+        user.permissions = (user.role === 'Admin')
+          ? permissions
+          : permissions.filter(p => p !== 'firewall');
+      }
       if (Array.isArray(allowedTargetDomains)) {
         user.allowedTargetDomains = [...new Set(allowedTargetDomains
           .map(d => {

@@ -20,6 +20,8 @@ const {
   computeTrafficRiskScore,
   isAllowlisted,
   isTemporarilyBlocked,
+  getTemporaryBlockInfo,
+  addTemporaryBlock,
   dispatchWebhookNotification,
   checkAndApplyAutoShield
 } = require('./utils/detector');
@@ -70,7 +72,9 @@ function getUserPermissions(username, role) {
   }
 
   // Editor: use stored perms if available, otherwise fall back to defaults
-  return storedPerms || db.getDefaultPermissions('Editor');
+  // Firewall is strictly Admin-only — never grant to Editor
+  const base = storedPerms || db.getDefaultPermissions('Editor');
+  return base.filter(p => p !== 'firewall');
 }
 
 // Accepts one or more permission strings (OR logic: user needs at least one).
@@ -810,12 +814,18 @@ app.get('/api/admin/export-csv', requireAuth, requirePermission('analytics'), (r
 // IP FIREWALL & BLOCKING APIs (Protected)
 // ----------------------------------------------------
 
-app.get('/api/admin/blocked-ips', requireAuth, requirePermission('firewall'), (req, res) => {
+app.get('/api/admin/blocked-ips', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
   const blocked = db.getBlockedIps();
   res.json(blocked);
 });
 
-app.post('/api/admin/block-ip', requireAuth, requirePermission('firewall'), (req, res) => {
+app.post('/api/admin/block-ip', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
   const { ip, reason } = req.body;
   if (!ip || !ip.trim()) {
     return res.status(400).json({ error: 'IP address is required.' });
@@ -843,13 +853,16 @@ app.delete('/api/admin/blocked-ips/:ip', requireAuth, (req, res) => {
 // ----------------------------------------------------
 
 // Get current allowlisted IPs
-app.get('/api/admin/allowlist', requireAuth, requirePermission('firewall'), (req, res) => {
+app.get('/api/admin/allowlist', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
   const settings = db.getSettings();
   res.json({ allowlistedIps: Array.isArray(settings.allowlistedIps) ? settings.allowlistedIps : [] });
 });
 
 // Add an IP to the allowlist
-app.post('/api/admin/allowlist', requireAuth, requirePermission('firewall'), (req, res) => {
+app.post('/api/admin/allowlist', requireAuth, (req, res) => {
   if (!isAdminRole(req.session.role)) {
     return res.status(403).json({ error: 'Access denied. Only Admin can manage the allowlist.' });
   }
@@ -886,32 +899,60 @@ app.delete('/api/admin/allowlist/:ip', requireAuth, (req, res) => {
 // TEMP-BLOCK STATUS API (Rule 21, 22) — Real-time view
 // ----------------------------------------------------
 
-app.get('/api/admin/temp-blocks', requireAuth, requirePermission('firewall'), (req, res) => {
+app.get('/api/admin/temp-blocks', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
   const { getActiveTempBlocks } = require('./utils/detector');
   const blocks = getActiveTempBlocks();
   res.json({ count: blocks.length, blocks });
 });
 
 // Remove / release a temporary block manually (Rule 39: False-positive recovery)
-app.delete('/api/admin/temp-blocks/:ip', requireAuth, requirePermission('firewall'), (req, res) => {
+app.delete('/api/admin/temp-blocks/:ip', requireAuth, (req, res) => {
+  if (!isAdminRole(req.session.role)) {
+    return res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
   const { removeTemporaryBlock } = require('./utils/detector');
   const targetIp = decodeURIComponent(req.params.ip).replace(/^::ffff:/, '').trim();
   const success = removeTemporaryBlock(targetIp);
   res.json({ success: true, removed: success });
 });
 
-// GET settings: Admin (full) OR users with 'firewall' permission (to show shield status in firewall tab).
-// Non-admin firewall users only receive firewall-relevant fields (not sensitive settings).
-app.get('/api/admin/settings', requireAuth, requirePermission('settings', 'firewall'), (req, res) => {
+// GET settings: Admin (full) OR users with 'settings' permission.
+// Non-admin users only receive basic non-firewall fields.
+app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {
   const settings = db.getSettings();
   if (isAdminRole(req.session.role)) {
     // Full settings for Admin
     return res.json(settings);
   }
-  // For Editor users: strip editorCountryBlockEnabled & editorBlockedCountries ("unko show na ho")
+  // For Editor users: strip firewall, bot protection, and country block settings
   const sanitized = { ...settings };
   delete sanitized.editorCountryBlockEnabled;
   delete sanitized.editorBlockedCountries;
+  delete sanitized.rateLimitMaxRequests;
+  delete sanitized.rateLimitWindowSeconds;
+  delete sanitized.tempBlockDurationMinutes;
+  delete sanitized.spikeThresholdClicks;
+  delete sanitized.spikeWindowMinutes;
+  delete sanitized.blockSuspiciousCountries;
+  delete sanitized.blockKnownScrapers;
+  delete sanitized.honeypotProtectionEnabled;
+  delete sanitized.botProtectionEnabled;
+  delete sanitized.vpnProtectionEnabled;
+  delete sanitized.botLimitClicks;
+  delete sanitized.botLimitMinutes;
+  delete sanitized.vpnLimitClicks;
+  delete sanitized.vpnLimitMinutes;
+  delete sanitized.applyFirewallGlobally;
+  delete sanitized.allowlistedIps;
+  delete sanitized.fbTrafficEnabled;
+  delete sanitized.allowFbProfiles;
+  delete sanitized.allowFbGroups;
+  delete sanitized.allowFbPages;
+  delete sanitized.allowFbStories;
+  delete sanitized.blockAutomatedUnknown;
   return res.json(sanitized);
 });
 
@@ -1322,7 +1363,10 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password.trim(), salt);
   const assignedRole = ['Admin', 'Editor'].includes(role) ? role : 'Editor';
-  const assignedPerms = Array.isArray(permissions) ? permissions : db.getDefaultPermissions(assignedRole);
+  let assignedPerms = Array.isArray(permissions) ? permissions : db.getDefaultPermissions(assignedRole);
+  if (assignedRole !== 'Admin') {
+    assignedPerms = assignedPerms.filter(p => p !== 'firewall');
+  }
 
   let processedAllowed = [];
   if (Array.isArray(allowedTargetDomains)) {
@@ -1541,6 +1585,30 @@ async function handleShortlinkRedirect(req, res) {
     `);
   }
 
+  // 0b. Check Temporary IP Soft-Blocks (Rate Limit / Auto Shield temp blocks)
+  if (isTemporarilyBlocked(clientIp) && !isAllowlisted(clientIp)) {
+    const tempInfo = getTemporaryBlockInfo(clientIp);
+    const logEntry = {
+      id: logId,
+      timestamp: new Date().toISOString(),
+      code: code,
+      ip: clientIp,
+      countryCode: geoInfo.countryCode,
+      countryName: geoInfo.countryName,
+      flag: geoInfo.flag,
+      city: geoInfo.city,
+      isp: geoInfo.isp,
+      isVpn: geoInfo.isVpn,
+      referer: rawReferer || 'Temporary Block',
+      userAgent: userAgent,
+      status: 'TEMP_BLOCKED',
+      actionTaken: `Temporary Block Active (${tempInfo?.reason || 'Rate/Bot Limit'}) → Fallback Redirect`
+    };
+    db.addLog(logEntry);
+    const destinationLink = db.getLinkByCode(code);
+    return res.redirect((destinationLink && destinationLink.fallbackUrl) || 'https://www.google.com/');
+  }
+
   const settings = db.getSettings();
 
   // A. Check Honeypot trigger
@@ -1728,6 +1796,7 @@ async function handleShortlinkRedirect(req, res) {
   // 1. Check Rate Limiter per IP (Rule 6, 14: redirect to fallback, never show CAPTCHA or error to real users)
   const rateCheck = checkRateLimit(clientIp);
   if (rateCheck.isRateLimited) {
+    addTemporaryBlock(clientIp, 'Rate Limit Exceeded', 'high');
     const logEntry = {
       id: logId,
       timestamp: new Date().toISOString(),
