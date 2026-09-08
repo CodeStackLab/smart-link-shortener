@@ -467,12 +467,15 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'domains', tabId: 'tab-domains', adminOnly: false },
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
       { key: 'analytics', tabId: 'tab-analytics', adminOnly: false },
-      { key: 'firewall', tabId: 'tab-firewall', adminOnly: true },
+      { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
       { key: 'settings', tabId: 'tab-settings', adminOnly: false }
     ];
 
     navMap.forEach(item => {
-      const hasAccess = item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key));
+      // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
+      const hasAccess = item.key === 'firewall'
+        ? true
+        : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -559,30 +562,52 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // If non-admin user is currently on Firewall tab, switch back to Links tab
+    // Role-based visibility scoping
     if (!isFullAdmin) {
       document.body.classList.remove('is-admin');
       document.body.classList.add('is-editor');
+
+      // Non-admins (Editors): ONLY show Block IP Address card in Firewall tab
+      // Hide all other admin cards defensively
+      const adminOnlyFirewallCards = [
+        'auto-shield-card',
+        'global-fb-rules-card',
+        'editor-country-block-card',
+        'permanently-blocked-card',
+        'temp-blocks-card',
+        'allowlist-card'
+      ];
+      adminOnlyFirewallCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.setProperty('display', 'none', 'important');
+      });
+
+      const blockIpCard = document.getElementById('block-ip-card');
+      if (blockIpCard) blockIpCard.style.removeProperty('display');
+
       const fwBtn = document.querySelector('.tab-btn[data-tab="tab-firewall"]');
-      if (fwBtn) fwBtn.style.setProperty('display', 'none', 'important');
+      if (fwBtn) fwBtn.style.removeProperty('display');
       const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
-      if (fwMobileBtn) fwMobileBtn.style.setProperty('display', 'none', 'important');
-      const firewallContent = document.getElementById('tab-firewall');
-      if (firewallContent) {
-        firewallContent.style.setProperty('display', 'none', 'important');
-        firewallContent.removeAttribute('data-active');
-      }
-      const activeFirewallTab = document.querySelector('.tab-btn.active[data-tab="tab-firewall"]');
-      const activeMobileFirewall = document.querySelector('.mobile-nav-item.active[data-tab="tab-firewall"]');
-      if (activeFirewallTab || activeMobileFirewall) {
-        if (activeFirewallTab) activeFirewallTab.classList.remove('active');
-        if (activeMobileFirewall) activeMobileFirewall.classList.remove('active');
-        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
-        if (defaultLinksTab) defaultLinksTab.click();
-      }
+      if (fwMobileBtn) fwMobileBtn.style.removeProperty('display');
     } else {
       document.body.classList.add('is-admin');
       document.body.classList.remove('is-editor');
+
+      // Admins: show all firewall cards
+      const allFirewallCards = [
+        'block-ip-card',
+        'auto-shield-card',
+        'global-fb-rules-card',
+        'editor-country-block-card',
+        'permanently-blocked-card',
+        'temp-blocks-card',
+        'allowlist-card'
+      ];
+      allFirewallCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.removeProperty('display');
+      });
+
       const fwBtn = document.querySelector('.tab-btn[data-tab="tab-firewall"]');
       if (fwBtn) fwBtn.style.removeProperty('display');
       const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
@@ -781,9 +806,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetTab = btn.getAttribute('data-tab');
 
       if (targetTab === 'tab-firewall') {
-        if (!isFullAdminUser()) {
-          return;
-        }
         const fwContent = document.getElementById('tab-firewall');
         if (fwContent) fwContent.setAttribute('data-active', 'true');
       } else {
@@ -810,9 +832,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetTab === 'tab-geo') loadCountryAnalytics();
       if (targetTab === 'tab-analytics') loadAnalytics();
       if (targetTab === 'tab-firewall') {
-        loadBlockedIps();
-        loadTempBlocks();
-        loadAllowlist();
+        if (isFullAdminUser()) {
+          loadBlockedIps();
+          loadTempBlocks();
+          loadAllowlist();
+        }
       }
       if (targetTab === 'tab-settings') {
         if (isSuperAdminUser()) loadUsers();
@@ -2287,7 +2311,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loadAnalytics();
     }
     if (activeTab && activeTab.getAttribute('data-tab') === 'tab-firewall') {
-      loadTempBlocks();
+      if (isFullAdminUser()) loadTempBlocks();
     }
   }, 6000);
 
@@ -2825,9 +2849,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert(`🚫 IP ${ip} has been blocked globally for all editors & links!`);
+          showAlert(isFullAdminUser()
+            ? `🚫 IP ${ip} has been blocked globally for all editors & links!`
+            : `🚫 IP ${ip} has been blocked successfully!`);
           blockIpForm.reset();
-          loadBlockedIps();
+          if (isFullAdminUser()) loadBlockedIps();
         } else {
           showAlert(data.error || 'Failed to block IP', true);
         }

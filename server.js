@@ -823,15 +823,17 @@ app.get('/api/admin/blocked-ips', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/block-ip', requireAuth, (req, res) => {
-  if (!isAdminRole(req.session.role)) {
-    return res.status(403).json({ error: 'Access denied. Admin only.' });
-  }
   const { ip, reason } = req.body;
   if (!ip || !ip.trim()) {
     return res.status(400).json({ error: 'IP address is required.' });
   }
 
-  const result = db.blockIp(ip.trim(), reason || 'Manual Firewall Block');
+  const actorRole = req.session.role || 'Editor';
+  const defaultReason = isAdminRole(actorRole)
+    ? 'Manual Firewall Block'
+    : `Blocked by Editor (${req.session.username || 'Editor'})`;
+
+  const result = db.blockIp(ip.trim(), reason && reason.trim() ? reason.trim() : defaultReason);
   if (!result) {
     return res.status(400).json({ error: 'IP address is already blocked.' });
   }

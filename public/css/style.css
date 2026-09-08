@@ -3099,27 +3099,22 @@ td[data-label].col-hidden-perm > * {
   color: #94a3b8 !important;
 }
 
-/* ── Firewall Tab: Strictly Super Admin Only ── */
-/* Hidden by default on ALL screen sizes, devices, and roles */
-.admin-only-tab,
-.tab-btn[data-tab="tab-firewall"],
-.mobile-nav-item[data-tab="tab-firewall"],
-#tab-firewall {
+/* ── Firewall Tab: Role-Based Card Visibility ── */
+/* For Editors / Non-Admins: ONLY show the Block IP Address card (#block-ip-card).
+   Completely hide Auto Shield, Global FB Rules, Country Block, Blocked IPs table, Temp Blocks, and Allowlist */
+body:not(.is-admin) #tab-firewall #auto-shield-card,
+body:not(.is-admin) #tab-firewall #global-fb-rules-card,
+body:not(.is-admin) #tab-firewall #editor-country-block-card,
+body:not(.is-admin) #tab-firewall #permanently-blocked-card,
+body:not(.is-admin) #tab-firewall #temp-blocks-card,
+body:not(.is-admin) #tab-firewall #allowlist-card {
   display: none !important;
 }
 
-/* ONLY visible when body explicitly has .is-admin class */
-body.is-admin .tab-btn[data-tab="tab-firewall"] {
-  display: inline-flex !important;
+/* Editor view styling: centered clean card */
+body:not(.is-admin) #tab-firewall #block-ip-card {
+  max-width: 580px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-@media (max-width: 768px) {
-  body.is-admin .mobile-nav-item[data-tab="tab-firewall"] {
-    display: flex !important;
-  }
-}
-
-body.is-admin #tab-firewall.active,
-body.is-admin #tab-firewall[data-active="true"] {
-  display: block !important;
-}

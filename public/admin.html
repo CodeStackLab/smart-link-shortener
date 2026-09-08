@@ -954,7 +954,7 @@
   <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
   <button class="tab-btn" data-tab="tab-geo">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
-  <button class="tab-btn admin-only-tab" data-tab="tab-firewall" style="display:none;">🛡️ IP Firewall</button>
+  <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
 </div>
 
@@ -1641,12 +1641,12 @@
 <!-- ══════════════════════════════
      TAB 4 — IP FIREWALL
 ══════════════════════════════ -->
-<div id="tab-firewall" class="tab-content admin-only-tab" style="display:none;">
+<div id="tab-firewall" class="tab-content" style="display:none;">
   <div class="container">
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
 
       <!-- Block IP Address Card -->
-      <div class="card" style="padding:1.35rem; height:fit-content;">
+      <div class="card" id="block-ip-card" style="padding:1.35rem; height:fit-content;">
         <div class="section-title"><span class="accent">🚫</span> Block IP Address</div>
 
         <!-- Global Enforcement Toggle — ADMIN ONLY -->
@@ -1973,7 +1973,7 @@
       </div>
 
       <!-- Blocked IP Addresses Table -->
-      <div class="card" style="padding:1.35rem;">
+      <div class="card" id="permanently-blocked-card" style="padding:1.35rem;">
         <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
           <div><span class="accent">🛡️</span> Permanently Blocked IPs</div>
           <span id="blocked-ip-global-badge" style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
@@ -2004,7 +2004,7 @@
       </div>
 
       <!-- Active Temporary Soft-Blocks (Rules 21, 22, 37, 39) -->
-      <div class="card" style="padding:1.35rem;">
+      <div class="card" id="temp-blocks-card" style="padding:1.35rem;">
         <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
           <div><span class="accent">⏱️</span> Live Temporary Soft-Blocks</div>
           <span id="temp-blocks-count-badge" style="font-size:0.7rem; font-weight:800; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
@@ -2033,7 +2033,7 @@
       </div>
 
       <!-- Trusted Sources Allowlist (Rule 48) -->
-      <div class="card" style="padding:1.35rem;">
+      <div class="card" id="allowlist-card" style="padding:1.35rem;">
         <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
           <div><span class="accent">✅</span> Trusted Sources Allowlist</div>
           <span id="allowlist-count-badge" style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.65rem; border-radius:20px;">
@@ -2668,7 +2668,7 @@
     <span class="nav-icon">📊</span>
     <span>Logs</span>
   </button>
-  <button class="mobile-nav-item admin-only-tab" data-tab="tab-firewall" style="display:none;">
+  <button class="mobile-nav-item" data-tab="tab-firewall">
     <span class="nav-icon">🛡️</span>
     <span>Firewall</span>
   </button>
@@ -2678,7 +2678,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=58"></script>
+<script src="/js/dashboard.js?v=59"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -2705,9 +2705,6 @@ if ('serviceWorker' in navigator) {
   mobileNavItems.forEach(item => {
     item.addEventListener('click', () => {
       const targetTabId = item.dataset.tab;
-      if (targetTabId === 'tab-firewall' && !document.body.classList.contains('is-admin')) {
-        return;
-      }
       const matchingTabBtn = document.querySelector(`.tab-btn[data-tab="${targetTabId}"]`);
       if (matchingTabBtn) {
         matchingTabBtn.click();
