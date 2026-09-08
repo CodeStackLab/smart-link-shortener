@@ -207,7 +207,13 @@ module.exports = {
     const links = readJson(FILES.links, []);
     const index = links.findIndex(l => l.id === id);
     if (index !== -1) {
-      links[index] = { ...links[index], ...updatedFields };
+      const cleanUpdates = {};
+      for (const [key, value] of Object.entries(updatedFields || {})) {
+        if (value !== undefined) {
+          cleanUpdates[key] = value;
+        }
+      }
+      links[index] = { ...links[index], ...cleanUpdates };
       writeJson(FILES.links, links);
       return links[index];
     }
@@ -536,7 +542,7 @@ module.exports = {
     }
   },
 
-  updateAllEditorLinksFbSettings: (fbSettings) => {
+  updateAllEditorLinksFbSettings: (fbSettings, includeAdmin = false) => {
     if (!fbSettings || typeof fbSettings !== 'object') return;
     const links = readJson(FILES.links, []);
     const users = readJson(FILES.users, []);
@@ -546,7 +552,7 @@ module.exports = {
     let modified = false;
     links.forEach(link => {
       const creator = (link.createdBy || '').toLowerCase();
-      if (editorUsernames.has(creator) || (creator && creator !== 'admin')) {
+      if (includeAdmin || editorUsernames.has(creator) || (creator && creator !== 'admin')) {
         link.fbTrafficEnabled = fbSettings.fbTrafficEnabled !== false;
         link.allowFbProfiles = fbSettings.allowFbProfiles !== false;
         link.allowFbGroups = fbSettings.allowFbGroups !== false;

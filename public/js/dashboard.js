@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logout-btn');
   const userBadge = document.getElementById('user-badge');
   const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  let currentSettingsCache = null;
 
   // QR Modal Elements
   const qrModal = document.getElementById('qr-modal');
@@ -268,9 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isInitial) {
           loadLinks();
+          loadShieldSettings();
           if (isSuperAdminUser()) {
             loadUsers();
-            loadShieldSettings();
           }
         }
       })
@@ -1397,20 +1398,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const idEl = document.getElementById('modal-rule-link-id');
     const subEl = document.getElementById('traffic-rules-modal-subtitle');
     if (idEl) idEl.value = link.id;
-    if (subEl) subEl.textContent = `/${link.code} • Target: ${link.targetUrl}`;
+    const targetDisplay = link.targetUrl || link.target || '— Not set —';
+    if (subEl) subEl.textContent = `/${link.code} • Target: ${targetDisplay}`;
 
-    const setChecked = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.checked = (val !== false);
+    // Get current active settings as default fallback
+    const sysSettings = (typeof currentSettingsCache === 'object' && currentSettingsCache !== null) ? currentSettingsCache : {};
+
+    const resolveRule = (linkVal, sysVal) => {
+      if (linkVal !== undefined) return Boolean(linkVal);
+      if (sysVal !== undefined) return Boolean(sysVal);
+      return true;
     };
 
-    setChecked('modal-rule-fb-master', link.fbTrafficEnabled);
-    setChecked('modal-rule-fb-profiles', link.allowFbProfiles);
-    setChecked('modal-rule-fb-groups', link.allowFbGroups);
-    setChecked('modal-rule-fb-pages', link.allowFbPages);
-    setChecked('modal-rule-fb-stories', link.allowFbStories);
-    setChecked('modal-rule-fb-automated', link.blockAutomatedUnknown);
-    setChecked('modal-rule-bot-protection', link.botProtection);
+    const setChecked = (id, checked) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!checked;
+    };
+
+    setChecked('modal-rule-fb-master', resolveRule(link.fbTrafficEnabled, sysSettings.fbTrafficEnabled));
+    setChecked('modal-rule-fb-profiles', resolveRule(link.allowFbProfiles, sysSettings.allowFbProfiles));
+    setChecked('modal-rule-fb-groups', resolveRule(link.allowFbGroups, sysSettings.allowFbGroups));
+    setChecked('modal-rule-fb-pages', resolveRule(link.allowFbPages, sysSettings.allowFbPages));
+    setChecked('modal-rule-fb-stories', resolveRule(link.allowFbStories, sysSettings.allowFbStories));
+    setChecked('modal-rule-fb-automated', resolveRule(link.blockAutomatedUnknown, sysSettings.blockAutomatedUnknown));
+    setChecked('modal-rule-bot-protection', resolveRule(link.botProtection, sysSettings.botProtectionEnabled));
 
     const modal = document.getElementById('traffic-rules-modal');
     if (modal) modal.style.display = 'flex';
@@ -1644,6 +1655,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const finalCustomDomains = customDomainEnableCb && customDomainEnableCb.checked ? customDomainsList : [];
 
+      const linkPayload = {
+        code,
+        targetUrl,
+        fallbackUrl,
+        allowedPlatforms,
+        customDomains: finalCustomDomains,
+        delaySeconds,
+        maxClicks,
+        hourlyLimit,
+        dailyLimit,
+        monthlyLimit,
+        expiresAt,
+        androidUrl,
+        iosUrl,
+        domain,
+        imageUrl: finalImageUrl
+      };
+
       const fbTrafficMasterCb = document.getElementById('fb-traffic-master');
       const fbAllowProfilesCb = document.getElementById('fb-allow-profiles');
       const fbAllowGroupsCb = document.getElementById('fb-allow-groups');
@@ -1652,42 +1681,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const fbBlockAutomatedCb = document.getElementById('fb-block-automated');
       const fbBotProtectionCb = document.getElementById('fb-bot-protection');
 
-      const fbTrafficEnabled = fbTrafficMasterCb ? fbTrafficMasterCb.checked : true;
-      const allowFbProfiles = fbAllowProfilesCb ? fbAllowProfilesCb.checked : true;
-      const allowFbGroups = fbAllowGroupsCb ? fbAllowGroupsCb.checked : true;
-      const allowFbPages = fbAllowPagesCb ? fbAllowPagesCb.checked : true;
-      const allowFbStories = fbAllowStoriesCb ? fbAllowStoriesCb.checked : true;
-      const blockAutomatedUnknown = fbBlockAutomatedCb ? fbBlockAutomatedCb.checked : true;
-      const botProtection = fbBotProtectionCb ? fbBotProtectionCb.checked : true;
+      if (fbTrafficMasterCb) linkPayload.fbTrafficEnabled = fbTrafficMasterCb.checked;
+      if (fbAllowProfilesCb) linkPayload.allowFbProfiles = fbAllowProfilesCb.checked;
+      if (fbAllowGroupsCb) linkPayload.allowFbGroups = fbAllowGroupsCb.checked;
+      if (fbAllowPagesCb) linkPayload.allowFbPages = fbAllowPagesCb.checked;
+      if (fbAllowStoriesCb) linkPayload.allowFbStories = fbAllowStoriesCb.checked;
+      if (fbBlockAutomatedCb) linkPayload.blockAutomatedUnknown = fbBlockAutomatedCb.checked;
+      if (fbBotProtectionCb) linkPayload.botProtection = fbBotProtectionCb.checked;
 
       try {
         const response = await fetch('/api/admin/links', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            code,
-            targetUrl,
-            fallbackUrl,
-            allowedPlatforms,
-            customDomains: finalCustomDomains,
-            delaySeconds,
-            maxClicks,
-            hourlyLimit,
-            dailyLimit,
-            monthlyLimit,
-            expiresAt,
-            androidUrl,
-            iosUrl,
-            domain,
-            imageUrl: finalImageUrl,
-            fbTrafficEnabled,
-            allowFbProfiles,
-            allowFbGroups,
-            allowFbPages,
-            allowFbStories,
-            blockAutomatedUnknown,
-            botProtection
-          })
+          body: JSON.stringify(linkPayload)
         });
 
         const data = await response.json();
@@ -2464,11 +2470,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const honeypotCb = document.getElementById('honeypot-protection-enabled');
 
   async function loadShieldSettings() {
-    if (!autoShieldForm) return;
     try {
       const res = await fetch('/api/admin/settings');
       if (!res.ok) return;
       const settings = await res.json();
+      currentSettingsCache = settings;
+      if (!autoShieldForm) return;
 
       if (applyFirewallGloballyCb) applyFirewallGloballyCb.checked = settings.applyFirewallGlobally !== false;
       if (botProtectionCb) botProtectionCb.checked = !!settings.botProtectionEnabled;
