@@ -420,12 +420,9 @@ module.exports = {
     if (Array.isArray(user.blockedCountries)) {
       user.blockedCountries = [...new Set(user.blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
     } else {
-      const activeSettings = readJson(FILES.settings, {});
-      user.blockedCountries = Array.isArray(activeSettings.editorBlockedCountries) && activeSettings.editorBlockedCountries.length > 0
-        ? [...activeSettings.editorBlockedCountries]
-        : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
+      user.blockedCountries = [];
     }
-    user.countryBlockEnabled = (user.countryBlockEnabled !== false);
+    user.countryBlockEnabled = (user.countryBlockEnabled === true);
 
     users.push(user);
     writeJson(FILES.users, users);

@@ -3754,7 +3754,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── New User Country Blocking Management ──
-  let newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+  let newUserBlockedCountries = new Set();
 
   function renderNewUserBlockedCountriesTags() {
     const container = document.getElementById('new-user-blocked-tags');
@@ -3861,7 +3861,7 @@ document.addEventListener('DOMContentLoaded', () => {
         blockAutomatedUnknown: document.getElementById('new-user-fb-automated') ? document.getElementById('new-user-fb-automated').checked : true,
         botProtection: document.getElementById('new-user-fb-bot') ? document.getElementById('new-user-fb-bot').checked : true
       };
-      const countryBlockEnabled = document.getElementById('new-user-country-block-enabled') ? document.getElementById('new-user-country-block-enabled').checked : true;
+      const countryBlockEnabled = document.getElementById('new-user-country-block-enabled') ? document.getElementById('new-user-country-block-enabled').checked : false;
       const blockedCountries = Array.from(newUserBlockedCountries);
 
       try {
@@ -3912,10 +3912,10 @@ document.addEventListener('DOMContentLoaded', () => {
           showAlert(`✅ User '${username}' (${role}) created successfully!`);
           
           inviteUserForm.reset();
-          newUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+          newUserBlockedCountries = new Set();
           renderNewUserBlockedCountriesTags();
           if (document.getElementById('new-user-country-block-enabled')) {
-            document.getElementById('new-user-country-block-enabled').checked = true;
+            document.getElementById('new-user-country-block-enabled').checked = false;
           }
           ['new-user-fb-master', 'new-user-fb-profiles', 'new-user-fb-groups', 'new-user-fb-pages', 'new-user-fb-stories', 'new-user-fb-automated', 'new-user-fb-bot'].forEach(id => {
             const el = document.getElementById(id);
