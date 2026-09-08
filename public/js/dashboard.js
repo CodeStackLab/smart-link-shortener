@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const fallbackUrl = getVal('fallback-url') || 'https://www.google.com';
+      const fallbackUrl = (document.getElementById('fallback-url') ? getVal('fallback-url') : '') || '';
       const delaySeconds = getNum('delay-seconds');
       const maxClicks = getNum('max-clicks');
       const hourlyLimit = getNum('hourly-limit');
@@ -2555,6 +2555,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // Populate Default Fallback URL in Settings
+      const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
+      if (fallbackSettingInput) {
+        fallbackSettingInput.value = settings.defaultFallbackUrl || 'https://www.google.com/';
+      }
+
       // Populate Global Facebook Rules
       const globFbTraffic = document.getElementById('glob-fb-traffic-enabled');
       const globFbProfiles = document.getElementById('glob-fb-allow-profiles');
@@ -2666,6 +2672,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         showAlert('Failed to save URL visibility setting', true);
+      }
+    });
+  }
+
+  // Global Fallback Redirect URL Form Handler
+  const defaultFallbackForm = document.getElementById('default-fallback-form');
+  const btnSaveDefaultFallback = document.getElementById('btn-save-default-fallback');
+  if (defaultFallbackForm) {
+    defaultFallbackForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isFullAdminUser()) {
+        showAlert('⚠️ Only Admin can change global Fallback URL settings.', true);
+        return;
+      }
+      const fallbackVal = document.getElementById('setting-default-fallback-url')?.value.trim();
+      if (!fallbackVal) return;
+
+      if (btnSaveDefaultFallback) {
+        btnSaveDefaultFallback.disabled = true;
+        btnSaveDefaultFallback.textContent = '⏳ Saving...';
+      }
+
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ defaultFallbackUrl: fallbackVal })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('✅ Global Fallback Redirect URL updated successfully!');
+          loadShieldSettings();
+          loadLinks();
+        } else {
+          showAlert(data.error || 'Failed to update Fallback URL', true);
+        }
+      } catch (err) {
+        showAlert('Failed to update Fallback URL', true);
+      } finally {
+        if (btnSaveDefaultFallback) {
+          btnSaveDefaultFallback.disabled = false;
+          btnSaveDefaultFallback.textContent = '💾 Save Fallback URL';
+        }
       }
     });
   }

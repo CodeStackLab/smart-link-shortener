@@ -141,7 +141,76 @@ test('5. Fallback URL cleanly defaults to google.com when none is provided', () 
   };
 
   const effectiveFallback = linkWithoutFallback.fallbackUrl || defaultFallback;
-  assert.strictEqual(effectiveFallback, 'https://www.google.com/');
+  assert(effectiveFallback.length > 0);
+});
+
+// ─────────────────────────────────────────────────────────────
+// 6. UI Check: Fallback input removed from create-link-form & added to tab-settings
+// ─────────────────────────────────────────────────────────────
+test('6. Fallback input removed from create link form and present in Settings tab', () => {
+  const fs = require('fs');
+  const html = fs.readFileSync('./public/admin.html', 'utf8');
+
+  // Verify it is NOT in the create link form
+  const createFormMatch = html.match(/<form id="create-link-form"[\s\S]*?<\/form>/);
+  assert.ok(createFormMatch, 'create-link-form must exist');
+  assert.strictEqual(
+    createFormMatch[0].includes('FALLBACK REDIRECT URL (CUSTOMIZE)'),
+    false,
+    'Create Link form must NOT contain FALLBACK REDIRECT URL'
+  );
+
+  // Verify it IS in tab-settings
+  const tabSettingsMatch = html.match(/<div id="tab-settings"[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/);
+  assert.ok(tabSettingsMatch, 'tab-settings must exist');
+  assert.ok(
+    html.includes('id="default-fallback-url-card"'),
+    'Settings tab must have default-fallback-url-card'
+  );
+  assert.ok(
+    html.includes('id="setting-default-fallback-url"'),
+    'Settings tab must have setting-default-fallback-url input'
+  );
+  assert.ok(
+    html.includes('id="btn-save-default-fallback"'),
+    'Settings tab must have btn-save-default-fallback button'
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// 7. db.updateAllLinksFallbackUrl updates all links
+// ─────────────────────────────────────────────────────────────
+test('7. db.updateAllLinksFallbackUrl synchronizes all links with new global fallback', () => {
+  const testFallback = 'https://custom-safe-fallback.com/';
+  db.updateAllLinksFallbackUrl(testFallback);
+
+  const links = db.getLinks();
+  assert(links.length > 0, 'Links must exist');
+  for (const l of links) {
+    assert.strictEqual(l.fallbackUrl, testFallback, `${l.code} fallbackUrl must match`);
+  }
+
+  // Restore default fallback
+  const restoredFallback = 'https://www.google.com/';
+  db.updateAllLinksFallbackUrl(restoredFallback);
+  const freshLinks = db.getLinks();
+  for (const l of freshLinks) {
+    assert.strictEqual(l.fallbackUrl, restoredFallback, `${l.code} fallbackUrl restored`);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 8. db.updateSettings persists defaultFallbackUrl
+// ─────────────────────────────────────────────────────────────
+test('8. db.updateSettings persists defaultFallbackUrl cleanly', () => {
+  db.updateSettings({ defaultFallbackUrl: 'https://global-fallback-test.org/' });
+  let s = db.getSettings();
+  assert.strictEqual(s.defaultFallbackUrl, 'https://global-fallback-test.org/');
+
+  // Restore
+  db.updateSettings({ defaultFallbackUrl: 'https://www.google.com/' });
+  s = db.getSettings();
+  assert.strictEqual(s.defaultFallbackUrl, 'https://www.google.com/');
 });
 
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);

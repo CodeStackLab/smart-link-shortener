@@ -624,6 +624,20 @@ module.exports = {
     }
   },
 
+  updateAllLinksFallbackUrl: (newFallbackUrl) => {
+    if (!newFallbackUrl || typeof newFallbackUrl !== 'string') return;
+    const links = readJson(FILES.links, []);
+    let modified = false;
+    const cleanUrl = newFallbackUrl.trim();
+    links.forEach(link => {
+      link.fallbackUrl = cleanUrl;
+      modified = true;
+    });
+    if (modified) {
+      writeJson(FILES.links, links);
+    }
+  },
+
   updateUserPassword: (username, newPasswordHash, rawPassword) => {
     const users = readJson(FILES.users, []);
     const user = users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());

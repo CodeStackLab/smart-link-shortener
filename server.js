@@ -1006,6 +1006,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     rateLimitWindowSeconds,
     rateLimitMaxRequests,
     webhookUrl,
+    defaultFallbackUrl,
     botProtectionEnabled,
     vpnProtectionEnabled,
     botLimitClicks,
@@ -1062,10 +1063,15 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     )];
   }
 
+  const cleanFallback = (defaultFallbackUrl !== undefined && defaultFallbackUrl.trim())
+    ? ensureAbsoluteUrl(defaultFallbackUrl.trim())
+    : undefined;
+
   const updated = db.updateSettings({
     rateLimitWindowSeconds: rateLimitWindowSeconds !== undefined ? parseInt(rateLimitWindowSeconds, 10) : undefined,
     rateLimitMaxRequests: rateLimitMaxRequests !== undefined ? parseInt(rateLimitMaxRequests, 10) : undefined,
     webhookUrl: webhookUrl !== undefined ? webhookUrl.trim() : undefined,
+    defaultFallbackUrl: cleanFallback,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -1094,6 +1100,11 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     editorCountryBlockEnabled: editorCountryBlockEnabled !== undefined ? !!editorCountryBlockEnabled : undefined,
     editorBlockedCountries: processedEditorBlockedCountries
   });
+
+  // When defaultFallbackUrl is updated, synchronize all existing shortlinks' fallback URL
+  if (cleanFallback) {
+    db.updateAllLinksFallbackUrl(cleanFallback);
+  }
 
   // When Global Facebook Rules or applyFirewallGlobally are updated, apply globally to all Editor accounts and links
   const hasFbUpdates = fbTrafficEnabled !== undefined || allowFbProfiles !== undefined || allowFbGroups !== undefined ||
