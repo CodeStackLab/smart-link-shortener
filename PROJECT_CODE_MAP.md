@@ -265,9 +265,11 @@ The Admin Portal is a single-page application built with clean semantic HTML5 an
    - 4 Live Metric Cards: Legitimate, Suspicious, Bot Shield Blocked, Traffic Quality Score.
    - Sub-source filter pills: `All Traffic`, `🟢 Legitimate`, `🟡 Suspicious`, `🔴 Bot Blocked`, `👤 FB Profiles`, `👥 FB Groups`, `📄 FB Pages`, `📱 FB Stories`.
    - Real-time audit table with risk score badges, referrer badges, status badges, and 1-click Quick Ban / Whitelist buttons.
-4. **Tab 4: 🚫 IP Firewall & Auto-Shield (`#tab-firewall`)**:
+4. **Tab 4: 🚫 IP Firewall & Auto-Shield (`#tab-firewall`) — Super Admin Only**:
+   - Strictly reserved for Super Admin; completely hidden from Editor dashboard (both desktop top tab and mobile bottom nav).
+   - Rules configured here apply automatically across all Editors and Editor links in the backend.
    - Manual IP Block form and table of permanently blocked IPs.
-   - Auto-Shield & Rate Limit configuration form.
+   - Auto-Shield, Traffic Quality & Rate Limit configuration form.
    - **Global Facebook Traffic & AdX Defaults Card** (System-wide default policy).
    - **Editor Accounts Country Block System Card** (Quick pills: US, PK, IN, BD, EG, NG, PH, TW, etc. and custom 2-letter codes).
    - Live Temporary Soft-Blocks table with 1-click "🔓 Release" buttons.
