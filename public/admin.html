@@ -2678,7 +2678,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=59"></script>
+<script src="/js/dashboard.js?v=60"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -2705,6 +2705,9 @@ if ('serviceWorker' in navigator) {
   mobileNavItems.forEach(item => {
     item.addEventListener('click', () => {
       const targetTabId = item.dataset.tab;
+      if (targetTabId === 'tab-analytics' && !document.body.classList.contains('is-admin')) {
+        return;
+      }
       const matchingTabBtn = document.querySelector(`.tab-btn[data-tab="${targetTabId}"]`);
       if (matchingTabBtn) {
         matchingTabBtn.click();

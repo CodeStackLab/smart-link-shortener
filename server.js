@@ -72,9 +72,9 @@ function getUserPermissions(username, role) {
   }
 
   // Editor: use stored perms if available, otherwise fall back to defaults
-  // Firewall is strictly Admin-only — never grant to Editor
+  // Firewall and Traffic Analytics are strictly Admin-only — never grant to Editor
   const base = storedPerms || db.getDefaultPermissions('Editor');
-  return base.filter(p => p !== 'firewall');
+  return base.filter(p => p !== 'firewall' && p !== 'analytics');
 }
 
 // Accepts one or more permission strings (OR logic: user needs at least one).

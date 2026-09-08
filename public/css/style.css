@@ -3118,3 +3118,15 @@ body:not(.is-admin) #tab-firewall #block-ip-card {
   width: 100%;
 }
 
+/* ── Traffic Logs & Facebook Analytics: Super Admin Only (Problem 5 Fix) ── */
+/* In Editor accounts: completely hide Logs tab, Top Stats Stack, and Facebook Traffic Sub-Source Analytics.
+   Everything runs strictly in the backend for Editors and displays only in Super Admin account */
+body:not(.is-admin) .tab-btn[data-tab="tab-analytics"],
+body:not(.is-admin) .mobile-nav-item[data-tab="tab-analytics"],
+body:not(.is-admin) #tab-analytics,
+body:not(.is-admin) .top-stats-stack,
+body:not(.is-admin) #fb-breakdown-card {
+  display: none !important;
+}
+
+

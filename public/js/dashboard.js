@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'geo'];
 
     // All permissions from session (may include col_*, geo_*, logs_* granular keys)
     const allPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : defaultEditorPerms);
@@ -399,16 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabPerms = allPerms.filter(p => !granularPrefixes.some(prefix => p.startsWith(prefix)));
 
     // Auto-include parent tab permissions when granular sub-permissions are set
-    // e.g. col_* implies 'links' tab, geo_* implies 'geo' tab, logs_* implies 'analytics' tab
+    // e.g. col_* implies 'links' tab, geo_* implies 'geo' tab
     if (!isFullAdmin) {
       const hasColPerm = allPerms.some(p => p.startsWith('col_'));
       const hasPlatformPerm = allPerms.includes('facebook') || allPerms.includes('instagram') || allPerms.includes('custom_website');
       const hasGeoPerm = allPerms.some(p => p.startsWith('geo_'));
-      const hasLogsPerm = allPerms.some(p => p.startsWith('logs_'));
       
       if ((hasColPerm || hasPlatformPerm) && !tabPerms.includes('links')) tabPerms.push('links');
       if (hasGeoPerm && !tabPerms.includes('geo')) tabPerms.push('geo');
-      if (hasLogsPerm && !tabPerms.includes('analytics')) tabPerms.push('analytics');
     }
 
     const userFeaturePerms = isFullAdmin ? defaultFullPerms : tabPerms;
@@ -466,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'links', tabId: 'tab-links', adminOnly: false },
       { key: 'domains', tabId: 'tab-domains', adminOnly: false },
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
-      { key: 'analytics', tabId: 'tab-analytics', adminOnly: false },
+      { key: 'analytics', tabId: 'tab-analytics', adminOnly: true },
       { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
       { key: 'settings', tabId: 'tab-settings', adminOnly: false }
     ];
@@ -589,6 +587,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fwBtn) fwBtn.style.removeProperty('display');
       const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
       if (fwMobileBtn) fwMobileBtn.style.removeProperty('display');
+
+      // Hide Traffic Logs & Facebook Analytics tab & widgets from Editors (Admin Only)
+      const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="tab-analytics"]');
+      if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'none', 'important');
+      const analyticsMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-analytics"]');
+      if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'none', 'important');
+      const tabAnalytics = document.getElementById('tab-analytics');
+      if (tabAnalytics) tabAnalytics.style.setProperty('display', 'none', 'important');
+      const fbBreakdown = document.getElementById('fb-breakdown-card');
+      if (fbBreakdown) fbBreakdown.style.setProperty('display', 'none', 'important');
+      const topStats = document.querySelector('.top-stats-stack');
+      if (topStats) topStats.style.setProperty('display', 'none', 'important');
+
+      // If Editor is currently on Analytics tab, switch back to Links
+      const activeAnalyticsTab = document.querySelector('.tab-btn.active[data-tab="tab-analytics"]');
+      const activeMobileAnalytics = document.querySelector('.mobile-nav-item.active[data-tab="tab-analytics"]');
+      if (activeAnalyticsTab || activeMobileAnalytics) {
+        if (activeAnalyticsTab) activeAnalyticsTab.classList.remove('active');
+        if (activeMobileAnalytics) activeMobileAnalytics.classList.remove('active');
+        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
+        if (defaultLinksTab) defaultLinksTab.click();
+      }
     } else {
       document.body.classList.add('is-admin');
       document.body.classList.remove('is-editor');
@@ -612,6 +632,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fwBtn) fwBtn.style.removeProperty('display');
       const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
       if (fwMobileBtn) fwMobileBtn.style.removeProperty('display');
+
+      // Show Traffic Logs & Facebook Analytics tab & widgets for Admins
+      const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="tab-analytics"]');
+      if (analyticsTabBtn) analyticsTabBtn.style.removeProperty('display');
+      const analyticsMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-analytics"]');
+      if (analyticsMobileBtn) analyticsMobileBtn.style.removeProperty('display');
+      const fbBreakdown = document.getElementById('fb-breakdown-card');
+      if (fbBreakdown) fbBreakdown.style.removeProperty('display');
+      const topStats = document.querySelector('.top-stats-stack');
+      if (topStats) topStats.style.removeProperty('display');
     }
 
     // ─── Super Admin Gating ─────────────────────────────────────
@@ -813,6 +843,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fwContent) fwContent.removeAttribute('data-active');
       }
 
+      if (targetTab === 'tab-analytics' && !isFullAdminUser()) {
+        return;
+      }
+
       if (targetTab === 'tab-settings' && !(isFullAdminUser() || userCurrentPermissions.includes('settings'))) {
         return;
       }
@@ -830,7 +864,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetTab === 'tab-links') loadLinks();
       if (targetTab === 'tab-domains') loadDomains();
       if (targetTab === 'tab-geo') loadCountryAnalytics();
-      if (targetTab === 'tab-analytics') loadAnalytics();
+      if (targetTab === 'tab-analytics') {
+        if (isFullAdminUser()) loadAnalytics();
+      }
       if (targetTab === 'tab-firewall') {
         if (isFullAdminUser()) {
           loadBlockedIps();
@@ -2308,7 +2344,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     const activeTab = document.querySelector('.tab-btn.active');
     if (activeTab && activeTab.getAttribute('data-tab') === 'tab-analytics') {
-      loadAnalytics();
+      if (isFullAdminUser()) loadAnalytics();
     }
     if (activeTab && activeTab.getAttribute('data-tab') === 'tab-firewall') {
       if (isFullAdminUser()) loadTempBlocks();

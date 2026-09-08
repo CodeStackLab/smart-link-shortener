@@ -366,7 +366,7 @@ module.exports = {
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
     if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image'];
-    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'upload_image']; // Editor default
+    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image']; // Editor default
   },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);
@@ -374,11 +374,11 @@ module.exports = {
       const role = u.role || 'Editor';
       const defaultPerms = role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'upload_image']
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'upload_image'];
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
       const rawUserPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
-      const userPerms = role === 'Admin' ? rawUserPerms : rawUserPerms.filter(p => p !== 'firewall');
+      const userPerms = role === 'Admin' ? rawUserPerms : rawUserPerms.filter(p => p !== 'firewall' && p !== 'analytics');
       return {
         id: u.id,
         username: u.username,
@@ -412,10 +412,10 @@ module.exports = {
     if (!Array.isArray(user.permissions)) {
       user.permissions = user.role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo'];
     }
     if (user.role !== 'Admin' && Array.isArray(user.permissions)) {
-      user.permissions = user.permissions.filter(p => p !== 'firewall');
+      user.permissions = user.permissions.filter(p => p !== 'firewall' && p !== 'analytics');
     }
     if (Array.isArray(user.allowedTargetDomains)) {
       user.allowedTargetDomains = [...new Set(user.allowedTargetDomains
@@ -479,7 +479,7 @@ module.exports = {
       if (Array.isArray(permissions)) {
         user.permissions = (user.role === 'Admin')
           ? permissions
-          : permissions.filter(p => p !== 'firewall');
+          : permissions.filter(p => p !== 'firewall' && p !== 'analytics');
       }
       if (Array.isArray(allowedTargetDomains)) {
         user.allowedTargetDomains = [...new Set(allowedTargetDomains
