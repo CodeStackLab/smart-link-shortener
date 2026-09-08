@@ -1,6 +1,8 @@
 const assert = require('assert');
 const db = require('./db');
 
+const initialUsers = JSON.parse(JSON.stringify(db.getUsers()));
+
 console.log('🧪 Starting Per-Editor Facebook Rules & Country Block Unit Tests...\n');
 
 let passedTests = 0;
@@ -293,14 +295,15 @@ test('9. db.updateAllEditorLinksFbSettings synchronizes all Editor shortlinks in
 test('10. db.updateAllEditorsBlockedCountries synchronizes all Editor accounts blocked countries in database', () => {
   db.updateAllEditorsBlockedCountries(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW', 'ID'], true);
 
-  const editors = db.getUsers().filter(u => u.role === 'Editor');
+  const editors = db.getUsers().filter(u => u.role === 'Editor' && !u.hasCustomCountryRules && !u.hasCustomBlockedCountries);
   for (const ed of editors) {
     assert(ed.blockedCountries.includes('ID'), 'Editor must have ID added');
     assert.strictEqual(ed.countryBlockEnabled, true);
   }
 
-  // Restore
-  db.updateAllEditorsBlockedCountries(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'], true);
+  // Restore initial users
+  const fs = require('fs');
+  fs.writeFileSync('./data/users.json', JSON.stringify(initialUsers, null, 2), 'utf8');
 });
 
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);

@@ -1125,9 +1125,9 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     db.updateAllEditorLinksFbSettings(globalFbRules);
   }
 
-  // When Editor Country Block settings or applyFirewallGlobally are updated, apply globally to all Editor accounts
+  // When Editor Country Block settings are updated, apply globally to Editor accounts (preserving those with custom rules)
   const hasCountryBlockUpdates = editorCountryBlockEnabled !== undefined || editorBlockedCountries !== undefined;
-  if (updated.applyFirewallGlobally !== false || hasCountryBlockUpdates) {
+  if (hasCountryBlockUpdates) {
     db.updateAllEditorsBlockedCountries(
       updated.editorBlockedCountries,
       updated.editorCountryBlockEnabled
@@ -2065,17 +2065,23 @@ async function handleShortlinkRedirect(req, res) {
 
   // 5.5 Editor Accounts Country Block Check ("only Editor account py apply krna hy unko show na ho")
   if (isEditorLink) {
-    const isEditorCountryBlockOn = (settings.applyFirewallGlobally !== false)
-      ? (settings.editorCountryBlockEnabled !== false)
-      : ((linkCreator && linkCreator.countryBlockEnabled !== undefined)
-          ? !!linkCreator.countryBlockEnabled
-          : (settings.editorCountryBlockEnabled !== false));
+    const hasCustomCountry = linkCreator && (linkCreator.hasCustomCountryRules || linkCreator.hasCustomBlockedCountries);
 
-    const effectiveBlockedCountries = (settings.applyFirewallGlobally !== false)
-      ? (settings.editorBlockedCountries || [])
-      : ((linkCreator && Array.isArray(linkCreator.blockedCountries))
-          ? linkCreator.blockedCountries
-          : (settings.editorBlockedCountries || []));
+    const isEditorCountryBlockOn = hasCustomCountry
+      ? (linkCreator.countryBlockEnabled !== false)
+      : ((settings.applyFirewallGlobally !== false)
+          ? (settings.editorCountryBlockEnabled !== false)
+          : ((linkCreator && linkCreator.countryBlockEnabled !== undefined)
+              ? !!linkCreator.countryBlockEnabled
+              : (settings.editorCountryBlockEnabled !== false)));
+
+    const effectiveBlockedCountries = (hasCustomCountry && Array.isArray(linkCreator.blockedCountries))
+      ? linkCreator.blockedCountries
+      : ((settings.applyFirewallGlobally !== false)
+          ? (settings.editorBlockedCountries || [])
+          : ((linkCreator && Array.isArray(linkCreator.blockedCountries))
+              ? linkCreator.blockedCountries
+              : (settings.editorBlockedCountries || [])));
 
     if (isEditorCountryBlockOn && effectiveBlockedCountries.length > 0) {
       const clientCountry = (geoInfo.countryCode || '').trim().toUpperCase();

@@ -140,9 +140,7 @@ function initDb() {
     for (const u of users) {
       if (u && u.role === 'Editor') {
         if (!Array.isArray(u.blockedCountries)) {
-          u.blockedCountries = Array.isArray(settings.editorBlockedCountries)
-            ? [...settings.editorBlockedCountries]
-            : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
+          u.blockedCountries = [];
           usersChanged = true;
         }
       }
@@ -361,8 +359,9 @@ module.exports = {
           blockAutomatedUnknown: true,
           botProtection: true
         },
-        blockedCountries: Array.isArray(u.blockedCountries) ? u.blockedCountries : ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
+        blockedCountries: Array.isArray(u.blockedCountries) ? u.blockedCountries : [],
         countryBlockEnabled: u.countryBlockEnabled !== false,
+        hasCustomCountryRules: !!(u.hasCustomCountryRules || u.hasCustomBlockedCountries),
         createdAt: u.createdAt || new Date().toISOString()
       };
     });
@@ -468,9 +467,12 @@ module.exports = {
       }
       if (Array.isArray(blockedCountries)) {
         user.blockedCountries = [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
+        user.hasCustomCountryRules = true;
+        user.hasCustomBlockedCountries = true;
       }
       if (countryBlockEnabled !== undefined) {
         user.countryBlockEnabled = !!countryBlockEnabled;
+        user.hasCustomCountryRules = true;
       }
       writeJson(FILES.users, users);
 
@@ -562,6 +564,7 @@ module.exports = {
     let modified = false;
     users.forEach(u => {
       if (u && u.role === 'Editor') {
+        if (u.hasCustomCountryRules || u.hasCustomBlockedCountries) return;
         if (Array.isArray(blockedCountries)) {
           u.blockedCountries = [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
           modified = true;

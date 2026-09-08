@@ -2606,7 +2606,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (Array.isArray(settings.editorBlockedCountries)) {
         activeEditorBlockedCountries = new Set(settings.editorBlockedCountries.map(c => String(c).toUpperCase()));
       } else {
-        activeEditorBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+        activeEditorBlockedCountries = new Set();
       }
       renderEditorBlockedCountriesTags();
 
@@ -3416,7 +3416,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const editUserModalSubtitle = document.getElementById('edit-user-modal-subtitle');
   const editUserRoleSelect = document.getElementById('edit-user-role-select');
   const editUserSaveRoleBtn = document.getElementById('edit-user-save-role-btn');
-  const editUserRoleSuccess = document.getElementById('edit-user-role-success');
+  // ── Edit User Country Blocking Management ──
+  let editUserBlockedCountries = new Set();
 
   window.openEditUserModal = function(userId) {
     const user = allUsersCache.find(u => u.id === userId);
@@ -3495,15 +3496,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (Array.isArray(user.blockedCountries)) {
       editUserBlockedCountries = new Set(user.blockedCountries.map(c => String(c).toUpperCase()));
     } else {
-      editUserBlockedCountries = new Set(['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']);
+      editUserBlockedCountries = new Set();
     }
     renderEditUserBlockedCountriesTags();
 
     if (editUserModal) { editUserModal.style.display = 'flex'; }
   };
-
-  // ── Edit User Country Blocking Management ──
-  let editUserBlockedCountries = new Set();
 
   function renderEditUserBlockedCountriesTags() {
     const container = document.getElementById('edit-user-blocked-tags');
