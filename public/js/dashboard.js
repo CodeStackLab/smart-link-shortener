@@ -552,6 +552,12 @@ document.addEventListener('DOMContentLoaded', () => {
       twoFaCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
 
+    // Custom Domains Card in Settings — Visible to Admin or anyone with 'domains' permission
+    const customDomainsCard = document.getElementById('custom-domains-card');
+    if (customDomainsCard) {
+      customDomainsCard.style.display = (isFullAdmin || userPerms.includes('domains')) ? '' : 'none';
+    }
+
     // 3. Change Password — Visible to anyone with Settings access
     const changePassCard = document.getElementById('change-password-card');
     if (changePassCard) {
@@ -889,6 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetTab === 'tab-settings') {
         if (isSuperAdminUser()) loadUsers();
         load2FAStatus();
+        loadDomains();
       }
     });
   });

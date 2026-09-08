@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=38">
+  <link rel="stylesheet" href="/css/style.css?v=39">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -1117,84 +1117,6 @@
       </div>
     </div>
 
-  </div>
-</div>
-
-<!-- ══════════════════════════════
-     TAB — CUSTOM DOMAINS
-══════════════════════════════ -->
-<div id="tab-domains" class="tab-content" style="display:none;">
-  <div class="container">
-    
-    <!-- Collapsible Step-by-Step DNS Guide -->
-    <div class="pro-accordion" id="dns-guide-accordion" style="margin-bottom:1.1rem; background: rgba(59, 130, 246, 0.03); border: 1px solid rgba(59, 130, 246, 0.15);">
-      <div class="pro-accordion-header" id="toggle-dns-guide-btn" style="padding: 0.75rem 1rem;">
-        <div class="pro-accordion-title" style="font-size: 0.9rem; color: var(--accent-primary); font-weight: 600;">
-          📖 How to Point Your Custom Domain / Subdomain (DNS Guide)
-        </div>
-        <span class="pro-accordion-icon" id="dns-guide-toggle-icon">▶ Click to Show Guide</span>
-      </div>
-      <div class="pro-accordion-body" id="dns-guide-body" style="display: none; padding: 1rem; border-top: 1px solid rgba(59, 130, 246, 0.15);">
-        <div style="font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);">
-          <p>To make your custom domain or subdomain work, you must point it to this server IP. Follow these steps:</p>
-          <ol style="margin-left: 1.2rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
-            <li>Log in to your Domain Registrar (e.g. GoDaddy, Namecheap, Cloudflare, etc.).</li>
-            <li>Go to the <strong>DNS Management</strong> page for your domain.</li>
-            <li>Add a new <strong>A Record</strong> with the following details:
-              <ul style="margin-left: 1.2rem; margin-top: 0.25rem; margin-bottom: 0.25rem; list-style-type: square;">
-                <li><strong>Type:</strong> <code>A</code></li>
-                <li><strong>Name / Host:</strong> <code>@</code> (for root domain like <code>example.com</code>) OR enter your subdomain prefix (e.g. <code>go</code>, <code>track</code>, or <code>link</code>).</li>
-                <li><strong>Value / Points to:</strong> <code>89.117.51.151</code></li>
-                <li><strong>TTL:</strong> <code>Automatic</code> or <code>1 hour (3600)</code></li>
-              </ul>
-            </li>
-            <li>Save the record. It can take anywhere from a few minutes to a few hours for the DNS changes to propagate.</li>
-            <li>Add your domain/subdomain below. Our Caddy server will automatically install a free Let's Encrypt SSL certificate when the link is first loaded!</li>
-          </ol>
-          <div style="margin-top:0.5rem; font-size:0.75rem; background: rgba(230,57,70,0.06); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(230,57,70,0.12); color: var(--danger);">
-            ⚠️ <strong>Cloudflare Users:</strong> If your domain is in Cloudflare, make sure to change the Proxy Status from <strong>Proxied (Orange Cloud)</strong> to <strong>DNS Only (Grey Cloud)</strong> so SSL generation works correctly.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="display:grid; grid-template-columns:1fr 2fr; gap:1.25rem; align-items:start; flex-wrap:wrap;">
-      
-      <!-- Add Domain Card -->
-      <div class="card" style="padding:1.35rem;">
-        <div class="section-title"><span class="accent">🌐</span> Add Custom Domain / Subdomain</div>
-        <form id="add-domain-form">
-          <div class="form-group" style="margin-bottom:1rem;">
-            <label for="new-domain-input">Domain or Subdomain</label>
-            <input type="text" id="new-domain-input" class="form-control" placeholder="e.g. go.yourbrand.com or link.site.com" required autocomplete="off">
-            <small style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:0.35rem;">
-              Point your domain's <strong>A Record</strong> to <code>89.117.51.151</code> before adding it here.
-            </small>
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">⚡ Add Domain</button>
-        </form>
-      </div>
-
-      <!-- Active Domains Card -->
-      <div class="card" style="padding:1.35rem;">
-        <div class="section-title"><span class="accent">📁</span> Active Domains</div>
-        <div class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Domain</th>
-                <th>Added At</th>
-                <th style="width:100px;">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="domains-tbody">
-              <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:2rem;">Loading domains…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
   </div>
 </div>
 
@@ -2394,6 +2316,58 @@
         </button>
       </div>
 
+      <!-- Add Custom Domain / Subdomain Card (Settings Section) -->
+      <div class="card" style="padding:1.35rem; height:fit-content;" id="custom-domains-card">
+        <div class="section-title" style="display:flex; align-items:center; gap:0.45rem; font-size:1.15rem; font-weight:800; margin-bottom:1rem;">
+          <span class="accent">🌐</span> Add Custom Domain / Subdomain
+        </div>
+        <form id="add-domain-form">
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <label for="new-domain-input" style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
+              DOMAIN OR SUBDOMAIN
+            </label>
+            <input type="text" id="new-domain-input" class="form-control" placeholder="e.g. go.yourbrand.com or link.site" required autocomplete="off" style="font-size:0.95rem; padding:0.75rem 1rem; border-radius:12px; border:1.5px solid var(--border,#e5e7eb); width:100%; box-sizing:border-box;">
+            <small style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.45rem; line-height:1.45;">
+              Point your domain's <strong>A Record</strong> to <code>89.117.51.151</code> before adding it here.
+            </small>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); min-height:48px; border-radius:12px; font-weight:800; font-size:0.95rem; margin-top:0.85rem; box-shadow:0 4px 16px rgba(239,68,68,0.35); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.45rem; width:100%;">
+            <span>⚡ Add Domain</span>
+          </button>
+        </form>
+
+        <!-- Collapsible DNS Setup Guide -->
+        <div style="margin-top:0.85rem; font-size:0.75rem;">
+          <span id="toggle-dns-guide-btn" style="color:#2563eb; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:0.3rem;">
+            <span id="dns-guide-toggle-icon">📖 Click to show DNS setup guide</span>
+          </span>
+          <div id="dns-guide-body" style="display:none; margin-top:0.5rem; padding:0.75rem; background:rgba(59,130,246,0.05); border-radius:10px; border:1px solid rgba(59,130,246,0.2); line-height:1.5; color:var(--text-secondary);">
+            Point <strong>A Record</strong> (Host: <code>@</code> or subdomain) to <code>89.117.51.151</code>. Cloudflare users: set Proxy Status to <strong>DNS Only (Grey Cloud)</strong>. Free SSL is generated automatically on first visit!
+          </div>
+        </div>
+
+        <!-- Active Domains Table -->
+        <div style="margin-top:1.25rem; border-top:1px solid var(--border,#e2e8f0); padding-top:1rem;">
+          <div class="section-title" style="font-size:0.95rem; font-weight:800; margin-bottom:0.65rem;">
+            <span class="accent">📁</span> Active Custom Domains
+          </div>
+          <div class="table-wrap" style="overflow-x:auto;">
+            <table class="table" style="width:100%; margin:0;">
+              <thead>
+                <tr>
+                  <th>Domain</th>
+                  <th>Added At</th>
+                  <th style="width:85px; text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="domains-tbody">
+                <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:1.25rem;">Loading domains…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Editor Target URL Display Mode Card -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="editor-url-mask-card">
         <div class="section-title" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:0.45rem; margin-bottom:0.85rem;">
@@ -2728,7 +2702,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=71"></script>
+<script src="/js/dashboard.js?v=72"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
