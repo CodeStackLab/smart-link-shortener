@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let currentLoggedInUsername = '';
-  let currentLoggedInRole = 'Admin';
+  let currentLoggedInRole = '';
   let currentPermissionsString = '';
   let currentAllowedSitesString = '';
   let currentMaskString = '';
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  let userCurrentPermissions = ['links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
+  let userCurrentPermissions = ['links', 'domains', 'geo', 'analytics', 'settings'];
 
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
