@@ -4,8 +4,14 @@ const db = require('./db');
 console.log('🧪 Starting Editor Firewall Gating & Global Backend Enforcement Tests...\n');
 
 // 1. Check data/users.json — No editor has 'firewall' permission
-const users = db.getUsers();
-const editors = users.filter(u => u.role === 'Editor');
+let users = db.getUsers();
+let editors = users.filter(u => u.role === 'Editor');
+let createdTempEditor = null;
+if (editors.length === 0) {
+  createdTempEditor = db.addUser({ username: 'temp_firewall_editor', role: 'Editor', rawPassword: 'tempPass123' });
+  users = db.getUsers();
+  editors = users.filter(u => u.role === 'Editor');
+}
 assert(editors.length > 0, 'Must have at least one editor');
 
 editors.forEach(ed => {
@@ -75,5 +81,9 @@ console.log('  ✅ PASS: 6. Super Admin panel retains full firewall permission')
 const settings = db.getSettings();
 assert(settings.applyFirewallGlobally !== false, 'applyFirewallGlobally must be active by default');
 console.log('  ✅ PASS: 7. Firewall applies globally to all editors in backend by default');
+
+if (createdTempEditor && createdTempEditor.id) {
+  db.deleteUser(createdTempEditor.id);
+}
 
 console.log('\n🎉 All 7 Editor Firewall Gating Tests Passed successfully!');

@@ -372,6 +372,9 @@ module.exports = {
   },
   addUser: (user) => {
     const users = readJson(FILES.users, []);
+    if (!user.id) {
+      user.id = 'usr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    }
     // Only set default permissions when none were explicitly provided (if array doesn't exist)
     if (!Array.isArray(user.permissions)) {
       user.permissions = user.role === 'Admin'
