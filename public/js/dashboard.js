@@ -3605,7 +3605,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Populate Country Block settings in Edit User modal
     if (document.getElementById('edit-user-country-block-enabled')) {
-      document.getElementById('edit-user-country-block-enabled').checked = (user.countryBlockEnabled !== false);
+      document.getElementById('edit-user-country-block-enabled').value = (user.countryBlockEnabled !== false) ? 'true' : 'false';
     }
     if (Array.isArray(user.blockedCountries)) {
       editUserBlockedCountries = new Set(user.blockedCountries.map(c => String(c).toUpperCase()));
@@ -3764,7 +3764,7 @@ document.addEventListener('DOMContentLoaded', () => {
         blockAutomatedUnknown: document.getElementById('edit-user-fb-automated') ? document.getElementById('edit-user-fb-automated').checked : true,
         botProtection: document.getElementById('edit-user-fb-bot') ? document.getElementById('edit-user-fb-bot').checked : true
       };
-      const countryBlockEnabled = document.getElementById('edit-user-country-block-enabled') ? document.getElementById('edit-user-country-block-enabled').checked : true;
+      const countryBlockEnabled = editUserBlockedCountries.size > 0;
       const blockedCountries = Array.from(editUserBlockedCountries);
 
       editUserSaveRoleBtn.textContent = '⏳ Saving...';
@@ -4009,7 +4009,7 @@ document.addEventListener('DOMContentLoaded', () => {
         blockAutomatedUnknown: document.getElementById('new-user-fb-automated') ? document.getElementById('new-user-fb-automated').checked : true,
         botProtection: document.getElementById('new-user-fb-bot') ? document.getElementById('new-user-fb-bot').checked : true
       };
-      const countryBlockEnabled = document.getElementById('new-user-country-block-enabled') ? document.getElementById('new-user-country-block-enabled').checked : false;
+      const countryBlockEnabled = newUserBlockedCountries.size > 0;
       const blockedCountries = Array.from(newUserBlockedCountries);
 
       try {
@@ -4063,7 +4063,7 @@ document.addEventListener('DOMContentLoaded', () => {
           newUserBlockedCountries = new Set();
           renderNewUserBlockedCountriesTags();
           if (document.getElementById('new-user-country-block-enabled')) {
-            document.getElementById('new-user-country-block-enabled').checked = false;
+            document.getElementById('new-user-country-block-enabled').value = 'true';
           }
           ['new-user-fb-master', 'new-user-fb-profiles', 'new-user-fb-groups', 'new-user-fb-pages', 'new-user-fb-stories', 'new-user-fb-automated', 'new-user-fb-bot'].forEach(id => {
             const el = document.getElementById(id);

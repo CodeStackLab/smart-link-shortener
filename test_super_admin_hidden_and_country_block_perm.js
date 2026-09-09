@@ -26,7 +26,7 @@ test('1. admin.html contains wrap-new-col-blocked-countries and wrap-edit-col-bl
   assert(html.includes('id="wrap-new-col-blocked-countries"'), 'Must have wrap-new-col-blocked-countries');
   assert(html.includes('value="col_blocked_countries"'), 'Must have col_blocked_countries checkbox');
   assert(html.includes('id="wrap-edit-col-blocked-countries"'), 'Must have wrap-edit-col-blocked-countries');
-  assert(html.includes('dashboard.js?v=88'), 'Must have bumped dashboard.js version to v88');
+  assert(html.includes('dashboard.js?v=89'), 'Must have bumped dashboard.js version to v89');
   assert(html.includes('style.css?v=55'), 'Must have bumped style.css version to v55');
 });
 
@@ -52,9 +52,9 @@ test('3. dashboard.js includes col_blocked_countries in colMap and shows toggle 
 });
 
 // ── 4. Service Worker Cache Invalidation ──
-test('4. sw.js is updated with new cache name smartlink-v89', () => {
+test('4. sw.js is updated with new cache name smartlink-v90', () => {
   const sw = fs.readFileSync('./public/sw.js', 'utf8');
-  assert(sw.includes("smartlink-v89"), 'Service Worker cache must be smartlink-v89');
+  assert(sw.includes("smartlink-v90"), 'Service Worker cache must be smartlink-v90');
 });
 
 // ── 5. Backend GET /api/admin/users Hides Super Admin ──
