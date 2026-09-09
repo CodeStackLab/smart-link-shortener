@@ -565,20 +565,24 @@ module.exports = {
     }
   },
 
-  updateAllEditorsBlockedCountries: (blockedCountries, countryBlockEnabled) => {
+  updateAllEditorsBlockedCountries: (blockedCountries, countryBlockEnabled, forceAll = false) => {
     const users = readJson(FILES.users, []);
     let modified = false;
+    const cleanCountries = Array.isArray(blockedCountries)
+      ? [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))]
+      : [];
+    const isEnabled = countryBlockEnabled !== undefined ? !!countryBlockEnabled : (cleanCountries.length > 0);
+
     users.forEach(u => {
-      if (u && u.role === 'Editor') {
-        if (u.hasCustomCountryRules || u.hasCustomBlockedCountries) return;
-        if (Array.isArray(blockedCountries)) {
-          u.blockedCountries = [...new Set(blockedCountries.map(c => String(c).trim().toUpperCase()).filter(Boolean))];
-          modified = true;
+      if (u && (u.role === 'Editor' || String(u.role).toLowerCase() === 'editor')) {
+        if (!forceAll && (u.hasCustomCountryRules || u.hasCustomBlockedCountries)) return;
+        u.blockedCountries = [...cleanCountries];
+        u.countryBlockEnabled = isEnabled;
+        if (forceAll) {
+          delete u.hasCustomCountryRules;
+          delete u.hasCustomBlockedCountries;
         }
-        if (countryBlockEnabled !== undefined) {
-          u.countryBlockEnabled = !!countryBlockEnabled;
-          modified = true;
-        }
+        modified = true;
       }
     });
     if (modified) {

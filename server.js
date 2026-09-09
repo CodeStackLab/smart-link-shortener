@@ -1207,12 +1207,13 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     db.updateAllEditorLinksFbSettings(globalFbRules);
   }
 
-  // When Editor Country Block settings are updated, apply globally to Editor accounts (preserving those with custom rules)
+  // When Editor Country Block settings are updated, automatically apply to ALL Editor accounts
   const hasCountryBlockUpdates = editorCountryBlockEnabled !== undefined || editorBlockedCountries !== undefined;
   if (hasCountryBlockUpdates) {
     db.updateAllEditorsBlockedCountries(
       updated.editorBlockedCountries,
-      updated.editorCountryBlockEnabled
+      updated.editorCountryBlockEnabled,
+      true // forceAll: User requirement: "When a country is selected, added, and applied, it should automatically apply to all Editor accounts. When any selected/added country is removed, it should automatically be removed from all Editor accounts as well."
     );
   }
 

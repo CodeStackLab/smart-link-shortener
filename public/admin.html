@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=47">
+  <link rel="stylesheet" href="/css/style.css?v=48">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -1806,39 +1806,16 @@
         </form>
       </div>
 
-      <!-- Editor Accounts Country Block System Card (Admin Only - Hidden from Editors) -->
+      <!-- Apply For All Editors Account (Editor Country Block System) -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="editor-country-block-card">
-        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.85rem;">
           <div style="display:flex; align-items:center; gap:0.45rem;">
-            <span class="accent">🌍</span> Editor Accounts Country Block System
-          </div>
-          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#ef4444,#7c3aed); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(239,68,68,0.3);">
-            👑 Admin Only — Hidden From Editors
-          </span>
-        </div>
-
-        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(124,58,237,0.08) 100%); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
-          <div style="font-weight:800; font-size:0.82rem; color:#dc2626; display:flex; align-items:center; gap:0.35rem;">
-            <span>🛡️ Silent Country Block for Editors ("Unko Show Na Ho"):</span>
-          </div>
-          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.45; margin-top:0.25rem;">
-            Ye system <strong>sirf Editor accounts</strong> ke banaye hue shortlinks par apply hoga. <strong>Admin links bilkul unaffected rahenge</strong>. Editors ke dashboard me ye feature <strong>bilkul chhupa (hidden)</strong> rahega. Blocked countries se aane wala traffic seedha safe Fallback URL par redirect hoga.
+            <span class="accent">🌍</span> Apply For All Editors Account
           </div>
         </div>
 
         <form id="editor-country-block-form">
-          <!-- Master Switch for Editor Country Block -->
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.65rem 0.85rem; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; margin-bottom:0.9rem;">
-            <div>
-              <label for="editor-country-block-enabled" style="font-weight:800; font-size:0.86rem; color:#dc2626; cursor:pointer; display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem;">
-                <span>🚫 Enable Country Block for Editor Accounts</span>
-              </label>
-              <div style="font-size:0.69rem; color:var(--text-muted);">
-                Turn ON to block specified countries on all Editor shortlinks. Turn OFF to allow all countries.
-              </div>
-            </div>
-            <input type="checkbox" id="editor-country-block-enabled" checked style="width:20px; height:20px; accent-color:#dc2626; cursor:pointer; flex-shrink:0;">
-          </div>
+          <input type="hidden" id="editor-country-block-enabled" value="true">
 
           <!-- Quick Toggle Country Pills -->
           <div style="margin-bottom:0.85rem;">
@@ -1846,14 +1823,14 @@
               Quick Select / Toggle Blocked Countries:
             </label>
             <div style="display:flex; flex-wrap:wrap; gap:0.4rem;" id="quick-country-buttons">
-              <button type="button" class="quick-country-btn" data-code="US" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇺🇸 US</button>
-              <button type="button" class="quick-country-btn" data-code="PK" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇰 PK</button>
-              <button type="button" class="quick-country-btn" data-code="IN" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇳 IN</button>
-              <button type="button" class="quick-country-btn" data-code="BD" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇩 BD</button>
-              <button type="button" class="quick-country-btn" data-code="EG" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇪🇬 EG</button>
-              <button type="button" class="quick-country-btn" data-code="NG" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇳🇬 NG</button>
-              <button type="button" class="quick-country-btn" data-code="PH" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇭 PH</button>
-              <button type="button" class="quick-country-btn" data-code="TW" style="background:#fef2f2; border:1.5px solid #dc2626; color:#991b1b; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇹🇼 TW</button>
+              <button type="button" class="quick-country-btn" data-code="US" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇺🇸 US</button>
+              <button type="button" class="quick-country-btn" data-code="PK" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇰 PK</button>
+              <button type="button" class="quick-country-btn" data-code="IN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇳 IN</button>
+              <button type="button" class="quick-country-btn" data-code="BD" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇩 BD</button>
+              <button type="button" class="quick-country-btn" data-code="EG" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇪🇬 EG</button>
+              <button type="button" class="quick-country-btn" data-code="NG" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇳🇬 NG</button>
+              <button type="button" class="quick-country-btn" data-code="PH" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇭 PH</button>
+              <button type="button" class="quick-country-btn" data-code="TW" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇹🇼 TW</button>
               <button type="button" class="quick-country-btn" data-code="ID" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇩 ID</button>
               <button type="button" class="quick-country-btn" data-code="VN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇻🇳 VN</button>
               <button type="button" class="quick-country-btn" data-code="BR" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇷 BR</button>
@@ -1880,7 +1857,7 @@
           </div>
 
           <button type="submit" id="btn-save-editor-country-block" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #ef4444 0%, #7c3aed 100%); min-height:46px; font-weight:800; font-size:0.9rem; border:none; box-shadow:0 4px 14px rgba(239,68,68,0.3);">
-            💾 Save Editor Country Block Rules
+            💾 Apply For All Editors Account
           </button>
         </form>
       </div>
@@ -2699,7 +2676,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=80"></script>
+<script src="/js/dashboard.js?v=81"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

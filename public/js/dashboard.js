@@ -2665,7 +2665,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Populate Editor Accounts Country Block settings (Admin only)
       const editorCountryBlockCb = document.getElementById('editor-country-block-enabled');
       if (editorCountryBlockCb) {
-        editorCountryBlockCb.checked = settings.editorCountryBlockEnabled !== false;
+        if ('checked' in editorCountryBlockCb) {
+          editorCountryBlockCb.checked = settings.editorCountryBlockEnabled !== false;
+        }
+        editorCountryBlockCb.value = String(settings.editorCountryBlockEnabled !== false);
       }
       if (Array.isArray(settings.editorBlockedCountries)) {
         activeEditorBlockedCountries = new Set(settings.editorBlockedCountries.map(c => String(c).toUpperCase()));
@@ -2964,8 +2967,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showAlert('⚠️ Only Admin can configure Editor Country Block rules.', true);
         return;
       }
-      const enabled = document.getElementById('editor-country-block-enabled')?.checked ?? true;
       const countries = Array.from(activeEditorBlockedCountries);
+      const enabled = countries.length > 0;
 
       try {
         const res = await fetch('/api/admin/settings', {
@@ -2978,13 +2981,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert(`🌍 Editor Country Block rules saved & applied to all Editors globally! (${countries.length} countries blocked).`);
+          showAlert(`🌍 Applied to all Editor accounts successfully! (${countries.length} countries blocked).`);
           loadShieldSettings();
         } else {
-          showAlert(data.error || 'Failed to save country block rules', true);
+          showAlert(data.error || 'Failed to apply country block rules', true);
         }
       } catch (err) {
-        showAlert('Error saving Editor Country Block rules', true);
+        showAlert('Error applying rules for all Editor accounts', true);
       }
     });
   }
