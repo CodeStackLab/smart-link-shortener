@@ -2966,6 +2966,9 @@ td[data-label].col-hidden-perm,
 td[data-label="Target URL"].col-hidden-perm,
 td[data-label="Fallback URL"].col-hidden-perm,
 td[data-label="Allowed Sources"].col-hidden-perm,
+td[data-label="Blocked Countries"].col-hidden-perm,
+td.col-blocked-countries.col-hidden-perm,
+th#th-blocked-countries.col-hidden-perm,
 td[data-label="Settings"].col-hidden-perm,
 td[data-label="Clicks"].col-hidden-perm,
 td[data-label="Actions"].col-hidden-perm {
@@ -2979,6 +2982,11 @@ td[data-label="Actions"].col-hidden-perm {
   border-bottom: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+body:not(.is-superadmin) #wrap-new-col-blocked-countries,
+body:not(.is-superadmin) #wrap-edit-col-blocked-countries {
+  display: none !important;
 }
 
 td[data-label].col-hidden-perm::before,

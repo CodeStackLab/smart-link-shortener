@@ -684,6 +684,13 @@ document.addEventListener('DOMContentLoaded', () => {
       editorCountryBlockCard.style.display = isFullAdmin ? '' : 'none';
     }
 
+    // col_blocked_countries permission control in Team Management is Super Admin exclusive
+    const isSuper = isSuperAdminUser();
+    const wrapNewColBlocked = document.getElementById('wrap-new-col-blocked-countries');
+    if (wrapNewColBlocked) wrapNewColBlocked.style.display = isSuper ? 'flex' : 'none';
+    const wrapEditColBlocked = document.getElementById('wrap-edit-col-blocked-countries');
+    if (wrapEditColBlocked) wrapEditColBlocked.style.display = isSuper ? 'flex' : 'none';
+
     // Role selector in invite form: only Admins can see the Admin option
     const roleSelectInvite = document.getElementById('new-user-role');
     if (roleSelectInvite) {
@@ -1250,12 +1257,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAdmin = currentLoggedInUsername.toLowerCase() === 'admin' || currentLoggedInRole.toLowerCase() === 'admin' || currentLoggedInRole.toLowerCase() === 'super admin';
 
     const colMap = [
-      { perm: 'col_target_url',   thId: 'th-target-url',   tdClass: 'col-target-url' },
-      { perm: 'col_fallback_url', thId: 'th-fallback-url', tdClass: 'col-fallback-url' },
-      { perm: 'col_sources',      thId: 'th-sources',      tdClass: 'col-sources' },
-      { perm: 'col_settings',     thId: 'th-settings',     tdClass: 'col-settings' },
-      { perm: 'col_clicks',       thId: 'th-clicks',       tdClass: 'col-clicks' },
-      { perm: 'col_actions',      thId: 'th-actions',      tdClass: 'col-actions' }
+      { perm: 'col_target_url',        thId: 'th-target-url',        tdClass: 'col-target-url' },
+      { perm: 'col_fallback_url',      thId: 'th-fallback-url',      tdClass: 'col-fallback-url' },
+      { perm: 'col_sources',           thId: 'th-sources',           tdClass: 'col-sources' },
+      { perm: 'col_blocked_countries', thId: 'th-blocked-countries', tdClass: 'col-blocked-countries' },
+      { perm: 'col_settings',          thId: 'th-settings',          tdClass: 'col-settings' },
+      { perm: 'col_clicks',            thId: 'th-clicks',            tdClass: 'col-clicks' },
+      { perm: 'col_actions',           thId: 'th-actions',           tdClass: 'col-actions' }
     ];
 
     colMap.forEach(({ perm, thId, tdClass }) => {
@@ -3369,14 +3377,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/admin/users');
       const users = await res.json();
 
-      if (!Array.isArray(users) || users.length === 0) {
+      let filteredUsers = Array.isArray(users) ? users : [];
+      if (!isSuperAdminUser()) {
+        filteredUsers = filteredUsers.filter(u => u.username.toLowerCase() !== 'admin' && String(u.role).toLowerCase() !== 'super admin');
+      }
+
+      if (filteredUsers.length === 0) {
         usersTbody.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:1.5rem 0;font-size:0.82rem;">No team members found.</div>`;
         return;
       }
 
-      allUsersCache = users;
+      allUsersCache = filteredUsers;
 
-      usersTbody.innerHTML = users.map(user => {
+      usersTbody.innerHTML = filteredUsers.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
         const isUserSuperAdmin = user.username.toLowerCase() === 'admin';
         const isSuperAdminViewer = isFullAdminUser();
@@ -3542,6 +3555,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.edit-perm-cb').forEach(cb => {
       cb.checked = perms.includes(cb.value);
     });
+
+    const isSuper = isSuperAdminUser();
+    const wrapEditColBlocked = document.getElementById('wrap-edit-col-blocked-countries');
+    if (wrapEditColBlocked) wrapEditColBlocked.style.display = isSuper ? 'flex' : 'none';
 
     // Sync URL Visibility radios in Edit User modal
     const hasUnmaskPerm = perms.includes('unmask_target_url');

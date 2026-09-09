@@ -448,19 +448,26 @@ app.get('/api/session', (req, res) => {
       }
     }
 
-    const hasCustomCountry = userObj && (userObj.hasCustomCountryRules || userObj.hasCustomBlockedCountries);
+    const isGlobalCountryBlockOn = settings.editorCountryBlockEnabled !== false;
+    const globalBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
+    const creatorBlockedCountries = (userObj && Array.isArray(userObj.blockedCountries)) ? userObj.blockedCountries : [];
+    const creatorCountryBlockOn = userObj ? (userObj.countryBlockEnabled !== false) : false;
+
     let myBlockedCountries = [];
     let myCountryBlockEnabled = false;
-    if (hasCustomCountry) {
-      myBlockedCountries = Array.isArray(userObj.blockedCountries) ? userObj.blockedCountries : [];
-      myCountryBlockEnabled = userObj.countryBlockEnabled !== false;
-    } else if (settings.applyFirewallGlobally !== false) {
-      myBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
-      myCountryBlockEnabled = settings.editorCountryBlockEnabled !== false;
-    } else {
-      myBlockedCountries = Array.isArray(userObj.blockedCountries) ? userObj.blockedCountries : [];
-      myCountryBlockEnabled = !!userObj.countryBlockEnabled;
+    if (isGlobalCountryBlockOn && globalBlockedCountries.length > 0) {
+      myCountryBlockEnabled = true;
+      myBlockedCountries = globalBlockedCountries;
+      if (creatorCountryBlockOn && creatorBlockedCountries.length > 0) {
+        myBlockedCountries = [...new Set([...myBlockedCountries, ...creatorBlockedCountries])];
+      }
+    } else if (creatorCountryBlockOn && creatorBlockedCountries.length > 0) {
+      myCountryBlockEnabled = true;
+      myBlockedCountries = creatorBlockedCountries;
     }
+
+    // Only expose blockedCountries to Editor in session if they have col_blocked_countries permission
+    const showCountryBlockToEditor = isAdminRole(role) || perms.includes('col_blocked_countries');
 
     return res.json({
       authenticated: true,
@@ -471,8 +478,8 @@ app.get('/api/session', (req, res) => {
       allowedTargetDomains: finalAllowed,
       maskEditorUrls: maskEditorUrls,
       fbTrafficSettings: userObj?.fbTrafficSettings || null,
-      blockedCountries: myCountryBlockEnabled ? myBlockedCountries : [],
-      countryBlockEnabled: myCountryBlockEnabled
+      blockedCountries: (myCountryBlockEnabled && showCountryBlockToEditor) ? myBlockedCountries : [],
+      countryBlockEnabled: showCountryBlockToEditor ? myCountryBlockEnabled : false
     });
   }
   return res.json({ authenticated: false });
@@ -493,17 +500,21 @@ app.get('/api/admin/links', requireAuth, (req, res) => {
     let effectiveBlockedCountries = [];
     let effectiveCountryBlockEnabled = false;
 
-    if (creator && creator.role === 'Editor') {
-      const hasCustom = creator.hasCustomCountryRules || creator.hasCustomBlockedCountries;
-      if (hasCustom) {
-        effectiveBlockedCountries = Array.isArray(creator.blockedCountries) ? creator.blockedCountries : [];
-        effectiveCountryBlockEnabled = creator.countryBlockEnabled !== false;
-      } else if (settings.applyFirewallGlobally !== false) {
-        effectiveBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
-        effectiveCountryBlockEnabled = settings.editorCountryBlockEnabled !== false;
-      } else {
-        effectiveBlockedCountries = Array.isArray(creator.blockedCountries) ? creator.blockedCountries : [];
-        effectiveCountryBlockEnabled = !!creator.countryBlockEnabled;
+    if (creator && (creator.role === 'Editor' || String(creator.role).toLowerCase() === 'editor')) {
+      const isGlobalCountryBlockOn = settings.editorCountryBlockEnabled !== false;
+      const globalBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
+      const creatorBlockedCountries = Array.isArray(creator.blockedCountries) ? creator.blockedCountries : [];
+      const creatorCountryBlockOn = creator.countryBlockEnabled !== false;
+
+      if (isGlobalCountryBlockOn && globalBlockedCountries.length > 0) {
+        effectiveCountryBlockEnabled = true;
+        effectiveBlockedCountries = globalBlockedCountries;
+        if (creatorCountryBlockOn && creatorBlockedCountries.length > 0) {
+          effectiveBlockedCountries = [...new Set([...effectiveBlockedCountries, ...creatorBlockedCountries])];
+        }
+      } else if (creatorCountryBlockOn && creatorBlockedCountries.length > 0) {
+        effectiveCountryBlockEnabled = true;
+        effectiveBlockedCountries = creatorBlockedCountries;
       }
     } else if (Array.isArray(l.blockedCountries)) {
       effectiveBlockedCountries = l.blockedCountries;
@@ -520,8 +531,16 @@ app.get('/api/admin/links', requireAuth, (req, res) => {
   if (isAdminRole(req.session.role)) {
     return res.json(links.map(enrichLinkWithBlockedCountries));
   }
+  const userPerms = getUserPermissions(req.session.username, req.session.role);
   const userLinks = links.filter(l => l.createdBy === req.session.username);
-  res.json(userLinks.map(enrichLinkWithBlockedCountries));
+  const mapped = userLinks.map(enrichLinkWithBlockedCountries);
+  if (!userPerms.includes('col_blocked_countries')) {
+    mapped.forEach(l => {
+      l.blockedCountries = [];
+      l.countryBlockEnabled = false;
+    });
+  }
+  res.json(mapped);
 });
 
 // ── Image Upload API ──
@@ -1345,7 +1364,12 @@ app.get('/api/admin/users', requireAuth, (req, res) => {
   if (!isAnyAdminSession(req)) {
     return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can view team members.' });
   }
-  res.json(db.getUsersPublic());
+  let users = db.getUsersPublic();
+  if (!isSuperAdminSession(req)) {
+    // Primary Super Admin account is hidden from Normal Admin
+    users = users.filter(u => u.username.toLowerCase() !== 'admin' && String(u.role).toLowerCase() !== 'super admin');
+  }
+  res.json(users);
 });
 
 
@@ -1522,6 +1546,9 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   if (assignedRole !== 'Admin') {
     assignedPerms = assignedPerms.filter(p => p !== 'firewall');
   }
+  if (!isSuperAdminSession(req)) {
+    assignedPerms = assignedPerms.filter(p => p !== 'domains' && p !== 'col_blocked_countries');
+  }
 
   let processedAllowed = [];
   if (Array.isArray(allowedTargetDomains)) {
@@ -1586,11 +1613,21 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
     return res.status(404).json({ error: 'User not found.' });
   }
 
-  if (target.username.toLowerCase() === 'admin' && role !== 'Admin') {
-    return res.status(400).json({ error: 'Cannot change role of primary Super Admin account.' });
+  if (target.username.toLowerCase() === 'admin' || String(target.role).toLowerCase() === 'super admin') {
+    return res.status(400).json({ error: 'Cannot modify primary Super Admin account.' });
   }
 
-  db.updateUserRole(id, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled);
+  let finalPerms = Array.isArray(permissions) ? [...permissions] : [];
+  if (!isSuperAdminSession(req)) {
+    // Normal Admin cannot grant or remove domains or col_blocked_countries (Super Admin exclusive)
+    finalPerms = finalPerms.filter(p => p !== 'domains' && p !== 'col_blocked_countries');
+    // Preserve target's existing col_blocked_countries permission if it was granted by Super Admin
+    if (Array.isArray(target.permissions) && target.permissions.includes('col_blocked_countries')) {
+      finalPerms.push('col_blocked_countries');
+    }
+  }
+
+  db.updateUserRole(id, role, finalPerms, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled);
   res.json({ success: true });
 });
 
@@ -1613,6 +1650,10 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const user = db.getUserByUsername(username);
   if (!user) {
     return res.status(404).json({ error: 'User not found.' });
+  }
+
+  if (!isSuperAdminSession(req) && (user.username.toLowerCase() === 'admin' || String(user.role).toLowerCase() === 'super admin')) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin can reset Super Admin password.' });
   }
 
   const salt = bcrypt.genSaltSync(10);
@@ -2172,23 +2213,25 @@ async function handleShortlinkRedirect(req, res) {
 
   // 5.5 Editor Accounts Country Block Check ("only Editor account py apply krna hy unko show na ho")
   if (isEditorLink) {
-    const hasCustomCountry = linkCreator && (linkCreator.hasCustomCountryRules || linkCreator.hasCustomBlockedCountries);
+    const isGlobalCountryBlockOn = settings.editorCountryBlockEnabled !== false;
+    const globalBlockedCountries = Array.isArray(settings.editorBlockedCountries) ? settings.editorBlockedCountries : [];
 
-    const isEditorCountryBlockOn = hasCustomCountry
-      ? (linkCreator.countryBlockEnabled !== false)
-      : ((settings.applyFirewallGlobally !== false)
-          ? (settings.editorCountryBlockEnabled !== false)
-          : ((linkCreator && linkCreator.countryBlockEnabled !== undefined)
-              ? !!linkCreator.countryBlockEnabled
-              : (settings.editorCountryBlockEnabled !== false)));
+    const creatorBlockedCountries = (linkCreator && Array.isArray(linkCreator.blockedCountries)) ? linkCreator.blockedCountries : [];
+    const creatorCountryBlockOn = linkCreator ? (linkCreator.countryBlockEnabled !== false) : false;
 
-    const effectiveBlockedCountries = (hasCustomCountry && Array.isArray(linkCreator.blockedCountries))
-      ? linkCreator.blockedCountries
-      : ((settings.applyFirewallGlobally !== false)
-          ? (settings.editorBlockedCountries || [])
-          : ((linkCreator && Array.isArray(linkCreator.blockedCountries))
-              ? linkCreator.blockedCountries
-              : (settings.editorBlockedCountries || [])));
+    let effectiveBlockedCountries = [];
+    let isEditorCountryBlockOn = false;
+
+    if (isGlobalCountryBlockOn && globalBlockedCountries.length > 0) {
+      isEditorCountryBlockOn = true;
+      effectiveBlockedCountries = globalBlockedCountries;
+      if (creatorCountryBlockOn && creatorBlockedCountries.length > 0) {
+        effectiveBlockedCountries = [...new Set([...effectiveBlockedCountries, ...creatorBlockedCountries])];
+      }
+    } else if (creatorCountryBlockOn && creatorBlockedCountries.length > 0) {
+      isEditorCountryBlockOn = true;
+      effectiveBlockedCountries = creatorBlockedCountries;
+    }
 
     if (isEditorCountryBlockOn && effectiveBlockedCountries.length > 0) {
       const clientCountry = (geoInfo.countryCode || '').trim().toUpperCase();
