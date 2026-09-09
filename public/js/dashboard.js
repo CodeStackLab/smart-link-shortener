@@ -113,12 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     if (themeToggleBtn) {
-      if (theme === 'light') themeToggleBtn.innerHTML = '☀️ Light';
-      else if (theme === 'dark') themeToggleBtn.innerHTML = '🌙 Dark';
-      else if (theme === 'multi') themeToggleBtn.innerHTML = '🌈 Sunset';
-      else if (theme === 'ocean') themeToggleBtn.innerHTML = '❄️ Ocean';
-      else if (theme === 'wine') themeToggleBtn.innerHTML = '🍷 Wine';
-      else if (theme === 'forest') themeToggleBtn.innerHTML = '🌲 Forest';
+      if (theme === 'light') themeToggleBtn.innerHTML = '☀️ Color Light Mode';
+      else if (theme === 'dark') themeToggleBtn.innerHTML = '🌙 Color Dark Mode';
+      else if (theme === 'multi') themeToggleBtn.innerHTML = '🌈 Sunset Mode';
+      else if (theme === 'ocean') themeToggleBtn.innerHTML = '❄️ Ocean Mode';
+      else if (theme === 'wine') themeToggleBtn.innerHTML = '🍷 Wine Mode';
+      else if (theme === 'forest') themeToggleBtn.innerHTML = '🌲 Forest Mode';
     }
   };
 

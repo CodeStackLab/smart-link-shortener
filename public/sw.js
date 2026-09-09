@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartlink-v101';
+const CACHE_NAME = 'smartlink-v102';
 const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
