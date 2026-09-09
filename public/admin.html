@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=48">
+  <link rel="stylesheet" href="/css/style.css?v=49">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -1808,8 +1808,8 @@
 
       <!-- Apply For All Editors Account (Editor Country Block System) -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="editor-country-block-card">
-        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.85rem;">
-          <div style="display:flex; align-items:center; gap:0.45rem;">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.95rem; padding-bottom:0.65rem; border-bottom:1px solid rgba(226,232,240,0.8);">
+          <div style="display:flex; align-items:center; gap:0.45rem; font-size:1.18rem; font-weight:900; letter-spacing:-0.01em; color:#0f172a;">
             <span class="accent">🌍</span> Apply For All Editors Account
           </div>
         </div>
@@ -1818,45 +1818,45 @@
           <input type="hidden" id="editor-country-block-enabled" value="true">
 
           <!-- Quick Toggle Country Pills -->
-          <div style="margin-bottom:0.85rem;">
-            <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
-              Quick Select / Toggle Blocked Countries:
+          <div style="margin-bottom:0.95rem;">
+            <label style="font-size:0.75rem; font-weight:900; text-transform:uppercase; letter-spacing:0.04em; color:#1e3a8a; display:block; margin-bottom:0.55rem;">
+              QUICK SELECT / TOGGLE BLOCKED COUNTRIES:
             </label>
-            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;" id="quick-country-buttons">
-              <button type="button" class="quick-country-btn" data-code="US" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇺🇸 US</button>
-              <button type="button" class="quick-country-btn" data-code="PK" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇰 PK</button>
-              <button type="button" class="quick-country-btn" data-code="IN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇳 IN</button>
-              <button type="button" class="quick-country-btn" data-code="BD" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇩 BD</button>
-              <button type="button" class="quick-country-btn" data-code="EG" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇪🇬 EG</button>
-              <button type="button" class="quick-country-btn" data-code="NG" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇳🇬 NG</button>
-              <button type="button" class="quick-country-btn" data-code="PH" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇵🇭 PH</button>
-              <button type="button" class="quick-country-btn" data-code="TW" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇹🇼 TW</button>
-              <button type="button" class="quick-country-btn" data-code="ID" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇮🇩 ID</button>
-              <button type="button" class="quick-country-btn" data-code="VN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇻🇳 VN</button>
-              <button type="button" class="quick-country-btn" data-code="BR" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇧🇷 BR</button>
-              <button type="button" class="quick-country-btn" data-code="RU" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇷🇺 RU</button>
-              <button type="button" class="quick-country-btn" data-code="CN" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇨🇳 CN</button>
-              <button type="button" class="quick-country-btn" data-code="TR" style="background:#f3f4f6; border:1.5px solid #d1d5db; color:#374151; padding:0.3rem 0.6rem; border-radius:8px; font-weight:800; font-size:0.75rem; cursor:pointer;">🇹🇷 TR</button>
+            <div style="display:flex; flex-wrap:wrap; gap:0.45rem;" id="quick-country-buttons">
+              <button type="button" class="quick-country-btn" data-code="US" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇺🇸 US</button>
+              <button type="button" class="quick-country-btn" data-code="PK" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇵🇰 PK</button>
+              <button type="button" class="quick-country-btn" data-code="IN" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇮🇳 IN</button>
+              <button type="button" class="quick-country-btn" data-code="BD" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇧🇩 BD</button>
+              <button type="button" class="quick-country-btn" data-code="EG" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇪🇬 EG</button>
+              <button type="button" class="quick-country-btn" data-code="NG" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇳🇬 NG</button>
+              <button type="button" class="quick-country-btn" data-code="PH" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇵🇭 PH</button>
+              <button type="button" class="quick-country-btn" data-code="TW" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇹🇼 TW</button>
+              <button type="button" class="quick-country-btn" data-code="ID" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇮🇩 ID</button>
+              <button type="button" class="quick-country-btn" data-code="VN" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇻🇳 VN</button>
+              <button type="button" class="quick-country-btn" data-code="BR" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇧🇷 BR</button>
+              <button type="button" class="quick-country-btn" data-code="RU" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇷🇺 RU</button>
+              <button type="button" class="quick-country-btn" data-code="CN" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇨🇳 CN</button>
+              <button type="button" class="quick-country-btn" data-code="TR" style="background:#ffffff; border:1.5px solid #dbeafe; color:#1e293b; padding:0.35rem 0.65rem; border-radius:10px; font-weight:800; font-size:0.78rem; cursor:pointer;">🇹🇷 TR</button>
             </div>
           </div>
 
           <!-- Active Blocked Countries List (Pills with ✕) -->
-          <div style="margin-bottom:0.85rem;">
-            <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.4rem;">
-              Currently Blocked Countries for Editors:
+          <div style="margin-bottom:0.95rem;">
+            <label style="font-size:0.75rem; font-weight:900; text-transform:uppercase; letter-spacing:0.04em; color:#1e3a8a; display:block; margin-bottom:0.45rem;">
+              CURRENTLY BLOCKED COUNTRIES FOR EDITORS:
             </label>
-            <div id="editor-blocked-countries-tags" style="display:flex; flex-wrap:wrap; gap:0.45rem; min-height:36px; padding:0.55rem 0.75rem; background:var(--input-bg,#f9fafb); border:1.5px solid var(--border,#e5e7eb); border-radius:10px; align-items:center;"></div>
+            <div id="editor-blocked-countries-tags" style="display:flex; flex-wrap:wrap; gap:0.45rem; min-height:48px; padding:0.65rem 0.85rem; background:#f8fafc; border:1.5px solid #bfdbfe; border-radius:12px; align-items:center;"></div>
           </div>
 
           <!-- Add Custom Country Code -->
-          <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
-            <input type="text" id="editor-custom-country-code" class="form-control" placeholder="Add 2-letter ISO code (e.g. US, GB, CA, SA)" maxlength="2" style="text-transform:uppercase; font-weight:800; font-family:monospace; font-size:0.88rem;">
-            <button type="button" id="btn-add-editor-country" class="btn btn-secondary" style="font-weight:800; white-space:nowrap; padding:0.5rem 1rem;">
-              ➕ Add
+          <div style="display:flex; gap:0.5rem; margin-bottom:1.15rem;">
+            <input type="text" id="editor-custom-country-code" class="form-control" placeholder="ADD 2-LETTER ISO CO" maxlength="2" style="text-transform:uppercase; font-weight:800; font-family:monospace; font-size:0.88rem; border:1.5px solid #bfdbfe; border-radius:10px;">
+            <button type="button" id="btn-add-editor-country" class="btn btn-secondary" style="font-weight:800; white-space:nowrap; padding:0.55rem 1.15rem; border:1.5px solid #bfdbfe; border-radius:10px; background:#ffffff; color:#1e293b;">
+              + Add
             </button>
           </div>
 
-          <button type="submit" id="btn-save-editor-country-block" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #ef4444 0%, #7c3aed 100%); min-height:46px; font-weight:800; font-size:0.9rem; border:none; box-shadow:0 4px 14px rgba(239,68,68,0.3);">
+          <button type="submit" id="btn-save-editor-country-block" class="btn btn-primary btn-block" style="background:linear-gradient(135deg, #ef4444 0%, #6366f1 100%); min-height:48px; font-weight:800; font-size:0.95rem; border:none; border-radius:12px; box-shadow:0 4px 14px rgba(239,68,68,0.3);">
             💾 Apply For All Editors Account
           </button>
         </form>
@@ -2676,7 +2676,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=81"></script>
+<script src="/js/dashboard.js?v=82"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

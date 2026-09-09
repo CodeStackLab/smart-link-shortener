@@ -2889,9 +2889,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.style.color = '#991b1b';
         btn.style.boxShadow = '0 0 0 1px #dc2626';
       } else {
-        btn.style.background = '#f3f4f6';
-        btn.style.borderColor = '#d1d5db';
-        btn.style.color = '#374151';
+        btn.style.background = '#ffffff';
+        btn.style.borderColor = '#dbeafe';
+        btn.style.color = '#1e293b';
         btn.style.boxShadow = 'none';
       }
     });
