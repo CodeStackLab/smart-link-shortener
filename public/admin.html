@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=55">
+  <link rel="stylesheet" href="/css/style.css?v=56">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -1603,7 +1603,14 @@
 
       <!-- Auto Shield & Firewall Settings -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="auto-shield-card">
-        <div class="section-title"><span class="accent">🛡️</span> Auto Shield &amp; Firewall Settings</div>
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.45rem;">
+            <span class="accent">🛡️</span> Auto Shield &amp; Firewall Settings
+          </div>
+          <span style="font-size:0.7rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#0066fe,#6c3de8); padding:0.25rem 0.65rem; border-radius:20px; box-shadow:0 2px 8px rgba(0,102,254,0.3);">
+            🛡️ Global Shield
+          </span>
+        </div>
 
         <div id="shield-readonly-notice" style="display:none !important;"></div>
 
@@ -1629,7 +1636,7 @@
               <input type="checkbox" id="bot-protection-enabled" style="width:16px; height:16px; accent-color:var(--red-primary);">
               <span>Enable Auto Bot Protection</span>
             </label>
-            <div id="bot-settings-group" style="margin-top:0.5rem; padding-left:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+            <div id="bot-settings-group" class="firewall-settings-2col" style="margin-top:0.5rem; padding-left:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
               <div class="form-group" style="margin-bottom:0;">
                 <label for="bot-limit-clicks">Max Clicks</label>
                 <input type="number" id="bot-limit-clicks" class="form-control form-control-sm" min="1" required>
@@ -1646,7 +1653,7 @@
               <input type="checkbox" id="vpn-protection-enabled" style="width:16px; height:16px; accent-color:var(--red-primary);">
               <span>Enable VPN Auto-Block</span>
             </label>
-            <div id="vpn-settings-group" style="margin-top:0.5rem; padding-left:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+            <div id="vpn-settings-group" class="firewall-settings-2col" style="margin-top:0.5rem; padding-left:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
               <div class="form-group" style="margin-bottom:0;">
                 <label for="vpn-limit-clicks">Max VPN Hits</label>
                 <input type="number" id="vpn-limit-clicks" class="form-control form-control-sm" min="1" required>
@@ -1662,7 +1669,7 @@
           <div style="border-top:1px solid var(--border); padding-top:0.75rem; margin-bottom:0.75rem;">
             <div style="font-weight:700; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">⚡ Traffic Quality, Rate Limits &amp; Temporary Blocks</div>
             
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+            <div class="firewall-settings-2col" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
               <div class="form-group" style="margin-bottom:0;">
                 <label for="temp-block-duration">Temp Block (Min)</label>
                 <input type="number" id="temp-block-duration" class="form-control form-control-sm" min="1" max="1440" value="30">
@@ -1673,7 +1680,7 @@
               </div>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+            <div class="firewall-settings-2col" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
               <div class="form-group" style="margin-bottom:0;">
                 <label for="rate-limit-window">Rate Window (Sec)</label>
                 <input type="number" id="rate-limit-window" class="form-control form-control-sm" min="1" value="60">

@@ -1793,7 +1793,7 @@ input, select, textarea, button {
   .platform-chip { height: 44px; min-width: auto; flex: 1 1 auto; justify-content: center; font-size: 0.88rem !important; font-weight: 700 !important; }
 
   /* Grid overrides */
-  div[style*="grid-template-columns:1fr 1fr"]:not(.traffic-grid-2col):not(#traffic-filter-cards-grid):not(#traffic-action-buttons-grid) { grid-template-columns: 1fr !important; }
+  div[style*="grid-template-columns:1fr 1fr"]:not(.traffic-grid-2col):not(#traffic-filter-cards-grid):not(#traffic-action-buttons-grid):not(.firewall-settings-2col):not(#bot-settings-group):not(#vpn-settings-group) { grid-template-columns: 1fr !important; }
   div[style*="repeat(auto-fit"]:not(.traffic-grid-2col) { grid-template-columns: 1fr !important; }
   .form-row-2, .form-grid { grid-template-columns: 1fr !important; }
 
@@ -3359,6 +3359,69 @@ body.is-editor #custom-domains-card {
 [data-theme="dark"] #default-fallback-url-card .fallback-notice-desc-styled {
   color: #cbd5e1 !important;
 }
+
+/* ── Firewall Tab & Auto Shield Mobile Polish (Corner Radius, Padding & Inputs Alignment) ── */
+@media (max-width: 768px) {
+  #tab-firewall .card,
+  #auto-shield-card,
+  #block-ip-card,
+  #global-fb-rules-card,
+  #editor-country-block-card {
+    border-radius: 12px !important;
+    padding: 1.1rem !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+  #apply-firewall-globally-wrap,
+  #block-ip-globally-wrap {
+    border-radius: 10px !important;
+    padding: 0.75rem 0.85rem !important;
+  }
+  #bot-settings-group,
+  #vpn-settings-group {
+    padding-left: 0.25rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+  .firewall-settings-2col {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #tab-firewall .card,
+  #auto-shield-card,
+  #block-ip-card,
+  #global-fb-rules-card,
+  #editor-country-block-card {
+    border-radius: 12px !important;
+    padding: 1rem 0.85rem !important;
+  }
+  #apply-firewall-globally-wrap,
+  #block-ip-globally-wrap {
+    border-radius: 9px !important;
+    padding: 0.65rem 0.75rem !important;
+  }
+  #bot-settings-group,
+  #vpn-settings-group {
+    padding-left: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.45rem !important;
+  }
+  .firewall-settings-2col {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.45rem !important;
+  }
+  #auto-shield-card .section-title {
+    font-size: 0.95rem !important;
+  }
+}
+
 
 
 
