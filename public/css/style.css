@@ -3278,8 +3278,8 @@ body:not(.is-admin) #fb-breakdown-card {
   display: none !important;
 }
 
-/* ── Fallback Redirect: Admin & Super Admin Only ── */
-/* In Editor accounts: completely hide global fallback redirect card. */
+/* ── Fallback Redirect: Super Admin Only (Hidden from Editors & Normal Admins) ── */
+body:not(.is-superadmin) #default-fallback-url-card,
 body:not(.is-admin) #create-fallback-url-group,
 body:not(.is-admin) #fallback-url,
 body:not(.is-admin) #modal-rule-fallback-wrap,
@@ -3301,8 +3301,8 @@ body.is-editor #traffic-rules-modal {
   display: none !important;
 }
 
-/* ── Custom Domains (Add Domain / Sub Domain): Admin & Super Admin Only ── */
-/* Strictly hide Add Domain / Sub Domain card from all Editor accounts */
+/* ── Custom Domains (Add Domain / Sub Domain): Super Admin Only (Hidden from Editors & Normal Admins) ── */
+body:not(.is-superadmin) #custom-domains-card,
 body:not(.is-admin) #custom-domains-card,
 body.is-editor #custom-domains-card {
   display: none !important;

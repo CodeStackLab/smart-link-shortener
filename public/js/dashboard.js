@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function isSuperAdminUser() {
     const r = String(currentLoggedInRole || '').toLowerCase().trim();
     const u = String(currentLoggedInUsername || '').toLowerCase().trim();
-    return u === 'admin' || r === 'admin' || r === 'super admin';
+    return u === 'admin' || r === 'super admin';
   }
 
   function isFullAdminUser() {
@@ -278,8 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isInitial) {
           loadLinks();
           loadShieldSettings();
-          if (isSuperAdminUser()) {
+          if (isFullAdminUser()) {
             loadUsers();
+          }
+          if (isSuperAdminUser()) {
+            loadDomains();
           }
         }
       })
@@ -668,28 +671,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (topStats) topStats.style.removeProperty('display');
     }
 
-    // ─── Super Admin Gating ─────────────────────────────────────
-    // Only the PRIMARY admin account (username 'admin') is the Super Admin.
-    // All others (even role=Admin) CANNOT manage team members.
-    const isSuperAdmin = isSuperAdminUser();
-
+    // ─── Admin Controls (Super Admin & Normal Admin) ────────────
+    // Super Admin and Normal Admin can manage team members, country block, and firewall.
     const teamCard = document.getElementById('team-management-card');
     if (teamCard) {
-      teamCard.style.display = isSuperAdmin ? '' : 'none';
+      teamCard.style.display = isFullAdmin ? '' : 'none';
     }
 
-    // Editor Accounts Country Block Card is strictly for Admin; completely hidden from Editors ("unko show na ho")
+    // Editor Accounts Country Block Card is for Admin & Super Admin; completely hidden from Editors
     const editorCountryBlockCard = document.getElementById('editor-country-block-card');
     if (editorCountryBlockCard) {
-      editorCountryBlockCard.style.display = isSuperAdmin ? '' : 'none';
+      editorCountryBlockCard.style.display = isFullAdmin ? '' : 'none';
     }
 
-    // Role selector in invite form: only Super Admin can see the Admin option
+    // Role selector in invite form: only Admins can see the Admin option
     const roleSelectInvite = document.getElementById('new-user-role');
     if (roleSelectInvite) {
       const adminOpt = roleSelectInvite.querySelector('option[value="Admin"]');
       if (adminOpt) {
-        if (!isSuperAdmin) {
+        if (!isFullAdmin) {
           adminOpt.style.display = 'none';
           // Force Editor if somehow Admin was selected
           if (roleSelectInvite.value === 'Admin') roleSelectInvite.value = 'Editor';
@@ -700,9 +700,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ─────────────────────────────────────────────────────────────
 
-    // ─── Firewall Global Controls — Super Admin ONLY ─────────────
-    // All "Apply Globally / All Editors" UI elements must be hidden
-    // from Editors and regular Admins. Only Super Admin sees them.
+    // ─── Firewall Global Controls — Admin & Super Admin ─────────
+    // All "Apply Globally / All Editors" UI elements are visible to
+    // Super Admin and Normal Admin, hidden from Editors.
     const globalFirewallEls = [
       'block-ip-globally-wrap',       // "Apply Block Globally" toggle in Block IP card
       'apply-firewall-globally-wrap', // "Apply to All Editors" toggle in Auto Shield card
@@ -710,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     globalFirewallEls.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.style.display = isSuperAdmin ? '' : 'none';
+      if (el) el.style.display = isFullAdmin ? '' : 'none';
     });
 
     // Save button + read-only note in Auto Shield form
@@ -718,10 +718,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const shieldNote = document.getElementById('shield-admin-only-note');
     const readonlyNotice = document.getElementById('shield-readonly-notice');
 
-    // ── Auto Shield: only Super Admin can change global settings ──
+    // ── Auto Shield: Admin & Super Admin can change global settings ──
     const autoShieldForm = document.getElementById('auto-shield-form');
     if (autoShieldForm) {
-      if (isSuperAdmin) {
+      if (isFullAdmin) {
         autoShieldForm.querySelectorAll('input, button[type="submit"]').forEach(el => {
           el.disabled = false;
           el.style.opacity = '';
@@ -741,9 +741,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     }
-    if (saveShieldBtn) saveShieldBtn.style.display = isSuperAdmin ? '' : 'none';
-    if (shieldNote) shieldNote.style.display = isSuperAdmin ? 'none' : 'block';
-    if (readonlyNotice) readonlyNotice.style.display = isSuperAdmin ? 'none' : 'block';
+    if (saveShieldBtn) saveShieldBtn.style.display = isFullAdmin ? '' : 'none';
+    if (shieldNote) shieldNote.style.display = isFullAdmin ? 'none' : 'block';
+    if (readonlyNotice) readonlyNotice.style.display = isFullAdmin ? 'none' : 'block';
 
     // ── Block IP form: Editors CAN use it (for their own links) ──
     // BUT the "Globally for All Editors" label/button must be Admin-only.
@@ -759,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Change button text based on role
     if (blockIpSubmitBtn) {
-      if (isSuperAdmin) {
+      if (isFullAdmin) {
         blockIpSubmitBtn.innerHTML = '🚫 Block IP Globally for All Editors';
         blockIpSubmitBtn.style.opacity = '';
         blockIpSubmitBtn.style.cursor = '';
@@ -2678,7 +2678,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleSettingsGroup('vpn-settings-group', vpnProtectionCb ? vpnProtectionCb.checked : false);
 
       // Apply read-only mode for non-admin users (Editors with firewall permission)
-      const isAdminUser = isSuperAdminUser();
+      const isAdminUser = isFullAdminUser();
       const readonlyNotice = document.getElementById('shield-readonly-notice');
       const adminOnlyNote = document.getElementById('shield-admin-only-note');
       const saveShieldBtn = document.getElementById('save-shield-btn');
@@ -3015,9 +3015,9 @@ document.addEventListener('DOMContentLoaded', () => {
     autoShieldForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Only Super Admin can save Shield settings
-      if (!isSuperAdminUser()) {
-        showAlert('⚠️ Shield settings are managed by Super Admin and apply globally. You can view them but not change them.', true);
+      // Only Admin can save Shield settings
+      if (!isFullAdminUser()) {
+        showAlert('⚠️ Shield settings are managed by Admin and apply globally. You can view them but not change them.', true);
         return;
       }
       
@@ -3376,7 +3376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
         const isUserSuperAdmin = user.username.toLowerCase() === 'admin';
-        const isSuperAdminViewer = isSuperAdminUser();
+        const isSuperAdminViewer = isFullAdminUser();
 
         // Role display
         let roleColor, roleBg, roleLabel;
