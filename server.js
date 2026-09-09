@@ -1516,6 +1516,37 @@ function validatePasswordRequirements(password) {
   return null;
 }
 
+function formatDisplayName(str) {
+  if (!str) return '';
+  let s = str.trim();
+  if (s.toLowerCase() === 'admin') return 'Super Admin';
+
+  s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
+  s = s.replace(/_+/g, ' ');
+
+  if (!s.includes(' ')) {
+    const lower = s.toLowerCase();
+    const commonSuffixes = ['bhai', 'khan', 'admin', 'editor'];
+    for (const suf of commonSuffixes) {
+      if (lower.endsWith(suf) && lower.length > suf.length + 1) {
+        const prefix = s.slice(0, s.length - suf.length);
+        const suffix = s.slice(s.length - suf.length);
+        s = prefix + ' ' + suffix;
+        break;
+      }
+    }
+  }
+
+  return s.split(/\s+/)
+    .map(word => {
+      if (word.includes('-')) {
+        return word.split('-').map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '').join('-');
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   if (!isAnyAdminSession(req)) {
     return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can invite/create new users.' });
@@ -1526,8 +1557,8 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   if (!rawUser) {
     return res.status(400).json({ error: 'Username is required.' });
   }
-  // Ensure the first character is always capitalized for all users & normal admins
-  const cleanUser = rawUser.charAt(0).toUpperCase() + rawUser.slice(1);
+  // Auto-capitalize each word (including compound words like khanbhai -> Khan Bhai)
+  const cleanUser = formatDisplayName(rawUser);
   if (cleanUser.length < 5) {
     return res.status(400).json({ error: 'Username must be at least 5 characters long.' });
   }

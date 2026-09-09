@@ -45,6 +45,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Smart Display Name Formatter (Capitalizes every word, handles compound names like khanbhai -> Khan Bhai)
+  function formatDisplayName(str) {
+    if (!str) return '';
+    let s = str.trim();
+    if (s.toLowerCase() === 'admin') return 'Super Admin';
+
+    s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
+    s = s.replace(/_+/g, ' ');
+
+    if (!s.includes(' ')) {
+      const lower = s.toLowerCase();
+      const commonSuffixes = ['bhai', 'khan', 'admin', 'editor'];
+      for (const suf of commonSuffixes) {
+        if (lower.endsWith(suf) && lower.length > suf.length + 1) {
+          const prefix = s.slice(0, s.length - suf.length);
+          const suffix = s.slice(s.length - suf.length);
+          s = prefix + ' ' + suffix;
+          break;
+        }
+      }
+    }
+
+    return s.split(/\s+/)
+      .map(word => {
+        if (word.includes('-')) {
+          return word.split('-').map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '').join('-');
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(' ');
+  }
+
   // Theme Switcher Engine
   let currentTheme = localStorage.getItem('theme') || 'light';
 
@@ -226,9 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
             userBadge.style.boxShadow = '';
             userBadge.className = 'badge user-badge-pill';
           } else {
-            // Normal Admin / User: remove (Admin) and () symbols, display clean username with first letter capitalized in black
-            const capName = uName ? (uName.charAt(0).toUpperCase() + uName.slice(1)) : '';
-            userBadge.textContent = capName;
+            // Normal Admin / User: display with icon (🛡️ Admin / 👤 Editor) and every word capitalized (e.g. 👤 Khan Bhai)
+            const formattedName = formatDisplayName(uName);
+            const userIcon = (uRole === 'Admin') ? '🛡️' : '👤';
+            userBadge.textContent = `${userIcon} ${formattedName}`;
             userBadge.style.background = '';
             userBadge.style.color = '';
             userBadge.style.boxShadow = '';
@@ -3454,7 +3487,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${isUserSuperAdmin ? '<span style="font-size:0.95rem;">👑</span>' : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'}
               </div>
               <div>
-                <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;text-transform:capitalize;">${user.username ? (user.username.charAt(0).toUpperCase() + user.username.slice(1)) : ''}</div>
+                <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;">${formatDisplayName(user.username)}</div>
                 ${isSelf ? '<div style="font-size:0.6rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.06em;">You</div>' : ''}
               </div>
             </div>
@@ -3965,7 +3998,8 @@ document.addEventListener('DOMContentLoaded', () => {
     newUserUsernameInput.addEventListener('input', () => {
       const val = newUserUsernameInput.value;
       if (val.length > 0) {
-        const cap = val.charAt(0).toUpperCase() + val.slice(1);
+        // Capitalize first letter of each word automatically
+        const cap = val.replace(/(^|[\s_-]+)([a-z])/g, (match, sep, char) => sep + char.toUpperCase());
         if (val !== cap) {
           const start = newUserUsernameInput.selectionStart;
           const end = newUserUsernameInput.selectionEnd;
@@ -3981,8 +4015,11 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const usernameInput = document.getElementById('new-user-username');
       const passwordInput = document.getElementById('new-user-password');
-      const rawUser = usernameInput ? usernameInput.value.trim() : '';
-      const username = rawUser ? (rawUser.charAt(0).toUpperCase() + rawUser.slice(1)) : '';
+      let rawUser = usernameInput ? usernameInput.value.trim() : '';
+      if (rawUser) {
+        rawUser = formatDisplayName(rawUser);
+      }
+      const username = rawUser;
       const password = passwordInput ? passwordInput.value.trim() : '';
 
       if (!username) {
