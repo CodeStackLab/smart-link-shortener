@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function isSuperAdminUser() {
     const r = String(currentLoggedInRole || '').toLowerCase().trim();
     const u = String(currentLoggedInUsername || '').toLowerCase().trim();
-    return u === 'admin' || r === 'super admin';
+    return u === 'admin' || r === 'admin' || r === 'super admin';
   }
 
   function isFullAdminUser() {
@@ -3376,7 +3376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       usersTbody.innerHTML = users.map(user => {
         const isSelf = user.username.toLowerCase() === currentLoggedInUsername.toLowerCase();
         const isUserSuperAdmin = user.username.toLowerCase() === 'admin';
-        const isSuperAdminViewer = currentLoggedInUsername.toLowerCase() === 'admin';
+        const isSuperAdminViewer = isSuperAdminUser();
 
         // Role display
         let roleColor, roleBg, roleLabel;

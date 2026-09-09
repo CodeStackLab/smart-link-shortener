@@ -61,12 +61,12 @@ function isSuperAdminSession(req) {
   if (!req || !req.session) return false;
   const u = (req.session.username || '').trim().toLowerCase();
   const r = (req.session.role || '').trim().toLowerCase();
-  return u === 'admin' || r === 'super admin';
+  return u === 'admin' || r === 'super admin' || r === 'admin';
 }
 
 function requireSuperAdmin(req, res, next) {
   if (isSuperAdminSession(req)) return next();
-  return res.status(403).json({ error: 'Access denied. Only Super Admin can manage domains.' });
+  return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can manage domains.' });
 }
 
 function getUserPermissions(username, role) {
@@ -75,16 +75,12 @@ function getUserPermissions(username, role) {
     ? user.permissions
     : null;
 
-  const isSuperAdmin = (username || '').toLowerCase() === 'admin' || (role || '').toLowerCase() === 'super admin';
-
-  // Admin/Super Admin always get all tab/feature permissions
-  if (isAdminRole(role)) {
+  // Admin/Super Admin always get all tab/feature permissions including domains
+  if (isAdminRole(role) || (username || '').toLowerCase() === 'admin' || (role || '').toLowerCase() === 'super admin') {
     const adminBase = db.getDefaultPermissions('Admin');
     // Also pass through any custom granular perms (col_*, geo_*, logs_*) stored for this admin
     const customPerms = storedPerms ? storedPerms.filter(p => !adminBase.includes(p)) : [];
-    const allAdminPerms = [...adminBase, ...customPerms];
-    // Domains is strictly Super Admin only
-    return isSuperAdmin ? allAdminPerms : allAdminPerms.filter(p => p !== 'domains');
+    return [...new Set([...adminBase, ...customPerms])];
   }
 
   // Editor: use stored perms if available, otherwise fall back to defaults
@@ -427,8 +423,8 @@ app.get('/api/session', (req, res) => {
 
     // Always read fresh permissions from DB (respects admin edits without requiring re-login)
     const perms = getUserPermissions(req.session.username, role);
-    const isSuperAdmin = (req.session.username || '').toLowerCase() === 'admin';
-    const effectiveRole = isSuperAdmin ? 'Super Admin' : (role || 'Editor');
+    const isSuperAdmin = isSuperAdminSession(req);
+    const effectiveRole = (req.session.username || '').toLowerCase() === 'admin' ? 'Super Admin' : (role || 'Editor');
     
     // URL Masking: If admin -> false; if global unmask -> false; otherwise depends on individual user permission 'unmask_target_url'
     let maskEditorUrls = false;
@@ -1334,8 +1330,8 @@ app.post('/api/pingback', (req, res) => {
 // ----------------------------------------------------
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  if ((req.session.username || '').toLowerCase() !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Only Super Admin can view team members.' });
+  if (!isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can view team members.' });
   }
   res.json(db.getUsersPublic());
 });
@@ -1485,8 +1481,8 @@ function validatePasswordRequirements(password) {
 }
 
 app.post('/api/admin/users/invite', requireAuth, (req, res) => {
-  if ((req.session.username || '').toLowerCase() !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can invite/create new users.' });
+  if (!isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can invite/create new users.' });
   }
 
   const { username, password, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled } = req.body;
@@ -1566,8 +1562,8 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
-  if ((req.session.username || '').toLowerCase() !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can modify user roles & permissions.' });
+  if (!isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can modify user roles & permissions.' });
   }
 
   const { id, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled } = req.body;
@@ -1589,8 +1585,8 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
 app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const { username, newPassword } = req.body;
   
-  if ((req.session.username || '').toLowerCase() !== 'admin' && req.session.username !== username) {
-    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can reset user passwords.' });
+  if (!isSuperAdminSession(req) && req.session.username !== username) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can reset user passwords.' });
   }
 
   if (!username || !newPassword) {
@@ -1614,8 +1610,8 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
 });
 
 app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
-  if ((req.session.username || '').toLowerCase() !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Only Primary Super Admin can delete team members.' });
+  if (!isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can delete team members.' });
   }
 
   const { id } = req.params;
