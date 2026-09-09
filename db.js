@@ -378,6 +378,10 @@ module.exports = {
     if (!user.id) {
       user.id = 'usr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
     }
+    if (user.username && typeof user.username === 'string' && user.username.trim().toLowerCase() !== 'admin') {
+      const uTrim = user.username.trim();
+      user.username = uTrim.charAt(0).toUpperCase() + uTrim.slice(1);
+    }
     const isSuper = (user.username || '').toLowerCase() === 'admin' || user.role === 'Super Admin';
     // Only set default permissions when none were explicitly provided (if array doesn't exist)
     if (!Array.isArray(user.permissions)) {

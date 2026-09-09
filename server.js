@@ -1522,10 +1522,12 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   }
 
   const { username, password, role, permissions, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled } = req.body;
-  const cleanUser = (username || '').trim().toLowerCase();
-  if (!cleanUser) {
+  const rawUser = (username || '').trim();
+  if (!rawUser) {
     return res.status(400).json({ error: 'Username is required.' });
   }
+  // Ensure the first character is always capitalized for all users & normal admins
+  const cleanUser = rawUser.charAt(0).toUpperCase() + rawUser.slice(1);
   if (cleanUser.length < 5) {
     return res.status(400).json({ error: 'Username must be at least 5 characters long.' });
   }

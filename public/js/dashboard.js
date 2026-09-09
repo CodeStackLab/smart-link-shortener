@@ -226,8 +226,9 @@ document.addEventListener('DOMContentLoaded', () => {
             userBadge.style.boxShadow = '';
             userBadge.className = 'badge user-badge-pill';
           } else {
-            // Normal Admin / User: remove (Admin) and () symbols, display clean username in black
-            userBadge.textContent = uName;
+            // Normal Admin / User: remove (Admin) and () symbols, display clean username with first letter capitalized in black
+            const capName = uName ? (uName.charAt(0).toUpperCase() + uName.slice(1)) : '';
+            userBadge.textContent = capName;
             userBadge.style.background = '';
             userBadge.style.color = '';
             userBadge.style.boxShadow = '';
@@ -3453,7 +3454,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${isUserSuperAdmin ? '<span style="font-size:0.95rem;">👑</span>' : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'}
               </div>
               <div>
-                <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;">${user.username}</div>
+                <div style="font-weight:800;font-size:0.83rem;color:var(--text-primary);line-height:1.2;text-transform:capitalize;">${user.username ? (user.username.charAt(0).toUpperCase() + user.username.slice(1)) : ''}</div>
                 ${isSelf ? '<div style="font-size:0.6rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.06em;">You</div>' : ''}
               </div>
             </div>
@@ -3959,12 +3960,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   renderNewUserBlockedCountriesTags();
 
+  const newUserUsernameInput = document.getElementById('new-user-username');
+  if (newUserUsernameInput) {
+    newUserUsernameInput.addEventListener('input', () => {
+      const val = newUserUsernameInput.value;
+      if (val.length > 0) {
+        const cap = val.charAt(0).toUpperCase() + val.slice(1);
+        if (val !== cap) {
+          const start = newUserUsernameInput.selectionStart;
+          const end = newUserUsernameInput.selectionEnd;
+          newUserUsernameInput.value = cap;
+          newUserUsernameInput.setSelectionRange(start, end);
+        }
+      }
+    });
+  }
+
   if (inviteUserForm) {
     inviteUserForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const usernameInput = document.getElementById('new-user-username');
       const passwordInput = document.getElementById('new-user-password');
-      const username = usernameInput ? usernameInput.value.trim() : '';
+      const rawUser = usernameInput ? usernameInput.value.trim() : '';
+      const username = rawUser ? (rawUser.charAt(0).toUpperCase() + rawUser.slice(1)) : '';
       const password = passwordInput ? passwordInput.value.trim() : '';
 
       if (!username) {
