@@ -3422,6 +3422,54 @@ body.is-editor #custom-domains-card {
   }
 }
 
+/* ── Quick Country Toggle Buttons: Perfectly Centered 4x4 Grid ── */
+#quick-country-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0.45rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  justify-items: center !important;
+  justify-content: center !important;
+}
+
+.quick-country-btn {
+  width: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+#new-user-quick-countries,
+#edit-user-quick-countries {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0.35rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  justify-items: center !important;
+  justify-content: center !important;
+}
+
+.new-quick-country-btn,
+.edit-quick-country-btn {
+  width: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+#editor-blocked-countries-tags {
+  justify-content: center !important;
+}
+
+
 
 
 
