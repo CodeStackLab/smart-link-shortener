@@ -2984,11 +2984,6 @@ td[data-label="Actions"].col-hidden-perm {
   pointer-events: none !important;
 }
 
-body:not(.is-superadmin) #wrap-new-col-blocked-countries,
-body:not(.is-superadmin) #wrap-edit-col-blocked-countries {
-  display: none !important;
-}
-
 td[data-label].col-hidden-perm::before,
 td[data-label].col-hidden-perm > * {
   display: none !important;

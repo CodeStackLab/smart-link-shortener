@@ -1547,7 +1547,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
     assignedPerms = assignedPerms.filter(p => p !== 'firewall');
   }
   if (!isSuperAdminSession(req)) {
-    assignedPerms = assignedPerms.filter(p => p !== 'domains' && p !== 'col_blocked_countries');
+    assignedPerms = assignedPerms.filter(p => p !== 'domains');
   }
 
   let processedAllowed = [];
@@ -1619,12 +1619,8 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
 
   let finalPerms = Array.isArray(permissions) ? [...permissions] : [];
   if (!isSuperAdminSession(req)) {
-    // Normal Admin cannot grant or remove domains or col_blocked_countries (Super Admin exclusive)
-    finalPerms = finalPerms.filter(p => p !== 'domains' && p !== 'col_blocked_countries');
-    // Preserve target's existing col_blocked_countries permission if it was granted by Super Admin
-    if (Array.isArray(target.permissions) && target.permissions.includes('col_blocked_countries')) {
-      finalPerms.push('col_blocked_countries');
-    }
+    // Only domains is strictly Super Admin exclusive; col_blocked_countries can be managed by both Super Admin and Normal Admin
+    finalPerms = finalPerms.filter(p => p !== 'domains');
   }
 
   db.updateUserRole(id, role, finalPerms, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled);

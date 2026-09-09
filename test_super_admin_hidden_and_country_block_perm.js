@@ -26,35 +26,35 @@ test('1. admin.html contains wrap-new-col-blocked-countries and wrap-edit-col-bl
   assert(html.includes('id="wrap-new-col-blocked-countries"'), 'Must have wrap-new-col-blocked-countries');
   assert(html.includes('value="col_blocked_countries"'), 'Must have col_blocked_countries checkbox');
   assert(html.includes('id="wrap-edit-col-blocked-countries"'), 'Must have wrap-edit-col-blocked-countries');
-  assert(html.includes('dashboard.js?v=84'), 'Must have bumped dashboard.js version to v84');
-  assert(html.includes('style.css?v=51'), 'Must have bumped style.css version to v51');
+  assert(html.includes('dashboard.js?v=85'), 'Must have bumped dashboard.js version to v85');
+  assert(html.includes('style.css?v=52'), 'Must have bumped style.css version to v52');
 });
 
 // ── 2. Stylesheet Security & Column Hiding ──
-test('2. style.css hides col_blocked_countries toggle for non-superadmins & hides column on col-hidden-perm', () => {
+test('2. style.css hides column on col-hidden-perm and allows both Super Admin and Normal Admin to see toggle', () => {
   const css = fs.readFileSync('./public/css/style.css', 'utf8');
-  assert(css.includes('body:not(.is-superadmin) #wrap-new-col-blocked-countries'), 'Must hide wrap-new-col-blocked-countries for non-superadmin');
-  assert(css.includes('body:not(.is-superadmin) #wrap-edit-col-blocked-countries'), 'Must hide wrap-edit-col-blocked-countries for non-superadmin');
+  assert(!css.includes('body:not(.is-superadmin) #wrap-new-col-blocked-countries'), 'Must not hide wrap-new-col-blocked-countries from normal admin');
+  assert(!css.includes('body:not(.is-superadmin) #wrap-edit-col-blocked-countries'), 'Must not hide wrap-edit-col-blocked-countries from normal admin');
   assert(css.includes('td[data-label="Blocked Countries"].col-hidden-perm'), 'Must hide data-label="Blocked Countries" on col-hidden-perm');
   assert(css.includes('td.col-blocked-countries.col-hidden-perm'), 'Must hide td.col-blocked-countries on col-hidden-perm');
   assert(css.includes('th#th-blocked-countries.col-hidden-perm'), 'Must hide th#th-blocked-countries on col-hidden-perm');
 });
 
 // ── 3. Frontend Column Visibility & Super Admin Filtering ──
-test('3. dashboard.js includes col_blocked_countries in colMap and hides admin from loadUsers for non-superadmin', () => {
+test('3. dashboard.js includes col_blocked_countries in colMap and shows toggle for both Super Admin and Normal Admin', () => {
   const js = fs.readFileSync('./public/js/dashboard.js', 'utf8');
   assert(js.includes("perm: 'col_blocked_countries'"), 'colMap must include col_blocked_countries');
   assert(js.includes("thId: 'th-blocked-countries'"), 'colMap must map to th-blocked-countries');
   assert(js.includes("tdClass: 'col-blocked-countries'"), 'colMap must map to col-blocked-countries');
-  assert(js.includes("wrapNewColBlocked.style.display = isSuper ? 'flex' : 'none'"), 'wrapNewColBlocked must be gated by isSuper');
-  assert(js.includes("wrapEditColBlocked.style.display = isSuper ? 'flex' : 'none'"), 'wrapEditColBlocked must be gated by isSuper');
+  assert(js.includes("wrapNewColBlocked.style.display = isFullAdmin ? 'flex' : 'none'"), 'wrapNewColBlocked must be visible to isFullAdmin');
+  assert(js.includes("wrapEditColBlocked.style.display = isFullAdmin ? 'flex' : 'none'"), 'wrapEditColBlocked must be visible to isFullAdmin');
   assert(js.includes("filteredUsers.filter(u => u.username.toLowerCase() !== 'admin'"), 'loadUsers must filter out admin for non-superadmin');
 });
 
 // ── 4. Service Worker Cache Invalidation ──
-test('4. sw.js is updated with new cache name smartlink-v84', () => {
+test('4. sw.js is updated with new cache name smartlink-v85', () => {
   const sw = fs.readFileSync('./public/sw.js', 'utf8');
-  assert(sw.includes("smartlink-v84"), 'Service Worker cache must be smartlink-v84');
+  assert(sw.includes("smartlink-v85"), 'Service Worker cache must be smartlink-v85');
 });
 
 // ── 5. Backend GET /api/admin/users Hides Super Admin ──
@@ -70,11 +70,11 @@ test('6. server.js protects Super Admin from modification and password reset by 
   assert(serverJs.includes("if (!isSuperAdminSession(req) && (user.username.toLowerCase() === 'admin' || String(user.role).toLowerCase() === 'super admin')) {\n    return res.status(403).json({ error: 'Access denied. Only Super Admin can reset Super Admin password.' });"), 'Must protect Super Admin in reset-password');
 });
 
-// ── 7. Backend Super Admin-Exclusive col_blocked_countries Permission ──
-test('7. server.js prevents Normal Admin from modifying col_blocked_countries permission', () => {
+// ── 7. Backend Both Super Admin and Normal Admin Can Manage col_blocked_countries ──
+test('7. server.js allows both Super Admin and Normal Admin to manage col_blocked_countries', () => {
   const serverJs = fs.readFileSync('./server.js', 'utf8');
-  assert(serverJs.includes("finalPerms = finalPerms.filter(p => p !== 'domains' && p !== 'col_blocked_countries');"), 'Must filter col_blocked_countries from Normal Admin updates');
-  assert(serverJs.includes("assignedPerms = assignedPerms.filter(p => p !== 'domains' && p !== 'col_blocked_countries');"), 'Must filter col_blocked_countries from Normal Admin user creation');
+  assert(serverJs.includes("finalPerms = finalPerms.filter(p => p !== 'domains');"), 'Only domains is filtered for Normal Admin in update-role');
+  assert(serverJs.includes("assignedPerms = assignedPerms.filter(p => p !== 'domains');"), 'Only domains is filtered for Normal Admin in invite');
 });
 
 // ── 8. Backend Global Country Block Enforcement for Editor Shortlinks ──

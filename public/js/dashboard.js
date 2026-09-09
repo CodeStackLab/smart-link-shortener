@@ -684,12 +684,11 @@ document.addEventListener('DOMContentLoaded', () => {
       editorCountryBlockCard.style.display = isFullAdmin ? '' : 'none';
     }
 
-    // col_blocked_countries permission control in Team Management is Super Admin exclusive
-    const isSuper = isSuperAdminUser();
+    // col_blocked_countries permission control in Team Management is available to all Admins (Super Admin & Normal Admin)
     const wrapNewColBlocked = document.getElementById('wrap-new-col-blocked-countries');
-    if (wrapNewColBlocked) wrapNewColBlocked.style.display = isSuper ? 'flex' : 'none';
+    if (wrapNewColBlocked) wrapNewColBlocked.style.display = isFullAdmin ? 'flex' : 'none';
     const wrapEditColBlocked = document.getElementById('wrap-edit-col-blocked-countries');
-    if (wrapEditColBlocked) wrapEditColBlocked.style.display = isSuper ? 'flex' : 'none';
+    if (wrapEditColBlocked) wrapEditColBlocked.style.display = isFullAdmin ? 'flex' : 'none';
 
     // Role selector in invite form: only Admins can see the Admin option
     const roleSelectInvite = document.getElementById('new-user-role');
@@ -3556,9 +3555,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cb.checked = perms.includes(cb.value);
     });
 
-    const isSuper = isSuperAdminUser();
     const wrapEditColBlocked = document.getElementById('wrap-edit-col-blocked-countries');
-    if (wrapEditColBlocked) wrapEditColBlocked.style.display = isSuper ? 'flex' : 'none';
+    if (wrapEditColBlocked) wrapEditColBlocked.style.display = isFullAdminUser() ? 'flex' : 'none';
 
     // Sync URL Visibility radios in Edit User modal
     const hasUnmaskPerm = perms.includes('unmask_target_url');
