@@ -618,9 +618,9 @@ header.site-header {
   border-color: #cbd5e1 !important;
 }
 .user-badge-pill {
-  background: #eff6ff !important;
-  border: 1.5px solid #bfdbfe !important;
-  color: #1d4ed8 !important;
+  background: #ffffff !important;
+  border: 1.5px solid #d1d5db !important;
+  color: #000000 !important;
   border-radius: 9999px !important;
   padding: 0.38rem 0.95rem !important;
   font-size: 0.84rem !important;
@@ -631,7 +631,7 @@ header.site-header {
   gap: 0.35rem !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
   height: 38px !important;
   box-sizing: border-box !important;
 }
@@ -663,9 +663,9 @@ header.site-header {
   color: #f1f5f9 !important;
 }
 [data-theme="dark"] .user-badge-pill {
-  background: rgba(37, 99, 235, 0.2) !important;
-  border-color: rgba(147, 197, 253, 0.3) !important;
-  color: #93c5fd !important;
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
 }
 
 /* ════════════════════════════════════════
@@ -1117,15 +1117,15 @@ tbody tr:hover td { background: transparent; }
   white-space: nowrap; letter-spacing: 0.02em;
 }
 #user-badge {
-  background: #ebf3fe !important;
-  color: #1877f2 !important;
-  border: 1.5px solid #c9deff !important;
-  font-weight: 800 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #d1d5db !important;
+  font-weight: 700 !important;
   font-size: 0.825rem !important;
   padding: 0.35rem 0.75rem !important;
   border-radius: var(--r-pill) !important;
   letter-spacing: 0.03em !important;
-  box-shadow: 0 2px 8px rgba(24, 119, 242, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 .badge-red    { background: rgba(24,119,242,0.15); color: #1877f2; border: 1px solid rgba(24,119,242,0.3); }
 .badge-green  { background: rgba(6,214,160,0.15); color: #059669; border: 1px solid rgba(6,214,160,0.3); }
@@ -1689,15 +1689,16 @@ input, select, textarea, button {
     padding: 0 0.55rem !important;
     font-size: 0.75rem !important;
     font-weight: 700 !important;
-    color: #1d4ed8 !important;
-    background: #eff6ff !important;
-    border: 1.5px solid #bfdbfe !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+    border: 1.5px solid #d1d5db !important;
     border-radius: 9999px !important;
     flex-shrink: 0 !important;
     height: 36px !important;
     min-height: 36px !important;
     white-space: nowrap !important;
     box-sizing: border-box !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
   }
 
   /* Top Stat Row Mobile (Matching User Favorite Screenshot) */

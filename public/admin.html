@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=61">
+  <link rel="stylesheet" href="/css/style.css?v=62">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -616,9 +616,9 @@
       border-color: #cbd5e1 !important;
     }
     .user-badge-pill {
-      background: #eff6ff !important;
-      border: 1.5px solid #bfdbfe !important;
-      color: #1d4ed8 !important;
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      color: #000000 !important;
       border-radius: 9999px !important;
       padding: 0.38rem 0.95rem !important;
       font-size: 0.84rem !important;
@@ -629,7 +629,7 @@
       gap: 0.35rem !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
-      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
       height: 38px !important;
       box-sizing: border-box !important;
     }
@@ -672,9 +672,9 @@
       color: #f1f5f9 !important;
     }
     [data-theme="dark"] .user-badge-pill {
-      background: rgba(37, 99, 235, 0.2) !important;
-      border-color: rgba(147, 197, 253, 0.3) !important;
-      color: #93c5fd !important;
+      background: #1e293b !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: #f1f5f9 !important;
     }
 
     /* ── MOCKUP EXACT: TOP STATS STACK (Compact & Single-Line) ── */
@@ -844,14 +844,19 @@
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
       }
-      .user-badge-pill {
+      .user-badge-pill, #user-badge {
         padding: 0 0.55rem !important;
         font-size: 0.75rem !important;
+        font-weight: 700 !important;
         height: 36px !important;
         min-height: 36px !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+        border: 1.5px solid #d1d5db !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
       }
       .top-stats-stack {
         gap: 0.65rem !important;
@@ -2675,7 +2680,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=89"></script>
+<script src="/js/dashboard.js?v=90"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

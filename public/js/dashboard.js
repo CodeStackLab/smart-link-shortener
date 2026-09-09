@@ -225,18 +225,13 @@ document.addEventListener('DOMContentLoaded', () => {
             userBadge.style.color = '';
             userBadge.style.boxShadow = '';
             userBadge.className = 'badge user-badge-pill';
-          } else if (uName.toLowerCase() === uRole.toLowerCase()) {
-            userBadge.textContent = uRole;
-            userBadge.style.background = '';
-            userBadge.style.color = '';
-            userBadge.style.boxShadow = '';
-            userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : 'badge-success'}`;
           } else {
-            userBadge.textContent = `${uName} (${uRole})`;
+            // Normal Admin / User: remove (Admin) and () symbols, display clean username in black
+            userBadge.textContent = uName;
             userBadge.style.background = '';
             userBadge.style.color = '';
             userBadge.style.boxShadow = '';
-            userBadge.className = `badge ${uRole === 'Admin' ? 'badge-red' : 'badge-success'}`;
+            userBadge.className = 'badge user-badge-pill';
           }
         }
 
