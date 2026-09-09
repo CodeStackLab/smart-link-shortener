@@ -34,10 +34,19 @@ const totp = require('./utils/totp');
 function ensureAbsoluteUrl(url) {
   if (!url) return '';
   const trimmed = url.trim();
+  if (/^https?:\/\/www\./i.test(trimmed)) {
+    return trimmed.replace(/^http:\/\//i, 'https://');
+  }
   if (/^https?:\/\//i.test(trimmed)) {
     return trimmed;
   }
-  return 'https://' + trimmed;
+  if (/^www\./i.test(trimmed)) {
+    return 'https://' + trimmed;
+  }
+  if (/^(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)/i.test(trimmed)) {
+    return 'http://' + trimmed;
+  }
+  return 'https://www.' + trimmed;
 }
 
 // Destination URL Security Validation (Rule 45)
@@ -150,9 +159,7 @@ function cleanAllowedUrls(domains) {
   return [...new Set(domains
     .map(domain => {
       if (typeof domain !== 'string' || !domain.trim()) return '';
-      let val = domain.trim();
-      if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
-      return val;
+      return ensureAbsoluteUrl(domain);
     })
     .filter(Boolean))];
 }
@@ -615,6 +622,8 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     return res.status(400).json({ error: 'Target URL is required.' });
   }
 
+  targetUrl = ensureAbsoluteUrl(targetUrl);
+
   const domainCheck = isTargetUrlAllowedForUser(req.session.username, req.session.role, targetUrl, iosUrl, androidUrl);
   if (!domainCheck.allowed) {
     return res.status(403).json({ error: domainCheck.error });
@@ -798,6 +807,7 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   } = req.body;
 
   if (targetUrl) {
+    targetUrl = ensureAbsoluteUrl(targetUrl);
     const domainCheck = isTargetUrlAllowedForUser(req.session.username, req.session.role, targetUrl, iosUrl, androidUrl);
     if (!domainCheck.allowed) {
       return res.status(403).json({ error: domainCheck.error });

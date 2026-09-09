@@ -77,6 +77,33 @@ document.addEventListener('DOMContentLoaded', () => {
       .join(' ');
   }
 
+  // URL Display & Background Prepend Helpers
+  function stripProtocolAndWww(urlStr) {
+    if (!urlStr) return '';
+    return urlStr.trim().replace(/^https?:\/\/(www\.)?/i, '').replace(/^www\./i, '');
+  }
+
+  function ensureHttpsWww(urlStr) {
+    if (!urlStr) return '';
+    let u = urlStr.trim();
+    if (/^https?:\/\/www\./i.test(u)) {
+      return u.replace(/^http:\/\//i, 'https://');
+    }
+    if (/^https?:\/\//i.test(u)) {
+      if (/^https?:\/\/(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)/i.test(u)) {
+        return u;
+      }
+      return u.replace(/^(https?:\/\/)/i, '$1www.');
+    }
+    if (/^www\./i.test(u)) {
+      return 'https://' + u;
+    }
+    if (/^(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)/i.test(u)) {
+      return 'http://' + u;
+    }
+    return 'https://www.' + u;
+  }
+
   // Theme Switcher Engine
   let currentTheme = localStorage.getItem('theme') || 'light';
 
@@ -364,35 +391,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanSites = allowedSites.map(s => {
         let clean = s.trim();
         if (!/^https?:\/\//i.test(clean)) {
-          clean = 'https://' + clean;
+          clean = /^www\./i.test(clean) ? ('https://' + clean) : ('https://www.' + clean);
         }
         return clean;
       });
 
-      // Mask URL for display: show protocol + initial characters + generous stars to fill box
+      // Mask URL for display: show initial characters + generous stars to fill box
       function maskUrl(url) {
         try {
           const u = new URL(url);
-          const proto = u.protocol + '//';
-          const host = u.hostname;
+          const host = u.hostname.replace(/^www\./i, '');
           const path = u.pathname + u.search;
           // Show first 6-7 chars of domain, then a long chain of stars so the box looks full
           const visibleHost = host.length > 6 ? host.substring(0, 6) + '**********' : host;
           // Generous stars for the path so the input field looks completely filled
           const maskedPath = path && path !== '/' ? '/********************' : '****************';
-          return proto + visibleHost + maskedPath;
+          return visibleHost + maskedPath;
         } catch {
           // Fallback: initial chars + generous stars
-          return (url.substring(0, 15) || 'https://website') + '************************';
+          const clean = stripProtocolAndWww(url);
+          return (clean.substring(0, 10) || 'website') + '************************';
         }
       }
 
       targetSelect.innerHTML = cleanSites.map(s => {
-        const displayText = isUnmasked ? s : maskUrl(s);
+        const displayText = isUnmasked ? stripProtocolAndWww(s) : maskUrl(s);
         return `<option value="${s}">🌐 ${displayText}</option>`;
       }).join('');
       targetSelect.value = cleanSites[0];
-      targetInput.value = cleanSites[0];
+      targetInput.value = stripProtocolAndWww(cleanSites[0]);
 
     }
 
@@ -401,11 +428,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const val = postUrlInput ? postUrlInput.value.trim() : '';
       let base = (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value)
         ? targetSelect.value.trim()
-        : (targetInput.value || targetInput.placeholder || 'https://website.com');
-      if (base && !/^https?:\/\//i.test(base)) base = 'https://' + base;
+        : (targetInput.value || targetInput.placeholder || 'bbcUrdu.com');
+      base = stripProtocolAndWww(base);
 
-      if (val.startsWith('http://') || val.startsWith('https://')) {
-        targetInput.value = val;
+      if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('www.')) {
+        targetInput.value = stripProtocolAndWww(val);
       } else if (val) {
         let cleanPath = val.startsWith('/') ? val : '/' + val;
         targetInput.value = base.replace(/\/+$/, '') + cleanPath;
@@ -419,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (targetSelect) {
       targetSelect.onchange = () => {
-        targetInput.value = targetSelect.value;
+        targetInput.value = stripProtocolAndWww(targetSelect.value);
         if (postUrlInput) updateTargetUrl();
       };
     }
@@ -1003,6 +1030,30 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleCustomWebInput();
   }
 
+  // Live auto-strip https:// and www. from target input and custom website target input
+  const mainTargetInput = document.getElementById('target-url');
+  if (mainTargetInput) {
+    mainTargetInput.addEventListener('input', function() {
+      if (/^https?:\/\//i.test(this.value) || /^www\./i.test(this.value)) {
+        this.value = stripProtocolAndWww(this.value);
+      }
+    });
+    mainTargetInput.addEventListener('blur', function() {
+      this.value = stripProtocolAndWww(this.value);
+    });
+  }
+
+  if (customWebTargetInput) {
+    customWebTargetInput.addEventListener('input', function() {
+      if (/^https?:\/\//i.test(this.value) || /^www\./i.test(this.value)) {
+        this.value = stripProtocolAndWww(this.value);
+      }
+    });
+    customWebTargetInput.addEventListener('blur', function() {
+      this.value = stripProtocolAndWww(this.value);
+    });
+  }
+
   // Custom Website Checkbox Chip Toggle
   const customDomainEnableCb = document.getElementById('custom-domain-enable-cb');
   const customDomainsContainer = document.getElementById('custom-domains-container');
@@ -1241,7 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td data-label="Target URL" class="col-target-url">
             ${link.targetUrl
-              ? `<a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${link.targetUrl}</a>`
+              ? `<a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${stripProtocolAndWww(link.targetUrl)}</a>`
               : `<span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">— Not set —</span>`
             }
           </td>
@@ -1738,16 +1789,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (cbCustomWeb && cbCustomWeb.checked && customWebTargetInput && customWebTargetInput.value.trim()) {
         let customUrl = customWebTargetInput.value.trim();
-        if (!/^https?:\/\//i.test(customUrl)) customUrl = 'https://' + customUrl;
-        targetUrl = customUrl;
-      } else if (postUrlVal && (postUrlVal.startsWith('http://') || postUrlVal.startsWith('https://'))) {
-        targetUrl = postUrlVal;
+        targetUrl = ensureHttpsWww(customUrl);
+      } else if (postUrlVal && (postUrlVal.startsWith('http://') || postUrlVal.startsWith('https://') || postUrlVal.startsWith('www.'))) {
+        targetUrl = ensureHttpsWww(postUrlVal);
       } else if (targetSelect && targetSelect.style.display !== 'none' && targetSelect.value) {
         let baseUrl = targetSelect.value.trim();
         let path = postUrlVal ? (postUrlVal.startsWith('/') ? postUrlVal : '/' + postUrlVal) : '';
-        targetUrl = path ? baseUrl.replace(/\/+$/, '') + path : baseUrl;
+        let full = path ? baseUrl.replace(/\/+$/, '') + path : baseUrl;
+        targetUrl = ensureHttpsWww(full);
       } else if (targetInput && targetInput.value) {
-        targetUrl = targetInput.value.trim();
+        targetUrl = ensureHttpsWww(targetInput.value.trim());
+      }
+
+      if (targetUrl) {
+        targetUrl = ensureHttpsWww(targetUrl);
       }
 
       if (!targetUrl) {
@@ -3358,9 +3413,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'form-control user-site-input';
-    input.placeholder = 'e.g. https://domain.com, https://youtube.com/watch?v=... or post URL';
-    input.value = initialDomain;
+    input.placeholder = 'e.g. bbcUrdu.com, youtube.com or post URL';
+    input.value = stripProtocolAndWww(initialDomain);
     input.style.cssText = 'font-weight:700; font-size:0.8rem; padding:0.45rem 0.65rem; height:36px; min-height:36px; flex:1; min-width:0;';
+
+    input.addEventListener('input', function() {
+      if (/^https?:\/\//i.test(this.value) || /^www\./i.test(this.value)) {
+        this.value = stripProtocolAndWww(this.value);
+      }
+    });
+    input.addEventListener('blur', function() {
+      this.value = stripProtocolAndWww(this.value);
+    });
 
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
@@ -3781,7 +3845,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const role = editUserRoleSelect ? editUserRoleSelect.value : 'Editor';
       const permissions = Array.from(document.querySelectorAll('.edit-perm-cb:checked')).map(cb => cb.value);
       const allowedTargetDomains = Array.from(document.querySelectorAll('#edit-user-sites-list .user-site-input'))
-        .map(inp => inp.value.trim())
+        .map(inp => ensureHttpsWww(inp.value.trim()))
         .filter(Boolean);
 
       const fbTrafficSettings = {
@@ -4047,7 +4111,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const permissions = Array.from(document.querySelectorAll('.new-perm-cb:checked')).map(cb => cb.value);
       const allowedTargetDomains = Array.from(document.querySelectorAll('#invite-sites-list .user-site-input'))
-        .map(inp => inp.value.trim())
+        .map(inp => ensureHttpsWww(inp.value.trim()))
         .filter(Boolean);
 
       const fbTrafficSettings = {

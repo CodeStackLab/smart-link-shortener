@@ -398,7 +398,7 @@ module.exports = {
           if (typeof d !== 'string') return '';
           let val = d.trim();
           if (!val) return '';
-          if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
+          if (!/^https?:\/\//i.test(val)) val = /^www\./i.test(val) ? ('https://' + val) : ('https://www.' + val);
           return val;
         })
         .filter(Boolean))];
@@ -458,7 +458,7 @@ module.exports = {
             if (typeof d !== 'string') return '';
             let val = d.trim();
             if (!val) return '';
-            if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
+            if (!/^https?:\/\//i.test(val)) val = /^www\./i.test(val) ? ('https://' + val) : ('https://www.' + val);
             return val;
           })
           .filter(Boolean))];
