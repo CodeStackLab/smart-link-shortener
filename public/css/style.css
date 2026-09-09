@@ -3278,13 +3278,14 @@ body:not(.is-admin) #fb-breakdown-card {
   display: none !important;
 }
 
-/* ── Fallback Redirect: Editor Protection ── */
-/* In Editor accounts: completely hide any fallback redirect inputs across the entire dashboard.
+/* ── Fallback Redirect: Super Admin Only (Protected from Editors & Normal Admins) ── */
+/* In Editor & Normal Admin accounts: completely hide global fallback redirect card.
    Fallback redirect is ONLY configured in Super Admin Settings */
 body:not(.is-admin) #create-fallback-url-group,
 body:not(.is-admin) #fallback-url,
 body:not(.is-admin) #modal-rule-fallback-wrap,
 body:not(.is-admin) #default-fallback-url-card,
+body:not(.is-superadmin) #default-fallback-url-card,
 body.is-editor #create-fallback-url-group,
 body.is-editor #fallback-url,
 body.is-editor #modal-rule-fallback-wrap,
@@ -3299,6 +3300,13 @@ body:not(.is-admin) .btn-traffic-rules,
 body:not(.is-admin) #traffic-rules-modal,
 body.is-editor .btn-traffic-rules,
 body.is-editor #traffic-rules-modal {
+  display: none !important;
+}
+
+/* ── Custom Domains (Add Domain / Sub Domain): Super Admin Only ── */
+/* Strictly hide Add Domain / Sub Domain card from all Editor and Normal Admin accounts */
+body:not(.is-superadmin) #custom-domains-card,
+body.is-editor #custom-domains-card {
   display: none !important;
 }
 

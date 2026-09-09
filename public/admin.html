@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=42">
+  <link rel="stylesheet" href="/css/style.css?v=44">
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -2052,7 +2052,7 @@
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="instagram" checked> 📷 Instagram</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="custom_website" checked> 🌐 Customize Web</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="links" checked> ⚡ Shortlinks</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="domains"> 🌐 Domains</label>
+              <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="domains"> 🌐 Domains</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo" checked> 🌍 Geo</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="analytics" checked> 📊 Analytics</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
@@ -2317,7 +2317,7 @@
       </div>
 
       <!-- Add Custom Domain / Subdomain Card (Settings Section) -->
-      <div class="card" style="padding:1.35rem; height:fit-content;" id="custom-domains-card">
+      <div class="card" style="padding:1.35rem; height:fit-content; display:none;" id="custom-domains-card">
         <form id="add-domain-form">
           <div class="form-group" style="margin-bottom:0.75rem;">
             <label for="new-domain-input" style="font-size:clamp(0.88rem, 3.6vw, 1rem); font-weight:800; display:block; text-align:center !important; margin-bottom:0.55rem; color:var(--text-primary); cursor:pointer; white-space:nowrap; width:100%;">
@@ -2441,7 +2441,7 @@
       </div>
 
       <!-- Global Fallback Redirect URL Card -->
-      <div class="card" style="padding:1.35rem; height:fit-content;" id="default-fallback-url-card">
+      <div class="card" style="padding:1.35rem; height:fit-content; display:none;" id="default-fallback-url-card">
         <!-- Title Row: Square Orange Icon + Fallback Redirect text (Centered) -->
         <div style="display:flex; align-items:center; justify-content:center; gap:0.6rem; margin-bottom:0.65rem;">
           <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg, #f97316 0%, #ea580c 100%); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 10px rgba(234,88,12,0.3);">
@@ -2699,7 +2699,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=75"></script>
+<script src="/js/dashboard.js?v=77"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -2828,7 +2828,7 @@ if ('serviceWorker' in navigator) {
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="instagram"> 📷 Instagram</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="custom_website"> 🌐 Customize Web</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="links"> ⚡ Shortlinks</label>
-          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="domains"> 🌐 Domains</label>
+          <label style="display:none;"><input type="checkbox" class="edit-perm-cb" value="domains"> 🌐 Domains</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="geo"> 🌍 Geo</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="analytics"> 📊 Analytics</label>
           <label style="display:none;"><input type="checkbox" class="edit-perm-cb" value="firewall"> 🛡️ Firewall</label>

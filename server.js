@@ -57,24 +57,40 @@ function isAdminRole(role) {
   return typeof role === 'string' && role.trim().toLowerCase() === 'admin';
 }
 
+function isSuperAdminSession(req) {
+  if (!req || !req.session) return false;
+  const u = (req.session.username || '').trim().toLowerCase();
+  const r = (req.session.role || '').trim().toLowerCase();
+  return u === 'admin' || r === 'super admin';
+}
+
+function requireSuperAdmin(req, res, next) {
+  if (isSuperAdminSession(req)) return next();
+  return res.status(403).json({ error: 'Access denied. Only Super Admin can manage domains.' });
+}
+
 function getUserPermissions(username, role) {
   const user = db.getUserByUsername(username);
   const storedPerms = (user && Array.isArray(user.permissions))
     ? user.permissions
     : null;
 
+  const isSuperAdmin = (username || '').toLowerCase() === 'admin' || (role || '').toLowerCase() === 'super admin';
+
   // Admin/Super Admin always get all tab/feature permissions
   if (isAdminRole(role)) {
     const adminBase = db.getDefaultPermissions('Admin');
     // Also pass through any custom granular perms (col_*, geo_*, logs_*) stored for this admin
     const customPerms = storedPerms ? storedPerms.filter(p => !adminBase.includes(p)) : [];
-    return [...adminBase, ...customPerms];
+    const allAdminPerms = [...adminBase, ...customPerms];
+    // Domains is strictly Super Admin only
+    return isSuperAdmin ? allAdminPerms : allAdminPerms.filter(p => p !== 'domains');
   }
 
   // Editor: use stored perms if available, otherwise fall back to defaults
-  // Firewall and Traffic Analytics are strictly Admin-only — never grant to Editor
+  // Firewall, Traffic Analytics, and Domains are strictly Admin/Super Admin-only — never grant to Editor
   const base = storedPerms || db.getDefaultPermissions('Editor');
-  return base.filter(p => p !== 'firewall' && p !== 'analytics');
+  return base.filter(p => p !== 'firewall' && p !== 'analytics' && p !== 'domains');
 }
 
 // Accepts one or more permission strings (OR logic: user needs at least one).
@@ -1016,15 +1032,22 @@ app.delete('/api/admin/temp-blocks/:ip', requireAuth, (req, res) => {
 });
 
 // GET settings: Admin (full) OR users with 'settings' permission.
-// Non-admin users only receive basic non-firewall fields.
+// GET settings: Admin (full) OR users with 'settings' permission.
+// Non-superadmin users do not receive defaultFallbackUrl. Non-admin users only receive basic non-firewall fields.
 app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req, res) => {
   const settings = db.getSettings();
-  if (isAdminRole(req.session.role)) {
-    // Full settings for Admin
+  if (isSuperAdminSession(req)) {
+    // Full settings for Super Admin
     return res.json(settings);
   }
-  // For Editor users: strip firewall, bot protection, and country block settings
   const sanitized = { ...settings };
+  // Hide defaultFallbackUrl completely from all Normal Admin and Editor accounts
+  delete sanitized.defaultFallbackUrl;
+
+  if (isAdminRole(req.session.role)) {
+    return res.json(sanitized);
+  }
+  // For Editor users: strip firewall, bot protection, and country block settings
   delete sanitized.editorCountryBlockEnabled;
   delete sanitized.editorBlockedCountries;
   delete sanitized.rateLimitMaxRequests;
@@ -1109,6 +1132,10 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
       .map(c => c.trim().toUpperCase())
       .filter(c => c.length === 2)
     )];
+  }
+
+  if (defaultFallbackUrl !== undefined && !isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Super Admin can change Global Fallback Redirect URL.' });
   }
 
   const cleanFallback = (defaultFallbackUrl !== undefined && defaultFallbackUrl.trim())
@@ -1607,13 +1634,13 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
 });
 
 // ----------------------------------------------------
-// CUSTOM DOMAINS API
+// CUSTOM DOMAINS API (Super Admin Only)
 // ----------------------------------------------------
-app.get('/api/admin/domains', requireAuth, requirePermission('domains'), (req, res) => {
+app.get('/api/admin/domains', requireAuth, requireSuperAdmin, (req, res) => {
   res.json(db.getCustomDomains());
 });
 
-app.post('/api/admin/domains', requireAuth, requirePermission('domains'), (req, res) => {
+app.post('/api/admin/domains', requireAuth, requireSuperAdmin, (req, res) => {
   const { domain } = req.body;
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required.' });
@@ -1626,7 +1653,7 @@ app.post('/api/admin/domains', requireAuth, requirePermission('domains'), (req, 
   res.json({ success: true, domain: newDomain });
 });
 
-app.delete('/api/admin/domains/:id', requireAuth, requirePermission('domains'), (req, res) => {
+app.delete('/api/admin/domains/:id', requireAuth, requireSuperAdmin, (req, res) => {
   const { id } = req.params;
   db.deleteCustomDomain(id);
   res.json({ success: true });

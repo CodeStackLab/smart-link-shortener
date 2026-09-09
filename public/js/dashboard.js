@@ -258,6 +258,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.add('is-editor');
           }
 
+          if (isSuperAdminUser()) {
+            document.body.classList.add('is-superadmin');
+          } else {
+            document.body.classList.remove('is-superadmin');
+          }
+
           applyRoleUiScoping(currentLoggedInRole, data.permissions);
           updateTargetUrlFieldForRole(data);
 
@@ -540,10 +546,10 @@ document.addEventListener('DOMContentLoaded', () => {
       editorMaskCard.style.display = isFullAdmin ? '' : 'none';
     }
 
-    // Global Fallback Redirect URL Card — ADMIN ONLY
+    // Global Fallback Redirect URL Card — SUPER ADMIN ONLY
     const fallbackCard = document.getElementById('default-fallback-url-card');
     if (fallbackCard) {
-      fallbackCard.style.display = isFullAdmin ? '' : 'none';
+      fallbackCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
     // 2. Google Authenticator 2FA Manager — Visible to anyone with Settings access
@@ -552,10 +558,10 @@ document.addEventListener('DOMContentLoaded', () => {
       twoFaCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
 
-    // Custom Domains Card in Settings — Visible to Admin or anyone with 'domains' permission
+    // Custom Domains Card in Settings — Visible ONLY to Super Admin
     const customDomainsCard = document.getElementById('custom-domains-card');
     if (customDomainsCard) {
-      customDomainsCard.style.display = (isFullAdmin || userPerms.includes('domains')) ? '' : 'none';
+      customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
     // 3. Change Password — Visible to anyone with Settings access
@@ -893,9 +899,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       if (targetTab === 'tab-settings') {
-        if (isSuperAdminUser()) loadUsers();
+        if (isSuperAdminUser()) {
+          loadUsers();
+          loadDomains();
+        }
         load2FAStatus();
-        loadDomains();
       }
     });
   });
@@ -2757,8 +2765,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e && e.preventDefault) e.preventDefault();
     if (e && e.stopPropagation) e.stopPropagation();
 
-    if (!isFullAdminUser()) {
-      showAlert('⚠️ Only Admin can change global Fallback URL settings.', true);
+    if (!isSuperAdminUser()) {
+      showAlert('⚠️ Only Super Admin can change global Fallback URL settings.', true);
       return false;
     }
     const fallbackInput = document.getElementById('setting-default-fallback-url');
@@ -4356,19 +4364,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // loadLinks() and loadUsers() are called after session check completes (see above)
-  loadDomains();
+  // loadLinks(), loadUsers(), loadDomains() are called after session check completes (see above)
+  if (isSuperAdminUser()) {
+    loadDomains();
+  }
 
 // --------------------------------------------------------
-// CUSTOM DOMAINS MANAGEMENT LOGIC
+// CUSTOM DOMAINS MANAGEMENT LOGIC (Super Admin Only)
 // --------------------------------------------------------
 const domainsTbody = document.getElementById('domains-tbody');
 const addDomainForm = document.getElementById('add-domain-form');
 const domainSelect = document.getElementById('link-domain');
 
 async function loadDomains() {
+  if (!isSuperAdminUser()) return;
   try {
     const res = await fetch('/api/admin/domains');
+    if (!res.ok) return;
     const domains = await res.json();
     renderDomainsTable(domains);
     populateDomainSelects(domains);
