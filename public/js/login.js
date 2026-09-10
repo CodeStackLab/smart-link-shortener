@@ -125,10 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const uName = (data.username || payload.username || '').trim();
           const uRole = (data.role || 'Admin').trim();
-          const isSuper = uName.toLowerCase() === 'admin';
-          const icon = isSuper ? '👑' : (uRole === 'Admin' ? '🛡️' : '👤');
+          const isMaster = uName.toLowerCase() === 'admin' || uName.toLowerCase() === 'master admin' || uRole.toLowerCase() === 'super admin' || uRole.toLowerCase() === 'master admin';
+          const icon = (isMaster || uRole === 'Admin') ? '🛡️' : '👤';
           const formattedName = uName ? uName.replace(/\b\w/g, c => c.toUpperCase()) : '';
-          const badgeText = isSuper ? '👑 Super Admin' : `${icon} ${formattedName}`;
+          const badgeText = isMaster ? '🛡️ Master Admin' : `${icon} ${formattedName}`;
           localStorage.setItem('cachedUserBadge', badgeText);
           localStorage.setItem('cachedUserRole', uRole);
           localStorage.setItem('cachedUsername', uName);

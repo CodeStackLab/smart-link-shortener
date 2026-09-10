@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatDisplayName(str) {
     if (!str) return '';
     let s = str.trim();
-    if (s.toLowerCase() === 'admin') return 'Super Admin';
+    if (s.toLowerCase() === 'admin' || s.toLowerCase() === 'super admin') return 'Master Admin';
 
     s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
     s = s.replace(/_+/g, ' ');
@@ -253,13 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function isSuperAdminUser() {
     const r = String(currentLoggedInRole || '').toLowerCase().trim();
     const u = String(currentLoggedInUsername || '').toLowerCase().trim();
-    return u === 'admin' || r === 'super admin';
+    return u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
   }
 
   function isFullAdminUser() {
     const r = String(currentLoggedInRole || '').toLowerCase().trim();
     const u = String(currentLoggedInUsername || '').toLowerCase().trim();
-    return u === 'admin' || r === 'admin' || r === 'super admin';
+    return u === 'admin' || u === 'master admin' || r === 'admin' || r === 'super admin' || r === 'master admin';
   }
 
   function syncSessionLive(isInitial = false) {
@@ -278,8 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (userBadge) {
           const uName = (data.username || 'admin').trim();
           const uRole = (data.role || 'Admin').trim();
-          if (uName.toLowerCase() === 'admin') {
-            userBadge.textContent = '👑 Super Admin';
+          const isMaster = uName.toLowerCase() === 'admin' || uName.toLowerCase() === 'master admin' || uRole.toLowerCase() === 'super admin' || uRole.toLowerCase() === 'master admin';
+          if (isMaster) {
+            userBadge.textContent = '🛡️ Master Admin';
             userBadge.style.display = 'inline-flex';
             userBadge.style.background = '';
             userBadge.style.color = '';
@@ -1607,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.disabled = true;
         if (card) {
           card.style.opacity = '0.55';
-          card.title = 'Option not granted by Super Admin for your account';
+          card.title = 'Option not granted by Master Admin for your account';
         }
       } else {
         el.disabled = false;
@@ -2884,7 +2885,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e && e.stopPropagation) e.stopPropagation();
 
     if (!isSuperAdminUser()) {
-      showAlert('⚠️ Only Super Admin can change global Fallback URL settings.', true);
+      showAlert('⚠️ Only Master Admin can change global Fallback URL settings.', true);
       return false;
     }
     const fallbackInput = document.getElementById('setting-default-fallback-url');
@@ -3512,10 +3513,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Role display
         let roleColor, roleBg, roleLabel;
-        if (isUserSuperAdmin) {
+        if (isUserSuperAdmin || user.username.toLowerCase() === 'master admin' || String(user.role).toLowerCase() === 'master admin') {
           roleColor = '#7c3aed';
           roleBg = 'rgba(124,58,237,0.1)';
-          roleLabel = '👑 Super Admin';
+          roleLabel = '🛡️ Master Admin';
         } else if (user.role === 'Admin') {
           roleColor = '#ef4444';
           roleBg = 'rgba(239,68,68,0.1)';

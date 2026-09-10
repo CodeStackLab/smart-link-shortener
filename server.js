@@ -70,19 +70,19 @@ function isSuperAdminSession(req) {
   if (!req || !req.session) return false;
   const u = (req.session.username || '').trim().toLowerCase();
   const r = (req.session.role || '').trim().toLowerCase();
-  return u === 'admin' || r === 'super admin';
+  return u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
 }
 
 function isAnyAdminSession(req) {
   if (!req || !req.session) return false;
   const u = (req.session.username || '').trim().toLowerCase();
   const r = (req.session.role || '').trim().toLowerCase();
-  return u === 'admin' || r === 'super admin' || r === 'admin';
+  return u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin' || r === 'admin';
 }
 
 function requireSuperAdmin(req, res, next) {
   if (isSuperAdminSession(req)) return next();
-  return res.status(403).json({ error: 'Access denied. Only Super Admin can manage domains.' });
+  return res.status(403).json({ error: 'Access denied. Only Master Admin can manage domains.' });
 }
 
 function getUserPermissions(username, role) {
@@ -91,15 +91,18 @@ function getUserPermissions(username, role) {
     ? user.permissions
     : null;
 
-  const isSuperAdmin = (username || '').toLowerCase() === 'admin' || (role || '').toLowerCase() === 'super admin';
+  const isSuperAdmin = (username || '').toLowerCase() === 'admin' || 
+                       (username || '').toLowerCase() === 'master admin' || 
+                       (role || '').toLowerCase() === 'super admin' || 
+                       (role || '').toLowerCase() === 'master admin';
 
-  // Admin/Super Admin always get all tab/feature permissions
+  // Admin/Master Admin always get all tab/feature permissions
   if (isAdminRole(role) || isSuperAdmin) {
-    const adminBase = db.getDefaultPermissions(isSuperAdmin ? 'Super Admin' : 'Admin');
+    const adminBase = db.getDefaultPermissions(isSuperAdmin ? 'Master Admin' : 'Admin');
     // Also pass through any custom granular perms (col_*, geo_*, logs_*) stored for this admin
     const customPerms = storedPerms ? storedPerms.filter(p => !adminBase.includes(p)) : [];
     const allAdminPerms = [...adminBase, ...customPerms];
-    // Domains is strictly Super Admin only — never grant to Normal Admin or Editor
+    // Domains is strictly Master Admin only — never grant to Normal Admin or Editor
     return isSuperAdmin ? allAdminPerms : allAdminPerms.filter(p => p !== 'domains');
   }
 
@@ -442,7 +445,7 @@ app.get('/api/session', (req, res) => {
     // Always read fresh permissions from DB (respects admin edits without requiring re-login)
     const perms = getUserPermissions(req.session.username, role);
     const isSuperAdmin = isSuperAdminSession(req);
-    const effectiveRole = (req.session.username || '').toLowerCase() === 'admin' ? 'Super Admin' : (role || 'Editor');
+    const effectiveRole = (req.session.username || '').toLowerCase() === 'admin' ? 'Master Admin' : (role || 'Editor');
     
     // URL Masking: If admin -> false; if global unmask -> false; otherwise depends on individual user permission 'unmask_target_url'
     let maskEditorUrls = false;
@@ -1181,7 +1184,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
   }
 
   if (defaultFallbackUrl !== undefined && !isSuperAdminSession(req)) {
-    return res.status(403).json({ error: 'Access denied. Only Super Admin can change Global Fallback Redirect URL.' });
+    return res.status(403).json({ error: 'Access denied. Only Master Admin can change Global Fallback Redirect URL.' });
   }
 
   const cleanFallback = (defaultFallbackUrl !== undefined && defaultFallbackUrl.trim())
@@ -1382,12 +1385,12 @@ app.post('/api/pingback', (req, res) => {
 
 app.get('/api/admin/users', requireAuth, (req, res) => {
   if (!isAnyAdminSession(req)) {
-    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can view team members.' });
+    return res.status(403).json({ error: 'Access denied. Only Master Admin and Admin can view team members.' });
   }
   let users = db.getUsersPublic();
   if (!isSuperAdminSession(req)) {
-    // Primary Super Admin account is hidden from Normal Admin
-    users = users.filter(u => u.username.toLowerCase() !== 'admin' && String(u.role).toLowerCase() !== 'super admin');
+    // Primary Master Admin account is hidden from Normal Admin
+    users = users.filter(u => u.username.toLowerCase() !== 'admin' && String(u.role).toLowerCase() !== 'super admin' && String(u.role).toLowerCase() !== 'master admin');
   }
   res.json(users);
 });
@@ -1539,7 +1542,7 @@ function validatePasswordRequirements(password) {
 function formatDisplayName(str) {
   if (!str) return '';
   let s = str.trim();
-  if (s.toLowerCase() === 'admin') return 'Super Admin';
+  if (s.toLowerCase() === 'admin' || s.toLowerCase() === 'super admin') return 'Master Admin';
 
   s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
   s = s.replace(/_+/g, ' ');
@@ -1666,13 +1669,13 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
     return res.status(404).json({ error: 'User not found.' });
   }
 
-  if (target.username.toLowerCase() === 'admin' || String(target.role).toLowerCase() === 'super admin') {
-    return res.status(400).json({ error: 'Cannot modify primary Super Admin account.' });
+  if (target.username.toLowerCase() === 'admin' || String(target.role).toLowerCase() === 'super admin' || String(target.role).toLowerCase() === 'master admin') {
+    return res.status(400).json({ error: 'Cannot modify primary Master Admin account.' });
   }
 
   let finalPerms = Array.isArray(permissions) ? [...permissions] : [];
   if (!isSuperAdminSession(req)) {
-    // Only domains is strictly Super Admin exclusive; col_blocked_countries can be managed by both Super Admin and Normal Admin
+    // Only domains is strictly Master Admin exclusive; col_blocked_countries can be managed by both Master Admin and Normal Admin
     finalPerms = finalPerms.filter(p => p !== 'domains');
   }
 
@@ -1684,7 +1687,7 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
   const { username, newPassword } = req.body;
   
   if (!isAnyAdminSession(req) && req.session.username !== username) {
-    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can reset user passwords.' });
+    return res.status(403).json({ error: 'Access denied. Only Master Admin and Admin can reset user passwords.' });
   }
 
   if (!username || !newPassword) {
@@ -1701,8 +1704,8 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
     return res.status(404).json({ error: 'User not found.' });
   }
 
-  if (!isSuperAdminSession(req) && (user.username.toLowerCase() === 'admin' || String(user.role).toLowerCase() === 'super admin')) {
-    return res.status(403).json({ error: 'Access denied. Only Super Admin can reset Super Admin password.' });
+  if (!isSuperAdminSession(req) && (user.username.toLowerCase() === 'admin' || String(user.role).toLowerCase() === 'super admin' || String(user.role).toLowerCase() === 'master admin')) {
+    return res.status(403).json({ error: 'Access denied. Only Master Admin can reset Master Admin password.' });
   }
 
   const salt = bcrypt.genSaltSync(10);
@@ -1713,7 +1716,7 @@ app.post('/api/admin/users/reset-password', requireAuth, (req, res) => {
 
 app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
   if (!isAnyAdminSession(req)) {
-    return res.status(403).json({ error: 'Access denied. Only Super Admin and Admin can delete team members.' });
+    return res.status(403).json({ error: 'Access denied. Only Master Admin and Admin can delete team members.' });
   }
 
   const { id } = req.params;
@@ -1721,8 +1724,8 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
   const target = users.find(u => u.id === id);
 
   if (target) {
-    if (target.username.toLowerCase() === 'admin' || target.role === 'Super Admin') {
-      return res.status(400).json({ error: 'Primary Super Admin account cannot be deleted.' });
+    if (target.username.toLowerCase() === 'admin' || target.role === 'Super Admin' || target.role === 'Master Admin') {
+      return res.status(400).json({ error: 'Primary Master Admin account cannot be deleted.' });
     }
   }
 

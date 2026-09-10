@@ -12,28 +12,29 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=71">
+  <link rel="stylesheet" href="/css/style.css?v=72">
   <script>
     (function() {
       try {
-        var r = localStorage.getItem('cachedUserRole');
+        var r = (localStorage.getItem('cachedUserRole') || '').toLowerCase();
         var u = (localStorage.getItem('cachedUsername') || '').toLowerCase();
-        if (r === 'Editor') {
+        var isMaster = u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
+        if (r === 'editor') {
           document.documentElement.classList.add('is-editor');
-        } else if (u === 'admin' || r === 'super admin') {
+        } else if (isMaster) {
           document.documentElement.classList.add('is-admin', 'is-superadmin');
-        } else if (r === 'Admin') {
+        } else if (r === 'admin') {
           document.documentElement.classList.add('is-admin');
         }
         document.addEventListener('DOMContentLoaded', function() {
-          if (document.body && r) {
-            if (r === 'Editor') {
+          if (document.body && (r || u)) {
+            if (r === 'editor') {
               document.body.classList.add('is-editor');
               document.body.classList.remove('is-admin', 'is-superadmin');
-            } else if (u === 'admin' || r === 'super admin') {
+            } else if (isMaster) {
               document.body.classList.add('is-admin', 'is-superadmin');
               document.body.classList.remove('is-editor');
-            } else if (r === 'Admin') {
+            } else if (r === 'admin') {
               document.body.classList.add('is-admin');
               document.body.classList.remove('is-editor', 'is-superadmin');
             }
@@ -1761,7 +1762,7 @@
             💾 Save &amp; Apply Globally to All Editors
           </button>
           <!-- Shown to Editor viewers only -->
-          <div id="shield-admin-only-note" style="display:none; text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; font-weight:600;">🔒 Only Super Admin can change global firewall settings</div>
+          <div id="shield-admin-only-note" style="display:none; text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; font-weight:600;">🔒 Only Master Admin can change global firewall settings</div>
         </form>
       </div>
 
@@ -2717,7 +2718,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=99"></script>
+<script src="/js/dashboard.js?v=100"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

@@ -352,7 +352,7 @@ module.exports = {
   // Users CRUD
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
-    if (role === 'Super Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'domains'];
+    if (role === 'Super Admin' || role === 'Master Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'domains'];
     if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image'];
     return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image']; // Editor default
   },
@@ -360,14 +360,14 @@ module.exports = {
     const users = readJson(FILES.users, []);
     return users.map(u => {
       const role = u.role || 'Editor';
-      const isSuper = (u.username || '').toLowerCase() === 'admin' || role === 'Super Admin';
+      const isSuper = (u.username || '').toLowerCase() === 'admin' || (u.username || '').toLowerCase() === 'master admin' || role === 'Super Admin' || role === 'Master Admin';
       const defaultPerms = (isSuper || role === 'Admin')
         ? (isSuper ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'domains'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image'])
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
       const rawUserPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
-      // Domains is strictly Super Admin only — filter out for Normal Admin and Editor
+      // Domains is strictly Master Admin only — filter out for Normal Admin and Editor
       const userPerms = rawUserPerms.filter(p => (isSuper || p !== 'domains') && (role === 'Admin' || isSuper || (p !== 'firewall' && p !== 'analytics')));
       return {
         id: u.id,
@@ -406,7 +406,7 @@ module.exports = {
       const uTrim = user.username.trim();
       user.username = uTrim.charAt(0).toUpperCase() + uTrim.slice(1);
     }
-    const isSuper = (user.username || '').toLowerCase() === 'admin' || user.role === 'Super Admin';
+    const isSuper = (user.username || '').toLowerCase() === 'admin' || (user.username || '').toLowerCase() === 'master admin' || user.role === 'Super Admin' || user.role === 'Master Admin';
     // Only set default permissions when none were explicitly provided (if array doesn't exist)
     if (!Array.isArray(user.permissions)) {
       user.permissions = user.role === 'Admin'
@@ -473,7 +473,7 @@ module.exports = {
     if (user) {
       if (role !== undefined) user.role = role;
       if (Array.isArray(permissions)) {
-        const isSuper = (user.username || '').toLowerCase() === 'admin' || user.role === 'Super Admin';
+        const isSuper = (user.username || '').toLowerCase() === 'admin' || (user.username || '').toLowerCase() === 'master admin' || user.role === 'Super Admin' || user.role === 'Master Admin';
         user.permissions = permissions.filter(p => (isSuper || p !== 'domains') && (user.role === 'Admin' || isSuper || (p !== 'firewall' && p !== 'analytics')));
       }
       if (Array.isArray(allowedTargetDomains)) {
