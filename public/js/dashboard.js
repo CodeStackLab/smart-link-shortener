@@ -280,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const uRole = (data.role || 'Admin').trim();
           if (uName.toLowerCase() === 'admin') {
             userBadge.textContent = '👑 Super Admin';
+            userBadge.style.display = 'inline-flex';
             userBadge.style.background = '';
             userBadge.style.color = '';
             userBadge.style.boxShadow = '';
@@ -289,11 +290,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const formattedName = formatDisplayName(uName);
             const userIcon = (uRole === 'Admin') ? '🛡️' : '👤';
             userBadge.textContent = `${userIcon} ${formattedName}`;
+            userBadge.style.display = 'inline-flex';
             userBadge.style.background = '';
             userBadge.style.color = '';
             userBadge.style.boxShadow = '';
             userBadge.className = 'badge user-badge-pill';
           }
+          try {
+            localStorage.setItem('cachedUserBadge', userBadge.textContent);
+            localStorage.setItem('cachedUserRole', uRole);
+            localStorage.setItem('cachedUsername', uName);
+          } catch (e) {}
         }
 
         const newPermsStr = JSON.stringify(data.permissions || []);
@@ -880,6 +887,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Logout Handler
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
+      try {
+        localStorage.removeItem('cachedUserBadge');
+        localStorage.removeItem('cachedUserRole');
+        localStorage.removeItem('cachedUsername');
+      } catch (e) {}
       await fetch('/api/logout', { method: 'POST' });
       window.location.href = '/admin';
     });

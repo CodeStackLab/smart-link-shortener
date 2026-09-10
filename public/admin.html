@@ -12,7 +12,36 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=70">
+  <link rel="stylesheet" href="/css/style.css?v=71">
+  <script>
+    (function() {
+      try {
+        var r = localStorage.getItem('cachedUserRole');
+        var u = (localStorage.getItem('cachedUsername') || '').toLowerCase();
+        if (r === 'Editor') {
+          document.documentElement.classList.add('is-editor');
+        } else if (u === 'admin' || r === 'super admin') {
+          document.documentElement.classList.add('is-admin', 'is-superadmin');
+        } else if (r === 'Admin') {
+          document.documentElement.classList.add('is-admin');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          if (document.body && r) {
+            if (r === 'Editor') {
+              document.body.classList.add('is-editor');
+              document.body.classList.remove('is-admin', 'is-superadmin');
+            } else if (u === 'admin' || r === 'super admin') {
+              document.body.classList.add('is-admin', 'is-superadmin');
+              document.body.classList.remove('is-editor');
+            } else if (r === 'Admin') {
+              document.body.classList.add('is-admin');
+              document.body.classList.remove('is-editor', 'is-superadmin');
+            }
+          }
+        });
+      } catch(e) {}
+    })();
+  </script>
   <style>
     /* ── Real-Time Traffic Audit Logs: EXACT Compact Height & Dimensions from Mockup ── */
     #logs-realtime-wrap {
@@ -938,7 +967,21 @@
     </div>
     <div class="header-actions">
       <button id="theme-toggle-btn" class="theme-toggle-btn top-pill-btn">☀️ Light Mode</button>
-      <span id="user-badge" class="badge user-badge-pill">👑 Super Admin</span>
+      <span id="user-badge" class="badge user-badge-pill" style="display:none;"></span>
+      <script>
+        (function() {
+          try {
+            var b = localStorage.getItem('cachedUserBadge');
+            if (b) {
+              var el = document.getElementById('user-badge');
+              if (el) {
+                el.textContent = b;
+                el.style.display = 'inline-flex';
+              }
+            }
+          } catch(e) {}
+        })();
+      </script>
       <button id="logout-btn" class="btn top-pill-btn">🔒 Logout</button>
     </div>
   </div>
@@ -2674,7 +2717,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=98"></script>
+<script src="/js/dashboard.js?v=99"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
