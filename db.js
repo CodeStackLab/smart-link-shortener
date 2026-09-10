@@ -58,6 +58,17 @@ function initDb() {
   }
 
   const links = readJson(FILES.links, []);
+  let linksUpdated = false;
+  links.forEach(l => {
+    if (l && !l.id) {
+      l.id = 'link_' + (l.code || (Date.now() + '_' + Math.random().toString(36).substr(2, 4)));
+      linksUpdated = true;
+    }
+  });
+  if (linksUpdated) {
+    writeJson(FILES.links, links);
+  }
+
   if (links.length === 0) {
     const demoLink = {
       id: 'link_demo_1',
@@ -183,6 +194,9 @@ module.exports = {
     return links.find(l => l && l.code && l.code.toLowerCase() === (code || '').toLowerCase());
   },
   addLink: (link) => {
+    if (!link.id) {
+      link.id = 'link_' + (link.code || (Date.now() + '_' + Math.random().toString(36).substr(2, 4)));
+    }
     const links = readJson(FILES.links, []);
     links.unshift(link);
     writeJson(FILES.links, links);
@@ -190,7 +204,11 @@ module.exports = {
   },
   updateLink: (id, updatedFields) => {
     const links = readJson(FILES.links, []);
-    const index = links.findIndex(l => l.id === id);
+    const target = (id || '').toString().trim().toLowerCase();
+    const index = links.findIndex(l => 
+      l && ((l.id && l.id.toString().trim().toLowerCase() === target) ||
+            (l.code && l.code.toString().trim().toLowerCase() === target))
+    );
     if (index !== -1) {
       const cleanUpdates = {};
       for (const [key, value] of Object.entries(updatedFields || {})) {
@@ -206,7 +224,13 @@ module.exports = {
   },
   deleteLink: (id) => {
     let links = readJson(FILES.links, []);
-    links = links.filter(l => l.id !== id);
+    const target = (id || '').toString().trim().toLowerCase();
+    links = links.filter(l => {
+      if (!l) return false;
+      const lid = (l.id || '').toString().trim().toLowerCase();
+      const lcode = (l.code || '').toString().trim().toLowerCase();
+      return lid !== target && lcode !== target;
+    });
     writeJson(FILES.links, links);
   },
   incrementClicks: (code) => {

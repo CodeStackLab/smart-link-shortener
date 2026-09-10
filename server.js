@@ -767,7 +767,11 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
 
 app.put('/api/admin/links/:id', requireAuth, (req, res) => {
   const { id } = req.params;
-  const existingLink = db.getLinks().find(l => l.id === id);
+  const target = (id || '').toString().trim().toLowerCase();
+  const existingLink = db.getLinks().find(l => 
+    l && ((l.id && l.id.toString().trim().toLowerCase() === target) ||
+          (l.code && l.code.toString().trim().toLowerCase() === target))
+  );
   if (!existingLink) {
     return res.status(404).json({ error: 'Link not found.' });
   }
@@ -895,14 +899,19 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     updateFields.securityPauseReason = null;
   }
 
-  const updated = db.updateLink(id, updateFields);
+  const targetKey = existingLink.id || existingLink.code || id;
+  const updated = db.updateLink(targetKey, updateFields);
 
   res.json({ success: true, link: updated });
 });
 
 app.delete('/api/admin/links/:id', requireAuth, (req, res) => {
   const { id } = req.params;
-  const existingLink = db.getLinks().find(l => l.id === id);
+  const target = (id || '').toString().trim().toLowerCase();
+  const existingLink = db.getLinks().find(l => 
+    l && ((l.id && l.id.toString().trim().toLowerCase() === target) ||
+          (l.code && l.code.toString().trim().toLowerCase() === target))
+  );
   if (existingLink && !isAdminRole(req.session.role)) {
     const userPerms = getUserPermissions(req.session.username, req.session.role);
     if (!userPerms.includes('links')) {
@@ -912,7 +921,8 @@ app.delete('/api/admin/links/:id', requireAuth, (req, res) => {
       return res.status(403).json({ error: 'Access denied. You can only delete your own created links.' });
     }
   }
-  db.deleteLink(id);
+  const targetKey = existingLink ? (existingLink.id || existingLink.code || id) : id;
+  db.deleteLink(targetKey);
   res.json({ success: true });
 });
 

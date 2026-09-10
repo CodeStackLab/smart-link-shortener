@@ -1213,20 +1213,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const hasLinksPerm = userCurrentPermissions.includes('links');
       const canManage = isFullAdminUser() || (isOwner && hasLinksPerm);
       const isSecurityPaused = !!link.autoPausedForSecurity;
+      const linkKey = link.id || link.code;
 
       let toggleBtnHtml = '';
       if (isSecurityPaused) {
         if (isFullAdminUser()) {
-          toggleBtnHtml = `<button class="btn btn-sm" onclick="toggleLinkStatus('${link.id}', true)" title="Review and resume security-paused link" style="background:linear-gradient(135deg,#f59e0b,#d97706); border:none; color:#fff; font-weight:800; border-radius:8px; padding:0.3rem 0.65rem;">🔓 Resume Link</button>`;
+          toggleBtnHtml = `<button class="btn btn-sm" onclick="toggleLinkStatus('${linkKey}', true)" title="Review and resume security-paused link" style="background:linear-gradient(135deg,#f59e0b,#d97706); border:none; color:#fff; font-weight:800; border-radius:8px; padding:0.3rem 0.65rem;">🔓 Resume Link</button>`;
         } else {
           toggleBtnHtml = `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.6; cursor:not-allowed;" title="Auto-paused due to fake traffic detection. Only Primary Admin can review and resume this link.">🔒 Admin Locked</button>`;
         }
       } else {
-        toggleBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${link.id}', ${!link.active})">${link.active ? 'Pause' : 'Enable'}</button>`;
+        toggleBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${linkKey}', ${!link.active})">${link.active ? 'Pause' : 'Enable'}</button>`;
       }
 
       const trafficRulesBtn = isFullAdminUser()
-        ? `<button class="btn btn-secondary btn-sm btn-traffic-rules" onclick="showTrafficRulesModal('${link.id}')" title="Configure Facebook & Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>`
+        ? `<button class="btn btn-secondary btn-sm btn-traffic-rules" onclick="showTrafficRulesModal('${linkKey}')" title="Configure Facebook & Traffic Rules" style="font-weight:800; background:rgba(24,119,242,0.1); color:#1877f2; border:1.5px solid rgba(24,119,242,0.3);">🎯 Rules</button>`
         : '';
 
       const blockedList = Array.isArray(link.blockedCountries) ? link.blockedCountries : [];
@@ -1256,7 +1257,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
           ${toggleBtnHtml}
-          <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.id}')">🗑️ Delete</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteLink('${linkKey}')">🗑️ Delete</button>
         </div>
       ` : `
         <div class="action-btn-group">
@@ -1517,8 +1518,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.toggleLinkStatus = async function(id, newActive) {
+    if (!id || id === 'undefined' || id === 'null') return;
     try {
-      const res = await fetch(`/api/admin/links/${id}`, {
+      const res = await fetch(`/api/admin/links/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: newActive })
@@ -1526,6 +1528,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok) {
         showAlert('Link status updated');
         loadLinks();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showAlert(data.error || 'Failed to update status', true);
       }
     } catch (err) {
       showAlert('Failed to update status', true);
@@ -1533,12 +1538,19 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.deleteLink = async function(id) {
+    if (!id || id === 'undefined' || id === 'null') {
+      showAlert('Invalid shortlink ID', true);
+      return;
+    }
     if (!confirm('Are you sure you want to delete this short link?')) return;
     try {
-      const res = await fetch(`/api/admin/links/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/links/${encodeURIComponent(id)}`, { method: 'DELETE' });
       if (res.ok) {
         showAlert('Shortlink deleted');
         loadLinks();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showAlert(data.error || 'Failed to delete link', true);
       }
     } catch (err) {
       showAlert('Failed to delete link', true);
@@ -1551,11 +1563,11 @@ document.addEventListener('DOMContentLoaded', () => {
       showAlert('Traffic rules can only be configured by Admin.', true);
       return;
     }
-    const link = (allLinksCache || []).find(l => l.id === linkId);
+    const link = (allLinksCache || []).find(l => l && (l.id === linkId || l.code === linkId));
     if (!link) return;
     const idEl = document.getElementById('modal-rule-link-id');
     const subEl = document.getElementById('traffic-rules-modal-subtitle');
-    if (idEl) idEl.value = link.id;
+    if (idEl) idEl.value = link.id || link.code;
     const targetDisplay = link.targetUrl || link.target || '— Not set —';
     if (subEl) subEl.textContent = `/${link.code} • Target: ${targetDisplay}`;
 
@@ -1636,7 +1648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const isEditorUser = !isFullAdminUser();
-    const existingLink = (allLinksCache || []).find(l => l.id === linkId);
+    const existingLink = (allLinksCache || []).find(l => l && (l.id === linkId || l.code === linkId));
     const fallbackInputVal = document.getElementById('modal-rule-fallback-url')?.value.trim();
 
     const payload = {
@@ -1651,7 +1663,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     try {
-      const res = await fetch(`/api/admin/links/${linkId}`, {
+      const res = await fetch(`/api/admin/links/${encodeURIComponent(linkId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
