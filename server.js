@@ -593,7 +593,7 @@ app.post('/api/admin/upload-image', requireAuth, requirePermission('upload_image
 
 app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res) => {
 
-  const {
+  let {
     code,
     targetUrl,
     fallbackUrl,
@@ -781,7 +781,7 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     }
   }
 
-  const {
+  let {
     targetUrl,
     fallbackUrl,
     allowedPlatforms,
