@@ -542,14 +542,18 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
       { key: 'analytics', tabId: 'tab-analytics', adminOnly: true },
       { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
-      { key: 'settings', tabId: 'tab-settings', adminOnly: false }
+      { key: 'settings', tabId: 'tab-settings', adminOnly: false },
+      { key: 'publytics', tabId: 'tab-publytics', masterAdminOnly: true }
     ];
 
     navMap.forEach(item => {
       // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
-      const hasAccess = item.key === 'firewall'
-        ? true
-        : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
+      // Publytics tab is strictly restricted to Master Admin only
+      const hasAccess = item.masterAdminOnly
+        ? isSuperAdminUser()
+        : (item.key === 'firewall'
+          ? true
+          : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key))));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -643,6 +647,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const settingsContent = document.getElementById('tab-settings');
       if (settingsContent && settingsContent.style.display !== 'none') {
         settingsContent.style.display = 'none';
+        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
+        if (defaultLinksTab) defaultLinksTab.click();
+      }
+    }
+
+    // If user is not Master Admin and is currently on Publytics tab, switch back to Links tab
+    if (!isSuperAdminUser()) {
+      const publyticsContent = document.getElementById('tab-publytics');
+      if (publyticsContent && publyticsContent.style.display !== 'none') {
+        publyticsContent.style.display = 'none';
         const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
         if (defaultLinksTab) defaultLinksTab.click();
       }
@@ -950,6 +964,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      if (targetTab === 'tab-publytics' && !isSuperAdminUser()) {
+        return;
+      }
+
       tabBtns.forEach(b => b.classList.remove('active'));
       tabContents.forEach(c => c.style.display = 'none');
 
@@ -979,6 +997,11 @@ document.addEventListener('DOMContentLoaded', () => {
           loadDomains();
         }
         load2FAStatus();
+      }
+      if (targetTab === 'tab-publytics') {
+        if (isSuperAdminUser()) {
+          loadPublyticsDashboard();
+        }
       }
     });
   });
@@ -2761,6 +2784,21 @@ document.addEventListener('DOMContentLoaded', () => {
         createFallbackInput.value = settings.defaultFallbackUrl || 'https://www.google.com/';
       }
 
+      // Populate Publytics Dashboard URL (Master Admin only)
+      const publyticsUrlInput = document.getElementById('publytics-url-input');
+      const publyticsExtLink = document.getElementById('publytics-external-link');
+      const publyticsNoticeLink = document.getElementById('publytics-notice-link');
+      const publyticsUrl = settings.publyticsDashboardUrl || 'https://publytics.net';
+      if (publyticsUrlInput) {
+        publyticsUrlInput.value = publyticsUrl;
+      }
+      if (publyticsExtLink) {
+        publyticsExtLink.href = publyticsUrl;
+      }
+      if (publyticsNoticeLink) {
+        publyticsNoticeLink.href = publyticsUrl;
+      }
+
       // Populate Global Facebook Rules
       const globFbTraffic = document.getElementById('glob-fb-traffic-enabled');
       const globFbProfiles = document.getElementById('glob-fb-allow-profiles');
@@ -2936,6 +2974,157 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (btnSaveDefaultFallback) {
     btnSaveDefaultFallback.addEventListener('click', window.saveDefaultFallbackUrl);
+  }
+
+  // ── Publytics Live Dashboard Management (Master Admin Only) ──
+  let publyticsLoadedUrl = '';
+  function loadPublyticsDashboard(force = false) {
+    if (!isSuperAdminUser()) return;
+    const frame = document.getElementById('publytics-dashboard-frame');
+    const loading = document.getElementById('publytics-loading-overlay');
+    const notice = document.getElementById('publytics-embed-notice');
+    const input = document.getElementById('publytics-url-input');
+    const targetUrl = (input && input.value.trim())
+      ? input.value.trim()
+      : (currentSettingsCache?.publyticsDashboardUrl || 'https://publytics.net');
+
+    if (!frame) return;
+
+    if (!force && publyticsLoadedUrl === targetUrl && frame.src && frame.src !== 'about:blank') {
+      return;
+    }
+
+    if (loading) {
+      loading.style.display = 'flex';
+      loading.style.opacity = '1';
+    }
+    if (notice) notice.style.display = 'none';
+
+    publyticsLoadedUrl = targetUrl;
+    frame.src = targetUrl;
+
+    let timeoutFired = false;
+    const timeout = setTimeout(() => {
+      timeoutFired = true;
+      if (loading) {
+        loading.style.opacity = '0';
+        setTimeout(() => { if (loading) loading.style.display = 'none'; }, 300);
+      }
+      if (notice) notice.style.display = 'flex';
+    }, 5000);
+
+    frame.onload = () => {
+      if (!timeoutFired) clearTimeout(timeout);
+      if (loading) {
+        loading.style.opacity = '0';
+        setTimeout(() => { if (loading) loading.style.display = 'none'; }, 300);
+      }
+      if (notice) notice.style.display = 'flex';
+    };
+
+    frame.onerror = () => {
+      if (!timeoutFired) clearTimeout(timeout);
+      if (loading) loading.style.display = 'none';
+      if (notice) notice.style.display = 'flex';
+    };
+  }
+
+  window.savePublyticsUrl = async function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    if (!isSuperAdminUser()) {
+      showAlert('⚠️ Only Master Admin can configure Publytics Dashboard URL.', true);
+      return false;
+    }
+    const input = document.getElementById('publytics-url-input');
+    const feedback = document.getElementById('publytics-config-feedback');
+    const saveBtn = document.getElementById('btn-save-publytics-url');
+    const val = input ? input.value.trim() : '';
+    if (!val) {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#fee2e2';
+        feedback.style.color = '#b91c1c';
+        feedback.textContent = '⚠️ Please enter a valid URL (e.g. https://publytics.net)';
+      }
+      return false;
+    }
+
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span>⏳ Saving...</span>';
+    }
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publyticsDashboardUrl: val })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Publytics Dashboard URL updated successfully!');
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.style.background = '#dcfce7';
+          feedback.style.color = '#15803d';
+          feedback.textContent = '✅ Publytics Dashboard URL saved successfully!';
+          setTimeout(() => { if (feedback) feedback.style.display = 'none'; }, 4000);
+        }
+        const newUrl = data.settings?.publyticsDashboardUrl || val;
+        if (input) input.value = newUrl;
+        const extLink = document.getElementById('publytics-external-link');
+        if (extLink) extLink.href = newUrl;
+        const noticeLink = document.getElementById('publytics-notice-link');
+        if (noticeLink) noticeLink.href = newUrl;
+        loadPublyticsDashboard(true);
+      } else {
+        showAlert(data.error || 'Failed to update Publytics URL', true);
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.style.background = '#fee2e2';
+          feedback.style.color = '#b91c1c';
+          feedback.textContent = '❌ ' + (data.error || 'Failed to update Publytics URL');
+        }
+      }
+    } catch (err) {
+      showAlert('Failed to update Publytics URL: ' + (err.message || err), true);
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#fee2e2';
+        feedback.style.color = '#b91c1c';
+        feedback.textContent = '❌ ' + (err.message || err);
+      }
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span>💾 Save URL</span>';
+      }
+    }
+    return false;
+  };
+
+  const togglePublyticsConfigBtn = document.getElementById('toggle-publytics-config-btn');
+  if (togglePublyticsConfigBtn) {
+    togglePublyticsConfigBtn.addEventListener('click', () => {
+      const panel = document.getElementById('publytics-config-panel');
+      if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  }
+
+  const refreshPublyticsBtn = document.getElementById('refresh-publytics-iframe-btn');
+  if (refreshPublyticsBtn) {
+    refreshPublyticsBtn.addEventListener('click', () => {
+      loadPublyticsDashboard(true);
+    });
+  }
+
+  const publyticsConfigForm = document.getElementById('publytics-config-form');
+  if (publyticsConfigForm) {
+    publyticsConfigForm.addEventListener('submit', window.savePublyticsUrl);
   }
 
   // Global Facebook Traffic Rules Form Handler

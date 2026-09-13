@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=72">
+  <link rel="stylesheet" href="/css/style.css?v=73">
   <script>
     (function() {
       try {
@@ -999,6 +999,7 @@
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
   <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
+  <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics" style="display:none;">📈 Publytics</button>
 </div>
 
 <!-- ── GLOBAL ALERT ── -->
@@ -2529,6 +2530,88 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════
+     TAB 6 — PUBLYTICS (MASTER ADMIN ONLY)
+══════════════════════════════ -->
+<div id="tab-publytics" class="tab-content" style="display:none;">
+  <div class="container" style="max-width:1440px; padding:0.75rem 0.75rem 2rem 0.75rem;">
+    <!-- Publytics Container Card -->
+    <div class="card" style="padding:1.25rem; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,0.06); border:1px solid var(--border,#e2e8f0);">
+      
+      <!-- Top Action Bar -->
+      <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:1rem; padding-bottom:0.85rem; border-bottom:1px solid var(--border,#e2e8f0);">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <div style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #6366f1 0%, #4338ca 100%); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.25rem; box-shadow:0 4px 14px rgba(99,102,241,0.35);">
+            📈
+          </div>
+          <div>
+            <div style="font-size:1.15rem; font-weight:800; color:var(--text,#1e293b); display:flex; align-items:center; gap:0.45rem;">
+              <span>Publytics Live Dashboard</span>
+              <span class="badge" style="background:linear-gradient(135deg, #4f46e5, #7c3aed); color:#fff; font-size:0.7rem; font-weight:800; padding:0.2rem 0.55rem; border-radius:9999px;">Master Admin</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted,#64748b); font-weight:500;">
+              Real-time analytics and traffic tracking embedded directly in your admin workspace.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          <button id="toggle-publytics-config-btn" type="button" class="btn btn-secondary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.85rem; border-radius:10px; display:flex; align-items:center; gap:0.35rem;">
+            <span>⚙️</span> <span>Configure URL</span>
+          </button>
+          <button id="refresh-publytics-iframe-btn" type="button" class="btn btn-secondary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.85rem; border-radius:10px; display:flex; align-items:center; gap:0.35rem;">
+            <span>🔄</span> <span>Reload</span>
+          </button>
+          <a id="publytics-external-link" href="https://publytics.net" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.95rem; border-radius:10px; background:linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); border:none; text-decoration:none; display:flex; align-items:center; gap:0.35rem; color:#fff;">
+            <span>↗️</span> <span>Open Publytics</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Collapsible Configuration Panel -->
+      <div id="publytics-config-panel" style="display:none; background:var(--input-bg,#f8fafc); border:1.5px solid #c7d2fe; border-radius:14px; padding:1rem; margin-bottom:1rem; transition:all 0.2s ease;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem;">
+          <div style="font-weight:800; font-size:0.88rem; color:#3730a3; display:flex; align-items:center; gap:0.4rem;">
+            <span>🔗</span> <span>Publytics Dashboard / Embed URL</span>
+          </div>
+          <span style="font-size:0.72rem; color:var(--text-muted,#64748b); font-weight:700;">Master Admin</span>
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted,#64748b); margin-bottom:0.7rem; line-height:1.5;">
+          Enter your Publytics shared dashboard link or direct account URL (e.g. <code>https://publytics.net</code> or your custom shared analytics view URL).
+        </div>
+        <form id="publytics-config-form" style="display:flex; gap:0.65rem; flex-wrap:wrap;" onsubmit="event.preventDefault(); if(window.savePublyticsUrl) window.savePublyticsUrl(event); return false;">
+          <input type="url" id="publytics-url-input" class="form-control" placeholder="https://publytics.net" style="flex:1; min-width:260px; font-weight:600; font-size:0.85rem; border-radius:10px; border:1.5px solid var(--border,#cbd5e1); padding:0.6rem 0.85rem;" required spellcheck="false" autocomplete="url">
+          <button type="submit" id="btn-save-publytics-url" class="btn btn-primary" style="font-weight:800; font-size:0.85rem; padding:0.6rem 1.25rem; border-radius:10px; background:linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); border:none; color:#fff; display:flex; align-items:center; gap:0.35rem; cursor:pointer;" onclick="event.preventDefault(); if(window.savePublyticsUrl) window.savePublyticsUrl(event);">
+            <span>💾 Save URL</span>
+          </button>
+        </form>
+        <div id="publytics-config-feedback" style="display:none; margin-top:0.65rem; font-size:0.8rem; font-weight:700; padding:0.5rem 0.75rem; border-radius:8px;"></div>
+      </div>
+
+      <!-- Live Embed Frame Container -->
+      <div style="position:relative; width:100%; border-radius:14px; overflow:hidden; border:1.5px solid var(--border,#e2e8f0); background:#ffffff; min-height:800px;">
+        <!-- Loading Spinner Overlay -->
+        <div id="publytics-loading-overlay" style="position:absolute; inset:0; z-index:10; background:rgba(255,255,255,0.94); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.85rem; transition:opacity 0.3s ease;">
+          <div style="width:44px; height:44px; border:4px solid #e0e7ff; border-top-color:#4f46e5; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+          <div style="font-weight:700; font-size:0.92rem; color:#4338ca;">Loading Publytics Dashboard...</div>
+          <div style="font-size:0.75rem; color:#64748b;">Live traffic monitoring view</div>
+        </div>
+
+        <!-- Fallback / Notice Helper -->
+        <div id="publytics-embed-notice" style="display:none; padding:0.75rem 1rem; background:#eff6ff; border-bottom:1px solid #bfdbfe; font-size:0.8rem; color:#1e40af; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <span>💡</span>
+            <span>If the live dashboard is restricted by third-party iframe blocking in your browser, click <strong>Open Publytics</strong> to view full-screen.</span>
+          </div>
+          <a id="publytics-notice-link" href="https://publytics.net" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem; border-radius:6px; background:#2563eb; color:#fff; text-decoration:none;">Open in New Window ↗</a>
+        </div>
+
+        <iframe id="publytics-dashboard-frame" src="about:blank" style="width:100%; height:800px; border:none; display:block;" allow="fullscreen" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 
@@ -2716,9 +2799,13 @@
     <span class="nav-icon">⚙️</span>
     <span>Settings</span>
   </button>
+  <button class="mobile-nav-item" data-tab="tab-publytics" id="mobile-nav-publytics" style="display:none;">
+    <span class="nav-icon">📈</span>
+    <span>Publytics</span>
+  </button>
 </nav>
 
-<script src="/js/dashboard.js?v=100"></script>
+<script src="/js/dashboard.js?v=101"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

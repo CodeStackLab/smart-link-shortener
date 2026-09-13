@@ -1090,8 +1090,9 @@ app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req,
     return res.json(settings);
   }
   const sanitized = { ...settings };
-  // Hide defaultFallbackUrl completely from all Normal Admin and Editor accounts
+  // Hide defaultFallbackUrl and publyticsDashboardUrl completely from all Normal Admin and Editor accounts
   delete sanitized.defaultFallbackUrl;
+  delete sanitized.publyticsDashboardUrl;
 
   if (isAdminRole(req.session.role)) {
     return res.json(sanitized);
@@ -1151,7 +1152,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     allowFbStories,
     blockAutomatedUnknown,
     editorCountryBlockEnabled,
-    editorBlockedCountries
+    editorBlockedCountries,
+    publyticsDashboardUrl
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -1187,15 +1189,24 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Only Master Admin can change Global Fallback Redirect URL.' });
   }
 
+  if (publyticsDashboardUrl !== undefined && !isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Master Admin can configure Publytics Dashboard URL.' });
+  }
+
   const cleanFallback = (defaultFallbackUrl !== undefined && defaultFallbackUrl.trim())
     ? ensureAbsoluteUrl(defaultFallbackUrl.trim())
     : undefined;
+
+  const cleanPublyticsUrl = (publyticsDashboardUrl !== undefined && publyticsDashboardUrl.trim())
+    ? ensureAbsoluteUrl(publyticsDashboardUrl.trim())
+    : (publyticsDashboardUrl !== undefined ? 'https://publytics.net' : undefined);
 
   const updated = db.updateSettings({
     rateLimitWindowSeconds: rateLimitWindowSeconds !== undefined ? parseInt(rateLimitWindowSeconds, 10) : undefined,
     rateLimitMaxRequests: rateLimitMaxRequests !== undefined ? parseInt(rateLimitMaxRequests, 10) : undefined,
     webhookUrl: webhookUrl !== undefined ? webhookUrl.trim() : undefined,
     defaultFallbackUrl: cleanFallback,
+    publyticsDashboardUrl: cleanPublyticsUrl,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,

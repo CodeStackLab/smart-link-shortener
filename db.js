@@ -272,12 +272,15 @@ module.exports = {
       allowFbPages: true,
       allowFbStories: true,
       blockAutomatedUnknown: true,
-      defaultFallbackUrl: 'https://www.google.com/',
       editorCountryBlockEnabled: true,
-      editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW']
+      editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
+      publyticsDashboardUrl: 'https://publytics.net'
     });
     if (!Array.isArray(s.editorBlockedCountries)) {
       s.editorBlockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
+    }
+    if (!s.publyticsDashboardUrl) {
+      s.publyticsDashboardUrl = 'https://publytics.net';
     }
     return s;
   },
