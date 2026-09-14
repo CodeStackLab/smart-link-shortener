@@ -826,6 +826,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const wrapEditLogsFallbackPerm = document.getElementById('wrap-edit-logs-fallback-clicks');
     if (wrapEditLogsFallbackPerm) wrapEditLogsFallbackPerm.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
 
+    // QR Modal Tagged Links (Group/Page/Story) — Admins Only (Hidden from Editors)
+    const qrTaggedWrapEl = document.getElementById('qr-tagged-links-wrap');
+    if (qrTaggedWrapEl) {
+      qrTaggedWrapEl.style.setProperty('display', isFullAdmin ? 'block' : 'none', 'important');
+    }
+
     // Role selector in invite form: only Admins can see the Admin option
     const roleSelectInvite = document.getElementById('new-user-role');
     if (roleSelectInvite) {
@@ -1513,28 +1519,36 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         }
 
-        // 1-Click Platform Tagged Links (FB Groups, Pages, Stories)
+        // 1-Click Platform Tagged Links (FB Groups, Pages, Stories) — Admins Only (Hidden from Editors)
+        const qrTaggedWrap = document.getElementById('qr-tagged-links-wrap');
+        const isAdmin = isFullAdminUser();
+        if (qrTaggedWrap) {
+          qrTaggedWrap.style.setProperty('display', isAdmin ? 'block' : 'none', 'important');
+        }
+
         const qrCopyGroupBtn = document.getElementById('qr-copy-group-btn');
         const qrCopyPageBtn = document.getElementById('qr-copy-page-btn');
         const qrCopyStoryBtn = document.getElementById('qr-copy-story-btn');
 
-        if (qrCopyGroupBtn) {
-          qrCopyGroupBtn.onclick = (e) => {
-            e.stopPropagation();
-            copyToClipboard(`${shortUrl}?src=group`, qrCopyGroupBtn);
-          };
-        }
-        if (qrCopyPageBtn) {
-          qrCopyPageBtn.onclick = (e) => {
-            e.stopPropagation();
-            copyToClipboard(`${shortUrl}?src=page`, qrCopyPageBtn);
-          };
-        }
-        if (qrCopyStoryBtn) {
-          qrCopyStoryBtn.onclick = (e) => {
-            e.stopPropagation();
-            copyToClipboard(`${shortUrl}?src=story`, qrCopyStoryBtn);
-          };
+        if (isAdmin) {
+          if (qrCopyGroupBtn) {
+            qrCopyGroupBtn.onclick = (e) => {
+              e.stopPropagation();
+              copyToClipboard(`${shortUrl}?src=group`, qrCopyGroupBtn);
+            };
+          }
+          if (qrCopyPageBtn) {
+            qrCopyPageBtn.onclick = (e) => {
+              e.stopPropagation();
+              copyToClipboard(`${shortUrl}?src=page`, qrCopyPageBtn);
+            };
+          }
+          if (qrCopyStoryBtn) {
+            qrCopyStoryBtn.onclick = (e) => {
+              e.stopPropagation();
+              copyToClipboard(`${shortUrl}?src=story`, qrCopyStoryBtn);
+            };
+          }
         }
 
         if (qrModalImg) qrModalImg.src = data.qrUrl;

@@ -3340,6 +3340,14 @@ body.is-editor #default-fallback-url-card {
   display: none !important;
 }
 
+/* ── QR Code Modal: Hide Tagged Links (Group, Page, Story) from Editors ── */
+html.is-editor #qr-tagged-links-wrap,
+body.is-editor #qr-tagged-links-wrap,
+html:not(.is-admin) #qr-tagged-links-wrap,
+body:not(.is-admin) #qr-tagged-links-wrap {
+  display: none !important;
+}
+
 /* ── Target URL: Non-Clickable for Editors (Prevents Bypassing the Shortener) ── */
 .non-clickable-target-url,
 body.is-editor .col-target-url a,
