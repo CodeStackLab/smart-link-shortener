@@ -12,7 +12,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=123">
+  <link rel="stylesheet" href="/css/style.css?v=124">
   <script>
     (function() {
       try {
@@ -2552,15 +2552,9 @@
           </div>
 
           <!-- Save Button (Blue) -->
-          <button type="button" id="btn-save-publytics-tracking" class="btn btn-primary btn-block" onclick="if(window.savePublyticsTrackingCode) window.savePublyticsTrackingCode(event);" style="background:#1877f2; min-height:48px; font-weight:800; font-size:1.02rem; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; border-radius:12px; margin-bottom:0.75rem; box-shadow:0 3px 12px rgba(24,119,242,0.3); transition:all 0.2s ease;">
+          <button type="button" id="btn-save-publytics-tracking" class="btn btn-primary btn-block" onclick="if(window.savePublyticsTrackingCode) window.savePublyticsTrackingCode(event);" style="background:#1877f2; min-height:48px; font-weight:800; font-size:1.02rem; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; border-radius:12px; margin-bottom:0; box-shadow:0 3px 12px rgba(24,119,242,0.3); transition:all 0.2s ease;">
             <span style="font-size:1.1rem;">💾</span> <span>Save Tracking Code</span>
           </button>
-
-          <!-- Status Indicator Bar (Green #0e884e with Green Dot/Active or Red Dot/Inactive) -->
-          <div id="publytics-status-bar" style="background:#0e884e; border-radius:12px; min-height:48px; display:flex; align-items:center; justify-content:center; gap:0.65rem; width:100%; padding:0.65rem 1rem; box-sizing:border-box; transition:all 0.25s ease;">
-            <span id="publytics-status-dot" style="width:14px; height:14px; border-radius:50%; background:#22c55e; box-shadow:0 0 10px #22c55e; display:inline-block; flex-shrink:0;"></span>
-            <span id="publytics-status-text" style="color:#ffffff; font-size:1.08rem; font-weight:800; letter-spacing:0.01em;">Active</span>
-          </div>
         </form>
       </div>
 

@@ -2900,9 +2900,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (publyticsScriptInput) {
         publyticsScriptInput.value = publyticsScript;
       }
-      if (typeof updatePublyticsStatusDisplay === 'function') {
-        updatePublyticsStatusDisplay(publyticsScript);
-      }
 
       // Populate Global Facebook Rules
       const globFbTraffic = document.getElementById('glob-fb-traffic-enabled');
@@ -3082,36 +3079,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Publytics Tracking Code Management (Master Admin Only) ──
-  function updatePublyticsStatusDisplay(scriptText) {
-    const hasCode = typeof scriptText === 'string' && scriptText.trim().length > 0;
-    const statusBar = document.getElementById('publytics-status-bar');
-    const statusDot = document.getElementById('publytics-status-dot');
-    const statusText = document.getElementById('publytics-status-text');
-
-    if (!statusBar || !statusDot || !statusText) return;
-
-    if (hasCode) {
-      // Active state (Matching User Screenshot 2)
-      statusBar.style.background = '#0e884e';
-      statusDot.style.background = '#22c55e';
-      statusDot.style.boxShadow = '0 0 10px #22c55e';
-      statusText.textContent = 'Active';
-    } else {
-      // Inactive state (Matching User Screenshot 3)
-      statusBar.style.background = '#0e884e';
-      statusDot.style.background = '#ef4444';
-      statusDot.style.boxShadow = '0 0 10px #ef4444';
-      statusText.textContent = 'Inactive';
-    }
-  }
-
-  // Update status live as user types or pastes or clears textarea
-  const publyticsScriptInputEl = document.getElementById('publytics-tracking-script-input');
-  if (publyticsScriptInputEl) {
-    publyticsScriptInputEl.addEventListener('input', () => {
-      updatePublyticsStatusDisplay(publyticsScriptInputEl.value);
-    });
-  }
 
   window.savePublyticsTrackingCode = async function(e) {
     if (e && e.preventDefault) e.preventDefault();
@@ -3138,11 +3105,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        updatePublyticsStatusDisplay(scriptVal);
         if (scriptVal) {
-          showAlert('✅ Publytics Tracking Code saved! Status: Active');
+          showAlert('✅ Publytics Tracking Code saved successfully!');
         } else {
-          showAlert('ℹ️ Tracking Code removed! Status: Inactive');
+          showAlert('ℹ️ Publytics Tracking Code removed.');
         }
       } else {
         showAlert(data.error || 'Failed to save Publytics Tracking Code', true);

@@ -35,16 +35,16 @@ console.log('✅ PASS: publytics-tracking-card is precisely placed under Fallbac
 assert(adminHtml.includes('Add Publytics Tracking Code'), 'FAIL: Add Publytics Tracking Code title missing');
 assert(adminHtml.includes('id="publytics-tracking-script-input"'), 'FAIL: publytics-tracking-script-input textarea missing');
 assert(adminHtml.includes('id="btn-save-publytics-tracking"'), 'FAIL: Save button missing');
-assert(adminHtml.includes('id="publytics-status-bar"'), 'FAIL: publytics-status-bar missing');
-assert(adminHtml.includes('id="publytics-status-dot"'), 'FAIL: publytics-status-dot missing');
-assert(adminHtml.includes('id="publytics-status-text"'), 'FAIL: publytics-status-text missing');
-console.log('✅ PASS: All Publytics tracking UI elements match user simplified mockup');
+assert(!adminHtml.includes('id="publytics-status-bar"'), 'FAIL: publytics-status-bar must be removed');
+assert(!adminHtml.includes('id="publytics-status-dot"'), 'FAIL: publytics-status-dot must be removed');
+assert(!adminHtml.includes('id="publytics-status-text"'), 'FAIL: publytics-status-text must be removed');
+console.log('✅ PASS: Publytics tracking UI elements match user clean mockup without status bar');
 
 // 2. Verify dashboard.js
 const dashboardJs = fs.readFileSync(path.join(__dirname, 'public', 'js', 'dashboard.js'), 'utf8');
 assert(!dashboardJs.includes("tabId: 'tab-publytics'"), 'FAIL: tab-publytics still in dashboard.js navMap');
 assert(dashboardJs.includes('savePublyticsTrackingCode'), 'FAIL: savePublyticsTrackingCode missing in dashboard.js');
-assert(dashboardJs.includes('updatePublyticsStatusDisplay'), 'FAIL: updatePublyticsStatusDisplay missing in dashboard.js');
+assert(!dashboardJs.includes('function updatePublyticsStatusDisplay'), 'FAIL: updatePublyticsStatusDisplay must be removed from dashboard.js');
 assert(dashboardJs.includes("'publytics-tracking-card'"), 'FAIL: publytics-tracking-card not in adminOnlyFirewallCards');
 console.log('✅ PASS: dashboard.js properly manages publytics-tracking-card and scoping');
 
