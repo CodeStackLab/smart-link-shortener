@@ -3108,7 +3108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (scriptVal) {
           showAlert('✅ Publytics Tracking Code saved successfully!');
         } else {
-          showAlert('ℹ️ Publytics Tracking Code removed.');
+          showAlert('✅ Saved Default.');
         }
       } else {
         showAlert(data.error || 'Failed to save Publytics Tracking Code', true);
