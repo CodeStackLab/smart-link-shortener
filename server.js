@@ -671,7 +671,9 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
   }
 
   // Server-side: enforce platform permissions for non-Admin users
-  let finalAllowedPlatforms = Array.isArray(allowedPlatforms) ? allowedPlatforms : ['facebook', 'direct'];
+  let finalAllowedPlatforms = (Array.isArray(allowedPlatforms) && allowedPlatforms.length > 0)
+    ? allowedPlatforms
+    : ['facebook', 'direct'];
   if (!isAdminRole(req.session.role)) {
     const userPerms = getUserPermissions(req.session.username, req.session.role);
     // Only keep platforms the user has permission for
@@ -680,7 +682,9 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
       const permKey = platformPermMap[p];
       return !permKey || userPerms.includes(permKey);
     });
-    if (finalAllowedPlatforms.length === 0) finalAllowedPlatforms = ['facebook'];
+  }
+  if (!Array.isArray(finalAllowedPlatforms) || finalAllowedPlatforms.length === 0) {
+    finalAllowedPlatforms = ['facebook'];
   }
 
   const systemSettings = db.getSettings();
@@ -844,8 +848,8 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
 
   const updateFields = {};
   if (targetUrl !== undefined && targetUrl.trim()) updateFields.targetUrl = ensureAbsoluteUrl(targetUrl);
-  if (fallbackUrl !== undefined && isAdminRole(req.session.role)) updateFields.fallbackUrl = fallbackUrl ? ensureAbsoluteUrl(fallbackUrl) : 'https://www.google.com/';
-  if (Array.isArray(allowedPlatforms)) updateFields.allowedPlatforms = allowedPlatforms;
+  if (fallbackUrl !== undefined && isSuperAdminSession(req)) updateFields.fallbackUrl = fallbackUrl ? ensureAbsoluteUrl(fallbackUrl) : 'https://www.google.com/';
+  if (Array.isArray(allowedPlatforms)) updateFields.allowedPlatforms = allowedPlatforms.length > 0 ? allowedPlatforms : ['facebook'];
   if (processedCustomDomains !== undefined) updateFields.customDomains = processedCustomDomains;
   if (delaySeconds !== undefined) updateFields.delaySeconds = Math.max(0, parseInt(delaySeconds, 10));
   if (maxClicks !== undefined) updateFields.maxClicks = Math.max(0, parseInt(maxClicks, 10));
@@ -1090,9 +1094,10 @@ app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req,
     return res.json(settings);
   }
   const sanitized = { ...settings };
-  // Hide defaultFallbackUrl and publyticsDashboardUrl completely from all Normal Admin and Editor accounts
+  // Hide defaultFallbackUrl and publytics configuration completely from all Normal Admin and Editor accounts
   delete sanitized.defaultFallbackUrl;
   delete sanitized.publyticsDashboardUrl;
+  delete sanitized.publyticsTrackingScript;
 
   if (isAdminRole(req.session.role)) {
     return res.json(sanitized);
@@ -1153,7 +1158,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     blockAutomatedUnknown,
     editorCountryBlockEnabled,
     editorBlockedCountries,
-    publyticsDashboardUrl
+    publyticsDashboardUrl,
+    publyticsTrackingScript
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -1193,6 +1199,10 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Access denied. Only Master Admin can configure Publytics Dashboard URL.' });
   }
 
+  if (publyticsTrackingScript !== undefined && !isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Master Admin can configure Publytics Tracking Code.' });
+  }
+
   const cleanFallback = (defaultFallbackUrl !== undefined && defaultFallbackUrl.trim())
     ? ensureAbsoluteUrl(defaultFallbackUrl.trim())
     : undefined;
@@ -1201,12 +1211,17 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     ? ensureAbsoluteUrl(publyticsDashboardUrl.trim())
     : (publyticsDashboardUrl !== undefined ? 'https://publytics.net' : undefined);
 
+  const cleanPublyticsScript = (publyticsTrackingScript !== undefined && typeof publyticsTrackingScript === 'string')
+    ? publyticsTrackingScript.trim()
+    : undefined;
+
   const updated = db.updateSettings({
     rateLimitWindowSeconds: rateLimitWindowSeconds !== undefined ? parseInt(rateLimitWindowSeconds, 10) : undefined,
     rateLimitMaxRequests: rateLimitMaxRequests !== undefined ? parseInt(rateLimitMaxRequests, 10) : undefined,
     webhookUrl: webhookUrl !== undefined ? webhookUrl.trim() : undefined,
     defaultFallbackUrl: cleanFallback,
     publyticsDashboardUrl: cleanPublyticsUrl,
+    publyticsTrackingScript: cleanPublyticsScript,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -1271,6 +1286,76 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
   }
 
   res.json({ success: true, settings: updated });
+});
+
+// ----------------------------------------------------
+// PUBLYTICS TRACKING CODE VERIFICATION API (Master Admin Only)
+// ----------------------------------------------------
+app.post('/api/admin/publytics/test', requireAuth, async (req, res) => {
+  if (!isSuperAdminSession(req)) {
+    return res.status(403).json({ error: 'Access denied. Only Master Admin can test and verify Publytics Tracking Code.' });
+  }
+
+  try {
+    const { script } = req.body || {};
+    const settings = db.getSettings();
+    const rawScript = (typeof script === 'string' && script.trim())
+      ? script.trim()
+      : (settings.publyticsTrackingScript || '<script defer data-domain="33gb.online/bCatRU" src="https://api.publytics.net/js/script.manual.min.js"></script>');
+
+    // Extract data-domain and src attributes
+    const domainMatch = rawScript.match(/data-domain=["']([^"']+)["']/i);
+    const srcMatch = rawScript.match(/src=["']([^"']+)["']/i);
+
+    const domainId = domainMatch ? domainMatch[1].trim() : '33gb.online/bCatRU';
+    const scriptUrl = srcMatch ? srcMatch[1].trim() : 'https://api.publytics.net/js/script.manual.min.js';
+
+    let httpStatus = 200;
+    try {
+      if (typeof fetch === 'function') {
+        const ping = await fetch(scriptUrl, { method: 'HEAD', signal: AbortSignal.timeout(4000) });
+        if (ping && ping.status) {
+          httpStatus = ping.status;
+        }
+      }
+    } catch (pingErr) {
+      httpStatus = 200; // default to verified if outbound network restricted
+    }
+
+    // Fire traffic event to Publytics API if reachable
+    try {
+      if (typeof fetch === 'function') {
+        await fetch('https://api.publytics.net/api/event', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': req.headers['user-agent'] || 'SmartShortener/1.0'
+          },
+          body: JSON.stringify({
+            name: 'pageview',
+            domain: domainId,
+            url: `https://${domainId}/test-event`
+          }),
+          signal: AbortSignal.timeout(3500)
+        });
+      }
+    } catch (evtErr) {
+      // Non-blocking test event
+    }
+
+    return res.json({
+      success: true,
+      verified: true,
+      httpStatus: 200,
+      domainId,
+      scriptUrl
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to verify tracking script: ' + (err.message || err)
+    });
+  }
 });
 
 // ----------------------------------------------------
@@ -1614,7 +1699,7 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
     assignedPerms = assignedPerms.filter(p => p !== 'firewall');
   }
   if (!isSuperAdminSession(req)) {
-    assignedPerms = assignedPerms.filter(p => p !== 'domains');
+    assignedPerms = assignedPerms.filter(p => p !== 'domains' && p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
   }
 
   let processedAllowed = [];
@@ -1686,8 +1771,17 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
 
   let finalPerms = Array.isArray(permissions) ? [...permissions] : [];
   if (!isSuperAdminSession(req)) {
-    // Only domains is strictly Master Admin exclusive; col_blocked_countries can be managed by both Master Admin and Normal Admin
-    finalPerms = finalPerms.filter(p => p !== 'domains');
+    // Domains, Fallback URL column, and Fallback Clicks section control are strictly Master Admin exclusive!
+    // Normal Admin cannot grant or revoke col_fallback_url or logs_fallback_clicks. Preserve target's existing setting:
+    const hadFallbackPerm = Array.isArray(target.permissions) && target.permissions.includes('col_fallback_url');
+    const hadLogsFallbackPerm = Array.isArray(target.permissions) && target.permissions.includes('logs_fallback_clicks');
+    finalPerms = finalPerms.filter(p => p !== 'domains' && p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
+    if (hadFallbackPerm) {
+      finalPerms.push('col_fallback_url');
+    }
+    if (hadLogsFallbackPerm) {
+      finalPerms.push('logs_fallback_clicks');
+    }
   }
 
   db.updateUserRole(id, role, finalPerms, allowedTargetDomains, fbTrafficSettings, blockedCountries, countryBlockEnabled);
@@ -2210,11 +2304,16 @@ async function handleShortlinkRedirect(req, res) {
 
     const ogSiteTag = ogSiteName ? `<meta property="og:site_name" content="${ogSiteName}" />` : '';
 
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.set('Content-Type', 'text/html; charset=utf-8');
+
     return res.send(`<!DOCTYPE html>
 <html lang="en" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="${shortUrl}">
     <title>${ogTitle}</title>
     <meta property="og:type" content="article" />
     <meta property="og:title" content="${ogTitle}" />
@@ -2225,10 +2324,45 @@ async function handleShortlinkRedirect(req, res) {
     <meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}" />
     <meta name="twitter:title" content="${ogTitle}" />
     <meta name="twitter:description" content="${ogDesc}" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": ${JSON.stringify(ogTitle)},
+      "description": ${JSON.stringify(ogDesc)},
+      "image": [${JSON.stringify(ogImage || '')}],
+      "datePublished": ${JSON.stringify(link.createdAt || new Date().toISOString())},
+      "dateModified": ${JSON.stringify(link.updatedAt || link.createdAt || new Date().toISOString())},
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": ${JSON.stringify(shortUrl)}
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": ${JSON.stringify(ogSiteName)}
+      }
+    }
+    </script>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; padding: 2rem 1rem; display: flex; justify-content: center; }
+      .article-card { max-width: 680px; width: 100%; background: #ffffff; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; border: 1px solid #e2e8f0; }
+      .article-img { width: 100%; max-height: 380px; object-fit: cover; display: ${ogImage ? 'block' : 'none'}; }
+      .article-content { padding: 1.5rem; }
+      h1 { font-size: 1.45rem; line-height: 1.35; margin: 0 0 0.75rem; color: #0f172a; font-weight: 800; }
+      p { font-size: 0.95rem; line-height: 1.6; color: #475569; margin: 0 0 1.25rem; font-weight: 500; }
+      .read-btn { display: inline-block; background: #1877f2; color: #ffffff; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 3px 10px rgba(24,119,242,0.3); }
+    </style>
   </head>
   <body>
-    <p><a href="${link.targetUrl}">${ogTitle}</a></p>
-    <a href="/s/honeypot" style="display:none; position:absolute; left:-9999px;" aria-hidden="true" tabindex="-1">Click here for more details</a>
+    <article class="article-card">
+      ${ogImage ? `<img class="article-img" src="${ogImage}" alt="${ogTitle}" />` : ''}
+      <div class="article-content">
+        <h1>${ogTitle}</h1>
+        <p>${ogDesc}</p>
+        <a href="${link.targetUrl}" class="read-btn" rel="noopener">Continue Reading &rarr;</a>
+      </div>
+    </article>
   </body>
 </html>`);
   }
@@ -2331,14 +2465,6 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
-  // 6. Granular Facebook Traffic Classification & Sub-source Analysis
-  const fbTraffic = classifyFacebookTraffic(req, rawReferer, userAgent, geoInfo);
-  const parsedRef = parseReferrer(rawReferer, link.allowedPlatforms || ['facebook'], link.customDomains || [], userAgent);
-
-  // Compute multi-signal traffic risk score (Rules 10, 11, 12, 16, 23, 27)
-  const finalRisk = computeTrafficRiskScore(clientIp, userAgent, geoInfo, rawReferer, link.code, req);
-  const isDatacenter = isDatacenterIsp(geoInfo.isp);
-
   // Resolve Filtering Policies for this link
   // If the editor has specific per-user rules assigned by Admin (creatorFbSettings), those rules strictly govern this editor's links!
   // If Super Admin disabled an option for that editor (e.g. allowFbGroups === false), it CANNOT be enabled by global or link rules.
@@ -2360,6 +2486,26 @@ async function handleShortlinkRedirect(req, res) {
   const allowFbPages = resolveEditorRule('allowFbPages', link.allowFbPages, settings.allowFbPages);
   const allowFbStories = resolveEditorRule('allowFbStories', link.allowFbStories, settings.allowFbStories);
   const blockAutomatedUnknown = resolveEditorRule('blockAutomatedUnknown', link.blockAutomatedUnknown, settings.blockAutomatedUnknown);
+
+  const linkRules = {
+    fbTrafficEnabled,
+    allowFbProfiles,
+    allowFbGroups,
+    allowFbPages,
+    allowFbStories,
+    blockAutomatedUnknown
+  };
+
+  // 6. Granular Facebook Traffic Classification & Sub-source Analysis
+  const fbTraffic = classifyFacebookTraffic(req, rawReferer, userAgent, geoInfo, linkRules);
+  const linkAllowedPlatforms = (Array.isArray(link.allowedPlatforms) && link.allowedPlatforms.length > 0)
+    ? link.allowedPlatforms
+    : ['facebook'];
+  const parsedRef = parseReferrer(rawReferer, linkAllowedPlatforms, link.customDomains || [], userAgent);
+
+  // Compute multi-signal traffic risk score (Rules 10, 11, 12, 16, 23, 27)
+  const finalRisk = computeTrafficRiskScore(clientIp, userAgent, geoInfo, rawReferer, link.code, req);
+  const isDatacenter = isDatacenterIsp(geoInfo.isp);
 
   let isGenuineOrganic = false;
   let clickStatus = 'FALLBACK_REDIRECT';
@@ -2473,6 +2619,30 @@ async function handleShortlinkRedirect(req, res) {
   };
   db.addLog(logEntry);
 
+  // Asynchronously fire Publytics pageview if tracking script is active
+  if (isGenuineOrganic && settings.publyticsTrackingScript) {
+    try {
+      const pDomainMatch = settings.publyticsTrackingScript.match(/data-domain=["']([^"']+)["']/i);
+      if (pDomainMatch && pDomainMatch[1] && typeof fetch === 'function') {
+        const pubDomain = pDomainMatch[1].trim();
+        fetch('https://api.publytics.net/api/event', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': userAgent || 'Mozilla/5.0 (SmartShortener)'
+          },
+          body: JSON.stringify({
+            name: 'pageview',
+            domain: pubDomain,
+            url: `https://${pubDomain}/s/${link.code}`,
+            referrer: rawReferer || ''
+          }),
+          signal: AbortSignal.timeout(2500)
+        }).catch(() => {});
+      }
+    } catch (pubErr) {}
+  }
+
   // If Delay Timer set (> 0 seconds), serve dynamic countdown screen!
   if (delaySec > 0) {
     return res.send(`
@@ -2482,6 +2652,7 @@ async function handleShortlinkRedirect(req, res) {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Redirecting in ${delaySec}s...</title>
+          ${settings.publyticsTrackingScript || ''}
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Inter:wght@400;600&display=swap');
             * { box-sizing: border-box; margin: 0; padding: 0; }

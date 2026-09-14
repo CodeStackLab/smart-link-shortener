@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('cachedUserBadge', badgeText);
           localStorage.setItem('cachedUserRole', uRole);
           localStorage.setItem('cachedUsername', uName);
+          localStorage.setItem('cachedPermissions', JSON.stringify(data.permissions || []));
         } catch (e) {}
         window.location.href = '/admin';
       } else {

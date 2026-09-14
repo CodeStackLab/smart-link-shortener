@@ -3299,17 +3299,61 @@ body:not(.is-admin) #fb-breakdown-card {
   display: none !important;
 }
 
+/* ── Zero-Flash: Instantly hide Geo tab for Editors without Geo permission ── */
+html.is-editor:not(.has-geo-perm) .tab-btn[data-tab="tab-geo"],
+html.is-editor:not(.has-geo-perm) .mobile-nav-item[data-tab="tab-geo"],
+html.is-editor:not(.has-geo-perm) #tab-geo,
+body.is-editor:not(.has-geo-perm) .tab-btn[data-tab="tab-geo"],
+body.is-editor:not(.has-geo-perm) .mobile-nav-item[data-tab="tab-geo"],
+body.is-editor:not(.has-geo-perm) #tab-geo,
+html.hide-geo-tab .tab-btn[data-tab="tab-geo"],
+html.hide-geo-tab .mobile-nav-item[data-tab="tab-geo"],
+html.hide-geo-tab #tab-geo,
+body.hide-geo-tab .tab-btn[data-tab="tab-geo"],
+body.hide-geo-tab .mobile-nav-item[data-tab="tab-geo"],
+body.hide-geo-tab #tab-geo {
+  display: none !important;
+}
+
 /* ── Fallback Redirect: Super Admin Only (Hidden from Editors & Normal Admins) ── */
+html:not(.is-superadmin) #wrap-new-col-fallback-url,
+html:not(.is-superadmin) #wrap-edit-col-fallback-url,
+html:not(.is-superadmin) #wrap-new-logs-fallback-clicks,
+html:not(.is-superadmin) #wrap-edit-logs-fallback-clicks,
 body:not(.is-superadmin) #default-fallback-url-card,
+body:not(.is-superadmin) #wrap-new-col-fallback-url,
+body:not(.is-superadmin) #wrap-edit-col-fallback-url,
+body:not(.is-superadmin) #wrap-new-logs-fallback-clicks,
+body:not(.is-superadmin) #wrap-edit-logs-fallback-clicks,
 body:not(.is-admin) #create-fallback-url-group,
 body:not(.is-admin) #fallback-url,
 body:not(.is-admin) #modal-rule-fallback-wrap,
 body:not(.is-admin) #default-fallback-url-card,
+body.is-editor #wrap-new-col-fallback-url,
+body.is-editor #wrap-edit-col-fallback-url,
+body.is-editor #wrap-new-logs-fallback-clicks,
+body.is-editor #wrap-edit-logs-fallback-clicks,
 body.is-editor #create-fallback-url-group,
 body.is-editor #fallback-url,
 body.is-editor #modal-rule-fallback-wrap,
 body.is-editor #default-fallback-url-card {
   display: none !important;
+}
+
+/* ── Target URL: Non-Clickable for Editors (Prevents Bypassing the Shortener) ── */
+.non-clickable-target-url,
+body.is-editor .col-target-url a,
+body.is-editor .col-target-url .url-link,
+body.is-editor .col-target-url span,
+body:not(.is-admin) .col-target-url a,
+body:not(.is-admin) .col-target-url .url-link,
+body:not(.is-admin) .col-target-url span {
+  pointer-events: none !important;
+  cursor: default !important;
+  text-decoration: none !important;
+  color: var(--text-primary) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 /* ── Facebook Traffic & AdX Rules: Admin & Super Admin Only ── */

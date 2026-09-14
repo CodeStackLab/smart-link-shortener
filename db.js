@@ -274,13 +274,13 @@ module.exports = {
       blockAutomatedUnknown: true,
       editorCountryBlockEnabled: true,
       editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
-      publyticsDashboardUrl: 'https://publytics.net'
+      publyticsTrackingScript: ''
     });
     if (!Array.isArray(s.editorBlockedCountries)) {
       s.editorBlockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
     }
-    if (!s.publyticsDashboardUrl) {
-      s.publyticsDashboardUrl = 'https://publytics.net';
+    if (typeof s.publyticsTrackingScript !== 'string') {
+      s.publyticsTrackingScript = '';
     }
     return s;
   },

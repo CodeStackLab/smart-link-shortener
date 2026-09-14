@@ -12,31 +12,63 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=73">
+  <link rel="stylesheet" href="/css/style.css?v=122">
   <script>
     (function() {
       try {
         var r = (localStorage.getItem('cachedUserRole') || '').toLowerCase();
         var u = (localStorage.getItem('cachedUsername') || '').toLowerCase();
+        var perms = [];
+        try { perms = JSON.parse(localStorage.getItem('cachedPermissions') || '[]'); } catch(e) {}
+
         var isMaster = u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
-        if (r === 'editor') {
+        var isFullAdmin = isMaster || r === 'admin';
+        var isEditor = r === 'editor' || (!isFullAdmin && r);
+        var hasGeo = isFullAdmin || perms.includes('geo') || perms.some(function(p){ return p.indexOf('geo_') === 0; });
+
+        if (isEditor) {
           document.documentElement.classList.add('is-editor');
+          if (hasGeo) {
+            document.documentElement.classList.add('has-geo-perm');
+          } else {
+            document.documentElement.classList.add('hide-geo-tab');
+            document.documentElement.classList.remove('has-geo-perm');
+          }
         } else if (isMaster) {
-          document.documentElement.classList.add('is-admin', 'is-superadmin');
+          document.documentElement.classList.add('is-admin', 'is-superadmin', 'has-geo-perm');
         } else if (r === 'admin') {
-          document.documentElement.classList.add('is-admin');
+          document.documentElement.classList.add('is-admin', 'has-geo-perm');
         }
+
         document.addEventListener('DOMContentLoaded', function() {
           if (document.body && (r || u)) {
-            if (r === 'editor') {
+            if (isEditor) {
               document.body.classList.add('is-editor');
               document.body.classList.remove('is-admin', 'is-superadmin');
+              if (hasGeo) {
+                document.body.classList.add('has-geo-perm');
+                var gb = document.querySelector('.tab-btn[data-tab="tab-geo"]');
+                if (gb) gb.style.removeProperty('display');
+                var mb = document.querySelector('.mobile-nav-item[data-tab="tab-geo"]');
+                if (mb) mb.style.removeProperty('display');
+              } else {
+                document.body.classList.add('hide-geo-tab');
+                document.body.classList.remove('has-geo-perm');
+              }
             } else if (isMaster) {
-              document.body.classList.add('is-admin', 'is-superadmin');
+              document.body.classList.add('is-admin', 'is-superadmin', 'has-geo-perm');
               document.body.classList.remove('is-editor');
+              var gb = document.querySelector('.tab-btn[data-tab="tab-geo"]');
+              if (gb) gb.style.removeProperty('display');
+              var mb = document.querySelector('.mobile-nav-item[data-tab="tab-geo"]');
+              if (mb) mb.style.removeProperty('display');
             } else if (r === 'admin') {
-              document.body.classList.add('is-admin');
+              document.body.classList.add('is-admin', 'has-geo-perm');
               document.body.classList.remove('is-editor', 'is-superadmin');
+              var gb = document.querySelector('.tab-btn[data-tab="tab-geo"]');
+              if (gb) gb.style.removeProperty('display');
+              var mb = document.querySelector('.mobile-nav-item[data-tab="tab-geo"]');
+              if (mb) mb.style.removeProperty('display');
             }
           }
         });
@@ -995,11 +1027,10 @@
     <button id="close-drawer-btn" class="drawer-close-btn" aria-label="Close Menu">✕</button>
   </div>
   <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
-  <button class="tab-btn" data-tab="tab-geo">🌍 Country &amp; VPN</button>
+  <button class="tab-btn" data-tab="tab-geo" style="display:none;">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
   <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
-  <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics" style="display:none;">📈 Publytics</button>
 </div>
 
 <!-- ── GLOBAL ALERT ── -->
@@ -2097,7 +2128,7 @@
             <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📋 Links Table — Column Visibility for this Editor:</label>
             <div style="background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.4rem;">
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_target_url"> 🎯 Target URL</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_fallback_url"> 🔄 Fallback URL</label>
+              <label id="wrap-new-col-fallback-url" style="display:none; font-size:0.75rem; font-weight:700; cursor:pointer; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_fallback_url"> 🔄 Fallback URL</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_sources"> 📌 Allowed Sources</label>
               <label id="wrap-new-col-blocked-countries" style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_blocked_countries"> 🌍 Blocked Countries (Show / Hide)</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="col_settings"> ⚙️ Settings (Pro)</label>
@@ -2122,7 +2153,7 @@
             <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📊 Logs Tab — Section Visibility:</label>
             <div style="background:rgba(180,83,9,0.04); border:1px solid rgba(180,83,9,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.4rem;">
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_organic_clicks"> ✅ Organic Clicks</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_fallback_clicks"> ↩️ Fallback Clicks</label>
+              <label id="wrap-new-logs-fallback-clicks" style="display:none; font-size:0.75rem; font-weight:700; cursor:pointer; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_fallback_clicks"> ↩️ Fallback Clicks</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="logs_realtime"> 📊 Real-Time Audit Logs</label>
             </div>
             <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem; padding:0 0.2rem;">💡 Hidden sections won't appear in editor's Logs tab.</div>
@@ -2507,6 +2538,32 @@
         </form>
       </div>
 
+      <!-- Publytics Tracking Code Card (Master Admin Only) -->
+      <div class="card" style="padding:1.5rem; height:fit-content; display:none;" id="publytics-tracking-card">
+        <!-- Title: Add Publytics Tracking Code (Centered) -->
+        <h2 style="font-size:1.35rem; font-weight:800; color:#0f172a; text-align:center; margin:0 0 1.15rem 0; letter-spacing:-0.02em;">
+          Add Publytics Tracking Code
+        </h2>
+
+        <!-- Script Input Textarea (Dark box matching screenshot) -->
+        <form id="publytics-tracking-form" onsubmit="event.preventDefault(); if(window.savePublyticsTrackingCode) window.savePublyticsTrackingCode(event); return false;">
+          <div style="margin-bottom:0.85rem;">
+            <textarea id="publytics-tracking-script-input" class="form-control" rows="5" placeholder='<script defer data-domain="33gb.online/bCatRU" src="https://api.publytics.net/js/script.manual.min.js"></script>' spellcheck="false" style="font-family:monospace; font-size:0.85rem; font-weight:600; line-height:1.45; background:#0f172a; color:#f1f5f9; border:1.5px solid #1e293b; border-radius:14px; padding:0.9rem 1rem; width:100%; resize:vertical; box-sizing:border-box;"></textarea>
+          </div>
+
+          <!-- Save Button (Blue) -->
+          <button type="button" id="btn-save-publytics-tracking" class="btn btn-primary btn-block" onclick="if(window.savePublyticsTrackingCode) window.savePublyticsTrackingCode(event);" style="background:#1877f2; min-height:48px; font-weight:800; font-size:1.02rem; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; border-radius:12px; margin-bottom:0.75rem; box-shadow:0 3px 12px rgba(24,119,242,0.3); transition:all 0.2s ease;">
+            <span style="font-size:1.1rem;">💾</span> <span>Save Tracking Code</span>
+          </button>
+
+          <!-- Status Indicator Bar (Green #0e884e with Green Dot/Active or Red Dot/Inactive) -->
+          <div id="publytics-status-bar" style="background:#0e884e; border-radius:12px; min-height:48px; display:flex; align-items:center; justify-content:center; gap:0.65rem; width:100%; padding:0.65rem 1rem; box-sizing:border-box; transition:all 0.25s ease;">
+            <span id="publytics-status-dot" style="width:14px; height:14px; border-radius:50%; background:#22c55e; box-shadow:0 0 10px #22c55e; display:inline-block; flex-shrink:0;"></span>
+            <span id="publytics-status-text" style="color:#ffffff; font-size:1.08rem; font-weight:800; letter-spacing:0.01em;">Active</span>
+          </div>
+        </form>
+      </div>
+
       <!-- Change Admin Password Card (Placed Below at Bottom) -->
       <div class="card" style="padding:1.35rem; height:fit-content;" id="change-password-card">
         <div class="section-title" style="display:flex; align-items:center; gap:0.5rem; font-size:1.1rem; font-weight:700; margin-bottom:1rem;">
@@ -2526,88 +2583,6 @@
         </form>
       </div>
 
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════
-     TAB 6 — PUBLYTICS (MASTER ADMIN ONLY)
-══════════════════════════════ -->
-<div id="tab-publytics" class="tab-content" style="display:none;">
-  <div class="container" style="max-width:1440px; padding:0.75rem 0.75rem 2rem 0.75rem;">
-    <!-- Publytics Container Card -->
-    <div class="card" style="padding:1.25rem; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,0.06); border:1px solid var(--border,#e2e8f0);">
-      
-      <!-- Top Action Bar -->
-      <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:1rem; padding-bottom:0.85rem; border-bottom:1px solid var(--border,#e2e8f0);">
-        <div style="display:flex; align-items:center; gap:0.6rem;">
-          <div style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #6366f1 0%, #4338ca 100%); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.25rem; box-shadow:0 4px 14px rgba(99,102,241,0.35);">
-            📈
-          </div>
-          <div>
-            <div style="font-size:1.15rem; font-weight:800; color:var(--text,#1e293b); display:flex; align-items:center; gap:0.45rem;">
-              <span>Publytics Live Dashboard</span>
-              <span class="badge" style="background:linear-gradient(135deg, #4f46e5, #7c3aed); color:#fff; font-size:0.7rem; font-weight:800; padding:0.2rem 0.55rem; border-radius:9999px;">Master Admin</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted,#64748b); font-weight:500;">
-              Real-time analytics and traffic tracking embedded directly in your admin workspace.
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-          <button id="toggle-publytics-config-btn" type="button" class="btn btn-secondary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.85rem; border-radius:10px; display:flex; align-items:center; gap:0.35rem;">
-            <span>⚙️</span> <span>Configure URL</span>
-          </button>
-          <button id="refresh-publytics-iframe-btn" type="button" class="btn btn-secondary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.85rem; border-radius:10px; display:flex; align-items:center; gap:0.35rem;">
-            <span>🔄</span> <span>Reload</span>
-          </button>
-          <a id="publytics-external-link" href="https://publytics.net" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem; font-weight:700; padding:0.45rem 0.95rem; border-radius:10px; background:linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); border:none; text-decoration:none; display:flex; align-items:center; gap:0.35rem; color:#fff;">
-            <span>↗️</span> <span>Open Publytics</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Collapsible Configuration Panel -->
-      <div id="publytics-config-panel" style="display:none; background:var(--input-bg,#f8fafc); border:1.5px solid #c7d2fe; border-radius:14px; padding:1rem; margin-bottom:1rem; transition:all 0.2s ease;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem;">
-          <div style="font-weight:800; font-size:0.88rem; color:#3730a3; display:flex; align-items:center; gap:0.4rem;">
-            <span>🔗</span> <span>Publytics Dashboard / Embed URL</span>
-          </div>
-          <span style="font-size:0.72rem; color:var(--text-muted,#64748b); font-weight:700;">Master Admin</span>
-        </div>
-        <div style="font-size:0.75rem; color:var(--text-muted,#64748b); margin-bottom:0.7rem; line-height:1.5;">
-          Enter your Publytics shared dashboard link or direct account URL (e.g. <code>https://publytics.net</code> or your custom shared analytics view URL).
-        </div>
-        <form id="publytics-config-form" style="display:flex; gap:0.65rem; flex-wrap:wrap;" onsubmit="event.preventDefault(); if(window.savePublyticsUrl) window.savePublyticsUrl(event); return false;">
-          <input type="url" id="publytics-url-input" class="form-control" placeholder="https://publytics.net" style="flex:1; min-width:260px; font-weight:600; font-size:0.85rem; border-radius:10px; border:1.5px solid var(--border,#cbd5e1); padding:0.6rem 0.85rem;" required spellcheck="false" autocomplete="url">
-          <button type="submit" id="btn-save-publytics-url" class="btn btn-primary" style="font-weight:800; font-size:0.85rem; padding:0.6rem 1.25rem; border-radius:10px; background:linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); border:none; color:#fff; display:flex; align-items:center; gap:0.35rem; cursor:pointer;" onclick="event.preventDefault(); if(window.savePublyticsUrl) window.savePublyticsUrl(event);">
-            <span>💾 Save URL</span>
-          </button>
-        </form>
-        <div id="publytics-config-feedback" style="display:none; margin-top:0.65rem; font-size:0.8rem; font-weight:700; padding:0.5rem 0.75rem; border-radius:8px;"></div>
-      </div>
-
-      <!-- Live Embed Frame Container -->
-      <div style="position:relative; width:100%; border-radius:14px; overflow:hidden; border:1.5px solid var(--border,#e2e8f0); background:#ffffff; min-height:800px;">
-        <!-- Loading Spinner Overlay -->
-        <div id="publytics-loading-overlay" style="position:absolute; inset:0; z-index:10; background:rgba(255,255,255,0.94); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.85rem; transition:opacity 0.3s ease;">
-          <div style="width:44px; height:44px; border:4px solid #e0e7ff; border-top-color:#4f46e5; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
-          <div style="font-weight:700; font-size:0.92rem; color:#4338ca;">Loading Publytics Dashboard...</div>
-          <div style="font-size:0.75rem; color:#64748b;">Live traffic monitoring view</div>
-        </div>
-
-        <!-- Fallback / Notice Helper -->
-        <div id="publytics-embed-notice" style="display:none; padding:0.75rem 1rem; background:#eff6ff; border-bottom:1px solid #bfdbfe; font-size:0.8rem; color:#1e40af; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-          <div style="display:flex; align-items:center; gap:0.4rem;">
-            <span>💡</span>
-            <span>If the live dashboard is restricted by third-party iframe blocking in your browser, click <strong>Open Publytics</strong> to view full-screen.</span>
-          </div>
-          <a id="publytics-notice-link" href="https://publytics.net" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem; border-radius:6px; background:#2563eb; color:#fff; text-decoration:none;">Open in New Window ↗</a>
-        </div>
-
-        <iframe id="publytics-dashboard-frame" src="about:blank" style="width:100%; height:800px; border:none; display:block;" allow="fullscreen" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
-      </div>
     </div>
   </div>
 </div>
@@ -2644,6 +2619,25 @@
         <a id="qr-modal-open-link" href="#" target="_blank" rel="noopener noreferrer" class="qr-open-link-btn" title="Open shortlink in new tab">
           ↗️ Open Link
         </a>
+      </div>
+
+      <!-- Quick Platform Tags (Optional 1-Click FB Specific Copies) -->
+      <div style="margin-top:0.65rem; padding-top:0.55rem; border-top:1px dashed var(--border-color, #e2e8f0);">
+        <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.35rem; display:flex; align-items:center; justify-content:space-between;">
+          <span>🎯 Tagged Links (Optional)</span>
+          <span style="font-size:0.65rem; font-weight:normal; text-transform:none; opacity:0.8;">Click to copy:</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.35rem;">
+          <button type="button" id="qr-copy-group-btn" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.2rem; border:1px solid rgba(24,119,242,0.25); background:rgba(24,119,242,0.05); color:#1877f2; border-radius:6px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.2rem;" title="Copy link tagged specifically for FB Groups (?src=group)">
+            👥 Group
+          </button>
+          <button type="button" id="qr-copy-page-btn" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.2rem; border:1px solid rgba(13,148,136,0.25); background:rgba(13,148,136,0.05); color:#0d9488; border-radius:6px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.2rem;" title="Copy link tagged specifically for FB Pages (?src=page)">
+            📄 Page
+          </button>
+          <button type="button" id="qr-copy-story-btn" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.2rem; border:1px solid rgba(225,48,108,0.25); background:rgba(225,48,108,0.05); color:#e1306c; border-radius:6px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.2rem;" title="Copy link tagged specifically for FB Stories (?src=story)">
+            📱 Story
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2783,7 +2777,7 @@
     <span class="nav-icon">🔗</span>
     <span>Links</span>
   </button>
-  <button class="mobile-nav-item" data-tab="tab-geo">
+  <button class="mobile-nav-item" data-tab="tab-geo" style="display:none;">
     <span class="nav-icon">🌍</span>
     <span>Geo</span>
   </button>
@@ -2799,13 +2793,9 @@
     <span class="nav-icon">⚙️</span>
     <span>Settings</span>
   </button>
-  <button class="mobile-nav-item" data-tab="tab-publytics" id="mobile-nav-publytics" style="display:none;">
-    <span class="nav-icon">📈</span>
-    <span>Publytics</span>
-  </button>
 </nav>
 
-<script src="/js/dashboard.js?v=101"></script>
+<script src="/js/dashboard.js?v=122"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -2962,7 +2952,7 @@ if ('serviceWorker' in navigator) {
         <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📋 Links Table — Column Visibility:</label>
         <div style="background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.4rem;">
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_target_url"> 🎯 Target URL</label>
-          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_fallback_url"> 🔄 Fallback URL</label>
+          <label id="wrap-edit-col-fallback-url" style="display:none; font-size:0.75rem; font-weight:700; cursor:pointer; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_fallback_url"> 🔄 Fallback URL</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_sources"> 📌 Allowed Sources</label>
           <label id="wrap-edit-col-blocked-countries" style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_blocked_countries"> 🌍 Blocked Countries (Show / Hide)</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="col_settings"> ⚙️ Settings (Pro)</label>
@@ -2985,7 +2975,7 @@ if ('serviceWorker' in navigator) {
         <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">📊 Logs Tab — Section Visibility:</label>
         <div style="background:rgba(180,83,9,0.04); border:1px solid rgba(180,83,9,0.2); border-radius:10px; padding:0.65rem 0.85rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.4rem;">
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_organic_clicks"> ✅ Organic Clicks</label>
-          <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_fallback_clicks"> ↩️ Fallback Clicks</label>
+          <label id="wrap-edit-logs-fallback-clicks" style="display:none; font-size:0.75rem; font-weight:700; cursor:pointer; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_fallback_clicks"> ↩️ Fallback Clicks</label>
           <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="edit-perm-cb" value="logs_realtime"> 📊 Real-Time Audit Logs</label>
         </div>
         <div style="font-size:0.67rem; color:var(--text-muted); margin-top:0.3rem;">💡 Changes apply immediately when saved.</div>

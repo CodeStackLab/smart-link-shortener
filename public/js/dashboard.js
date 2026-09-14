@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('cachedUserBadge', userBadge.textContent);
             localStorage.setItem('cachedUserRole', uRole);
             localStorage.setItem('cachedUsername', uName);
+            localStorage.setItem('cachedPermissions', JSON.stringify(data.permissions || []));
           } catch (e) {}
         }
 
@@ -314,17 +315,39 @@ document.addEventListener('DOMContentLoaded', () => {
           currentAllowedSitesString = newSitesStr;
           currentMaskString = newMaskStr;
 
-          if (isFullAdminUser()) {
+          const isFullAdmin = isFullAdminUser();
+          const permsList = Array.isArray(data.permissions) ? data.permissions : [];
+          const hasGeoPerm = isFullAdmin || permsList.includes('geo') || permsList.some(p => p.startsWith('geo_'));
+
+          if (isFullAdmin) {
+            document.documentElement.classList.add('is-admin');
+            document.documentElement.classList.remove('is-editor');
             document.body.classList.add('is-admin');
             document.body.classList.remove('is-editor');
           } else {
+            document.documentElement.classList.remove('is-admin');
+            document.documentElement.classList.add('is-editor');
             document.body.classList.remove('is-admin');
             document.body.classList.add('is-editor');
           }
 
+          if (hasGeoPerm) {
+            document.documentElement.classList.add('has-geo-perm');
+            document.documentElement.classList.remove('hide-geo-tab');
+            document.body.classList.add('has-geo-perm');
+            document.body.classList.remove('hide-geo-tab');
+          } else {
+            document.documentElement.classList.remove('has-geo-perm');
+            document.documentElement.classList.add('hide-geo-tab');
+            document.body.classList.remove('has-geo-perm');
+            document.body.classList.add('hide-geo-tab');
+          }
+
           if (isSuperAdminUser()) {
+            document.documentElement.classList.add('is-superadmin');
             document.body.classList.add('is-superadmin');
           } else {
+            document.documentElement.classList.remove('is-superadmin');
             document.body.classList.remove('is-superadmin');
           }
 
@@ -333,9 +356,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // If active tab is now hidden, redirect user to Links tab
           const activeTabBtn = document.querySelector('.tab-btn.active');
-          if (activeTabBtn && activeTabBtn.style.display === 'none') {
+          if (activeTabBtn && (activeTabBtn.style.display === 'none' || getComputedStyle(activeTabBtn).display === 'none')) {
             const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
             if (defaultLinksTab) defaultLinksTab.click();
+          }
+          const activeMobileBtn = document.querySelector('.mobile-nav-item.active');
+          if (activeMobileBtn && (activeMobileBtn.style.display === 'none' || getComputedStyle(activeMobileBtn).display === 'none')) {
+            const defaultMobileLinks = document.querySelector('.mobile-nav-item[data-tab="tab-links"]');
+            if (defaultMobileLinks) defaultMobileLinks.click();
           }
         }
 
@@ -525,6 +553,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Fallback URL column visibility in user modals — strictly Master Admin only
+    const wrapNewColFallback = document.getElementById('wrap-new-col-fallback-url');
+    if (wrapNewColFallback) wrapNewColFallback.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+    const wrapEditColFallback = document.getElementById('wrap-edit-col-fallback-url');
+    if (wrapEditColFallback) wrapEditColFallback.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+
+    // Fallback Clicks section visibility in user modals — strictly Master Admin only
+    const wrapNewLogsFallback = document.getElementById('wrap-new-logs-fallback-clicks');
+    if (wrapNewLogsFallback) wrapNewLogsFallback.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+    const wrapEditLogsFallback = document.getElementById('wrap-edit-logs-fallback-clicks');
+    if (wrapEditLogsFallback) wrapEditLogsFallback.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+
     // Image Upload Section Scoping (controlled by 'upload_image' permission)
     const imageUploadSection = document.getElementById('link-image-upload-section');
     if (imageUploadSection) {
@@ -542,18 +582,14 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
       { key: 'analytics', tabId: 'tab-analytics', adminOnly: true },
       { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
-      { key: 'settings', tabId: 'tab-settings', adminOnly: false },
-      { key: 'publytics', tabId: 'tab-publytics', masterAdminOnly: true }
+      { key: 'settings', tabId: 'tab-settings', adminOnly: false }
     ];
 
     navMap.forEach(item => {
       // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
-      // Publytics tab is strictly restricted to Master Admin only
-      const hasAccess = item.masterAdminOnly
-        ? isSuperAdminUser()
-        : (item.key === 'firewall'
-          ? true
-          : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key))));
+      const hasAccess = item.key === 'firewall'
+        ? true
+        : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -570,6 +606,21 @@ document.addEventListener('DOMContentLoaded', () => {
           mobileBtn.style.removeProperty('display');
         } else {
           mobileBtn.style.setProperty('display', 'none', 'important');
+        }
+      }
+
+      // Explicitly sync has-geo-perm class to prevent refresh flash
+      if (item.key === 'geo') {
+        if (hasAccess) {
+          document.documentElement.classList.add('has-geo-perm');
+          document.documentElement.classList.remove('hide-geo-tab');
+          document.body.classList.add('has-geo-perm');
+          document.body.classList.remove('hide-geo-tab');
+        } else {
+          document.documentElement.classList.remove('has-geo-perm');
+          document.documentElement.classList.add('hide-geo-tab');
+          document.body.classList.remove('has-geo-perm');
+          document.body.classList.add('hide-geo-tab');
         }
       }
 
@@ -623,6 +674,12 @@ document.addEventListener('DOMContentLoaded', () => {
       fallbackCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
+    // Publytics Tracking Code Card — MASTER ADMIN ONLY
+    const publyticsCard = document.getElementById('publytics-tracking-card');
+    if (publyticsCard) {
+      publyticsCard.style.display = isSuperAdminUser() ? '' : 'none';
+    }
+
     // 2. Google Authenticator 2FA Manager — Visible to anyone with Settings access
     const twoFaCard = document.getElementById('two-factor-auth-card');
     if (twoFaCard) {
@@ -652,16 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // If user is not Master Admin and is currently on Publytics tab, switch back to Links tab
-    if (!isSuperAdminUser()) {
-      const publyticsContent = document.getElementById('tab-publytics');
-      if (publyticsContent && publyticsContent.style.display !== 'none') {
-        publyticsContent.style.display = 'none';
-        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
-        if (defaultLinksTab) defaultLinksTab.click();
-      }
-    }
-
     // Role-based visibility scoping
     if (!isFullAdmin) {
       document.body.classList.remove('is-admin');
@@ -677,6 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'temp-blocks-card',
         'allowlist-card',
         'default-fallback-url-card',
+        'publytics-tracking-card',
         'modal-rule-fallback-wrap',
         'create-fallback-url-group'
       ];
@@ -767,6 +815,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (wrapNewColBlocked) wrapNewColBlocked.style.display = isFullAdmin ? 'flex' : 'none';
     const wrapEditColBlocked = document.getElementById('wrap-edit-col-blocked-countries');
     if (wrapEditColBlocked) wrapEditColBlocked.style.display = isFullAdmin ? 'flex' : 'none';
+
+    // Fallback URL & Fallback Clicks are strictly Master Admin only
+    const wrapNewColFallbackPerm = document.getElementById('wrap-new-col-fallback-url');
+    if (wrapNewColFallbackPerm) wrapNewColFallbackPerm.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+    const wrapEditColFallbackPerm = document.getElementById('wrap-edit-col-fallback-url');
+    if (wrapEditColFallbackPerm) wrapEditColFallbackPerm.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+    const wrapNewLogsFallbackPerm = document.getElementById('wrap-new-logs-fallback-clicks');
+    if (wrapNewLogsFallbackPerm) wrapNewLogsFallbackPerm.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+    const wrapEditLogsFallbackPerm = document.getElementById('wrap-edit-logs-fallback-clicks');
+    if (wrapEditLogsFallbackPerm) wrapEditLogsFallbackPerm.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
 
     // Role selector in invite form: only Admins can see the Admin option
     const roleSelectInvite = document.getElementById('new-user-role');
@@ -866,13 +924,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // Logs/Analytics tab
       { perm: 'logs_organic_clicks', id: 'logs-organic-wrap' },
       { perm: 'logs_fallback_clicks',id: 'logs-fallback-wrap' },
+      { perm: 'logs_fallback_clicks',id: 'logs-suspicious-wrap' },
       { perm: 'logs_realtime',       id: 'logs-realtime-wrap' }
     ];
 
     const isAdminUser = isFullAdminUser();
 
     sectionPermMap.forEach(({ perm, id }) => {
-      const hasPerm = isAdminUser || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(perm));
+      // Fallback Clicks is strictly Master Admin exclusive — hidden from Normal Admin & Editors
+      const hasPerm = (perm === 'logs_fallback_clicks')
+        ? isSuperAdminUser()
+        : (isAdminUser || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(perm)));
       const el = document.getElementById(id);
       if (el) {
         if (hasPerm) {
@@ -906,6 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('cachedUserBadge');
         localStorage.removeItem('cachedUserRole');
         localStorage.removeItem('cachedUsername');
+        localStorage.removeItem('cachedPermissions');
       } catch (e) {}
       await fetch('/api/logout', { method: 'POST' });
       window.location.href = '/admin';
@@ -997,11 +1060,6 @@ document.addEventListener('DOMContentLoaded', () => {
           loadDomains();
         }
         load2FAStatus();
-      }
-      if (targetTab === 'tab-publytics') {
-        if (isSuperAdminUser()) {
-          loadPublyticsDashboard();
-        }
       }
     });
   });
@@ -1195,7 +1253,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const domainToUse = link.domain ? link.domain : host.replace(/^https?:\/\//, '');
       const shortUrl = `${window.location.protocol}//${domainToUse}/s/${link.code}`;
       
-      const presetBadges = (link.allowedPlatforms || ['facebook']).map(p => {
+      const rawAllowed = (Array.isArray(link.allowedPlatforms) && link.allowedPlatforms.length > 0)
+        ? link.allowedPlatforms
+        : ['facebook'];
+      const presetBadges = rawAllowed.map(p => {
         if (p === 'facebook') {
           return `<span class="badge" style="background:#1877f2; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(24,119,242,0.25);">
             <svg width="14" height="14" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
@@ -1329,7 +1390,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td data-label="Target URL" class="col-target-url">
             ${link.targetUrl
-              ? `<a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${stripProtocolAndWww(link.targetUrl)}</a>`
+              ? (isFullAdminUser()
+                  ? `<a href="${link.targetUrl}" target="_blank" class="url-link" title="${link.targetUrl}" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${stripProtocolAndWww(link.targetUrl)}</a>`
+                  : `<span class="url-text non-clickable-target-url" style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-primary); font-weight:600; cursor:default; pointer-events:none; user-select:none; -webkit-user-select:none;">${stripProtocolAndWww(link.targetUrl)}</span>`
+                )
               : `<span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">— Not set —</span>`
             }
           </td>
@@ -1370,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Column Visibility ──────────────────────────────────────────
   // Admin always sees all columns; Editors see only permitted cols.
   function applyLinksColumnVisibility() {
-    const isAdmin = currentLoggedInUsername.toLowerCase() === 'admin' || currentLoggedInRole.toLowerCase() === 'admin' || currentLoggedInRole.toLowerCase() === 'super admin';
+    const isAdmin = isFullAdminUser();
 
     const colMap = [
       { perm: 'col_target_url',        thId: 'th-target-url',        tdClass: 'col-target-url' },
@@ -1383,7 +1447,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     colMap.forEach(({ perm, thId, tdClass }) => {
-      const hasColPerm = isAdmin || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(perm));
+      // Fallback URL column is strictly Master Admin exclusive — hidden from Normal Admin & Editors
+      const hasColPerm = (perm === 'col_fallback_url')
+        ? isSuperAdminUser()
+        : (isAdmin || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(perm)));
 
       // Header
       const th = document.getElementById(thId);
@@ -1443,6 +1510,30 @@ document.addEventListener('DOMContentLoaded', () => {
           qrModalCopyBtn.onclick = (e) => {
             e.stopPropagation();
             copyToClipboard(shortUrl, qrModalCopyBtn);
+          };
+        }
+
+        // 1-Click Platform Tagged Links (FB Groups, Pages, Stories)
+        const qrCopyGroupBtn = document.getElementById('qr-copy-group-btn');
+        const qrCopyPageBtn = document.getElementById('qr-copy-page-btn');
+        const qrCopyStoryBtn = document.getElementById('qr-copy-story-btn');
+
+        if (qrCopyGroupBtn) {
+          qrCopyGroupBtn.onclick = (e) => {
+            e.stopPropagation();
+            copyToClipboard(`${shortUrl}?src=group`, qrCopyGroupBtn);
+          };
+        }
+        if (qrCopyPageBtn) {
+          qrCopyPageBtn.onclick = (e) => {
+            e.stopPropagation();
+            copyToClipboard(`${shortUrl}?src=page`, qrCopyPageBtn);
+          };
+        }
+        if (qrCopyStoryBtn) {
+          qrCopyStoryBtn.onclick = (e) => {
+            e.stopPropagation();
+            copyToClipboard(`${shortUrl}?src=story`, qrCopyStoryBtn);
           };
         }
 
@@ -1652,7 +1743,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fallbackWrap = document.getElementById('modal-rule-fallback-wrap');
     if (fallbackWrap) {
-      fallbackWrap.style.display = isEditor ? 'none' : '';
+      fallbackWrap.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
     const fallbackEl = document.getElementById('modal-rule-fallback-url');
@@ -1683,12 +1774,12 @@ document.addEventListener('DOMContentLoaded', () => {
       saveBtn.textContent = '⏳ Saving...';
     }
 
-    const isEditorUser = !isFullAdminUser();
+    const canControlFallback = isSuperAdminUser();
     const existingLink = (allLinksCache || []).find(l => l && (l.id === linkId || l.code === linkId));
     const fallbackInputVal = document.getElementById('modal-rule-fallback-url')?.value.trim();
 
     const payload = {
-      fallbackUrl: isEditorUser ? (existingLink?.fallbackUrl || 'https://www.google.com/') : (fallbackInputVal || existingLink?.fallbackUrl || 'https://www.google.com/'),
+      fallbackUrl: canControlFallback ? (fallbackInputVal || existingLink?.fallbackUrl || 'https://www.google.com/') : (existingLink?.fallbackUrl || 'https://www.google.com/'),
       fbTrafficEnabled: !!document.getElementById('modal-rule-fb-master')?.checked,
       allowFbProfiles: !!document.getElementById('modal-rule-fb-profiles')?.checked,
       allowFbGroups: !!document.getElementById('modal-rule-fb-groups')?.checked,
@@ -1892,15 +1983,20 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.platform-cb:checked').forEach(cb => {
         const val = cb.value;
         // For non-admin users, enforce permission check on each platform
-        const isPermitted = currentLoggedInRole === 'Admin' || userCurrentPermissions.includes(val);
+        const isPermitted = isFullAdminUser() || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes(val));
         if (val && !allowedPlatforms.includes(val) && isPermitted) {
           allowedPlatforms.push(val);
         }
       });
       // Ensure at least one platform is included (fallback to whatever's permitted)
       if (allowedPlatforms.length === 0) {
-        if (userCurrentPermissions.includes('facebook') || currentLoggedInRole === 'Admin') allowedPlatforms.push('facebook');
-        else if (userCurrentPermissions.includes('instagram')) allowedPlatforms.push('instagram');
+        if (isFullAdminUser() || (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes('facebook'))) {
+          allowedPlatforms.push('facebook');
+        } else if (Array.isArray(userCurrentPermissions) && userCurrentPermissions.includes('instagram')) {
+          allowedPlatforms.push('instagram');
+        } else {
+          allowedPlatforms.push('facebook');
+        }
       }
 
       const finalCustomDomains = customDomainEnableCb && customDomainEnableCb.checked ? customDomainsList : [];
@@ -2784,19 +2880,14 @@ document.addEventListener('DOMContentLoaded', () => {
         createFallbackInput.value = settings.defaultFallbackUrl || 'https://www.google.com/';
       }
 
-      // Populate Publytics Dashboard URL (Master Admin only)
-      const publyticsUrlInput = document.getElementById('publytics-url-input');
-      const publyticsExtLink = document.getElementById('publytics-external-link');
-      const publyticsNoticeLink = document.getElementById('publytics-notice-link');
-      const publyticsUrl = settings.publyticsDashboardUrl || 'https://publytics.net';
-      if (publyticsUrlInput) {
-        publyticsUrlInput.value = publyticsUrl;
+      // Populate Publytics Tracking Code (Master Admin only)
+      const publyticsScriptInput = document.getElementById('publytics-tracking-script-input');
+      const publyticsScript = (typeof settings.publyticsTrackingScript === 'string') ? settings.publyticsTrackingScript : '';
+      if (publyticsScriptInput) {
+        publyticsScriptInput.value = publyticsScript;
       }
-      if (publyticsExtLink) {
-        publyticsExtLink.href = publyticsUrl;
-      }
-      if (publyticsNoticeLink) {
-        publyticsNoticeLink.href = publyticsUrl;
+      if (typeof updatePublyticsStatusDisplay === 'function') {
+        updatePublyticsStatusDisplay(publyticsScript);
       }
 
       // Populate Global Facebook Rules
@@ -2976,80 +3067,49 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSaveDefaultFallback.addEventListener('click', window.saveDefaultFallbackUrl);
   }
 
-  // ── Publytics Live Dashboard Management (Master Admin Only) ──
-  let publyticsLoadedUrl = '';
-  function loadPublyticsDashboard(force = false) {
-    if (!isSuperAdminUser()) return;
-    const frame = document.getElementById('publytics-dashboard-frame');
-    const loading = document.getElementById('publytics-loading-overlay');
-    const notice = document.getElementById('publytics-embed-notice');
-    const input = document.getElementById('publytics-url-input');
-    const targetUrl = (input && input.value.trim())
-      ? input.value.trim()
-      : (currentSettingsCache?.publyticsDashboardUrl || 'https://publytics.net');
+  // ── Publytics Tracking Code Management (Master Admin Only) ──
+  function updatePublyticsStatusDisplay(scriptText) {
+    const hasCode = typeof scriptText === 'string' && scriptText.trim().length > 0;
+    const statusBar = document.getElementById('publytics-status-bar');
+    const statusDot = document.getElementById('publytics-status-dot');
+    const statusText = document.getElementById('publytics-status-text');
 
-    if (!frame) return;
+    if (!statusBar || !statusDot || !statusText) return;
 
-    if (!force && publyticsLoadedUrl === targetUrl && frame.src && frame.src !== 'about:blank') {
-      return;
+    if (hasCode) {
+      // Active state (Matching User Screenshot 2)
+      statusBar.style.background = '#0e884e';
+      statusDot.style.background = '#22c55e';
+      statusDot.style.boxShadow = '0 0 10px #22c55e';
+      statusText.textContent = 'Active';
+    } else {
+      // Inactive state (Matching User Screenshot 3)
+      statusBar.style.background = '#0e884e';
+      statusDot.style.background = '#ef4444';
+      statusDot.style.boxShadow = '0 0 10px #ef4444';
+      statusText.textContent = 'Inactive';
     }
-
-    if (loading) {
-      loading.style.display = 'flex';
-      loading.style.opacity = '1';
-    }
-    if (notice) notice.style.display = 'none';
-
-    publyticsLoadedUrl = targetUrl;
-    frame.src = targetUrl;
-
-    let timeoutFired = false;
-    const timeout = setTimeout(() => {
-      timeoutFired = true;
-      if (loading) {
-        loading.style.opacity = '0';
-        setTimeout(() => { if (loading) loading.style.display = 'none'; }, 300);
-      }
-      if (notice) notice.style.display = 'flex';
-    }, 5000);
-
-    frame.onload = () => {
-      if (!timeoutFired) clearTimeout(timeout);
-      if (loading) {
-        loading.style.opacity = '0';
-        setTimeout(() => { if (loading) loading.style.display = 'none'; }, 300);
-      }
-      if (notice) notice.style.display = 'flex';
-    };
-
-    frame.onerror = () => {
-      if (!timeoutFired) clearTimeout(timeout);
-      if (loading) loading.style.display = 'none';
-      if (notice) notice.style.display = 'flex';
-    };
   }
 
-  window.savePublyticsUrl = async function(e) {
+  // Update status live as user types or pastes or clears textarea
+  const publyticsScriptInputEl = document.getElementById('publytics-tracking-script-input');
+  if (publyticsScriptInputEl) {
+    publyticsScriptInputEl.addEventListener('input', () => {
+      updatePublyticsStatusDisplay(publyticsScriptInputEl.value);
+    });
+  }
+
+  window.savePublyticsTrackingCode = async function(e) {
     if (e && e.preventDefault) e.preventDefault();
     if (e && e.stopPropagation) e.stopPropagation();
 
     if (!isSuperAdminUser()) {
-      showAlert('⚠️ Only Master Admin can configure Publytics Dashboard URL.', true);
+      showAlert('⚠️ Only Master Admin can configure Publytics Tracking Code.', true);
       return false;
     }
-    const input = document.getElementById('publytics-url-input');
-    const feedback = document.getElementById('publytics-config-feedback');
-    const saveBtn = document.getElementById('btn-save-publytics-url');
-    const val = input ? input.value.trim() : '';
-    if (!val) {
-      if (feedback) {
-        feedback.style.display = 'block';
-        feedback.style.background = '#fee2e2';
-        feedback.style.color = '#b91c1c';
-        feedback.textContent = '⚠️ Please enter a valid URL (e.g. https://publytics.net)';
-      }
-      return false;
-    }
+    const input = document.getElementById('publytics-tracking-script-input');
+    const saveBtn = document.getElementById('btn-save-publytics-tracking');
+    const scriptVal = input ? input.value.trim() : '';
 
     if (saveBtn) {
       saveBtn.disabled = true;
@@ -3060,72 +3120,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ publyticsDashboardUrl: val })
+        body: JSON.stringify({ publyticsTrackingScript: scriptVal })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showAlert('✅ Publytics Dashboard URL updated successfully!');
-        if (feedback) {
-          feedback.style.display = 'block';
-          feedback.style.background = '#dcfce7';
-          feedback.style.color = '#15803d';
-          feedback.textContent = '✅ Publytics Dashboard URL saved successfully!';
-          setTimeout(() => { if (feedback) feedback.style.display = 'none'; }, 4000);
+        updatePublyticsStatusDisplay(scriptVal);
+        if (scriptVal) {
+          showAlert('✅ Publytics Tracking Code saved! Status: Active');
+        } else {
+          showAlert('ℹ️ Tracking Code removed! Status: Inactive');
         }
-        const newUrl = data.settings?.publyticsDashboardUrl || val;
-        if (input) input.value = newUrl;
-        const extLink = document.getElementById('publytics-external-link');
-        if (extLink) extLink.href = newUrl;
-        const noticeLink = document.getElementById('publytics-notice-link');
-        if (noticeLink) noticeLink.href = newUrl;
-        loadPublyticsDashboard(true);
       } else {
-        showAlert(data.error || 'Failed to update Publytics URL', true);
-        if (feedback) {
-          feedback.style.display = 'block';
-          feedback.style.background = '#fee2e2';
-          feedback.style.color = '#b91c1c';
-          feedback.textContent = '❌ ' + (data.error || 'Failed to update Publytics URL');
-        }
+        showAlert(data.error || 'Failed to save Publytics Tracking Code', true);
       }
     } catch (err) {
-      showAlert('Failed to update Publytics URL: ' + (err.message || err), true);
-      if (feedback) {
-        feedback.style.display = 'block';
-        feedback.style.background = '#fee2e2';
-        feedback.style.color = '#b91c1c';
-        feedback.textContent = '❌ ' + (err.message || err);
-      }
+      showAlert('Failed to save tracking code: ' + (err.message || err), true);
     } finally {
       if (saveBtn) {
         saveBtn.disabled = false;
-        saveBtn.innerHTML = '<span>💾 Save URL</span>';
+        saveBtn.innerHTML = '<span style="font-size:1.1rem;">💾</span> <span>Save Tracking Code</span>';
       }
     }
     return false;
   };
-
-  const togglePublyticsConfigBtn = document.getElementById('toggle-publytics-config-btn');
-  if (togglePublyticsConfigBtn) {
-    togglePublyticsConfigBtn.addEventListener('click', () => {
-      const panel = document.getElementById('publytics-config-panel');
-      if (panel) {
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-      }
-    });
-  }
-
-  const refreshPublyticsBtn = document.getElementById('refresh-publytics-iframe-btn');
-  if (refreshPublyticsBtn) {
-    refreshPublyticsBtn.addEventListener('click', () => {
-      loadPublyticsDashboard(true);
-    });
-  }
-
-  const publyticsConfigForm = document.getElementById('publytics-config-form');
-  if (publyticsConfigForm) {
-    publyticsConfigForm.addEventListener('submit', window.savePublyticsUrl);
-  }
 
   // Global Facebook Traffic Rules Form Handler
   const globalFbRulesForm = document.getElementById('global-fb-rules-form');
@@ -3865,6 +3882,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const wrapEditColBlocked = document.getElementById('wrap-edit-col-blocked-countries');
     if (wrapEditColBlocked) wrapEditColBlocked.style.display = isFullAdminUser() ? 'flex' : 'none';
 
+    const wrapEditColFallback = document.getElementById('wrap-edit-col-fallback-url');
+    if (wrapEditColFallback) wrapEditColFallback.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+
+    const wrapEditLogsFallback = document.getElementById('wrap-edit-logs-fallback-clicks');
+    if (wrapEditLogsFallback) wrapEditLogsFallback.style.setProperty('display', isSuperAdminUser() ? 'flex' : 'none', 'important');
+
     // Sync URL Visibility radios in Edit User modal
     const hasUnmaskPerm = perms.includes('unmask_target_url');
     const editRadioUnmask = document.getElementById('edit-radio-unmask');
@@ -4057,7 +4080,23 @@ document.addEventListener('DOMContentLoaded', () => {
     editUserSaveRoleBtn.addEventListener('click', async () => {
       if (!_editUserId) return;
       const role = editUserRoleSelect ? editUserRoleSelect.value : 'Editor';
-      const permissions = Array.from(document.querySelectorAll('.edit-perm-cb:checked')).map(cb => cb.value);
+      const isMasterAdmin = isSuperAdminUser();
+      let permissions = Array.from(document.querySelectorAll('.edit-perm-cb:checked')).map(cb => cb.value);
+      if (!isMasterAdmin) {
+        // Normal Admin cannot grant or revoke col_fallback_url or logs_fallback_clicks — preserve target user's existing setting
+        const existingUser = allUsersCache.find(u => u.id === _editUserId);
+        const hadFallbackPerm = existingUser && Array.isArray(existingUser.permissions) && existingUser.permissions.includes('col_fallback_url');
+        permissions = permissions.filter(p => p !== 'col_fallback_url');
+        if (hadFallbackPerm) {
+          permissions.push('col_fallback_url');
+        }
+
+        const hadLogsFallbackPerm = existingUser && Array.isArray(existingUser.permissions) && existingUser.permissions.includes('logs_fallback_clicks');
+        permissions = permissions.filter(p => p !== 'logs_fallback_clicks');
+        if (hadLogsFallbackPerm) {
+          permissions.push('logs_fallback_clicks');
+        }
+      }
       const allowedTargetDomains = Array.from(document.querySelectorAll('#edit-user-sites-list .user-site-input'))
         .map(inp => ensureHttpsWww(inp.value.trim()))
         .filter(Boolean);
@@ -4323,7 +4362,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (newUnmaskHiddenCb && newRadioUnmask) {
         newUnmaskHiddenCb.checked = newRadioUnmask.checked;
       }
-      const permissions = Array.from(document.querySelectorAll('.new-perm-cb:checked')).map(cb => cb.value);
+      let permissions = Array.from(document.querySelectorAll('.new-perm-cb:checked')).map(cb => cb.value);
+      if (!isSuperAdminUser()) {
+        permissions = permissions.filter(p => p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
+      }
       const allowedTargetDomains = Array.from(document.querySelectorAll('#invite-sites-list .user-site-input'))
         .map(inp => ensureHttpsWww(inp.value.trim()))
         .filter(Boolean);

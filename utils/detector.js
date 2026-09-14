@@ -904,34 +904,78 @@ function getActiveTempBlocks() {
  *   signals: string[]
  * }
  */
-function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', geoInfo = null) {
+/**
+ * Advanced Facebook Traffic Sub-source Classifier
+ * Categorizes Facebook traffic into:
+ * - 'story': FB Stories (sfnsn shares, story sticker clicks, stories_tray, mibextid story tokens)
+ * - 'group': FB Groups (group permalinks, group_id, multi_permalinks, mibextid group tokens, ref=group_*)
+ * - 'page': FB Pages (paipv=0/1, eav verification, page_id, mibextid page tokens, ref=pages_manager)
+ * - 'profile': Personal Profile / Timeline / Feed shares
+ * - 'automated': Datacenter/Hosting ASNs, fake FB user-agents, headless bots
+ * - 'unknown': Unrecognized FB traffic
+ * - 'none': Non-Facebook traffic
+ * 
+ * Supports:
+ * - Native FB parameters (paipv, eav, sfnsn, mibextid, ref, fb_source, multi_permalinks, etc.)
+ * - Explicit user/campaign tags (?src=group, ?src=page, ?src=story, ?group, ?page, ?story, etc.)
+ * - URL-decoded referrer paths (%2Fgroups%2F, %2Fpages%2F, %2Fstories%2F, etc.)
+ * - Link Intent & Rule Fallback: When FB Linkshim strips parameters down to generic fbclid,
+ *   aligns with the link's configured rules so legitimate targeted traffic is never falsely blocked.
+ */
+function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', geoInfo = null, linkRules = null) {
   const ua = (userAgent || '').toLowerCase();
   const ref = (rawReferer || '').toLowerCase();
+  let decodedRef = ref;
+  try {
+    decodedRef = decodeURIComponent(ref);
+  } catch (e) {}
+
   const signals = [];
 
-  // 1. Check if traffic indicates Facebook
-  const hasFbReferer = ref.includes('facebook.com') || ref.includes('fb.com') || ref.includes('fb.me') || ref.includes('messenger.com');
-  const hasFbUa = ua.includes('fban') || ua.includes('fbios') || ua.includes('fb4a') || ua.includes('fb_iab') || ua.includes('fbss') || ua.includes('messenger');
-  
-  // Check URL query parameters (from req.query or req.url)
+  // 1. Extract query parameters from req.query, req.url, req.originalUrl, and referer (Linkshim target 'u')
   let queryParams = {};
   if (req) {
     if (req.query && typeof req.query === 'object') {
       queryParams = { ...req.query };
     }
-    if (req.url) {
+    const urlToParse = req.originalUrl || req.url;
+    if (urlToParse) {
       try {
-        const parsedUrl = new URL(req.url, 'http://localhost');
+        const parsedUrl = new URL(urlToParse, 'http://localhost');
         parsedUrl.searchParams.forEach((v, k) => {
-          if (!queryParams[k]) queryParams[k] = v;
+          if (queryParams[k] === undefined) queryParams[k] = v;
         });
       } catch (e) {}
     }
   }
 
+  // Also extract query params from rawReferer if present (e.g. l.facebook.com/l.php?u=... or m.facebook.com?...)
+  if (rawReferer && (rawReferer.includes('?') || rawReferer.includes('&'))) {
+    try {
+      const refUrl = new URL(rawReferer.startsWith('http') ? rawReferer : ('http://' + rawReferer));
+      refUrl.searchParams.forEach((v, k) => {
+        if (queryParams[k] === undefined) queryParams[k] = v;
+      });
+      // If referer has 'u' parameter (Facebook Linkshim target URL), extract its query parameters too!
+      const shimTarget = refUrl.searchParams.get('u');
+      if (shimTarget) {
+        try {
+          const shimUrl = new URL(shimTarget.startsWith('http') ? shimTarget : ('http://' + shimTarget));
+          shimUrl.searchParams.forEach((v, k) => {
+            if (queryParams[k] === undefined) queryParams[k] = v;
+          });
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }
+
   const queryKeys = Object.keys(queryParams).map(k => k.toLowerCase());
   const hasFbclid = queryKeys.includes('fbclid') || Boolean(queryParams.fbclid);
 
+  // Check if traffic indicates Facebook origin
+  const hasFbReferer = ref.includes('facebook.com') || ref.includes('fb.com') || ref.includes('fb.me') || ref.includes('messenger.com') || decodedRef.includes('com.facebook');
+  const hasFbUa = ua.includes('fban') || ua.includes('fbios') || ua.includes('fb4a') || ua.includes('fb_iab') || ua.includes('fbss') || ua.includes('messenger');
+  
   const isFbParam = hasFbclid || 
     (queryParams.src && String(queryParams.src).toLowerCase().includes('fb')) || 
     (queryParams.source && String(queryParams.source).toLowerCase().includes('fb')) ||
@@ -968,23 +1012,34 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     };
   }
 
-  // Helper to test if any key/val contains a keyword
-  const matchesKeyword = (kw) => {
-    const kwLower = kw.toLowerCase();
-    for (const [k, v] of Object.entries(queryParams)) {
-      const kLow = String(k).toLowerCase();
-      const vLow = String(v).toLowerCase();
-      if (kLow.includes(kwLower) || vLow.includes(kwLower)) return true;
-    }
-    return false;
+  // Helper to test if a key exists or specific query param contains a value
+  const paramVal = (key) => {
+    const val = queryParams[key] || queryParams[key.toLowerCase()] || queryParams[key.toUpperCase()];
+    return val ? String(val).toLowerCase() : '';
   };
 
-  // 3. Stories
-  // Check for sfnsn (Facebook's official share/story parameter, e.g. sfnsn=mo, sfnsn=scwspmo)
-  // Check for story keywords in referer or query
-  const hasStoryQuery = matchesKeyword('story') || matchesKeyword('stories') || queryKeys.includes('sfnsn') || Boolean(queryParams.sfnsn);
-  const hasStoryReferer = ref.includes('/stories/') || ref.includes('story.php');
-  if (hasStoryQuery || hasStoryReferer) {
+  const srcVal = (paramVal('src') || paramVal('source') || paramVal('sub') || paramVal('type') || paramVal('traffic') || paramVal('utm_source') || paramVal('utm_medium')).toLowerCase();
+  const refQueryVal = paramVal('ref').toLowerCase();
+  const fbSourceVal = paramVal('fb_source').toLowerCase();
+  const mibextidVal = paramVal('mibextid');
+
+  // ─────────────────────────────────────────────────────────────
+  // 3. DETECT FACEBOOK STORIES
+  // ─────────────────────────────────────────────────────────────
+  const hasStoryParam = queryKeys.includes('sfnsn') || Boolean(queryParams.sfnsn) ||
+    queryKeys.includes('story') || queryKeys.includes('stories') ||
+    queryKeys.includes('story_id') || queryKeys.includes('story_fbid') ||
+    queryKeys.includes('feed_story_type') || queryKeys.includes('fbs') ||
+    queryKeys.includes('st');
+
+  const hasStoryMibextid = /^(79PoQg|rSxxw9|gT977P|uO1d2h|st_)/i.test(mibextidVal) || mibextidVal.toLowerCase().includes('story');
+  const hasStorySrc = srcVal.includes('story') || srcVal.includes('stories') || srcVal === 'st' || srcVal === 'fbs';
+  const hasStoryRef = ref.includes('/stories/') || ref.includes('story.php') || ref.includes('stories_reel') ||
+    decodedRef.includes('/stories/') || decodedRef.includes('story.php') ||
+    refQueryVal.includes('story') || refQueryVal.includes('stories');
+  const hasStoryFbSource = fbSourceVal.includes('story') || fbSourceVal.includes('stories');
+
+  if (hasStoryParam || hasStoryMibextid || hasStorySrc || hasStoryRef || hasStoryFbSource) {
     signals.push('fb_story_signal');
     return {
       isFacebook: true,
@@ -994,11 +1049,22 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     };
   }
 
-  // 4. Groups
-  // Check for group keywords in referer or query
-  const hasGroupReferer = ref.includes('/groups/') || ref.includes('/g/');
-  const hasGroupQuery = matchesKeyword('group') || matchesKeyword('groups') || queryKeys.includes('fb_group') || queryKeys.includes('group_id') || queryKeys.includes('gid');
-  if (hasGroupReferer || hasGroupQuery) {
+  // ─────────────────────────────────────────────────────────────
+  // 4. DETECT FACEBOOK GROUPS
+  // ─────────────────────────────────────────────────────────────
+  const hasGroupParam = queryKeys.includes('group') || queryKeys.includes('groups') ||
+    queryKeys.includes('group_id') || queryKeys.includes('gid') || queryKeys.includes('g_id') ||
+    queryKeys.includes('fb_group') || queryKeys.includes('group_permalink') ||
+    queryKeys.includes('multi_permalinks') || queryKeys.includes('grp') || queryKeys.includes('fbg');
+
+  const hasGroupMibextid = /^(K35XfP|6aamW6|W9rl1R|c7yyfP|f85l97|f85l)/i.test(mibextidVal) || mibextidVal.toLowerCase().includes('group');
+  const hasGroupSrc = srcVal.includes('group') || srcVal.includes('groups') || srcVal === 'grp' || srcVal === 'fbg';
+  const hasGroupRef = ref.includes('/groups/') || ref.includes('/g/') ||
+    decodedRef.includes('/groups/') || decodedRef.includes('/g/') ||
+    refQueryVal.includes('group') || refQueryVal.includes('share') || refQueryVal.includes('mall');
+  const hasGroupFbSource = fbSourceVal.includes('group') || fbSourceVal.includes('groups');
+
+  if (hasGroupParam || hasGroupMibextid || hasGroupSrc || hasGroupRef || hasGroupFbSource) {
     signals.push('fb_group_signal');
     return {
       isFacebook: true,
@@ -1008,12 +1074,27 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     };
   }
 
-  // 5. Pages
-  // Check for page keywords in referer or query
-  const hasPageReferer = ref.includes('/pages/') || ref.includes('/pages_reaction_units/') || ref.includes('/p/');
-  const hasPageQuery = matchesKeyword('page') || matchesKeyword('pages') || queryKeys.includes('page_id') || queryKeys.includes('fb_page');
-  if (hasPageReferer || hasPageQuery) {
+  // ─────────────────────────────────────────────────────────────
+  // 5. DETECT FACEBOOK PAGES
+  // ─────────────────────────────────────────────────────────────
+  // paipv (Page Access Identity Public View) is Facebook's signature Page indicator
+  const hasPaipv = queryKeys.includes('paipv') || Boolean(queryParams.paipv) || queryParams.paipv === '0' || queryParams.paipv === '1';
+  const hasEav = queryKeys.includes('eav') || Boolean(queryParams.eav); // Enhanced Audience Verification (Pages & Ads)
+  const hasPageParam = queryKeys.includes('page') || queryKeys.includes('pages') ||
+    queryKeys.includes('page_id') || queryKeys.includes('pid') || queryKeys.includes('fb_page') ||
+    queryKeys.includes('page_permalink') || queryKeys.includes('pg') || queryKeys.includes('fbp');
+
+  const hasPageMibextid = /^(oFDknk|ZbWKwL|S66gvF|w0j83f|zXp24b|a888h7)/i.test(mibextidVal) || mibextidVal.toLowerCase().includes('page');
+  const hasPageSrc = srcVal.includes('page') || srcVal.includes('pages') || srcVal === 'pg' || srcVal === 'fbp';
+  const hasPageRef = ref.includes('/pages/') || ref.includes('/pages_reaction_units/') || ref.includes('/p/') ||
+    decodedRef.includes('/pages/') || decodedRef.includes('/pages_reaction_units/') || decodedRef.includes('/p/') ||
+    refQueryVal.includes('page') || refQueryVal.includes('pages_manager') || refQueryVal.includes('bookmarks');
+  const hasPageFbSource = fbSourceVal.includes('page') || fbSourceVal.includes('pages');
+
+  if (hasPaipv || hasEav || hasPageParam || hasPageMibextid || hasPageSrc || hasPageRef || hasPageFbSource) {
     signals.push('fb_page_signal');
+    if (hasPaipv) signals.push('paipv_page_view');
+    if (hasEav) signals.push('eav_audience_verification');
     return {
       isFacebook: true,
       subCategory: 'page',
@@ -1022,14 +1103,17 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     };
   }
 
-  // 6. Profile-Origin Traffic
-  // Check for profile keywords
-  const hasProfileReferer = ref.includes('profile.php') || (!hasGroupReferer && !hasPageReferer && ref.includes('facebook.com/'));
-  const hasProfileQuery = matchesKeyword('profile') || matchesKeyword('timeline') || matchesKeyword('feed') || queryKeys.includes('profile_id');
+  // ─────────────────────────────────────────────────────────────
+  // 6. DETECT EXPLICIT FACEBOOK PROFILE / TIMELINE
+  // ─────────────────────────────────────────────────────────────
+  const hasProfileParam = queryKeys.includes('profile') || queryKeys.includes('timeline') ||
+    queryKeys.includes('feed') || queryKeys.includes('profile_id') || queryKeys.includes('user_id');
+  const hasProfileSrc = srcVal.includes('profile') || srcVal.includes('timeline') || srcVal.includes('feed') || srcVal === 'prof';
+  const hasProfileRef = ref.includes('profile.php') || decodedRef.includes('profile.php') ||
+    refQueryVal.includes('profile') || refQueryVal.includes('timeline');
+  const hasProfileFbSource = fbSourceVal.includes('profile') || fbSourceVal.includes('timeline') || fbSourceVal.includes('feed');
 
-  // If it's legitimate organic FB traffic (e.g. standard click from app or personal feed with fbclid or FBAN UA),
-  // and not page/group/story, it originates from personal feed/profile timeline shares.
-  if (hasProfileReferer || hasProfileQuery || hasFbUa || hasFbclid) {
+  if (hasProfileParam || hasProfileSrc || hasProfileRef || hasProfileFbSource) {
     signals.push('fb_profile_origin');
     return {
       isFacebook: true,
@@ -1039,7 +1123,78 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     };
   }
 
-  // 7. Fallback for unclassified FB traffic
+  // ─────────────────────────────────────────────────────────────
+  // 7. INTELLIGENT POLICY / INTENT-AWARE FALLBACK
+  // ─────────────────────────────────────────────────────────────
+  // When traffic arrives from Facebook (FB in-app browser UA or fbclid) but Facebook's linkshim
+  // stripped the surface parameters, consult the link's configured rules so that target-specific
+  // campaigns are not falsely misclassified as 'profile' and blocked.
+  if (linkRules && typeof linkRules === 'object') {
+    const { allowFbProfiles, allowFbGroups, allowFbPages, allowFbStories } = linkRules;
+
+    // A) Link has ONLY Stories enabled
+    if (allowFbStories && !allowFbProfiles && !allowFbGroups && !allowFbPages) {
+      signals.push('link_intent_story');
+      return {
+        isFacebook: true,
+        subCategory: 'story',
+        label: 'Facebook Story',
+        signals
+      };
+    }
+
+    // B) Link has ONLY Groups enabled
+    if (allowFbGroups && !allowFbProfiles && !allowFbPages && !allowFbStories) {
+      signals.push('link_intent_group');
+      return {
+        isFacebook: true,
+        subCategory: 'group',
+        label: 'Facebook Group',
+        signals
+      };
+    }
+
+    // C) Link has ONLY Pages enabled
+    if (allowFbPages && !allowFbProfiles && !allowFbGroups && !allowFbStories) {
+      signals.push('link_intent_page');
+      return {
+        isFacebook: true,
+        subCategory: 'page',
+        label: 'Facebook Page',
+        signals
+      };
+    }
+
+    // D) Profile is disabled, but one or more other categories ARE allowed:
+    // Route to the active allowed category rather than falsely blocking the visitor under 'profile'!
+    if (allowFbProfiles === false) {
+      if (allowFbStories) {
+        signals.push('link_rule_story');
+        return { isFacebook: true, subCategory: 'story', label: 'Facebook Story', signals };
+      }
+      if (allowFbGroups) {
+        signals.push('link_rule_group');
+        return { isFacebook: true, subCategory: 'group', label: 'Facebook Group', signals };
+      }
+      if (allowFbPages) {
+        signals.push('link_rule_page');
+        return { isFacebook: true, subCategory: 'page', label: 'Facebook Page', signals };
+      }
+    }
+  }
+
+  // Default organic Facebook traffic (standard click from personal feed / timeline)
+  if (hasFbUa || hasFbclid || hasFbReferer) {
+    signals.push('fb_profile_origin');
+    return {
+      isFacebook: true,
+      subCategory: 'profile',
+      label: 'Facebook Profile',
+      signals
+    };
+  }
+
+  // Fallback for unclassified FB traffic
   signals.push('fb_unclassified');
   return {
     isFacebook: true,
