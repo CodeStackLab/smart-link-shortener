@@ -2394,10 +2394,34 @@
           </div>
         </div>
 
-        <!-- Active Domains Table -->
+        <!-- Auto-Detected Domains Section -->
+        <div style="margin-top:1rem; border-top:1px solid var(--border,#e2e8f0); padding-top:1rem;" id="detected-domains-section">
+          <div class="section-title" style="font-size:0.9rem; font-weight:800; margin-bottom:0.6rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.45rem;">
+            <span class="accent">🔍</span> Auto-Detected Domains
+            <span style="font-size:0.7rem; background:rgba(245,158,11,0.15); color:#d97706; padding:0.15rem 0.5rem; border-radius:20px; font-weight:700;">Waiting Approval</span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-bottom:0.65rem; line-height:1.4;">
+            Ye domains automatically detect hue hain — DNS A Record already point hai server pe. Approve karke SSL install karo.
+          </div>
+          <div id="detected-domains-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Installing SSL Domains Section -->
+        <div style="margin-top:1rem; border-top:1px solid var(--border,#e2e8f0); padding-top:1rem;" id="installing-ssl-section" style="display:none;">
+          <div class="section-title" style="font-size:0.9rem; font-weight:800; margin-bottom:0.6rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.45rem;">
+            <span class="accent">⏳</span> Installing SSL...
+          </div>
+          <div id="installing-ssl-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Active Custom Domains Table -->
         <div style="margin-top:1.25rem; border-top:1px solid var(--border,#e2e8f0); padding-top:1rem;">
           <div class="section-title" style="font-size:0.95rem; font-weight:800; margin-bottom:0.65rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.45rem;">
-            <span class="accent">📁</span> Active Custom Domains
+            <span class="accent">✅</span> Active Custom Domains
           </div>
           <div class="table-wrap" style="overflow-x:auto;">
             <table class="table" style="width:100%; margin:0;">

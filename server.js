@@ -371,6 +371,26 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ----------------------------------------------------
+// AUTO-DETECT UNKNOWN DOMAINS MIDDLEWARE
+// Captures any domain hitting this server that is not
+// registered — logs it for admin to review & approve
+// ----------------------------------------------------
+const _knownHosts = new Set(['goo33.online', '33gb.online', 'localhost', '127.0.0.1', '89.117.51.151']);
+app.use((req, res, next) => {
+  try {
+    const host = (req.get('host') || '').replace(/:\d+$/, '').trim().toLowerCase();
+    if (host && !_knownHosts.has(host) && !host.startsWith('192.168.') && !host.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      // Only log if not already a registered custom domain
+      const knownCustom = db.getCustomDomains().map(d => d.domain);
+      if (!knownCustom.includes(host)) {
+        db.addDetectedDomain(host); // silently logs, ignores duplicates
+      }
+    }
+  } catch(e) {}
+  next();
+});
+
+// ----------------------------------------------------
 // AUTHENTICATION ROUTES
 // ----------------------------------------------------
 
@@ -1881,15 +1901,8 @@ app.post('/api/admin/domains', requireAuth, requireSuperAdmin, async (req, res) 
   if (!newDomain) {
     return res.status(400).json({ error: 'Domain already exists or is invalid.' });
   }
-  // Trigger Caddy SSL by making an HTTPS request (fire-and-forget)
-  setTimeout(async () => {
-    try {
-      const https = require('https');
-      const r = https.request({ hostname: cleanDomain, port: 443, path: '/', method: 'HEAD', timeout: 10000 }, () => {});
-      r.on('error', () => {});
-      r.end();
-    } catch(e) {}
-  }, 2000);
+  // Trigger Caddy SSL immediately (fire-and-forget)
+  triggerSslInstall(cleanDomain);
   res.json({ success: true, domain: newDomain });
 });
 
@@ -1907,6 +1920,56 @@ app.get('/api/admin/domains/check', (req, res) => {
   }
   return res.status(404).send('Not Allowed');
 });
+
+// ----------------------------------------------------
+// DETECTED DOMAINS API (Super Admin Only)
+// ----------------------------------------------------
+app.get('/api/admin/detected-domains', requireAuth, requireSuperAdmin, (req, res) => {
+  res.json(db.getDetectedDomains());
+});
+
+// Approve a detected domain → moves to custom_domains + triggers SSL
+app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const newDomain = db.approveDetectedDomain(id);
+  if (!newDomain) return res.status(400).json({ error: 'Domain not found or already exists.' });
+  // Trigger Caddy SSL (fire-and-forget)
+  triggerSslInstall(newDomain.domain);
+  res.json({ success: true, domain: newDomain });
+});
+
+// Ignore/dismiss a detected domain
+app.delete('/api/admin/detected-domains/:id', requireAuth, requireSuperAdmin, (req, res) => {
+  db.removeDetectedDomain(req.params.id);
+  res.json({ success: true });
+});
+
+// Helper: trigger Caddy SSL install for a domain (fire-and-forget HTTPS probe)
+function triggerSslInstall(domain) {
+  setTimeout(async () => {
+    try {
+      const https = require('https');
+      const r = https.request({ hostname: domain, port: 443, path: '/', method: 'HEAD', timeout: 15000 }, () => {});
+      r.on('error', () => {});
+      r.end();
+    } catch(e) {}
+  }, 1500);
+}
+
+// Background job: every 15 seconds probe 'installing' domains to check if SSL is active
+setInterval(async () => {
+  try {
+    const domains = db.getCustomDomains();
+    const installing = domains.filter(d => d.sslStatus === 'installing');
+    for (const dom of installing) {
+      const isLive = await probeSsl(dom.domain);
+      if (isLive) {
+        db.updateCustomDomainSslStatus(dom.id, 'active');
+        console.log(`✅ SSL confirmed active for: ${dom.domain}`);
+      }
+    }
+  } catch(e) {}
+}, 15000);
 
 // ----------------------------------------------------
 // DYNAMIC SHORTLINK REDIRECT ROUTE (/s/:code & /:code)

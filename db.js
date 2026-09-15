@@ -15,7 +15,8 @@ const FILES = {
   users: path.join(DATA_DIR, 'users.json'),
   settings: path.join(DATA_DIR, 'settings.json'),
   blockedIps: path.join(DATA_DIR, 'blocked_ips.json'),
-  customDomains: path.join(DATA_DIR, 'custom_domains.json')
+  customDomains: path.join(DATA_DIR, 'custom_domains.json'),
+  detectedDomains: path.join(DATA_DIR, 'detected_domains.json')
 };
 
 function readJson(file, defaultValue = []) {
@@ -673,6 +674,7 @@ module.exports = {
       const entry = {
         id: 'dom_' + Date.now(),
         domain: cleanDomain,
+        sslStatus: 'installing', // starts as installing, becomes 'active' when SSL confirmed
         createdAt: new Date().toISOString()
       };
       domains.push(entry);
@@ -702,5 +704,41 @@ module.exports = {
       domains[idx].sslStatus = status;
       writeJson(FILES.customDomains, domains);
     }
+  },
+
+  // ── Detected Domains (auto-discovered from unknown incoming requests) ──
+  getDetectedDomains: () => readJson(FILES.detectedDomains, []),
+  addDetectedDomain: (domain) => {
+    const cleanDomain = (domain || '').trim().toLowerCase();
+    if (!cleanDomain) return null;
+    const detected = readJson(FILES.detectedDomains, []);
+    const custom = readJson(FILES.customDomains, []);
+    // Don't add if already in custom domains or already detected
+    if (detected.some(d => d.domain === cleanDomain)) return null;
+    if (custom.some(d => d.domain === cleanDomain)) return null;
+    if (cleanDomain === 'goo33.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1') return null;
+    const entry = { id: 'det_' + Date.now(), domain: cleanDomain, detectedAt: new Date().toISOString() };
+    detected.push(entry);
+    writeJson(FILES.detectedDomains, detected);
+    return entry;
+  },
+  removeDetectedDomain: (id) => {
+    let detected = readJson(FILES.detectedDomains, []);
+    detected = detected.filter(d => d.id !== id);
+    writeJson(FILES.detectedDomains, detected);
+  },
+  approveDetectedDomain: (id) => {
+    let detected = readJson(FILES.detectedDomains, []);
+    const entry = detected.find(d => d.id === id);
+    if (!entry) return null;
+    // Move from detected to custom_domains with sslStatus: 'installing'
+    detected = detected.filter(d => d.id !== id);
+    writeJson(FILES.detectedDomains, detected);
+    const domains = readJson(FILES.customDomains, []);
+    if (domains.some(d => d.domain === entry.domain)) return null;
+    const newEntry = { id: 'dom_' + Date.now(), domain: entry.domain, sslStatus: 'installing', createdAt: new Date().toISOString() };
+    domains.push(newEntry);
+    writeJson(FILES.customDomains, domains);
+    return newEntry;
   }
 };

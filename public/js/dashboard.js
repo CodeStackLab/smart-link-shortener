@@ -4740,10 +4740,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // --------------------------------------------------------
 // CUSTOM DOMAINS MANAGEMENT LOGIC (Super Admin Only)
 // --------------------------------------------------------
+// ── DOMAIN MANAGEMENT ──
 const domainsTbody = document.getElementById('domains-tbody');
 const addDomainForm = document.getElementById('add-domain-form');
 const domainSelect = document.getElementById('link-domain');
+let _domainPollTimer = null;
+let _detectedPollTimer = null;
 
+// Load ALL domains — split into installing / active
 async function loadDomains() {
   if (!isSuperAdminUser()) return;
   try {
@@ -4753,69 +4757,137 @@ async function loadDomains() {
       return;
     }
     const domains = await res.json();
-    renderDomainsTable(domains);
-    populateDomainSelects(domains);
-    // Start SSL polling for any domain without SSL
-    startSslPolling(domains);
+    const active = domains.filter(d => d.sslStatus === 'active');
+    const installing = domains.filter(d => d.sslStatus !== 'active');
+    renderDomainsTable(active);
+    renderInstallingSection(installing);
+    populateDomainSelects(active);
+    // Poll if any still installing
+    if (installing.length > 0) {
+      startDomainPoll();
+    } else {
+      stopDomainPoll();
+    }
   } catch (err) {
-    if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Network error loading domains. <a href="#" onclick="loadDomains();return false;">Retry</a></td></tr>`;
+    if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Network error. <a href="#" onclick="loadDomains();return false;">Retry</a></td></tr>`;
   }
 }
 
-// SSL polling — keeps checking until all domains have SSL
-let _sslPollTimer = null;
-function startSslPolling(domains) {
-  if (_sslPollTimer) { clearInterval(_sslPollTimer); _sslPollTimer = null; }
-  if (!Array.isArray(domains) || domains.length === 0) return;
-  const pendingDomains = domains.filter(d => d.sslStatus !== 'active');
-  if (pendingDomains.length === 0) return;
-  _sslPollTimer = setInterval(async () => {
-    try {
-      const r = await fetch('/api/admin/domains');
-      if (!r.ok) return;
-      const updated = await r.json();
-      renderDomainsTable(updated);
-      populateDomainSelects(updated);
-      const stillPending = updated.filter(d => d.sslStatus !== 'active');
-      if (stillPending.length === 0) {
-        clearInterval(_sslPollTimer); _sslPollTimer = null;
-      }
-    } catch(e) {}
-  }, 30000); // retry every 30 seconds
+// Poll every 12s while domains are installing
+function startDomainPoll() {
+  if (_domainPollTimer) return;
+  _domainPollTimer = setInterval(() => loadDomains(), 12000);
+}
+function stopDomainPoll() {
+  if (_domainPollTimer) { clearInterval(_domainPollTimer); _domainPollTimer = null; }
 }
 
-function getSslBadge(domain) {
-  const st = domain.sslStatus || 'unknown';
-  if (st === 'active') return `<span style="background:#10b981;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;">🔒 SSL ✅</span>`;
-  if (st === 'pending') return `<span style="background:#f59e0b;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;animation:pulse 1.5s infinite;">⏳ SSL Pending...</span>`;
-  // unknown — show as pending (Caddy auto-installs on first visit)
-  return `<span style="background:#f59e0b;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;">⏳ SSL Pending...</span>`;
-}
-
+// Render ACTIVE domains table
 function renderDomainsTable(domains) {
   if (!domainsTbody) return;
   if (!Array.isArray(domains) || domains.length === 0) {
-    domainsTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.25rem;">No custom domains yet. Add your first domain above!</td></tr>`;
+    domainsTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.25rem;">No active domains yet. Add a domain above!</td></tr>`;
     return;
   }
-
   domainsTbody.innerHTML = domains.map(dom => `
     <tr>
       <td data-label="Domain"><strong>${dom.domain}</strong></td>
-      <td data-label="SSL">${getSslBadge(dom)}</td>
+      <td data-label="SSL"><span style="background:#10b981;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;">🔒 SSL ✅</span></td>
       <td data-label="Added At">${new Date(dom.createdAt).toLocaleString()}</td>
-      <td data-label="Actions">
+      <td data-label="Actions" style="text-align:right;">
         <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')">🗑️ Delete</button>
       </td>
     </tr>
   `).join('');
 }
 
+// Render INSTALLING SSL section
+function renderInstallingSection(installing) {
+  const sec = document.getElementById('installing-ssl-section');
+  const list = document.getElementById('installing-ssl-list');
+  if (!sec || !list) return;
+  if (!installing || installing.length === 0) {
+    sec.style.display = 'none';
+    list.innerHTML = '';
+    return;
+  }
+  sec.style.display = '';
+  list.innerHTML = installing.map(dom => `
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.3);border-radius:12px;padding:0.6rem 0.9rem;">
+      <div style="display:flex;align-items:center;gap:0.55rem;">
+        <span style="font-size:1rem;animation:spin 1.2s linear infinite;display:inline-block;">⏳</span>
+        <div>
+          <div style="font-weight:800;font-size:0.88rem;">${dom.domain}</div>
+          <div style="font-size:0.7rem;color:#d97706;font-weight:600;">Installing SSL Certificate... Please wait</div>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')" style="font-size:0.72rem;padding:0.25rem 0.55rem;">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── DETECTED DOMAINS ──
+async function loadDetectedDomains() {
+  if (!isSuperAdminUser()) return;
+  try {
+    const res = await fetch('/api/admin/detected-domains');
+    if (!res.ok) return;
+    const detected = await res.json();
+    renderDetectedDomains(detected);
+  } catch(e) {}
+}
+
+function renderDetectedDomains(detected) {
+  const sec = document.getElementById('detected-domains-section');
+  const list = document.getElementById('detected-domains-list');
+  if (!sec || !list) return;
+  if (!Array.isArray(detected) || detected.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:0.65rem;">No new domains detected yet. When a domain DNS points to this server, it will appear here automatically.</div>`;
+    return;
+  }
+  list.innerHTML = detected.map(det => `
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(59,130,246,0.06);border:1.5px solid rgba(59,130,246,0.2);border-radius:12px;padding:0.6rem 0.9rem;">
+      <div>
+        <div style="font-weight:800;font-size:0.88rem;">🌐 ${det.domain}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">Detected: ${new Date(det.detectedAt).toLocaleString()}</div>
+      </div>
+      <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+        <button onclick="approveDetectedDomain('${det.id}','${det.domain}')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:0.3rem 0.65rem;font-size:0.75rem;font-weight:800;cursor:pointer;">✅ Add</button>
+        <button onclick="ignoreDetectedDomain('${det.id}')" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:0.3rem 0.65rem;font-size:0.75rem;font-weight:700;cursor:pointer;">✕ Ignore</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.approveDetectedDomain = async function(id, domain) {
+  try {
+    const res = await fetch(`/api/admin/detected-domains/${id}/approve`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      showAlert(`✅ ${domain} added! Installing SSL...`);
+      loadDetectedDomains();
+      loadDomains();
+      startDomainPoll();
+    } else {
+      showAlert(data.error || 'Failed to approve domain', true);
+    }
+  } catch(e) {
+    showAlert('Error approving domain', true);
+  }
+};
+
+window.ignoreDetectedDomain = async function(id) {
+  try {
+    await fetch(`/api/admin/detected-domains/${id}`, { method: 'DELETE' });
+    loadDetectedDomains();
+  } catch(e) {}
+};
+
 function populateDomainSelects(domains) {
   if (!domainSelect) return;
   const currentVal = domainSelect.value;
   domainSelect.innerHTML = '<option value="">Default (goo33.online)</option>';
-  domains.forEach(dom => {
+  (domains || []).forEach(dom => {
     const option = document.createElement('option');
     option.value = dom.domain;
     option.textContent = dom.domain;
@@ -4830,7 +4902,8 @@ if (addDomainForm) {
     const domainInput = document.getElementById('new-domain-input');
     const domain = domainInput.value.trim();
     if (!domain) return;
-
+    const btn = addDomainForm.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Adding...</span>'; }
     try {
       const res = await fetch('/api/admin/domains', {
         method: 'POST',
@@ -4839,20 +4912,23 @@ if (addDomainForm) {
       });
       const data = await res.json();
       if (res.ok) {
-        showAlert(`Domain ${domain} added successfully!`);
+        showAlert(`✅ ${domain} added! Installing SSL Certificate...`);
         domainInput.value = '';
         loadDomains();
+        startDomainPoll();
       } else {
         showAlert(data.error || 'Failed to add domain', true);
       }
     } catch (err) {
       showAlert('Error adding domain', true);
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<span>⚡ Add Domain</span>'; }
     }
   });
 }
 
 window.deleteDomain = async function(id) {
-  if (!confirm('Are you sure you want to delete this custom domain? Links configured to use this domain will stop resolving correctly unless pointed back to default.')) return;
+  if (!confirm('Are you sure you want to delete this domain? Links using it will stop working.')) return;
   try {
     const res = await fetch(`/api/admin/domains/${id}`, { method: 'DELETE' });
     if (res.ok) {
@@ -4865,6 +4941,13 @@ window.deleteDomain = async function(id) {
     showAlert('Error deleting domain', true);
   }
 };
+
+// Auto-poll detected domains every 20s
+if (isSuperAdminUser()) {
+  loadDetectedDomains();
+  setInterval(() => loadDetectedDomains(), 20000);
+}
+
 
 // ── Password Change Form Handler ──
 const passwordChangeForm = document.getElementById('password-change-form');
