@@ -1914,10 +1914,18 @@ app.delete('/api/admin/domains/:id', requireAuth, requireSuperAdmin, (req, res) 
 
 // Caddy validation route (unauthenticated, called internally by Caddy)
 app.get('/api/admin/domains/check', (req, res) => {
-  const domain = req.query.domain;
-  if (db.isCustomDomainAllowed(domain)) {
+  const rawDomain = (req.query.domain || '').trim().toLowerCase();
+  if (!rawDomain) return res.status(404).send('Not Allowed');
+
+  if (db.isCustomDomainAllowed(rawDomain)) {
     return res.status(200).send('OK');
   }
+
+  // If this unknown domain is hitting our server via DNS, auto-detect it so admin can approve!
+  if (!_knownHosts.has(rawDomain) && !rawDomain.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    db.addDetectedDomain(rawDomain);
+  }
+
   return res.status(404).send('Not Allowed');
 });
 
