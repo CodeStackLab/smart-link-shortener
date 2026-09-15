@@ -1842,11 +1842,36 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
 // ----------------------------------------------------
 // CUSTOM DOMAINS API (Super Admin Only)
 // ----------------------------------------------------
-app.get('/api/admin/domains', requireAuth, requireSuperAdmin, (req, res) => {
-  res.json(db.getCustomDomains());
+app.get('/api/admin/domains', requireAuth, requireSuperAdmin, async (req, res) => {
+  const domains = db.getCustomDomains();
+  // For each domain, check SSL status via HTTPS probe
+  const withSsl = await Promise.all(domains.map(async (dom) => {
+    if (dom.sslStatus === 'active') return dom; // already verified
+    const isLive = await probeSsl(dom.domain);
+    if (isLive && dom.sslStatus !== 'active') {
+      db.updateCustomDomainSslStatus(dom.id, 'active');
+      return { ...dom, sslStatus: 'active' };
+    }
+    return { ...dom, sslStatus: dom.sslStatus || 'pending' };
+  }));
+  res.json(withSsl);
 });
 
-app.post('/api/admin/domains', requireAuth, requireSuperAdmin, (req, res) => {
+// Helper: probe HTTPS to check if SSL is live
+async function probeSsl(domain) {
+  return new Promise((resolve) => {
+    try {
+      const https = require('https');
+      const req2 = https.request({ hostname: domain, port: 443, path: '/', method: 'HEAD', timeout: 5000,
+        rejectUnauthorized: true }, (r) => { resolve(r.statusCode < 600); });
+      req2.on('error', () => resolve(false));
+      req2.on('timeout', () => { req2.destroy(); resolve(false); });
+      req2.end();
+    } catch(e) { resolve(false); }
+  });
+}
+
+app.post('/api/admin/domains', requireAuth, requireSuperAdmin, async (req, res) => {
   const { domain } = req.body;
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required.' });
@@ -1856,6 +1881,15 @@ app.post('/api/admin/domains', requireAuth, requireSuperAdmin, (req, res) => {
   if (!newDomain) {
     return res.status(400).json({ error: 'Domain already exists or is invalid.' });
   }
+  // Trigger Caddy SSL by making an HTTPS request (fire-and-forget)
+  setTimeout(async () => {
+    try {
+      const https = require('https');
+      const r = https.request({ hostname: cleanDomain, port: 443, path: '/', method: 'HEAD', timeout: 10000 }, () => {});
+      r.on('error', () => {});
+      r.end();
+    } catch(e) {}
+  }, 2000);
   res.json({ success: true, domain: newDomain });
 });
 

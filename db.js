@@ -694,5 +694,13 @@ module.exports = {
       return true;
     }
     return domains.some(d => d.domain === cleanDomain);
+  },
+  updateCustomDomainSslStatus: (id, status) => {
+    const domains = readJson(FILES.customDomains, []);
+    const idx = domains.findIndex(d => d.id === id);
+    if (idx !== -1) {
+      domains[idx].sslStatus = status;
+      writeJson(FILES.customDomains, domains);
+    }
   }
 };

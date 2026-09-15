@@ -4748,25 +4748,61 @@ async function loadDomains() {
   if (!isSuperAdminUser()) return;
   try {
     const res = await fetch('/api/admin/domains');
-    if (!res.ok) return;
+    if (!res.ok) {
+      if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Failed to load domains (HTTP ${res.status})</td></tr>`;
+      return;
+    }
     const domains = await res.json();
     renderDomainsTable(domains);
     populateDomainSelects(domains);
+    // Start SSL polling for any domain without SSL
+    startSslPolling(domains);
   } catch (err) {
-    if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="3" style="color: var(--danger); text-align: center;">Failed to load domains.</td></tr>`;
+    if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Network error loading domains. <a href="#" onclick="loadDomains();return false;">Retry</a></td></tr>`;
   }
+}
+
+// SSL polling — keeps checking until all domains have SSL
+let _sslPollTimer = null;
+function startSslPolling(domains) {
+  if (_sslPollTimer) { clearInterval(_sslPollTimer); _sslPollTimer = null; }
+  if (!Array.isArray(domains) || domains.length === 0) return;
+  const pendingDomains = domains.filter(d => d.sslStatus !== 'active');
+  if (pendingDomains.length === 0) return;
+  _sslPollTimer = setInterval(async () => {
+    try {
+      const r = await fetch('/api/admin/domains');
+      if (!r.ok) return;
+      const updated = await r.json();
+      renderDomainsTable(updated);
+      populateDomainSelects(updated);
+      const stillPending = updated.filter(d => d.sslStatus !== 'active');
+      if (stillPending.length === 0) {
+        clearInterval(_sslPollTimer); _sslPollTimer = null;
+      }
+    } catch(e) {}
+  }, 30000); // retry every 30 seconds
+}
+
+function getSslBadge(domain) {
+  const st = domain.sslStatus || 'unknown';
+  if (st === 'active') return `<span style="background:#10b981;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;">🔒 SSL ✅</span>`;
+  if (st === 'pending') return `<span style="background:#f59e0b;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;animation:pulse 1.5s infinite;">⏳ SSL Pending...</span>`;
+  // unknown — show as pending (Caddy auto-installs on first visit)
+  return `<span style="background:#f59e0b;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;">⏳ SSL Pending...</span>`;
 }
 
 function renderDomainsTable(domains) {
   if (!domainsTbody) return;
   if (!Array.isArray(domains) || domains.length === 0) {
-    domainsTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No custom domains configured yet. Add your first above!</td></tr>`;
+    domainsTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.25rem;">No custom domains yet. Add your first domain above!</td></tr>`;
     return;
   }
 
   domainsTbody.innerHTML = domains.map(dom => `
     <tr>
       <td data-label="Domain"><strong>${dom.domain}</strong></td>
+      <td data-label="SSL">${getSslBadge(dom)}</td>
       <td data-label="Added At">${new Date(dom.createdAt).toLocaleString()}</td>
       <td data-label="Actions">
         <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')">🗑️ Delete</button>
