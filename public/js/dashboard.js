@@ -375,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           if (isSuperAdminUser()) {
             loadDomains();
+            loadDetectedDomains();
           }
         }
       })
@@ -1048,7 +1049,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.remove('menu-open');
 
       if (targetTab === 'tab-links') loadLinks();
-      if (targetTab === 'tab-domains') loadDomains();
+      if (targetTab === 'tab-domains') {
+        loadDomains();
+        loadDetectedDomains();
+      }
       if (targetTab === 'tab-geo') loadCountryAnalytics();
       if (targetTab === 'tab-analytics') {
         if (isFullAdminUser()) loadAnalytics();
@@ -1064,6 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSuperAdminUser()) {
           loadUsers();
           loadDomains();
+          loadDetectedDomains();
         }
         load2FAStatus();
       }
@@ -4840,11 +4845,15 @@ async function loadDetectedDomains() {
 function renderDetectedDomains(detected) {
   const sec = document.getElementById('detected-domains-section');
   const list = document.getElementById('detected-domains-list');
+  const badge = document.getElementById('detected-domains-count-badge');
   if (!sec || !list) return;
   if (!Array.isArray(detected) || detected.length === 0) {
-    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:0.65rem;">No new domains detected yet. When a domain DNS points to this server, it will appear here automatically.</div>`;
+    sec.style.display = 'none';
+    list.innerHTML = '';
     return;
   }
+  sec.style.display = 'block';
+  if (badge) badge.textContent = `${detected.length} New`;
   list.innerHTML = detected.map(det => `
     <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(59,130,246,0.06);border:1.5px solid rgba(59,130,246,0.2);border-radius:12px;padding:0.6rem 0.9rem;">
       <div>
