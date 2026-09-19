@@ -117,12 +117,12 @@
 
   // Default Mockup Data for Pixel-Perfect Experience (Exact match to Screenshot 5)
   const MOCKUP_UTM_SOURCE_DATA = [
-    { name: 'google', visitors: 4461, share: 35.7, duration: '2m 34s' },
-    { name: 'facebook', visitors: 2865, share: 22.9, duration: '2m 12s' },
-    { name: 'direct', visitors: 1848, share: 14.8, duration: '1m 56s' },
-    { name: 'instagram', visitors: 1324, share: 10.6, duration: '1m 48s' },
-    { name: 'bing', visitors: 1026, share: 8.2, duration: '1m 39s' },
-    { name: 'others', visitors: 949, share: 7.7, duration: '1m 24s' }
+    { name: 'google',    visitors: 4812, share: 38.5, duration: '2m 48s' },
+    { name: 'facebook',  visitors: 2971, share: 23.8, duration: '2m 21s' },
+    { name: 'direct',   visitors: 1842, share: 14.8, duration: '2m 03s' },
+    { name: 'instagram', visitors: 1248, share: 10.0, duration: '1m 56s' },
+    { name: 'tiktok',   visitors:  872, share:  7.0, duration: '1m 42s' },
+    { name: 'others',   visitors:  737, share:  5.9, duration: '1m 28s' }
   ];
 
   // --- INITIALIZATION ---
@@ -281,7 +281,7 @@
     }
   }
 
-  // Render "Select website" radio list (Screenshot Match)
+  // Render "Select website" radio list
   function renderWebsiteList() {
     const container = document.getElementById('website-list-container');
     if (!container) return;
@@ -295,25 +295,47 @@
         </div>
       `;
     }).join('');
+
+    // Update the selector pill label to show selected domain
+    updateSelectorPillLabel();
+  }
+
+  function updateSelectorPillLabel() {
+    const label = document.getElementById('website-selector-label');
+    if (!label) return;
+    // Show selected site name, or placeholder
+    const selected = availableWebsites.find(s => s.toLowerCase() === currentSiteId.toLowerCase());
+    label.textContent = selected || 'Select website';
   }
 
   window.selectWebsite = function(siteName) {
     currentSiteId = siteName;
     renderWebsiteList();
+    // Close dropdown after selection
+    const container = document.getElementById('website-list-container');
+    const arrow = document.getElementById('site-chevron-arrow');
+    const trigger = document.getElementById('website-selector-trigger');
+    if (container) container.classList.remove('open');
+    if (arrow) arrow.style.transform = '';
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
     loadAllAnalytics();
   };
 
   window.toggleWebsiteDropdown = function() {
-    const list = document.getElementById('website-list-container');
-    const chevron = document.getElementById('site-chevron');
-    if (!list) return;
+    const container = document.getElementById('website-list-container');
+    const arrow = document.getElementById('site-chevron-arrow');
+    const trigger = document.getElementById('website-selector-trigger');
+    if (!container) return;
 
-    if (list.style.display === 'none') {
-      list.style.display = 'flex';
-      if (chevron) chevron.style.transform = 'rotate(0deg)';
+    const isOpen = container.classList.contains('open');
+    if (isOpen) {
+      container.classList.remove('open');
+      if (arrow) arrow.style.transform = '';
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
     } else {
-      list.style.display = 'none';
-      if (chevron) chevron.style.transform = 'rotate(-90deg)';
+      container.classList.add('open');
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
     }
   };
 
