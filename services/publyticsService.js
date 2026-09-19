@@ -272,7 +272,7 @@ const publyticsService = {
   async getDimension(siteId, dimension, query = {}) {
     const validDimensions = [
       'hostname', 'country', 'device', 'browser', 'os', 'page', 'content',
-      'referrer', 'source', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
+      'referrer', 'source', 'source_medium', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
     ];
 
     const cleanDim = String(dimension || '').trim().toLowerCase();

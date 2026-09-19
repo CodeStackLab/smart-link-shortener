@@ -1,33 +1,68 @@
 // ==========================================================================
-// PUBLYTICS INTELLIGENCE DASHBOARD CONTROLLER
-// Seamless Transition to Full Detailed Analytics View (Exact Screenshot Match)
+// PUBLYTICS REAL-TIME & DEEP-ANALYTICS DASHBOARD CONTROLLER
+// 100% Real Publytics API Data • Zero Dummy Fallbacks • Full Clickable Drilldowns
 // ==========================================================================
 
 (function() {
   'use strict';
 
-  let currentPeriod = 'realtime';
-  let currentSiteId = 'India.com';
+  let currentPeriod = '7d';
+  let currentSiteId = '';
   let currentActiveDimension = 'utm_source';
   let autoRefreshTimer = null;
   let isFetching = false;
+  let currentDimensionData = [];
+  let currentUsersData = [];
 
-  // Preset default websites matching user screenshot
-  let availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
+  // Available websites fetched from Publytics API
+  let availableWebsites = [];
 
-  // Colors for Donut Chart & Legend (Exact matching vibrant palette)
+  // Vibrant Cyber Palette for Donut Segments
   const DONUT_COLORS = [
-    '#0084ff', // Electric Blue (Google)
-    '#7c3aed', // Purple (Facebook)
-    '#00e5ff', // Cyan (Direct)
-    '#f43f5e', // Pink/Coral (Instagram)
-    '#6366f1', // Indigo (TikTok)
-    '#10b981', // Emerald (Others)
-    '#f59e0b',
-    '#64748b'
+    '#0090ff', // Electric Blue
+    '#00e5ff', // Cyan
+    '#7c3aed', // Purple
+    '#f43f5e', // Rose/Coral
+    '#10b981', // Emerald
+    '#f59e0b', // Amber
+    '#6366f1', // Indigo
+    '#ec4899', // Pink
+    '#14b8a6', // Teal
+    '#64748b'  // Muted Slate
   ];
 
-  // Brand Icon SVGs / Helpers matching Screenshot 5
+  // Helper Escaping
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // Formatting helpers
+  function formatNum(n) {
+    if (n === null || n === undefined || isNaN(n)) return '0';
+    return Number(n).toLocaleString();
+  }
+
+  function formatDuration(sec) {
+    if (!sec || isNaN(sec)) return '0s';
+    const s = Math.round(Number(sec));
+    const m = Math.floor(s / 60);
+    const rem = s % 60;
+    if (m === 0) return `${rem}s`;
+    return `${m}m ${rem}s`;
+  }
+
+  function formatPct(val) {
+    if (val === null || val === undefined || isNaN(val)) return '0%';
+    return `${Number(val).toFixed(1)}%`;
+  }
+
+  // Brand Icon SVGs / Helpers
   function getBrandIconHtml(name) {
     const n = String(name || '').toLowerCase().trim();
     if (n.includes('google')) {
@@ -81,70 +116,6 @@
         </span>
       `;
     }
-    if (n.includes('bing') || n.includes('msn')) {
-      return `
-        <span class="brand-icon" style="background:#008373; border-radius:50%; color:#ffffff; font-weight:800; font-size:0.85rem;">
-          b
-        </span>
-      `;
-    }
-    // UTM Term Keywords
-    if (n.includes('shortener') || n.includes('smart_')) {
-      return `
-        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #00e5ff); border-radius:50%; color:#ffffff;">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-          </svg>
-        </span>
-      `;
-    }
-    if (n.includes('redirect') || n.includes('link_')) {
-      return `
-        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #38bdf8); border-radius:50%; color:#ffffff;">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 10 4 15 9 20"></polyline>
-            <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-          </svg>
-        </span>
-      `;
-    }
-    if (n.includes('safe') || n.includes('shield')) {
-      return `
-        <span class="brand-icon" style="background:linear-gradient(135deg, #1877f2, #0060d0); border-radius:50%; color:#ffffff;">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-        </span>
-      `;
-    }
-    if (n.includes('monetize') || n.includes('adx') || n.includes('affiliate')) {
-      return `
-        <span class="brand-icon" style="background:linear-gradient(135deg, #f59e0b, #d97706); border-radius:50%; color:#ffffff;">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="1" x2="12" y2="23"></line>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-          </svg>
-        </span>
-      `;
-    }
-    if (n.includes('cpc') || n.includes('lead')) {
-      return `
-        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #0090ff); border-radius:50%; color:#ffffff;">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle>
-          </svg>
-        </span>
-      `;
-    }
-    if (n.includes('organic') || n.includes('sale')) {
-      return `
-        <span class="brand-icon" style="background:linear-gradient(135deg, #10b981, #059669); border-radius:50%; color:#ffffff;">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-          </svg>
-        </span>
-      `;
-    }
     if (n.includes('mobile')) {
       return `
         <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #00e5ff); border-radius:50%; color:#ffffff;">
@@ -164,109 +135,14 @@
       `;
     }
     return `
-      <span class="brand-icon" style="background:#0284c7; border-radius:50%; color:#ffffff; font-weight:900; font-size:0.7rem; letter-spacing:1px;">
-        •••
+      <span class="brand-icon" style="background:#031d4d; border:1px solid rgba(0,144,255,0.4); border-radius:50%; color:#00e5ff; font-weight:800; font-size:0.75rem;">
+        📊
       </span>
     `;
   }
 
-  // Formatting helpers
-  function formatNum(n) {
-    if (n === null || n === undefined || isNaN(n)) return '0';
-    return Number(n).toLocaleString();
-  }
-
-  function formatDuration(sec) {
-    if (!sec || isNaN(sec)) return '0s';
-    const s = Math.round(Number(sec));
-    const m = Math.floor(s / 60);
-    const rem = s % 60;
-    if (m === 0) return `${rem}s`;
-    return `${m}m ${rem}s`;
-  }
-
-  function formatPct(val) {
-    if (val === null || val === undefined || isNaN(val)) return '0%';
-    return `${Number(val).toFixed(1)}%`;
-  }
-
-  // Rich Demonstration Datasets Per Dimension (matching screenshots and realistic traffic)
-  const DIMENSION_MOCKUPS = {
-    'utm_source': [
-      { name: 'google',    visitors: 4812, share: 38.5, duration: '2m 48s' },
-      { name: 'facebook',  visitors: 2971, share: 23.8, duration: '2m 21s' },
-      { name: 'direct',    visitors: 1842, share: 14.8, duration: '2m 03s' },
-      { name: 'instagram', visitors: 1248, share: 10.0, duration: '1m 56s' },
-      { name: 'tiktok',    visitors:  872, share:  7.0, duration: '1m 42s' },
-      { name: 'others',    visitors:  737, share:  5.9, duration: '1m 28s' }
-    ],
-    'utm_medium': [
-      { name: 'cpc',       visitors: 5210, share: 41.7, duration: '2m 55s' },
-      { name: 'organic',   visitors: 3420, share: 27.4, duration: '2m 30s' },
-      { name: 'social',    visitors: 1980, share: 15.9, duration: '1m 45s' },
-      { name: 'referral',  visitors: 1120, share:  9.0, duration: '2m 10s' },
-      { name: 'email',     visitors:  480, share:  3.8, duration: '3m 12s' },
-      { name: 'none',      visitors:  272, share:  2.2, duration: '1m 15s' }
-    ],
-    'utm_campaign': [
-      { name: 'summer_sale_2026', visitors: 4620, share: 37.0, duration: '2m 40s' },
-      { name: 'fb_lead_boost',    visitors: 3100, share: 24.8, duration: '2m 15s' },
-      { name: 'remarketing_v2',   visitors: 2240, share: 17.9, duration: '2m 50s' },
-      { name: 'brand_awareness',  visitors: 1350, share: 10.8, duration: '1m 35s' },
-      { name: 'promo_tier1',      visitors:  780, share:  6.3, duration: '1m 50s' },
-      { name: 'others',           visitors:  392, share:  3.2, duration: '1m 20s' }
-    ],
-    'utm_term': [
-      { name: 'smart_shortener', visitors: 4120, share: 33.0, duration: '2m 45s' },
-      { name: 'link_redirect',   visitors: 3290, share: 26.4, duration: '2m 10s' },
-      { name: 'fb_safe_links',   visitors: 2450, share: 19.6, duration: '2m 35s' },
-      { name: 'adx_monetize',    visitors: 1420, share: 11.4, duration: '1m 55s' },
-      { name: 'affiliate_tools', visitors:  812, share:  6.5, duration: '1m 30s' },
-      { name: 'others',          visitors:  390, share:  3.1, duration: '1m 15s' }
-    ],
-    'utm_content': [
-      { name: 'hero_cta_button', visitors: 4980, share: 39.9, duration: '2m 50s' },
-      { name: 'feed_story_ad',   visitors: 3340, share: 26.8, duration: '2m 05s' },
-      { name: 'banner_top',      visitors: 2110, share: 16.9, duration: '2m 15s' },
-      { name: 'sidebar_widget',  visitors: 1050, share:  8.4, duration: '1m 40s' },
-      { name: 'video_card',      visitors:  620, share:  5.0, duration: '1m 25s' },
-      { name: 'others',          visitors:  382, share:  3.0, duration: '1m 10s' }
-    ],
-    'referrer': [
-      { name: 'l.facebook.com', visitors: 5410, share: 43.3, duration: '2m 35s' },
-      { name: 't.co',           visitors: 2890, share: 23.2, duration: '1m 50s' },
-      { name: 'instagram.com',  visitors: 1940, share: 15.5, duration: '2m 00s' },
-      { name: 'youtube.com',    visitors: 1150, share:  9.2, duration: '3m 20s' },
-      { name: 'news.google.com',visitors:  680, share:  5.5, duration: '2m 40s' },
-      { name: 'others',         visitors:  412, share:  3.3, duration: '1m 20s' }
-    ],
-    'source': [
-      { name: 'facebook',  visitors: 5120, share: 41.0, duration: '2m 25s' },
-      { name: 'google',    visitors: 3870, share: 31.0, duration: '2m 50s' },
-      { name: 'direct',    visitors: 1840, share: 14.7, duration: '2m 05s' },
-      { name: 'instagram', visitors:  980, share:  7.9, duration: '1m 45s' },
-      { name: 'tiktok',    visitors:  420, share:  3.4, duration: '1m 30s' },
-      { name: 'others',    visitors:  252, share:  2.0, duration: '1m 15s' }
-    ],
-    'page': [
-      { name: '/',                  visitors: 5420, share: 43.4, duration: '2m 50s' },
-      { name: '/offer-claim',        visitors: 3180, share: 25.5, duration: '2m 20s' },
-      { name: '/checkout',           visitors: 1940, share: 15.5, duration: '3m 15s' },
-      { name: '/blog/traffic-guide', visitors: 1120, share:  9.0, duration: '1m 45s' },
-      { name: '/terms-privacy',      visitors:  510, share:  4.1, duration: '1m 10s' },
-      { name: 'others',              visitors:  312, share:  2.5, duration: '0m 55s' }
-    ],
-    'device': [
-      { name: 'Mobile',   visitors: 8920, share: 71.5, duration: '2m 25s' },
-      { name: 'Desktop',  visitors: 2840, share: 22.8, duration: '3m 10s' },
-      { name: 'Tablet',   visitors:  580, share:  4.6, duration: '2m 40s' },
-      { name: 'Smart TV', visitors:  142, share:  1.1, duration: '1m 15s' }
-    ]
-  };
-  const MOCKUP_UTM_SOURCE_DATA = DIMENSION_MOCKUPS['utm_source'];
-
-  // --- FLOATING TOAST FOR FILTER DETAILS ---
-  window.showPublyticsToast = function(name, count) {
+  // --- FLOATING TOAST ---
+  window.showPublyticsToast = function(msg) {
     let toast = document.getElementById('publytics-floating-toast');
     if (!toast) {
       toast = document.createElement('div');
@@ -274,7 +150,7 @@
       toast.style.cssText = 'position:fixed; bottom:85px; left:50%; transform:translateX(-50%) translateY(10px); background:rgba(3,17,44,0.95); border:1.5px solid #00e5ff; color:#fff; padding:0.65rem 1.25rem; border-radius:9999px; font-weight:800; font-size:0.85rem; box-shadow:0 8px 30px rgba(0,229,255,0.3); z-index:999999; display:flex; align-items:center; gap:0.5rem; transition:all 0.25s ease; opacity:0; pointer-events:none;';
       document.body.appendChild(toast);
     }
-    toast.innerHTML = `<span style="color:#00e5ff;">📊</span> Filter applied: <strong>${escapeHtml(name)}</strong> (${count} visitors)`;
+    toast.innerHTML = msg;
     toast.style.opacity = '1';
     toast.style.transform = 'translateX(-50%) translateY(0)';
     setTimeout(() => {
@@ -285,12 +161,36 @@
     }, 2800);
   };
 
+  // --- STATUS & ERROR BANNER CONTROLLER ---
+  function showStatusAlert(type, message, actionLabel = null, actionCallback = null) {
+    const banner = document.getElementById('publytics-status-alert');
+    const textEl = document.getElementById('publytics-status-alert-text');
+    const actionBtn = document.getElementById('publytics-status-alert-action');
+    if (!banner || !textEl) return;
+
+    banner.className = `alert-${type}`;
+    banner.style.display = 'flex';
+    textEl.innerHTML = message;
+
+    if (actionLabel && actionCallback && actionBtn) {
+      actionBtn.textContent = actionLabel;
+      actionBtn.style.display = 'inline-block';
+      actionBtn.onclick = actionCallback;
+    } else if (actionBtn) {
+      actionBtn.style.display = 'none';
+    }
+  }
+
+  function hideStatusAlert() {
+    const banner = document.getElementById('publytics-status-alert');
+    if (banner) banner.style.display = 'none';
+  }
+
   // --- INITIALIZATION ---
   window.initPublyticsDashboard = function() {
     if (document.getElementById('website-list-container')) {
       initSessionAndConfig();
       initFilterButtons();
-      renderScreenshotAnalyticsView('utm_source', MOCKUP_UTM_SOURCE_DATA);
       updateClockDisplay();
     }
   };
@@ -312,14 +212,15 @@
         'utm_campaign': 'UTM Campaign',
         'utm_term': 'UTM Term',
         'utm_content': 'UTM Content',
-        'referrer': 'Referrals',
+        'referrer': 'Referrer',
         'source': 'Source',
+        'source_medium': 'Source / Medium',
         'country': 'Country',
         'device': 'Device',
         'os': 'Operating System',
         'browser': 'Browser',
         'hostname': 'Hostname',
-        'page': 'Content / Top Pages'
+        'page': 'Content'
       };
       if (dimLabels[initialDim]) {
         openDrilldownPage(initialDim, dimLabels[initialDim]);
@@ -327,7 +228,7 @@
     }
   });
 
-  // Handle hardware / browser back button for smooth navigation
+  // History Popstate Navigation
   function initHistoryPopstate() {
     window.addEventListener('popstate', (e) => {
       if (e.state && e.state.view === 'drilldown') {
@@ -338,7 +239,7 @@
     });
   }
 
-  // Header Actions & Mobile Drawer Navigation
+  // Header & Drawer
   function initHeaderAndDrawer() {
     const hamburgerBtn = document.getElementById('hamburger-menu-btn');
     const closeDrawerBtn = document.getElementById('close-drawer-btn');
@@ -371,9 +272,9 @@
     }
   }
 
-  // Theme Management (Synchronized with admin.html data-theme)
+  // Theme Management
   function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || localStorage.getItem('publytics_theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || localStorage.getItem('publytics_theme') || 'dark';
     applyThemeState(savedTheme);
 
     const themeBtn = document.getElementById('theme-toggle-btn');
@@ -410,45 +311,99 @@
         session = await sRes.json();
       } catch (e) {}
 
+      if (!session.authenticated) {
+        if (window.location.pathname.includes('publytics.html')) {
+          window.location.href = '/login';
+          return;
+        }
+      }
+
+      // Check publytics permission
+      const hasPubPerm = session.isSuperAdmin || (Array.isArray(session.permissions) && session.permissions.includes('publytics'));
+      if (!hasPubPerm) {
+        if (window.location.pathname.includes('publytics.html')) {
+          document.body.innerHTML = `
+            <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#020b1e; color:#ffffff; font-family:sans-serif; text-align:center; padding:2rem;">
+              <div style="font-size:3.5rem; margin-bottom:1rem;">🚫</div>
+              <h1 style="font-size:1.8rem; font-weight:800; margin-bottom:0.75rem; color:#f43f5e;">Access Denied</h1>
+              <p style="color:#94a3b8; max-width:480px; margin-bottom:1.5rem; line-height:1.6;">You do not have permission to access the Publytics Analytics Dashboard. Please contact the Super Admin / Owner to grant you Publytics access.</p>
+              <a href="/admin" style="background:linear-gradient(135deg,#0088ff,#00e5ff); color:#020b1e; text-decoration:none; padding:0.75rem 1.75rem; border-radius:10px; font-weight:800; font-size:0.95rem;">← Back to Dashboard</a>
+            </div>
+          `;
+          return;
+        } else {
+          const tabPub = document.getElementById('tab-publytics');
+          if (tabPub) tabPub.style.display = 'none';
+          return;
+        }
+      }
+
       const userBadge = document.getElementById('user-badge') || document.getElementById('role-badge');
       if (userBadge) {
-        const cachedBadge = localStorage.getItem('cachedUserBadge');
-        if (cachedBadge) {
-          userBadge.textContent = cachedBadge.includes('🛡️') ? cachedBadge : `🛡️ ${cachedBadge}`;
-        } else {
-          const role = (session && session.role) || 'Master Admin';
-          userBadge.textContent = `🛡️ ${role === 'Admin' ? 'Master Admin' : role}`;
-        }
+        const role = (session && session.role) || 'Master Admin';
+        userBadge.textContent = `🛡️ ${role === 'Admin' ? 'Master Admin' : role}`;
         userBadge.style.display = 'inline-flex';
       }
 
+      // Fetch Publytics Config & Token status
       const cfgRes = await fetch('/api/publytics/config');
+      if (cfgRes.status === 403) {
+        showStatusAlert('error', '🚫 You do not have permission to view Publytics analytics.');
+        return;
+      }
       const cfg = await cfgRes.json();
 
-      if (Array.isArray(cfg.sitesList) && cfg.sitesList.length > 1) {
-        availableWebsites = cfg.sitesList.map(s => s.id || s.name || s);
-      } else {
-        availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
-      }
-      const savedSite = localStorage.getItem('publytics_selected_site');
-      if (savedSite && availableWebsites.some(s => s.toLowerCase() === savedSite.toLowerCase())) {
-        currentSiteId = savedSite;
-      } else if (cfg.currentSiteId && availableWebsites.some(s => s.toLowerCase() === cfg.currentSiteId.toLowerCase())) {
-        currentSiteId = cfg.currentSiteId;
-      } else {
-        // User requested: Default: 🌐 Select website
-        currentSiteId = '';
+      if (!cfg.hasToken) {
+        showStatusAlert(
+          'warning',
+          '⚠️ Publytics API Bearer Token is not configured. Live analytics cannot load until configured in Settings.',
+          session.isSuperAdmin ? '⚙️ Open Settings' : null,
+          session.isSuperAdmin ? () => { window.location.href = '/admin#tab-settings'; } : null
+        );
       }
 
-      renderWebsiteList();
-      loadAllAnalytics();
+      // Fetch sites list from Publytics API
+      await fetchAvailableSites(cfg);
 
     } catch (err) {
-      availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
+      console.warn('Init session/config error:', err);
+    }
+  }
+
+  async function fetchAvailableSites(cfg) {
+    try {
+      const sRes = await fetch('/api/publytics/sites');
+      const data = await sRes.json();
+      const rawList = Array.isArray(data.sites) ? data.sites : (Array.isArray(data) ? data : []);
+
+      availableWebsites = rawList.map(s => {
+        if (typeof s === 'string') return s;
+        return s.id || s.name || s.domain || '';
+      }).filter(Boolean);
+
+      if (availableWebsites.length === 0 && cfg && Array.isArray(cfg.sitesList) && cfg.sitesList.length > 0) {
+        availableWebsites = cfg.sitesList.map(s => s.id || s.name || s).filter(Boolean);
+      }
+
       const savedSite = localStorage.getItem('publytics_selected_site');
-      currentSiteId = savedSite || '';
+      if (savedSite && availableWebsites.includes(savedSite)) {
+        currentSiteId = savedSite;
+      } else if (availableWebsites.length > 0) {
+        currentSiteId = availableWebsites[0];
+      } else {
+        currentSiteId = (cfg && cfg.currentSiteId) || '';
+      }
+
       renderWebsiteList();
-      loadAllAnalytics();
+
+      if (currentSiteId) {
+        hideStatusAlert();
+        loadAllAnalytics();
+      } else if (cfg && cfg.hasToken) {
+        showStatusAlert('info', '🌐 Please select a website from the dropdown above to load live analytics.');
+      }
+    } catch (e) {
+      renderWebsiteList();
     }
   }
 
@@ -456,6 +411,16 @@
   function renderWebsiteList() {
     const container = document.getElementById('website-list-container');
     if (!container) return;
+
+    if (availableWebsites.length === 0) {
+      container.innerHTML = `
+        <div style="padding:0.75rem 1rem; color:#7f9bc2; font-size:0.82rem; text-align:center;">
+          No websites detected. Configure Site ID in Settings.
+        </div>
+      `;
+      updateSelectorPillLabel();
+      return;
+    }
 
     container.innerHTML = availableWebsites.map(siteName => {
       const isSel = currentSiteId && siteName.toLowerCase() === currentSiteId.toLowerCase();
@@ -467,7 +432,6 @@
       `;
     }).join('');
 
-    // Update the selector pill label to show selected domain
     updateSelectorPillLabel();
   }
 
@@ -475,8 +439,7 @@
     const label = document.getElementById('website-selector-label');
     if (!label) return;
     if (currentSiteId) {
-      const selected = availableWebsites.find(s => s.toLowerCase() === currentSiteId.toLowerCase());
-      label.textContent = selected || currentSiteId;
+      label.textContent = currentSiteId;
     } else {
       label.textContent = 'Select website';
     }
@@ -486,13 +449,15 @@
     currentSiteId = siteName;
     try { localStorage.setItem('publytics_selected_site', siteName); } catch(e) {}
     renderWebsiteList();
-    // Close dropdown after selection
+
     const container = document.getElementById('website-list-container');
     const arrow = document.getElementById('site-chevron-arrow');
     const trigger = document.getElementById('website-selector-trigger');
     if (container) container.classList.remove('open');
     if (arrow) arrow.style.transform = '';
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
+
+    hideStatusAlert();
     loadAllAnalytics();
   };
 
@@ -514,7 +479,7 @@
     }
   };
 
-  // Close website dropdown & date dropdown when clicking anywhere outside
+  // Close dropdowns on outside click
   document.addEventListener('click', (e) => {
     const card = document.getElementById('website-selector-card');
     const container = document.getElementById('website-list-container');
@@ -542,14 +507,14 @@
     const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col');
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
-        buttons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
         const period = btn.getAttribute('data-period');
         if (period === 'custom') {
-          promptCustomDateRange();
+          openCustomDateModal();
           return;
         }
+
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
 
         currentPeriod = period;
         updatePeriodLabels(period);
@@ -619,7 +584,7 @@
     menus.forEach(m => m.classList.remove('open'));
 
     if (period === 'custom') {
-      promptCustomDateRange();
+      openCustomDateModal();
       return;
     }
 
@@ -639,14 +604,31 @@
     loadAllAnalytics();
   };
 
-  window.promptCustomDateRange = function() {
-    const from = prompt('Enter start date (YYYY-MM-DD):', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10));
-    if (!from) return;
-    const to = prompt('Enter end date (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
-    if (!to) return;
+  // Custom Date Modal Handlers
+  window.openCustomDateModal = function() {
+    const modal = document.getElementById('custom-date-modal');
+    if (modal) modal.classList.add('open');
+    const endInp = document.getElementById('custom-end-date');
+    const startInp = document.getElementById('custom-start-date');
+    if (endInp && !endInp.value) endInp.value = new Date().toISOString().slice(0, 10);
+    if (startInp && !startInp.value) startInp.value = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  };
 
-    currentPeriod = `custom&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
-    updatePeriodLabels(`${from} to ${to}`);
+  window.closeCustomDateModal = function() {
+    const modal = document.getElementById('custom-date-modal');
+    if (modal) modal.classList.remove('open');
+  };
+
+  window.applyCustomDateFilter = function() {
+    const start = document.getElementById('custom-start-date')?.value;
+    const end = document.getElementById('custom-end-date')?.value;
+    if (!start || !end) {
+      alert('Please select both start and end dates.');
+      return;
+    }
+    closeCustomDateModal();
+    currentPeriod = `custom&from=${encodeURIComponent(start)}&to=${encodeURIComponent(end)}`;
+    updatePeriodLabels(`${start} to ${end}`);
     loadAllAnalytics();
   };
 
@@ -654,7 +636,7 @@
     stopAutoRefresh();
     autoRefreshTimer = setInterval(() => {
       const autoRef = document.getElementById('auto-refresh-check');
-      if (autoRef && autoRef.checked && !isFetching) {
+      if (autoRef && autoRef.checked && !isFetching && currentSiteId) {
         loadAllAnalytics(false);
       }
     }, 15000);
@@ -669,7 +651,7 @@
 
   // --- CORE DATA FETCHING ---
   window.loadAllAnalytics = async function(showSpin = true) {
-    if (isFetching) return;
+    if (isFetching || !currentSiteId) return;
     isFetching = true;
 
     const spin = document.getElementById('refresh-spin-icon');
@@ -678,12 +660,13 @@
     try {
       await Promise.allSettled([
         fetchRealtime(),
-        fetchOverview()
+        fetchOverview(),
+        fetchUsersList()
       ]);
 
-      // If currently inside detail view, refresh the active dimension
+      // If drilldown view is open, refresh its data
       const ddView = document.getElementById('drilldown-page-view');
-      if (ddView && ddView.style.display === 'flex') {
+      if (ddView && ddView.style.display !== 'none') {
         await fetchDimensionData(currentActiveDimension);
       }
 
@@ -701,78 +684,308 @@
     hours = hours % 12;
     hours = hours ? hours : 12;
     const strTime = `${String(hours).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-    
+
     const timeEl = document.getElementById('last-updated-clock-time');
     const ampmEl = document.getElementById('last-updated-clock-ampm');
     if (timeEl) timeEl.textContent = `Updated: ${strTime}`;
     if (ampmEl) ampmEl.textContent = ampm;
-
-    const legacyClock = document.getElementById('last-updated-clock');
-    if (legacyClock) legacyClock.textContent = `Updated: ${strTime} ${ampm}`;
   }
 
-  // 1. Realtime Data (Screenshot 3)
+  // 1. Real-Time Data (Section 1)
   async function fetchRealtime() {
+    if (!currentSiteId) return;
     try {
       const res = await fetch(`/api/publytics/realtime?siteId=${encodeURIComponent(currentSiteId)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          showStatusAlert('error', '❌ Publytics API: 401 Unauthorized. Invalid Bearer Token.');
+        } else if (res.status === 403) {
+          showStatusAlert('error', '❌ Publytics API: 403 Forbidden. Access Denied or site subscription inactive.');
+        } else if (res.status === 429) {
+          showStatusAlert('warning', '⚠️ Publytics API: 429 Rate Limit Exceeded. Backing off requests.');
+        }
+        throw new Error(errJson.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
 
-      const active = data.activeVisitors || data.visitors || data.count || 0;
-      document.getElementById('rt-active-visitors').textContent = formatNum(active);
-      document.getElementById('rt-1m-val').textContent = formatNum(data['1m'] || active);
-      document.getElementById('rt-5m-val').textContent = formatNum(data['5m'] || active);
-      document.getElementById('rt-30m-val').textContent = formatNum(data['30m'] || active);
+      const active = data.activeVisitors !== undefined ? data.activeVisitors
+                   : (data.visitors !== undefined ? data.visitors
+                   : (data.count !== undefined ? data.count : 0));
+
+      const rtEl = document.getElementById('rt-active-visitors');
+      if (rtEl) rtEl.textContent = formatNum(active);
+
+      const m1 = data['1m'] !== undefined ? data['1m'] : active;
+      const m5 = data['5m'] !== undefined ? data['5m'] : active;
+      const m30 = data['30m'] !== undefined ? data['30m'] : active;
+
+      if (document.getElementById('rt-1m-val')) document.getElementById('rt-1m-val').textContent = formatNum(m1);
+      if (document.getElementById('rt-5m-val')) document.getElementById('rt-5m-val').textContent = formatNum(m5);
+      if (document.getElementById('rt-30m-val')) document.getElementById('rt-30m-val').textContent = formatNum(m30);
 
       const pagesBox = document.getElementById('rt-pages-content');
       const pages = data.pages || data.activePages || [];
-      if (Array.isArray(pages) && pages.length > 0) {
-        pagesBox.innerHTML = pages.slice(0, 4).map(p => `
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span style="color:#ffffff;">${escapeHtml(p.page || p.url || '/')}</span>
-            <strong style="color:var(--p-cyan);">${formatNum(p.visitors || 1)}</strong>
-          </div>
-        `).join('');
-      } else {
-        pagesBox.textContent = 'Listening for real-time visitors...';
+      if (pagesBox) {
+        if (Array.isArray(pages) && pages.length > 0) {
+          pagesBox.innerHTML = pages.slice(0, 5).map(p => `
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.82rem;">
+              <span style="color:#ffffff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;">${escapeHtml(p.page || p.url || p.path || '/')}</span>
+              <strong style="color:var(--p-cyan);">${formatNum(p.visitors || p.count || 1)}</strong>
+            </div>
+          `).join('');
+        } else {
+          pagesBox.textContent = active > 0 ? `${active} active visitor(s) across site` : 'No active visitors right now';
+        }
       }
-    } catch {
-      document.getElementById('rt-active-visitors').textContent = '0';
-      document.getElementById('rt-1m-val').textContent = '0';
-      document.getElementById('rt-5m-val').textContent = '0';
-      document.getElementById('rt-30m-val').textContent = '0';
+    } catch (e) {
+      if (document.getElementById('rt-active-visitors')) document.getElementById('rt-active-visitors').textContent = '0';
+      if (document.getElementById('rt-1m-val')) document.getElementById('rt-1m-val').textContent = '0';
+      if (document.getElementById('rt-5m-val')) document.getElementById('rt-5m-val').textContent = '0';
+      if (document.getElementById('rt-30m-val')) document.getElementById('rt-30m-val').textContent = '0';
+      const pagesBox = document.getElementById('rt-pages-content');
+      if (pagesBox) pagesBox.textContent = 'Listening for real-time visitors...';
     }
   }
 
-  // 2. Overview KPIs (Screenshot 3)
+  // 2. Overview / Main Analytics (Section 4)
   async function fetchOverview() {
+    if (!currentSiteId) return;
     try {
       const res = await fetch(`/api/publytics/overview?siteId=${encodeURIComponent(currentSiteId)}&period=${encodeURIComponent(currentPeriod)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      document.getElementById('kpi-views-val').textContent = formatNum(data.pageviews || data.views || 0);
-      document.getElementById('kpi-sessions-val').textContent = formatNum(data.sessions || data.visits || 0);
-      document.getElementById('kpi-duration-val').textContent = formatDuration(data.sessionDuration || data.duration || 0);
-      document.getElementById('kpi-bounce-val').textContent = formatPct(data.bounceRate || data.bounce_rate || 0);
+      const users = data.users !== undefined ? data.users : (data.uniqueVisitors !== undefined ? data.uniqueVisitors : (data.visitors || 0));
+      const views = data.pageviews !== undefined ? data.pageviews : (data.views || 0);
+      const sessions = data.sessions !== undefined ? data.sessions : (data.visits || 0);
+      const duration = data.sessionDuration !== undefined ? data.sessionDuration : (data.duration || 0);
+      const bounce = data.bounceRate !== undefined ? data.bounceRate : (data.bounce_rate || 0);
 
-      // Also update top 4 metric cards on drilldown view
-      if (data.users || data.visitors) {
-        document.getElementById('dd-stat-visitors').textContent = formatNum(data.users || data.visitors);
-        document.getElementById('dd-stat-duration').textContent = formatDuration(data.sessionDuration || 154);
-        document.getElementById('dd-stat-bounce').textContent = formatPct(data.bounceRate || 32.4);
-        document.getElementById('dd-stat-views').textContent = formatNum(data.pageviews || 38721);
-      }
-    } catch {
-      document.getElementById('kpi-views-val').textContent = '0';
-      document.getElementById('kpi-sessions-val').textContent = '0';
-      document.getElementById('kpi-duration-val').textContent = '0s';
-      document.getElementById('kpi-bounce-val').textContent = '0%';
+      if (document.getElementById('kpi-users-val')) document.getElementById('kpi-users-val').textContent = formatNum(users);
+      if (document.getElementById('kpi-views-val')) document.getElementById('kpi-views-val').textContent = formatNum(views);
+      if (document.getElementById('kpi-sessions-val')) document.getElementById('kpi-sessions-val').textContent = formatNum(sessions);
+      if (document.getElementById('kpi-duration-val')) document.getElementById('kpi-duration-val').textContent = formatDuration(duration);
+      if (document.getElementById('kpi-bounce-val')) document.getElementById('kpi-bounce-val').textContent = formatPct(bounce);
+
+      // Also update drilldown mini KPI cards
+      if (document.getElementById('dd-stat-visitors')) document.getElementById('dd-stat-visitors').textContent = formatNum(users || sessions);
+      if (document.getElementById('dd-stat-duration')) document.getElementById('dd-stat-duration').textContent = formatDuration(duration);
+      if (document.getElementById('dd-stat-bounce')) document.getElementById('dd-stat-bounce').textContent = formatPct(bounce);
+      if (document.getElementById('dd-stat-views')) document.getElementById('dd-stat-views').textContent = formatNum(views);
+
+    } catch (e) {
+      if (document.getElementById('kpi-users-val')) document.getElementById('kpi-users-val').textContent = '0';
+      if (document.getElementById('kpi-views-val')) document.getElementById('kpi-views-val').textContent = '0';
+      if (document.getElementById('kpi-sessions-val')) document.getElementById('kpi-sessions-val').textContent = '0';
+      if (document.getElementById('kpi-duration-val')) document.getElementById('kpi-duration-val').textContent = '0s';
+      if (document.getElementById('kpi-bounce-val')) document.getElementById('kpi-bounce-val').textContent = '0%';
     }
   }
 
+  // 3. User List Data (Section 5)
+  window.fetchUsersList = async function() {
+    if (!currentSiteId) return;
+    const tbody = document.getElementById('users-table-body');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding:1.5rem; color:#7f9bc2;">
+            Loading live user identifiers from Publytics API...
+          </td>
+        </tr>
+      `;
+    }
+
+    try {
+      const res = await fetch(`/api/publytics/users?siteId=${encodeURIComponent(currentSiteId)}&period=${encodeURIComponent(currentPeriod)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const raw = await res.json();
+      const users = Array.isArray(raw) ? raw : (raw.data || raw.users || []);
+      currentUsersData = users;
+
+      renderUsersTable(users);
+    } catch (e) {
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="p-empty-state">
+                <div class="p-empty-icon">👤</div>
+                <div class="p-empty-title">No User Identifiers Found</div>
+                <div class="p-empty-sub">No user sessions were recorded by the Publytics API for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    }
+  };
+
+  function renderUsersTable(users) {
+    const tbody = document.getElementById('users-table-body');
+    if (!tbody) return;
+
+    if (!Array.isArray(users) || users.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7">
+            <div class="p-empty-state">
+              <div class="p-empty-icon">👥</div>
+              <div class="p-empty-title">No User Sessions Recorded</div>
+              <div class="p-empty-sub">Publytics API recorded no active user sessions for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = users.map((u, idx) => {
+      const id = u.userId || u.id || u.user_id || `User #${idx + 1}`;
+      const location = u.country || u.location || u.city || 'Unknown';
+      const device = u.device || u.os || u.browser || 'Web';
+      const sessions = u.sessions || u.sessionCount || u.visits || 1;
+      const lastActive = u.lastActive || u.timestamp || u.lastSeen || 'Recent';
+
+      return `
+        <tr class="clickable-row" onclick="openUserAnalytics('${escapeHtml(id)}', ${idx});" title="Click to view complete user analytics">
+          <td style="color:#7f9bc2; font-weight:700;">${idx + 1}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.1rem;">👤</span>
+              <strong style="color:#00e5ff; font-family:monospace;">${escapeHtml(id)}</strong>
+            </div>
+          </td>
+          <td>${escapeHtml(location)}</td>
+          <td><span class="p-badge-pill">${escapeHtml(device)}</span></td>
+          <td><strong>${formatNum(sessions)}</strong></td>
+          <td style="color:#7f9bc2; font-size:0.75rem;">${escapeHtml(lastActive)}</td>
+          <td style="text-align:right;">
+            <button type="button" class="btn btn-ghost btn-sm" style="color:#00e5ff; font-size:0.8rem; padding:0.2rem 0.45rem;">🔍</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Clicking a user opens their complete available analytics from Publytics API (Section 5)
+  window.openUserAnalytics = async function(userId, fallbackIndex = null) {
+    const modal = document.getElementById('user-deepdive-modal');
+    const content = document.getElementById('user-modal-content');
+    const title = document.getElementById('user-modal-title-text');
+    if (modal) modal.classList.add('open');
+    if (title) title.textContent = `User: ${userId}`;
+    if (content) {
+      content.innerHTML = `
+        <div style="text-align:center; padding:2rem; color:#7f9bc2;">
+          <div style="font-size:2rem; animation:pubRotate 1s linear infinite; display:inline-block;">🔄</div>
+          <div style="margin-top:0.75rem; font-weight:700; color:#ffffff;">Fetching complete user analytics from Publytics API...</div>
+        </div>
+      `;
+    }
+
+    try {
+      const res = await fetch(`/api/publytics/users/${encodeURIComponent(userId)}?siteId=${encodeURIComponent(currentSiteId)}`);
+      let data = {};
+      if (res.ok) {
+        data = await res.json();
+      } else if (fallbackIndex !== null && currentUsersData[fallbackIndex]) {
+        data = currentUsersData[fallbackIndex];
+      }
+
+      renderUserModalContent(userId, data);
+    } catch (e) {
+      const fallback = fallbackIndex !== null ? currentUsersData[fallbackIndex] : {};
+      renderUserModalContent(userId, fallback || {});
+    }
+  };
+
+  function renderUserModalContent(userId, u) {
+    const content = document.getElementById('user-modal-content');
+    if (!content) return;
+
+    const sessions = u.sessions || u.sessionCount || u.visits || 1;
+    const duration = u.duration || u.sessionDuration || 0;
+    const pageviews = u.pageviews || u.views || u.pagesCount || 1;
+    const country = u.country || u.location || 'Unknown';
+    const device = u.device || 'Desktop';
+    const os = u.os || 'Unknown OS';
+    const browser = u.browser || 'Unknown Browser';
+    const firstSeen = u.firstSeen || u.first_seen || 'N/A';
+    const lastSeen = u.lastActive || u.lastSeen || 'N/A';
+    const pages = Array.isArray(u.pages) ? u.pages : (Array.isArray(u.history) ? u.history : []);
+
+    content.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; background:#03112c; padding:0.85rem 1rem; border-radius:12px; border:1px solid rgba(0,144,255,0.25);">
+        <div>
+          <div style="font-size:0.72rem; color:#7f9bc2; font-weight:700; text-transform:uppercase;">USER IDENTIFIER</div>
+          <div style="color:#00e5ff; font-weight:900; font-family:monospace; font-size:1.1rem; margin-top:0.2rem;">${escapeHtml(userId)}</div>
+        </div>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <span class="p-badge-pill">📍 ${escapeHtml(country)}</span>
+          <span class="p-badge-pill">📱 ${escapeHtml(device)}</span>
+        </div>
+      </div>
+
+      <div class="p-stat-grid">
+        <div class="p-stat-box">
+          <div class="p-stat-box-label">Total Sessions</div>
+          <div class="p-stat-box-val">${formatNum(sessions)}</div>
+        </div>
+        <div class="p-stat-box">
+          <div class="p-stat-box-label">Total Pageviews</div>
+          <div class="p-stat-box-val">${formatNum(pageviews)}</div>
+        </div>
+        <div class="p-stat-box">
+          <div class="p-stat-box-label">Total Duration</div>
+          <div class="p-stat-box-val">${formatDuration(duration)}</div>
+        </div>
+      </div>
+
+      <div style="background:#03112c; border:1px solid rgba(0,144,255,0.25); border-radius:12px; padding:0.85rem 1rem;">
+        <div style="font-size:0.82rem; font-weight:800; color:#cbd5e1; margin-bottom:0.5rem;">User Environment &amp; Platform</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.8rem;">
+          <div><span style="color:#7f9bc2;">Operating System:</span> <strong style="color:#fff;">${escapeHtml(os)}</strong></div>
+          <div><span style="color:#7f9bc2;">Browser:</span> <strong style="color:#fff;">${escapeHtml(browser)}</strong></div>
+          <div><span style="color:#7f9bc2;">First Seen:</span> <strong style="color:#fff;">${escapeHtml(firstSeen)}</strong></div>
+          <div><span style="color:#7f9bc2;">Last Active:</span> <strong style="color:#fff;">${escapeHtml(lastSeen)}</strong></div>
+        </div>
+      </div>
+
+      ${pages.length > 0 ? `
+        <div style="background:#03112c; border:1px solid rgba(0,144,255,0.25); border-radius:12px; padding:0.85rem 1rem;">
+          <div style="font-size:0.82rem; font-weight:800; color:#cbd5e1; margin-bottom:0.5rem;">Visited Pages &amp; Actions</div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem; max-height:180px; overflow-y:auto;">
+            ${pages.map(p => `
+              <div style="display:flex; justify-content:space-between; font-size:0.78rem; padding:0.25rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span style="color:#00e5ff;">${escapeHtml(p.page || p.url || p)}</span>
+                <span style="color:#7f9bc2;">${escapeHtml(p.time || '')}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  window.closeUserDeepdiveModal = function() {
+    const modal = document.getElementById('user-deepdive-modal');
+    if (modal) modal.classList.remove('open');
+  };
+
+  // Scroll to User List from KPI Card
+  window.scrollToUsersSection = function() {
+    const card = document.getElementById('user-list-section-card');
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      card.style.outline = '2px solid #00e5ff';
+      setTimeout(() => { card.style.outline = ''; }, 1800);
+    }
+  };
+
   // ==========================================================================
-  // 3. SEAMLESS DRILL-DOWN VIEW CONTROLLER (Exact Match to Screenshot 5!)
+  // 4. CLICKABLE DETAILED DATA & DRILLDOWN VIEW (Sections 2, 3, 6)
   // ==========================================================================
 
   window.openDrilldownPage = function(dimensionKey, titleLabel) {
@@ -784,7 +997,7 @@
 
     const ddView = document.getElementById('drilldown-page-view');
     if (ddView) {
-      ddView.style.display = 'flex';
+      ddView.style.display = 'block';
       ddView.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -792,7 +1005,6 @@
       history.pushState({ view: 'drilldown', dimKey: dimensionKey, dimTitle: titleLabel }, '');
     }
 
-    // Icon mapping matching Screenshot 4 & 5
     const iconMap = {
       'utm_source': '🎯',
       'utm_medium': '🔀',
@@ -801,6 +1013,7 @@
       'utm_content': '</>',
       'referrer': '🔗',
       'source': '🌐',
+      'source_medium': '🔀',
       'country': '🌍',
       'device': '📱',
       'os': '💻',
@@ -822,7 +1035,7 @@
 
     if (heroIcon) heroIcon.textContent = iconMap[dimensionKey] || '📊';
     if (heroTitle) heroTitle.textContent = `${cleanTitle} Analytics`;
-    if (heroSub) heroSub.textContent = `Traffic breakdown by ${cleanTitle.toLowerCase()}`;
+    if (heroSub) heroSub.textContent = `Live breakdown for ${cleanTitle.toLowerCase()} from Publytics API`;
 
     // Update Legend & Table Titles
     const legendTitle = document.getElementById('dd-legend-title-text');
@@ -844,63 +1057,75 @@
 
   function closeDrilldownViewInternal(popHistory = true) {
     const ddView = document.getElementById('drilldown-page-view');
-    if (ddView) {
-      ddView.style.display = 'none';
-    }
-    const utmCard = document.getElementById('utm-source-section-card');
-    if (utmCard) {
-      utmCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    if (ddView) ddView.style.display = 'none';
 
     if (popHistory && window.history.state && window.history.state.view === 'drilldown') {
       window.history.back();
     }
   }
 
-  // Fetch Dimension Data and render Donut + Legend + Details Table
+  // Fetch Dimension Data directly from Publytics API (Zero Synthetic Fallbacks)
   async function fetchDimensionData(dimKey) {
-    const fallbackData = DIMENSION_MOCKUPS[dimKey] || DIMENSION_MOCKUPS['utm_source'];
+    if (!currentSiteId) return;
+    const tbody = document.getElementById('dd-table-body-rows');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; padding:1.75rem; color:#7f9bc2;">
+            Loading ${escapeHtml(dimKey)} data from Publytics API...
+          </td>
+        </tr>
+      `;
+    }
+
     try {
       const res = await fetch(`/api/publytics/dimension/${dimKey}?siteId=${encodeURIComponent(currentSiteId)}&period=${encodeURIComponent(currentPeriod)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const list = await res.json();
-      const items = Array.isArray(list) ? list : (list.data || []);
+      const raw = await res.json();
+      const items = Array.isArray(raw) ? raw : (raw.data || raw.items || []);
+      currentDimensionData = items;
 
-      if (items.length > 0) {
-        renderScreenshotAnalyticsView(dimKey, items);
-      } else {
-        renderScreenshotAnalyticsView(dimKey, fallbackData);
-      }
-    } catch {
-      renderScreenshotAnalyticsView(dimKey, fallbackData);
+      renderDrilldownAnalytics(dimKey, items);
+    } catch (err) {
+      currentDimensionData = [];
+      renderDrilldownAnalytics(dimKey, []);
     }
   }
 
-  // Render Donut Chart, Legend, and Table matching Screenshot 5 exactly!
-  function renderScreenshotAnalyticsView(dimKey, items) {
+  // Render Donut Chart, Legend, and Details Table with 100% Real API Data
+  function renderDrilldownAnalytics(dimKey, items) {
     const totalVis = items.reduce((acc, i) => acc + Number(i.visitors || i.count || i.sessions || 0), 0);
+
     const centerTotal = document.getElementById('donut-center-num-text');
-    if (centerTotal) centerTotal.textContent = formatNum(totalVis || 12482);
-
-    // Update the 4 mini KPI cards
-    const statVisitors = document.getElementById('dd-stat-visitors');
-    const statDuration = document.getElementById('dd-stat-duration');
-    const statBounce = document.getElementById('dd-stat-bounce');
-    const statViews = document.getElementById('dd-stat-views');
-
-    if (totalVis > 0 && items !== MOCKUP_UTM_SOURCE_DATA && !DIMENSION_MOCKUPS[dimKey]) {
-      if (statVisitors) statVisitors.textContent = formatNum(totalVis);
-      if (statViews) statViews.textContent = formatNum(Math.round(totalVis * 3.1));
-    } else {
-      if (statVisitors) statVisitors.textContent = '12,482';
-      if (statDuration) statDuration.textContent = '2m 34s';
-      if (statBounce) statBounce.textContent = '32.4%';
-      if (statViews) statViews.textContent = '38,721';
-    }
+    if (centerTotal) centerTotal.textContent = formatNum(totalVis);
 
     const donutSvg = document.getElementById('donut-svg-element');
     const legendContainer = document.getElementById('dd-legend-items-container');
     const tbody = document.getElementById('dd-table-body-rows');
+    const chartCard = document.getElementById('dd-chart-section');
+
+    // If zero data: render clean empty state
+    if (!Array.isArray(items) || items.length === 0 || totalVis === 0) {
+      if (chartCard) chartCard.style.display = 'none';
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="p-empty-state">
+                <div class="p-empty-icon">📊</div>
+                <div class="p-empty-title">No Traffic Data Recorded</div>
+                <div class="p-empty-sub">
+                  Publytics API recorded no visitor data for <strong>${escapeHtml(dimKey)}</strong> on <strong>${escapeHtml(currentSiteId)}</strong> in this period.
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+      return;
+    }
+
+    if (chartCard) chartCard.style.display = 'flex';
 
     // Build Donut Segments
     const circumference = 2 * Math.PI * 38; // ~238.76
@@ -909,7 +1134,7 @@
 
     items.slice(0, 6).forEach((item, idx) => {
       const count = Number(item.visitors || item.count || item.sessions || 0);
-      const ratio = totalVis > 0 ? (count / totalVis) : (item.share ? item.share / 100 : 0.16);
+      const ratio = totalVis > 0 ? (count / totalVis) : 0;
       const strokeLength = ratio * circumference;
       const strokeColor = DONUT_COLORS[idx % DONUT_COLORS.length];
       const strokeDashoffset = -accumulatedStroke;
@@ -921,7 +1146,7 @@
           stroke-dasharray="${strokeLength} ${circumference}"
           stroke-dashoffset="${strokeDashoffset}"
           transform="rotate(-90 50 50)"
-          style="transition:stroke-dasharray 0.6s ease;">
+          style="transition:stroke-dasharray 0.5s ease;">
         </circle>
       `;
 
@@ -932,39 +1157,39 @@
       donutSvg.innerHTML = svgSegments || `<circle cx="50" cy="50" r="38" fill="none" stroke="#1e293b" stroke-width="12"></circle>`;
     }
 
-    // Render Legend (Screenshot 5 Middle Right)
+    // Render Legend
     if (legendContainer) {
       legendContainer.innerHTML = items.slice(0, 6).map((item, idx) => {
-        const name = item.name || item.value || item[dimKey] || 'others';
+        const name = item.name || item.value || item[dimKey] || 'other';
         const count = Number(item.visitors || item.count || item.sessions || 0);
-        const share = item.share !== undefined ? item.share : (totalVis > 0 ? ((count / totalVis) * 100).toFixed(1) : '0.0');
+        const share = item.share !== undefined ? Number(item.share).toFixed(1) : (totalVis > 0 ? ((count / totalVis) * 100).toFixed(1) : '0.0');
         const color = DONUT_COLORS[idx % DONUT_COLORS.length];
 
         return `
-          <div class="dd-legend-item">
+          <div class="dd-legend-item" onclick="openItemAnalytics('${escapeHtml(dimKey)}', ${idx});" style="cursor:pointer;">
             <div class="dd-legend-item-left">
               <span class="brand-dot" style="background:${color};"></span>
               <span style="color:#ffffff; font-weight:600;">${escapeHtml(name)}</span>
             </div>
             <div class="dd-legend-item-right">
               <span style="color:#ffffff;">${formatNum(count)}</span>
-              <span style="color:#7f9bc2; width:45px; text-align:right;">${share}%</span>
+              <span style="color:#7f9bc2; width:48px; text-align:right;">${share}%</span>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    // Render Table (Screenshot 5 Bottom Details Table)
+    // Render Table (Every single row is clickable!)
     if (tbody) {
       tbody.innerHTML = items.map((item, idx) => {
-        const name = item.name || item.value || item[dimKey] || 'others';
+        const name = item.name || item.value || item[dimKey] || 'other';
         const count = Number(item.visitors || item.count || item.sessions || 0);
-        const share = item.share !== undefined ? item.share : (totalVis > 0 ? ((count / totalVis) * 100).toFixed(1) : '0.0');
-        const duration = item.duration || (item.avgDuration ? formatDuration(item.avgDuration) : '2m 15s');
+        const share = item.share !== undefined ? Number(item.share).toFixed(1) : (totalVis > 0 ? ((count / totalVis) * 100).toFixed(1) : '0.0');
+        const duration = item.duration || (item.avgDuration ? formatDuration(item.avgDuration) : 'N/A');
 
         return `
-          <tr style="cursor:pointer;" onclick="showPublyticsToast('${escapeHtml(name)}', '${formatNum(count)}');">
+          <tr class="clickable-row" onclick="openItemAnalytics('${escapeHtml(dimKey)}', ${idx});" title="Click to view full Publytics details for ${escapeHtml(name)}">
             <td style="color:#7f9bc2; font-weight:700;">${idx + 1}</td>
             <td>
               <div class="brand-cell">
@@ -975,36 +1200,98 @@
             <td><strong>${formatNum(count)}</strong></td>
             <td style="color:#38bdf8; font-weight:700;">${share}%</td>
             <td style="color:#7f9bc2;">${duration}</td>
-            <td style="text-align:right; color:#64748b; font-weight:800;">›</td>
+            <td style="text-align:right;">
+              <button type="button" class="btn btn-ghost btn-sm" style="color:#00e5ff; font-size:0.8rem; padding:0.2rem 0.45rem;">🔍</button>
+            </td>
           </tr>
         `;
       }).join('');
     }
   }
 
-  // --- API SETTINGS REDIRECT TO SHORTENER SETTINGS ---
+  // --- ITEM DEEP-DIVE MODAL (Clicking any row in any drilldown table) ---
+  window.openItemAnalytics = function(dimKey, itemIndex) {
+    const item = currentDimensionData[itemIndex];
+    if (!item) return;
+
+    const modal = document.getElementById('item-deepdive-modal');
+    const title = document.getElementById('item-modal-title-text');
+    const content = document.getElementById('item-modal-content');
+    if (modal) modal.classList.add('open');
+
+    const name = item.name || item.value || item[dimKey] || 'Unknown Item';
+    if (title) title.textContent = `${name}`;
+
+    const totalVis = currentDimensionData.reduce((acc, i) => acc + Number(i.visitors || i.count || i.sessions || 0), 0);
+    const count = Number(item.visitors || item.count || item.sessions || 0);
+    const share = item.share !== undefined ? Number(item.share).toFixed(1) : (totalVis > 0 ? ((count / totalVis) * 100).toFixed(1) : '0.0');
+    const duration = item.duration || (item.avgDuration ? formatDuration(item.avgDuration) : 'N/A');
+    const bounce = item.bounceRate !== undefined ? formatPct(item.bounceRate) : 'N/A';
+
+    if (content) {
+      content.innerHTML = `
+        <div style="background:#03112c; border:1px solid rgba(0,144,255,0.25); border-radius:12px; padding:0.9rem 1.1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            ${getBrandIconHtml(name)}
+            <div>
+              <div style="font-size:0.72rem; color:#7f9bc2; font-weight:700; text-transform:uppercase;">${escapeHtml(dimKey.toUpperCase())}</div>
+              <div style="font-size:1.15rem; font-weight:900; color:#ffffff;">${escapeHtml(name)}</div>
+            </div>
+          </div>
+          <span class="p-badge-pill" style="font-size:0.85rem; padding:0.35rem 0.75rem;">${share}% Total Share</span>
+        </div>
+
+        <div class="p-stat-grid">
+          <div class="p-stat-box">
+            <div class="p-stat-box-label">Visitors</div>
+            <div class="p-stat-box-val" style="color:#00e5ff;">${formatNum(count)}</div>
+          </div>
+          <div class="p-stat-box">
+            <div class="p-stat-box-label">Avg. Duration</div>
+            <div class="p-stat-box-val">${duration}</div>
+          </div>
+          <div class="p-stat-box">
+            <div class="p-stat-box-label">Bounce Rate</div>
+            <div class="p-stat-box-val">${bounce}</div>
+          </div>
+        </div>
+
+        <div style="background:#03112c; border:1px solid rgba(0,144,255,0.25); border-radius:12px; padding:0.9rem 1.1rem;">
+          <div style="font-size:0.82rem; font-weight:800; color:#cbd5e1; margin-bottom:0.5rem;">Publytics API Dimension Metadata</div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;">
+            <div><span style="color:#7f9bc2;">Site ID:</span> <strong style="color:#fff;">${escapeHtml(currentSiteId)}</strong></div>
+            <div><span style="color:#7f9bc2;">Time Range:</span> <strong style="color:#fff;">${escapeHtml(currentPeriod)}</strong></div>
+            <div><span style="color:#7f9bc2;">Dimension:</span> <strong style="color:#fff;">${escapeHtml(dimKey)}</strong></div>
+            <div><span style="color:#7f9bc2;">Raw Value:</span> <code style="color:#00e5ff; background:rgba(0,144,255,0.1); padding:0.15rem 0.4rem; border-radius:4px;">${escapeHtml(name)}</code></div>
+          </div>
+        </div>
+      `;
+    }
+  };
+
+  window.closeItemDeepdiveModal = function() {
+    const modal = document.getElementById('item-deepdive-modal');
+    if (modal) modal.classList.remove('open');
+  };
+
+  // Close modals when clicking on backdrop
+  document.addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('p-modal-overlay')) {
+      e.target.classList.remove('open');
+    }
+  });
+
+  // Keyboard Escape to close modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.p-modal-overlay.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  // Settings redirect
   window.openConfigModal = function() {
     window.location.href = '/admin#tab-settings';
   };
   window.closeConfigModal = function() {};
-
-  window.logoutUser = async function() {
-    try {
-      await fetch('/api/logout', { method: 'POST' });
-    } finally {
-      window.location.href = '/admin';
-    }
-  };
-
-  // Helper Escaping
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
 
 })();

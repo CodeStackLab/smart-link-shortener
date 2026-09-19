@@ -97,18 +97,24 @@ function getUserPermissions(username, role) {
                        (role || '').toLowerCase() === 'super admin' || 
                        (role || '').toLowerCase() === 'master admin';
 
-  // Admin/Master Admin always get all tab/feature permissions
-  if (isAdminRole(role) || isSuperAdmin) {
-    const adminBase = db.getDefaultPermissions(isSuperAdmin ? 'Master Admin' : 'Admin');
-    // Also pass through any custom granular perms (col_*, geo_*, logs_*) stored for this admin
+  // Super Admin / Master Admin: always gets all permissions including domains & publytics
+  if (isSuperAdmin) {
+    const adminBase = db.getDefaultPermissions('Master Admin');
     const customPerms = storedPerms ? storedPerms.filter(p => !adminBase.includes(p)) : [];
-    const allAdminPerms = [...adminBase, ...customPerms];
-    // Domains is strictly Master Admin only — never grant to Normal Admin or Editor
-    return isSuperAdmin ? allAdminPerms : allAdminPerms.filter(p => p !== 'domains');
+    return [...adminBase, ...customPerms];
+  }
+
+  // Normal Admin: has default admin perms + any stored custom perms (can have publytics if granted by Super Admin)
+  if (isAdminRole(role)) {
+    const adminBase = db.getDefaultPermissions('Admin');
+    const customPerms = storedPerms ? storedPerms.filter(p => !adminBase.includes(p)) : [];
+    const all = [...adminBase, ...customPerms];
+    return all.filter(p => p !== 'domains');
   }
 
   // Editor: use stored perms if available, otherwise fall back to defaults
   // Firewall, Traffic Analytics, and Domains are strictly Super Admin-only — never grant to Editor
+  // Publytics CAN be granted to Editor by Super Admin
   const base = storedPerms || db.getDefaultPermissions('Editor');
   return base.filter(p => p !== 'firewall' && p !== 'analytics' && p !== 'domains');
 }
@@ -116,8 +122,8 @@ function getUserPermissions(username, role) {
 // Accepts one or more permission strings (OR logic: user needs at least one).
 function requirePermission(...permissions) {
   return (req, res, next) => {
-    if (isAdminRole(req.session.role)) return next();
-    const userPerms = getUserPermissions(req.session.username, req.session.role);
+    if (isSuperAdminSession(req)) return next();
+    const userPerms = getUserPermissions(req.session && req.session.username, req.session && req.session.role);
 
     // Direct permission match
     const hasAny = permissions.some(p => userPerms.includes(p));
@@ -141,6 +147,11 @@ function requirePermission(...permissions) {
       return false;
     });
     if (hasImplied) return next();
+
+    // Admin role bypass for standard operational tabs EXCEPT publytics and domains (which require explicit Super Admin grant)
+    if (isAdminRole(req.session && req.session.role) && !permissions.includes('publytics') && !permissions.includes('domains')) {
+      return next();
+    }
 
     return res.status(403).json({ error: `Access denied. Required permission: ${permissions.join(' or ')}.` });
   };
@@ -1391,26 +1402,19 @@ app.post('/api/admin/publytics/test', requireAuth, async (req, res) => {
 // PUBLYTICS API REPORTING & DASHBOARD PROXY (Protected)
 // ----------------------------------------------------
 
-// Get configuration status (token masked)
-app.get('/api/publytics/config', requireAuth, (req, res) => {
+// Get configuration status (token masked) - Protected by publytics permission
+app.get('/api/publytics/config', requireAuth, requirePermission('publytics'), (req, res) => {
   res.json(publyticsService.getConfig());
 });
 
-// Update configuration (Admin or users with settings permission)
-function requireSettingsOrAdmin(req, res, next) {
-  if (isSuperAdminSession(req)) return next();
-  const perms = getUserPermissions(req.session && req.session.username, req.session && req.session.role);
-  if (Array.isArray(perms) && perms.includes('settings')) return next();
-  return res.status(403).json({ error: 'Access denied. You do not have permission to manage settings.' });
-}
-
-app.post('/api/publytics/config', requireAuth, requireSettingsOrAdmin, (req, res) => {
+// Update configuration (SUPER ADMIN / MASTER ADMIN ONLY)
+app.post('/api/publytics/config', requireAuth, requireSuperAdmin, (req, res) => {
   const { apiToken, siteId, sitesList } = req.body || {};
   const updated = publyticsService.updateConfig({ apiToken, siteId, sitesList });
   res.json({ success: true, config: updated });
 });
 
-// Test connection with token and siteId
+// Test connection with token and siteId (Super Admin only)
 app.post('/api/publytics/test-connection', requireAuth, requireSuperAdmin, async (req, res) => {
   try {
     const { apiToken, siteId } = req.body || {};
@@ -1422,7 +1426,7 @@ app.post('/api/publytics/test-connection', requireAuth, requireSuperAdmin, async
 });
 
 // Get available sites
-app.get('/api/publytics/sites', requireAuth, async (req, res) => {
+app.get('/api/publytics/sites', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const result = await publyticsService.getSites();
     res.json(result);
@@ -1432,7 +1436,7 @@ app.get('/api/publytics/sites', requireAuth, async (req, res) => {
 });
 
 // Real-Time analytics
-app.get('/api/publytics/realtime', requireAuth, async (req, res) => {
+app.get('/api/publytics/realtime', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const { siteId, ...query } = req.query;
     const data = await publyticsService.getRealtime(siteId, query);
@@ -1443,7 +1447,7 @@ app.get('/api/publytics/realtime', requireAuth, async (req, res) => {
 });
 
 // Overview / Main KPIs
-app.get('/api/publytics/overview', requireAuth, async (req, res) => {
+app.get('/api/publytics/overview', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const { siteId, ...query } = req.query;
     const data = await publyticsService.getOverview(siteId, query);
@@ -1454,7 +1458,7 @@ app.get('/api/publytics/overview', requireAuth, async (req, res) => {
 });
 
 // Dimensions (country, device, os, browser, hostname, page, referrer, source, utm_*)
-app.get('/api/publytics/dimension/:dimension', requireAuth, async (req, res) => {
+app.get('/api/publytics/dimension/:dimension', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const { dimension } = req.params;
     const { siteId, ...query } = req.query;
@@ -1466,7 +1470,7 @@ app.get('/api/publytics/dimension/:dimension', requireAuth, async (req, res) => 
 });
 
 // User list
-app.get('/api/publytics/users', requireAuth, async (req, res) => {
+app.get('/api/publytics/users', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const { siteId, ...query } = req.query;
     const data = await publyticsService.getUsers(siteId, query);
@@ -1477,7 +1481,7 @@ app.get('/api/publytics/users', requireAuth, async (req, res) => {
 });
 
 // User details
-app.get('/api/publytics/users/:userId', requireAuth, async (req, res) => {
+app.get('/api/publytics/users/:userId', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const { userId } = req.params;
     const { siteId, ...query } = req.query;

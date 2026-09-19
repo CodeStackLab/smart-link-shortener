@@ -381,8 +381,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (curHash) {
             const tTabId = curHash.startsWith('tab-') ? curHash : ('tab-' + curHash);
             const targetBtn = document.querySelector(`.tab-btn[data-tab="${tTabId}"]`);
-            if (targetBtn) {
+            if (targetBtn && targetBtn.style.display !== 'none' && getComputedStyle(targetBtn).display !== 'none') {
               setTimeout(() => { targetBtn.click(); }, 60);
+            } else {
+              const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
+              if (defaultLinksTab) defaultLinksTab.click();
             }
           }
         }
@@ -591,14 +594,18 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
       { key: 'analytics', tabId: 'tab-analytics', adminOnly: true },
       { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
-      { key: 'settings', tabId: 'tab-settings', adminOnly: false }
+      { key: 'settings', tabId: 'tab-settings', adminOnly: false },
+      { key: 'publytics', tabId: 'tab-publytics', adminOnly: false }
     ];
 
     navMap.forEach(item => {
       // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
+      // Publytics requires Super Admin OR explicit 'publytics' permission granted by Super Admin
       const hasAccess = item.key === 'firewall'
         ? true
-        : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
+        : item.key === 'publytics'
+          ? (isSuperAdminUser() || userPerms.includes('publytics'))
+          : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -701,10 +708,10 @@ document.addEventListener('DOMContentLoaded', () => {
       customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
-    // 3. Change Password & Publytics API — Visible to anyone with Settings access
+    // 3. Publytics API Token Card — strictly Super Admin / Master Admin only
     const publyticsApiCard = document.getElementById('publytics-api-card');
     if (publyticsApiCard) {
-      publyticsApiCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+      publyticsApiCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
     const changePassCard = document.getElementById('change-password-card');
@@ -1044,6 +1051,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (targetTab === 'tab-settings' && !(isFullAdminUser() || userCurrentPermissions.includes('settings'))) {
+        return;
+      }
+
+      if (targetTab === 'tab-publytics' && !(isSuperAdminUser() || userCurrentPermissions.includes('publytics'))) {
         return;
       }
 
