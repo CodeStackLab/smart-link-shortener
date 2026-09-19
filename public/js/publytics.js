@@ -128,6 +128,7 @@
   // --- INITIALIZATION ---
   document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+    initHeaderAndDrawer();
     initSessionAndConfig();
     initFilterButtons();
     initHistoryPopstate();
@@ -169,31 +170,66 @@
     });
   }
 
-  // Theme Management
-  function initTheme() {
-    const savedTheme = localStorage.getItem('publytics_theme') || 'dark';
-    if (savedTheme === 'light') {
-      document.body.classList.add('light-theme');
-      updateThemeBtn(true);
-    } else {
-      document.body.classList.remove('light-theme');
-      updateThemeBtn(false);
+  // Header Actions & Mobile Drawer Navigation
+  function initHeaderAndDrawer() {
+    const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+    const closeDrawerBtn = document.getElementById('close-drawer-btn');
+    const menuOverlay = document.getElementById('menu-overlay');
+
+    if (hamburgerBtn) {
+      hamburgerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.body.classList.toggle('menu-open');
+      });
+    }
+    if (closeDrawerBtn) {
+      closeDrawerBtn.addEventListener('click', () => {
+        document.body.classList.remove('menu-open');
+      });
+    }
+    if (menuOverlay) {
+      menuOverlay.addEventListener('click', () => {
+        document.body.classList.remove('menu-open');
+      });
     }
 
-    const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', () => {
-        const isLight = document.body.classList.toggle('light-theme');
-        localStorage.setItem('publytics_theme', isLight ? 'light' : 'dark');
-        updateThemeBtn(isLight);
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try { await fetch('/api/logout', { method: 'POST' }); } catch(e) {}
+        localStorage.removeItem('cachedToken');
+        window.location.href = '/admin';
       });
     }
   }
 
-  function updateThemeBtn(isLight) {
+  // Theme Management (Synchronized with admin.html data-theme)
+  function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || localStorage.getItem('publytics_theme') || 'light';
+    applyThemeState(savedTheme);
+
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) {
-      themeBtn.textContent = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+      themeBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || (document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        const next = current === 'light' ? 'dark' : 'light';
+        applyThemeState(next);
+        localStorage.setItem('publytics_theme', next);
+        localStorage.setItem('theme', next);
+      });
+    }
+  }
+
+  function applyThemeState(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+      if (themeBtn) themeBtn.textContent = '☀️ Light Mode';
+    } else {
+      document.body.classList.remove('light-theme');
+      if (themeBtn) themeBtn.textContent = '🌙 Dark Mode';
     }
   }
 
@@ -207,10 +243,16 @@
         return;
       }
 
-      const roleBadge = document.getElementById('role-badge');
-      if (roleBadge) {
-        const role = session.role || 'Admin';
-        roleBadge.textContent = `🛡️ ${role === 'Admin' ? 'Master Admin' : role}`;
+      const userBadge = document.getElementById('user-badge') || document.getElementById('role-badge');
+      if (userBadge) {
+        const cachedBadge = localStorage.getItem('cachedUserBadge');
+        if (cachedBadge) {
+          userBadge.textContent = cachedBadge.includes('🛡️') ? cachedBadge : `🛡️ ${cachedBadge}`;
+        } else {
+          const role = session.role || 'Master Admin';
+          userBadge.textContent = `🛡️ ${role === 'Admin' ? 'Master Admin' : role}`;
+        }
+        userBadge.style.display = 'inline-flex';
       }
 
       const cfgRes = await fetch('/api/publytics/config');
@@ -445,9 +487,11 @@
 
     const mainView = document.getElementById('main-dashboard-view');
     const ddView = document.getElementById('drilldown-page-view');
-    const topHeader = document.querySelector('.top-header');
+    const siteHeader = document.querySelector('header.site-header') || document.querySelector('.top-header');
+    const tabsNav = document.getElementById('main-navigation-tabs') || document.querySelector('.tabs');
 
-    if (topHeader) topHeader.style.display = 'none';
+    if (siteHeader) siteHeader.style.display = 'none';
+    if (tabsNav) tabsNav.style.display = 'none';
     if (mainView) mainView.style.display = 'none';
     if (ddView) {
       ddView.style.display = 'flex';
@@ -511,9 +555,11 @@
   function closeDrilldownViewInternal(popHistory = true) {
     const mainView = document.getElementById('main-dashboard-view');
     const ddView = document.getElementById('drilldown-page-view');
-    const topHeader = document.querySelector('.top-header');
+    const siteHeader = document.querySelector('header.site-header') || document.querySelector('.top-header');
+    const tabsNav = document.getElementById('main-navigation-tabs') || document.querySelector('.tabs');
 
-    if (topHeader) topHeader.style.display = 'flex';
+    if (siteHeader) siteHeader.style.display = '';
+    if (tabsNav) tabsNav.style.display = '';
     if (ddView) ddView.style.display = 'none';
     if (mainView) {
       mainView.style.display = 'flex';

@@ -7,7 +7,8 @@
   <meta name="description" content="Real-time Publytics Web Analytics Dashboard with acquisition, audience, and detailed drill-down insights.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="/css/style.css?v=125">
   
   <style>
     /* ==========================================================================
@@ -65,64 +66,435 @@
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* TOP HEADER BAR (Exact Screenshot 2) */
-    .top-header {
-      background: var(--p-card-bg);
-      border-bottom: 1px solid var(--p-border);
-      padding: 0.65rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* ==========================================================================
+       ORIGINAL HEADER & TABS NAVIGATION (Exact Match to admin.html)
+       ========================================================================== */
+    header.site-header {
+      padding: 0.55rem 0.85rem !important;
+      background: #ffffff !important;
+      border-bottom: 1.5px solid rgba(226, 232, 240, 0.9) !important;
       position: sticky;
       top: 0;
       z-index: 100;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
-
-    .header-left {
+    .header-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .logo-group {
       display: flex;
       align-items: center;
       gap: 0.75rem;
     }
-
-    .btn-hamburger {
-      background: none;
-      border: none;
-      color: var(--p-text-primary);
-      font-size: 1.35rem;
-      cursor: pointer;
+    .hamburger-menu-btn {
+      width: 38px !important;
+      height: 38px !important;
+      padding: 7px 6px !important;
+      border-radius: 12px !important;
+      border: 1.5px solid #dbeafe !important;
+      background: #f0f7ff !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 4px !important;
+      cursor: pointer !important;
+      flex-shrink: 0 !important;
+      transition: all 0.15s ease !important;
+    }
+    .hamburger-menu-btn span {
+      display: block !important;
+      width: 18px !important;
+      height: 2.2px !important;
+      background: #0f172a !important;
+      border-radius: 2px !important;
+      transition: all 0.2s ease !important;
+    }
+    .logo-link {
       display: flex;
       align-items: center;
-      padding: 0.2rem;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: inherit;
     }
-
-    .header-right {
+    .logo-badge {
+      padding: 0;
+      background: none;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    .logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: block;
+      object-fit: cover;
+    }
+    .logo-text h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1877f2;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    .logo-text p {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 0.45rem;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+    .top-pill-btn, .theme-toggle-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      border-radius: 9999px !important;
+      padding: 0.38rem 0.82rem !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.3rem !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      transition: all 0.15s ease !important;
+      height: 38px !important;
+      box-sizing: border-box !important;
+      line-height: 1 !important;
+    }
+    .top-pill-btn:hover, .theme-toggle-btn:hover {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    .user-badge-pill {
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      color: #000000 !important;
+      border-radius: 9999px !important;
+      padding: 0.38rem 0.95rem !important;
+      font-size: 0.84rem !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.35rem !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      height: 38px !important;
+      box-sizing: border-box !important;
+      text-transform: capitalize !important;
+      line-height: 1 !important;
+    }
+    #logout-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      border-radius: 9999px !important;
+      padding: 0.38rem 0.82rem !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.3rem !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      height: 38px !important;
+      box-sizing: border-box !important;
+      line-height: 1 !important;
     }
 
-    .header-pill {
+    /* Dark Mode overrides for Header */
+    body:not(.light-theme) header.site-header,
+    [data-theme="dark"] header.site-header {
+      background: #0f172a !important;
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body:not(.light-theme) .hamburger-menu-btn,
+    [data-theme="dark"] .hamburger-menu-btn {
+      background: rgba(30, 41, 59, 0.8) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    body:not(.light-theme) .hamburger-menu-btn span,
+    [data-theme="dark"] .hamburger-menu-btn span {
+      background: #f8fafc !important;
+    }
+    body:not(.light-theme) .top-pill-btn,
+    body:not(.light-theme) .theme-toggle-btn,
+    body:not(.light-theme) #logout-btn,
+    [data-theme="dark"] .top-pill-btn,
+    [data-theme="dark"] .theme-toggle-btn,
+    [data-theme="dark"] #logout-btn {
+      background: #1e293b !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: #f1f5f9 !important;
+    }
+    body:not(.light-theme) .user-badge-pill,
+    [data-theme="dark"] .user-badge-pill {
+      background: #1e293b !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: #f1f5f9 !important;
+    }
+    body:not(.light-theme) .logo-text h1,
+    [data-theme="dark"] .logo-text h1 {
+      color: #60a5fa !important;
+    }
+    body:not(.light-theme) .logo-text p,
+    [data-theme="dark"] .logo-text p {
+      color: #94a3b8 !important;
+    }
+
+    /* ── TABS BAR (Desktop) ── */
+    .tabs {
+      display: flex;
+      gap: 0.35rem;
+      padding: 0.5rem 1rem 0;
+      border-bottom: 1.5px solid rgba(226, 232, 240, 0.9);
+      overflow-x: auto;
+      background: #ffffff;
+      position: sticky;
+      top: 54px;
+      z-index: 90;
+      scrollbar-width: none;
+      transition: background-color 0.2s ease;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    body:not(.light-theme) .tabs,
+    [data-theme="dark"] .tabs {
+      background: #0b1528 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    .drawer-header {
+      display: none;
+    }
+    .tab-btn {
+      padding: 0.55rem 0.95rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #64748b;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1.5px;
+      cursor: pointer;
+      white-space: nowrap;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.38rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid var(--p-border);
-      background: var(--p-card-inner);
-      color: var(--p-text-primary);
-      transition: all 0.2s ease;
+      border-radius: 8px 8px 0 0;
       text-decoration: none;
+      transition: all 0.18s ease;
     }
-    .header-pill:hover {
-      border-color: var(--p-cyan);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    .tab-btn:hover {
+      color: #1877f2;
+      background: rgba(24, 119, 242, 0.06);
     }
-    .header-pill.theme-btn { color: #f59e0b; }
-    .header-pill.admin-badge { color: var(--p-cyan); }
-    .header-pill.logout-btn { color: #f87171; }
+    .tab-btn.active {
+      color: #1877f2;
+      border-bottom-color: #1877f2;
+      background: rgba(24, 119, 242, 0.08);
+      font-weight: 800;
+    }
+    body:not(.light-theme) .tab-btn,
+    [data-theme="dark"] .tab-btn {
+      color: #94a3b8;
+    }
+    body:not(.light-theme) .tab-btn:hover,
+    [data-theme="dark"] .tab-btn:hover {
+      color: #60a5fa;
+      background: rgba(56, 189, 248, 0.1);
+    }
+    body:not(.light-theme) .tab-btn.active,
+    [data-theme="dark"] .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+    }
+    .tab-btn-api {
+      margin-left: auto;
+      color: #0284c7;
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      border-radius: 8px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    /* ── MOBILE RESPONSIVE (Strict 1-Line Header & Drawer Menu) ── */
+    @media (max-width: 768px) {
+      .hide-mobile-header, .logo-link {
+        display: none !important;
+      }
+      header.site-header {
+        padding: 0.42rem 0.5rem !important;
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+      }
+      .header-inner {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.25rem !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .logo-group {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.25rem !important;
+        flex-shrink: 0 !important;
+      }
+      .hamburger-menu-btn {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 6px 5px !important;
+        border-radius: 10px !important;
+        flex-shrink: 0 !important;
+      }
+      .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.22rem !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
+      }
+      .top-pill-btn, .theme-toggle-btn, #logout-btn {
+        padding: 0 0.48rem !important;
+        font-size: 0.73rem !important;
+        font-weight: 700 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+        line-height: 1 !important;
+        gap: 0.2rem !important;
+      }
+      .user-badge-pill, #user-badge {
+        padding: 0 0.48rem !important;
+        font-size: 0.73rem !important;
+        font-weight: 700 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+        line-height: 1 !important;
+        gap: 0.2rem !important;
+      }
+
+      /* Mobile Drawer Menu */
+      .tabs {
+        position: fixed !important;
+        top: 0 !important;
+        left: -270px !important;
+        bottom: 0 !important;
+        width: 260px !important;
+        height: 100vh !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        background: #ffffff !important;
+        border-right: 1.5px solid #e2e8f0 !important;
+        border-bottom: none !important;
+        padding: 1.15rem 0.9rem 1.5rem !important;
+        gap: 0.4rem !important;
+        z-index: 10000 !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow-y: auto !important;
+        box-shadow: 15px 0 35px rgba(0, 0, 0, 0.25) !important;
+        display: flex !important;
+      }
+      body:not(.light-theme) .tabs,
+      [data-theme="dark"] .tabs {
+        background: #0f172a !important;
+        border-right-color: rgba(255, 255, 255, 0.12) !important;
+      }
+      .menu-open .tabs {
+        left: 0 !important;
+      }
+      .drawer-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 0.65rem !important;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+      }
+      body:not(.light-theme) .drawer-header,
+      [data-theme="dark"] .drawer-header {
+        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+      }
+      .drawer-title {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: #1e293b;
+      }
+      body:not(.light-theme) .drawer-title,
+      [data-theme="dark"] .drawer-title {
+        color: #f8fafc;
+      }
+      .drawer-close-btn {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        font-weight: 700;
+        cursor: pointer;
+        color: #64748b;
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+      }
+      .tab-btn {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        padding: 0.65rem 0.85rem !important;
+        font-size: 0.88rem !important;
+        border-radius: 10px !important;
+        border-bottom: none !important;
+        margin-bottom: 0.15rem !important;
+      }
+      .tab-btn-api {
+        margin-left: 0 !important;
+        margin-top: 0.5rem !important;
+        justify-content: center !important;
+      }
+
+      .menu-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 9999;
+      }
+      .menu-open .menu-overlay {
+        display: block;
+      }
+    }
 
     /* MAIN APP CONTAINER */
     .main-container {
@@ -904,41 +1276,76 @@
       font-size: 0.85rem;
     }
 
-    /* BOTTOM NAVIGATION BAR (Exact Bottom Dock) */
-    .bottom-nav-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 64px;
-      background: var(--p-card-bg);
-      border-top: 1px solid var(--p-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      z-index: 200;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+    /* ── MOBILE BOTTOM NAVIGATION BAR (Exact Match to admin.html) ── */
+    .mobile-bottom-nav {
+      display: none;
     }
-
-    .nav-tab-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      color: var(--p-text-muted);
-      text-decoration: none;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.4rem 0.6rem;
-      border-radius: 8px;
-      transition: all 0.15s ease;
-      cursor: pointer;
-    }
-    .nav-tab-item .nav-icon { font-size: 1.25rem; }
-    .nav-tab-item.active { color: #ec4899; }
-    .nav-tab-item.active .nav-icon {
-      filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.6));
+    @media (max-width: 768px) {
+      body {
+        padding-bottom: 72px !important;
+      }
+      .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 64px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
+        z-index: 9999 !important;
+        align-items: center !important;
+        justify-content: space-around !important;
+        padding: 0 0.25rem !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06) !important;
+        transition: background-color 0.2s ease !important;
+      }
+      body:not(.light-theme) .mobile-bottom-nav,
+      [data-theme="dark"] .mobile-bottom-nav {
+        background: rgba(15, 23, 42, 0.95) !important;
+        border-top-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4) !important;
+      }
+      .mobile-nav-item {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0.35rem 0.2rem !important;
+        color: #64748b !important;
+        text-decoration: none !important;
+        background: transparent !important;
+        border: none !important;
+        cursor: pointer !important;
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        gap: 0.2rem !important;
+        transition: all 0.2s ease !important;
+        -webkit-tap-highlight-color: transparent !important;
+      }
+      body:not(.light-theme) .mobile-nav-item,
+      [data-theme="dark"] .mobile-nav-item {
+        color: #94a3b8 !important;
+      }
+      .mobile-nav-item .nav-icon {
+        font-size: 1.25rem !important;
+        line-height: 1 !important;
+        transition: transform 0.2s ease !important;
+      }
+      .mobile-nav-item.active {
+        color: #1877f2 !important;
+        font-weight: 800 !important;
+      }
+      body:not(.light-theme) .mobile-nav-item.active,
+      [data-theme="dark"] .mobile-nav-item.active {
+        color: #60a5fa !important;
+      }
+      .mobile-nav-item.active .nav-icon {
+        transform: scale(1.15) !important;
+      }
     }
 
     /* CONFIG MODAL */
@@ -999,32 +1406,54 @@
 </head>
 <body>
 
-  <!-- TOP HEADER (Exact Screenshot 2 Top) -->
-  <header class="top-header">
-    <div class="header-left">
-      <button class="btn-hamburger" onclick="window.location.href='/admin';" title="Main Navigation Menu">
-        ☰
-      </button>
-    </div>
-
-    <div class="header-right">
-      <button class="header-pill theme-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
-        ☀️ Light Mode
-      </button>
-
-      <span class="header-pill admin-badge" id="role-badge">
-        🛡️ Master Admin
-      </span>
-
-      <button class="header-pill logout-btn" onclick="logoutUser();" title="Logout Session">
-        🔒 Logout
-      </button>
-
-      <button class="header-pill" onclick="openConfigModal();" style="color:var(--p-cyan);" title="Publytics API Token & Settings">
-        ⚙️ Settings
-      </button>
+  <!-- ── STICKY HEADER (Exact Pixel Match to Admin Dashboard) ── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-group">
+        <button id="hamburger-menu-btn" class="hamburger-menu-btn" aria-label="Toggle Menu" title="Navigation Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <a href="/admin" class="logo-link hide-mobile-header">
+          <div class="logo-badge">
+            <img src="/icon-192.png" alt="Logo" class="logo-img">
+          </div>
+          <div class="logo-text">
+            <h1>Smart FB Link Shortner</h1>
+            <p>Referrer &amp; Domain Redirection Engine</p>
+          </div>
+        </a>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle-btn" class="theme-toggle-btn top-pill-btn" title="Toggle Theme">☀️ Light Mode</button>
+        <span id="user-badge" class="user-badge-pill">🛡️ Master Admin</span>
+        <button id="logout-btn" class="btn top-pill-btn" title="Logout Session">🔒 Logout</button>
+      </div>
     </div>
   </header>
+
+  <!-- ── TABS (Exact Navigation Bar from Admin Dashboard) ── -->
+  <div class="tabs" id="main-navigation-tabs">
+    <div class="drawer-header">
+      <span class="drawer-title">Navigation Menu</span>
+      <button id="close-drawer-btn" class="drawer-close-btn" aria-label="Close Menu">✕</button>
+    </div>
+    <a href="/admin" class="tab-btn">🔗 Link Manager</a>
+    <a href="/admin#tab-geo" class="tab-btn" style="display:none;">🌍 Country &amp; VPN</a>
+    <a href="/admin#tab-analytics" class="tab-btn">📊 Traffic Logs</a>
+    <a href="/admin#tab-firewall" class="tab-btn">🛡️ IP Firewall</a>
+    <a href="/admin#tab-settings" class="tab-btn">⚙️ Settings</a>
+    <a href="/publytics.html" class="tab-btn active">
+      📊 Publytics Analytics ↗
+    </a>
+    <button class="tab-btn tab-btn-api" onclick="openConfigModal();" title="Configure Publytics API Token">
+      ⚙️ Publytics API Setup
+    </button>
+  </div>
+
+  <!-- Menu Drawer Overlay for Mobile -->
+  <div id="menu-overlay" class="menu-overlay"></div>
 
   <!-- ==========================================================================
        VIEW 1: MAIN DASHBOARD VIEW (Screenshots 1, 2, 3, 4)
@@ -1459,33 +1888,31 @@
 
   </main>
 
-  <!-- BOTTOM NAVIGATION BAR (Exact Screenshot Bottom Dock) -->
-  <nav class="bottom-nav-bar">
-    <a href="/admin" class="nav-tab-item">
+  <!-- ── MOBILE BOTTOM NAVIGATION BAR (Exact Match to Admin Dashboard) ── -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <a href="/admin" class="mobile-nav-item">
       <span class="nav-icon">🔗</span>
       <span>Links</span>
     </a>
-    <a href="/admin" class="nav-tab-item">
+    <a href="/admin#tab-geo" class="mobile-nav-item" style="display:none;">
       <span class="nav-icon">🌍</span>
       <span>Geo</span>
     </a>
-    <a href="/admin" class="nav-tab-item">
+    <a href="/admin#tab-analytics" class="mobile-nav-item">
       <span class="nav-icon">📊</span>
       <span>Logs</span>
     </a>
-    <a href="/admin" class="nav-tab-item">
+    <a href="/admin#tab-firewall" class="mobile-nav-item">
       <span class="nav-icon">🛡️</span>
       <span>Firewall</span>
     </a>
-    <a href="/admin" class="nav-tab-item">
+    <a href="/admin#tab-settings" class="mobile-nav-item">
       <span class="nav-icon">⚙️</span>
       <span>Settings</span>
     </a>
-    <a href="/publytics.html" class="nav-tab-item active">
-      <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color:#ffffff; font-weight:900; font-size:0.82rem; box-shadow:0 0 10px rgba(168,85,247,0.4);">
-        P
-      </span>
-      <span style="color:#c084fc; font-weight:700;">Publytics</span>
+    <a href="/publytics.html" class="mobile-nav-item active">
+      <span class="nav-icon">📈</span>
+      <span>Publytics</span>
     </a>
   </nav>
 
