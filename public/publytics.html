@@ -41,15 +41,16 @@
     }
 
     body {
-      background-color: var(--p-bg);
-      color: var(--p-text-primary);
+      background: #020b1e !important;
+      background-color: #020b1e !important;
+      background-image: none !important;
+      color: #ffffff !important;
       font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       padding-bottom: 75px; /* Space for bottom dock */
       overflow-x: hidden;
-      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     /* ==========================================================================
@@ -504,6 +505,19 @@
       display: flex;
       flex-direction: column;
       gap: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .main-container {
+        padding: 0.65rem 0.5rem 85px !important;
+        gap: 0.65rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .p-card {
+        padding: 0.85rem 0.9rem !important;
+        border-radius: 14px !important;
+      }
     }
 
     @media (min-width: 1024px) {
@@ -1920,6 +1934,6 @@
     </a>
   </nav>
 
-  <script src="js/publytics.js?v=139"></script>
+  <script src="js/publytics.js?v=140"></script>
 </body>
 </html>

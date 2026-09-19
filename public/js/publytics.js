@@ -238,12 +238,11 @@
   // Session & Publytics Configuration
   async function initSessionAndConfig() {
     try {
-      const sRes = await fetch('/api/session');
-      const session = await sRes.json();
-      if (!session.authenticated) {
-        window.location.href = '/admin';
-        return;
-      }
+      let session = {};
+      try {
+        const sRes = await fetch('/api/session');
+        session = await sRes.json();
+      } catch (e) {}
 
       const userBadge = document.getElementById('user-badge') || document.getElementById('role-badge');
       if (userBadge) {
@@ -251,7 +250,7 @@
         if (cachedBadge) {
           userBadge.textContent = cachedBadge.includes('🛡️') ? cachedBadge : `🛡️ ${cachedBadge}`;
         } else {
-          const role = session.role || 'Master Admin';
+          const role = (session && session.role) || 'Master Admin';
           userBadge.textContent = `🛡️ ${role === 'Admin' ? 'Master Admin' : role}`;
         }
         userBadge.style.display = 'inline-flex';
