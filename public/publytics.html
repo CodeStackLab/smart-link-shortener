@@ -1632,78 +1632,83 @@
           Listening for real-time visitors...
         </div>
       </div>
+
+      <!-- 4 MAIN KPI METRICS (Inside Card 3 matching screenshot) -->
+      <div class="kpi-stack" style="margin-top:0.85rem; display:flex; flex-direction:column; gap:0.55rem;">
+        <div class="kpi-row-card" onclick="openDrilldownPage('page', 'Page Views');" style="background:rgba(3,17,44,0.65); border:1px solid rgba(0,144,255,0.22); border-radius:12px; padding:0.85rem 1rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div class="kpi-left" style="display:flex; align-items:center; gap:0.85rem;">
+            <div class="kpi-icon-box views" style="background:#0284c7; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem;">👥</div>
+            <div class="kpi-text-col">
+              <div class="kpi-title" style="font-size:0.72rem; font-weight:700; color:#93c5fd; letter-spacing:0.04em;">PAGE VIEWS</div>
+              <div class="kpi-val" id="kpi-views-val" style="font-size:1.45rem; font-weight:800; color:#ffffff; line-height:1.2;">0</div>
+              <div class="kpi-sub" style="font-size:0.75rem; color:#64748b;">Total pages viewed</div>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:#0090ff; font-size:1.4rem; font-weight:700;">›</span>
+        </div>
+
+        <div class="kpi-row-card" onclick="openDrilldownPage('source', 'Sessions');" style="background:rgba(3,17,44,0.65); border:1px solid rgba(0,144,255,0.22); border-radius:12px; padding:0.85rem 1rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div class="kpi-left" style="display:flex; align-items:center; gap:0.85rem;">
+            <div class="kpi-icon-box sessions" style="background:#7c3aed; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem;">👤</div>
+            <div class="kpi-text-col">
+              <div class="kpi-title" style="font-size:0.72rem; font-weight:700; color:#93c5fd; letter-spacing:0.04em;">SESSIONS</div>
+              <div class="kpi-val" id="kpi-sessions-val" style="font-size:1.45rem; font-weight:800; color:#ffffff; line-height:1.2;">0</div>
+              <div class="kpi-sub" style="font-size:0.75rem; color:#64748b;">Browsing sessions</div>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:#0090ff; font-size:1.4rem; font-weight:700;">›</span>
+        </div>
+
+        <div class="kpi-row-card" onclick="openDrilldownPage('device', 'Average Duration');" style="background:rgba(3,17,44,0.65); border:1px solid rgba(0,144,255,0.22); border-radius:12px; padding:0.85rem 1rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div class="kpi-left" style="display:flex; align-items:center; gap:0.85rem;">
+            <div class="kpi-icon-box duration" style="background:#059669; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem;">🕒</div>
+            <div class="kpi-text-col">
+              <div class="kpi-title" style="font-size:0.72rem; font-weight:700; color:#93c5fd; letter-spacing:0.04em;">AVERAGE DURATION</div>
+              <div class="kpi-val" id="kpi-duration-val" style="font-size:1.45rem; font-weight:800; color:#ffffff; line-height:1.2;">0s</div>
+              <div class="kpi-sub" style="font-size:0.75rem; color:#64748b;">Time spent per session</div>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:#0090ff; font-size:1.4rem; font-weight:700;">›</span>
+        </div>
+
+        <div class="kpi-row-card" onclick="openDrilldownPage('device', 'Bounce Rate');" style="background:rgba(3,17,44,0.65); border:1px solid rgba(0,144,255,0.22); border-radius:12px; padding:0.85rem 1rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div class="kpi-left" style="display:flex; align-items:center; gap:0.85rem;">
+            <div class="kpi-icon-box bounce" style="background:#d97706; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem;">📈</div>
+            <div class="kpi-text-col">
+              <div class="kpi-title" style="font-size:0.72rem; font-weight:700; color:#93c5fd; letter-spacing:0.04em;">BOUNCE RATE</div>
+              <div class="kpi-val" id="kpi-bounce-val" style="font-size:1.45rem; font-weight:800; color:#ffffff; line-height:1.2;">0%</div>
+              <div class="kpi-sub" style="font-size:0.75rem; color:#64748b;">Single-page visits</div>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:#0090ff; font-size:1.4rem; font-weight:700;">›</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 4. MAIN KPI METRICS LIST (Exact Screenshot 3) -->
-    <div class="kpi-stack">
-      <div class="kpi-row-card" onclick="openDrilldownPage('page', 'Page Views');">
-        <div class="kpi-left">
-          <div class="kpi-icon-box views">👥</div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">PAGE VIEWS</div>
-            <div class="kpi-val" id="kpi-views-val">0</div>
-            <div class="kpi-sub">Total pages viewed</div>
-          </div>
-        </div>
-        <span class="kpi-right-icon">📄</span>
-      </div>
-
-      <div class="kpi-row-card" onclick="openDrilldownPage('source', 'Sessions');">
-        <div class="kpi-left">
-          <div class="kpi-icon-box sessions">👤</div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">SESSIONS</div>
-            <div class="kpi-val" id="kpi-sessions-val">0</div>
-            <div class="kpi-sub">Browsing sessions</div>
-          </div>
-        </div>
-        <span class="kpi-right-icon">🔄</span>
-      </div>
-
-      <div class="kpi-row-card" onclick="openDrilldownPage('device', 'Average Duration');">
-        <div class="kpi-left">
-          <div class="kpi-icon-box duration">🕐</div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">AVERAGE DURATION</div>
-            <div class="kpi-val" id="kpi-duration-val">0s</div>
-            <div class="kpi-sub">Time spent per session</div>
-          </div>
-        </div>
-        <span class="kpi-right-icon">⏳</span>
-      </div>
-
-      <div class="kpi-row-card" onclick="openDrilldownPage('device', 'Bounce Rate');">
-        <div class="kpi-left">
-          <div class="kpi-icon-box bounce">📈</div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">BOUNCE RATE</div>
-            <div class="kpi-val" id="kpi-bounce-val">0%</div>
-            <div class="kpi-sub">Single-page exits</div>
-          </div>
-        </div>
-        <span class="kpi-right-icon">🎯</span>
-      </div>
-    </div>
-
-    <!-- 5. UTM / TRAFFIC SOURCE SECTION (Exact Screenshot 4) -->
-    <div class="p-card">
-      <div class="section-card-header">
+    <!-- 4. UTM / TRAFFIC SOURCE SECTION (Exact Screenshot Match) -->
+    <div class="p-card" id="utm-source-section-card" style="margin-bottom:0.85rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.85rem;">
         <div>
-          <div class="section-card-title">
-            <span style="color:var(--p-cyan);">📊</span>
+          <div style="display:flex; align-items:center; gap:0.5rem; color:#ffffff; font-size:1.15rem; font-weight:800;">
+            <span style="color:#00e5ff; font-size:1.2rem;">📊</span>
             <span>UTM / Traffic Source</span>
           </div>
-          <div class="section-card-sub">
-            Select a filter to view detailed analytics
+          <div style="color:#93c5fd; font-size:0.78rem; font-weight:500; margin-top:0.2rem;">
+            See what brings visitors to your website and track
           </div>
+        </div>
+        <div class="dd-date-pill" onclick="promptCustomDateRange();" style="background:#03112c; border:1px solid rgba(0,144,255,0.3); border-radius:9999px; padding:0.35rem 0.8rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; flex-shrink:0;">
+          <span>📅</span>
+          <span>Last 7 Days</span>
+          <span style="font-size:0.7rem;">▼</span>
         </div>
       </div>
 
       <div class="accordion-list">
-        <!-- Click UTM Source -> opens full detail view (Screenshot 5) -->
+        <!-- Row 1: UTM Source -->
         <div class="accordion-item" onclick="openDrilldownPage('utm_source', 'UTM Source');">
           <div class="acc-left">
-            <div class="acc-icon-circle">🎯</div>
+            <div class="acc-icon-circle" style="background:rgba(0,136,255,0.2); color:#00e5ff;">🔗</div>
             <div>
               <div class="acc-name">UTM Source</div>
               <div class="acc-desc">View traffic by UTM source</div>
@@ -1712,9 +1717,10 @@
           <span class="chevron-right">›</span>
         </div>
 
+        <!-- Row 2: UTM Medium -->
         <div class="accordion-item" onclick="openDrilldownPage('utm_medium', 'UTM Medium');">
           <div class="acc-left">
-            <div class="acc-icon-circle">🔀</div>
+            <div class="acc-icon-circle" style="background:rgba(0,229,255,0.2); color:#00e5ff;">🔀</div>
             <div>
               <div class="acc-name">UTM Medium</div>
               <div class="acc-desc">View traffic by UTM medium</div>
@@ -1723,9 +1729,10 @@
           <span class="chevron-right">›</span>
         </div>
 
+        <!-- Row 3: UTM Campaign -->
         <div class="accordion-item" onclick="openDrilldownPage('utm_campaign', 'UTM Campaign');">
           <div class="acc-left">
-            <div class="acc-icon-circle">📢</div>
+            <div class="acc-icon-circle" style="background:rgba(124,58,237,0.2); color:#c084fc;">🎯</div>
             <div>
               <div class="acc-name">UTM Campaign</div>
               <div class="acc-desc">View traffic by UTM campaign</div>
@@ -1734,9 +1741,10 @@
           <span class="chevron-right">›</span>
         </div>
 
+        <!-- Row 4: UTM Term -->
         <div class="accordion-item" onclick="openDrilldownPage('utm_term', 'UTM Term');">
           <div class="acc-left">
-            <div class="acc-icon-circle">📋</div>
+            <div class="acc-icon-circle" style="background:rgba(217,119,6,0.2); color:#fbbf24;">🏷️</div>
             <div>
               <div class="acc-name">UTM Term</div>
               <div class="acc-desc">View traffic by UTM term</div>
@@ -1745,9 +1753,10 @@
           <span class="chevron-right">›</span>
         </div>
 
+        <!-- Row 5: UTM Content -->
         <div class="accordion-item" onclick="openDrilldownPage('utm_content', 'UTM Content');">
           <div class="acc-left">
-            <div class="acc-icon-circle">&lt;/&gt;</div>
+            <div class="acc-icon-circle" style="background:rgba(2,132,199,0.2); color:#38bdf8;">📄</div>
             <div>
               <div class="acc-name">UTM Content</div>
               <div class="acc-desc">View traffic by UTM content</div>
@@ -1756,20 +1765,22 @@
           <span class="chevron-right">›</span>
         </div>
 
+        <!-- Row 6: Referrals -->
         <div class="accordion-item" onclick="openDrilldownPage('referrer', 'Referrals');">
           <div class="acc-left">
-            <div class="acc-icon-circle">🔗</div>
+            <div class="acc-icon-circle" style="background:rgba(147,51,234,0.2); color:#e879f9;">👥</div>
             <div>
               <div class="acc-name">Referrals</div>
-              <div class="acc-desc">View traffic from referrals</div>
+              <div class="acc-desc">View traffic by referrals</div>
             </div>
           </div>
           <span class="chevron-right">›</span>
         </div>
 
+        <!-- Row 7: Source -->
         <div class="accordion-item" onclick="openDrilldownPage('source', 'Source');">
           <div class="acc-left">
-            <div class="acc-icon-circle">🌐</div>
+            <div class="acc-icon-circle" style="background:rgba(16,185,129,0.2); color:#34d399;">🌐</div>
             <div>
               <div class="acc-name">Source</div>
               <div class="acc-desc">View traffic by source</div>
@@ -1780,33 +1791,34 @@
       </div>
     </div>
 
-    <!-- 6. THE COMPLETE DETAILED ANALYTICS CARD (Exact Screenshot Match) -->
-    <div class="drilldown-wrapper" id="drilldown-page-view" style="display:flex; flex-direction:column; gap:0.85rem;">
-      <!-- Section Header matching Screenshot -->
-      <div class="p-card" style="padding:0.95rem 1.15rem; margin-bottom:0;">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:0.55rem;">
-            <span style="font-size:1.2rem; color:#00e5ff;">🔗</span>
-            <span id="dd-page-title-text" style="font-size:1.15rem; font-weight:800; color:#ffffff;">UTM Source</span>
-          </div>
-          <div class="dd-date-pill" onclick="promptCustomDateRange();" style="background:#03112c; border:1px solid rgba(0,144,255,0.3); border-radius:9999px; padding:0.35rem 0.8rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer;">
-            <span>📅</span>
-            <span id="dd-period-pill-text">Last 7 Days</span>
-            <span>▼</span>
-          </div>
+    <!-- 5. THE COMPLETE DETAILED ANALYTICS CARD (Exact Screenshot Match) -->
+    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:1.5rem;">
+      <!-- Header Row: Title & Date Pill -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.65rem;">
+        <div style="display:flex; align-items:center; gap:0.55rem;">
+          <span style="font-size:1.2rem; color:#00e5ff;">🔗</span>
+          <span id="dd-page-title-text" style="font-size:1.15rem; font-weight:800; color:#ffffff;">UTM Source</span>
         </div>
+        <div class="dd-date-pill" onclick="promptCustomDateRange();" style="background:#03112c; border:1px solid rgba(0,144,255,0.3); border-radius:9999px; padding:0.35rem 0.8rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; flex-shrink:0;">
+          <span>📅</span>
+          <span id="dd-period-pill-text">Last 7 Days</span>
+          <span style="font-size:0.7rem;">▼</span>
+        </div>
+      </div>
 
-        <div style="display:flex; align-items:center; gap:0.45rem; margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid rgba(0,144,255,0.2);">
-          <span id="dd-hero-icon" style="font-size:1.1rem; color:#00e5ff;">🎯</span>
-          <div>
-            <div class="dd-hero-title" id="dd-hero-title-text" style="font-size:1.02rem; font-weight:800; color:#ffffff;">UTM Source Analytics</div>
-            <div class="dd-hero-sub" id="dd-hero-sub-text" style="font-size:0.76rem; color:#93c5fd;">Traffic breakdown by UTM source</div>
-          </div>
+      <div class="card-inner-divider" style="margin:0.5rem 0 0.75rem 0;"></div>
+
+      <!-- Hero Subheader -->
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.85rem;">
+        <span id="dd-hero-icon" style="font-size:1.2rem; color:#00e5ff;">🎯</span>
+        <div>
+          <div class="dd-hero-title" id="dd-hero-title-text" style="font-size:1.05rem; font-weight:800; color:#ffffff;">UTM Source Analytics</div>
+          <div class="dd-hero-sub" id="dd-hero-sub-text" style="font-size:0.78rem; color:#93c5fd;">Traffic breakdown by UTM source</div>
         </div>
       </div>
 
       <!-- 4 Mini Cards Grid (Exact Screenshot Match) -->
-      <div class="dd-quad-grid">
+      <div class="dd-quad-grid" style="margin-bottom:0.85rem;">
         <div class="dd-metric-card">
           <div class="dd-metric-label"><span>👥</span> Total Visitors</div>
           <div class="dd-metric-val" id="dd-stat-visitors">12,482</div>
@@ -1833,10 +1845,10 @@
       </div>
 
       <!-- Donut Chart & Legend Section (Exact Screenshot Match) -->
-      <div class="dd-chart-card">
+      <div class="dd-chart-card" style="margin-bottom:0.85rem;">
         <div class="donut-container">
           <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg-element">
-            <!-- Rendered dynamically by JS with colorful ring segments -->
+            <!-- Rendered dynamically by JS -->
           </svg>
           <div class="donut-center-info">
             <div class="donut-center-big" id="donut-center-num-text">12,482</div>
@@ -1852,7 +1864,7 @@
         </div>
       </div>
 
-      <!-- Details Table Card (Exact Screenshot Match) -->
+      <!-- Details Table Section (Exact Screenshot Match) -->
       <div class="dd-table-card">
         <div class="dd-table-header">
           <span>📊</span>
@@ -1868,96 +1880,12 @@
                 <th>Visitors</th>
                 <th>% Share</th>
                 <th>Avg. Duration</th>
-                <th style="width:24px;"></th>
               </tr>
             </thead>
             <tbody id="dd-table-body-rows">
               <!-- Rendered dynamically by JS -->
             </tbody>
           </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 7. AUDIENCE SECTION -->
-    <div class="p-card">
-      <div class="section-card-header">
-        <div>
-          <div class="section-card-title">
-            <span style="color:var(--p-cyan);">👥</span>
-            <span>Audience &amp; Systems</span>
-          </div>
-          <div class="section-card-sub">
-            Devices, countries, browsers, and operating systems
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-list">
-        <div class="accordion-item" onclick="openDrilldownPage('country', 'Country');">
-          <div class="acc-left">
-            <div class="acc-icon-circle">🌍</div>
-            <div>
-              <div class="acc-name">Country</div>
-              <div class="acc-desc">View traffic by visitor country</div>
-            </div>
-          </div>
-          <span class="chevron-right">›</span>
-        </div>
-
-        <div class="accordion-item" onclick="openDrilldownPage('device', 'Device');">
-          <div class="acc-left">
-            <div class="acc-icon-circle">📱</div>
-            <div>
-              <div class="acc-name">Device</div>
-              <div class="acc-desc">Mobile, Desktop, and Tablet breakdown</div>
-            </div>
-          </div>
-          <span class="chevron-right">›</span>
-        </div>
-
-        <div class="accordion-item" onclick="openDrilldownPage('os', 'Operating System');">
-          <div class="acc-left">
-            <div class="acc-icon-circle">💻</div>
-            <div>
-              <div class="acc-name">Operating System</div>
-              <div class="acc-desc">Windows, Mac, Android, iOS</div>
-            </div>
-          </div>
-          <span class="chevron-right">›</span>
-        </div>
-
-        <div class="accordion-item" onclick="openDrilldownPage('browser', 'Browser');">
-          <div class="acc-left">
-            <div class="acc-icon-circle">🌐</div>
-            <div>
-              <div class="acc-name">Browser</div>
-              <div class="acc-desc">Chrome, Safari, Firefox, Edge</div>
-            </div>
-          </div>
-          <span class="chevron-right">›</span>
-        </div>
-
-        <div class="accordion-item" onclick="openDrilldownPage('hostname', 'Hostname');">
-          <div class="acc-left">
-            <div class="acc-icon-circle">🏷️</div>
-            <div>
-              <div class="acc-name">Hostname</div>
-              <div class="acc-desc">Domains receiving traffic hits</div>
-            </div>
-          </div>
-          <span class="chevron-right">›</span>
-        </div>
-
-        <div class="accordion-item" onclick="openDrilldownPage('page', 'Content / Top Pages');">
-          <div class="acc-left">
-            <div class="acc-icon-circle">📄</div>
-            <div>
-              <div class="acc-name">Content / Top Pages</div>
-              <div class="acc-desc">Highest visited URLs</div>
-            </div>
-          </div>
-          <span class="chevron-right">›</span>
         </div>
       </div>
     </div>
@@ -1970,7 +1898,7 @@
       <span class="nav-icon">🔗</span>
       <span>Links</span>
     </a>
-    <a href="/admin#tab-geo" class="mobile-nav-item" style="display:none;">
+    <a href="/admin#tab-geo" class="mobile-nav-item">
       <span class="nav-icon">🌍</span>
       <span>Geo</span>
     </a>
@@ -1987,11 +1915,11 @@
       <span>Settings</span>
     </a>
     <a href="/publytics.html" class="mobile-nav-item active">
-      <span class="nav-icon">📈</span>
+      <span class="nav-icon">📊</span>
       <span>Publytics</span>
     </a>
   </nav>
 
-  <script src="js/publytics.js?v=138"></script>
+  <script src="js/publytics.js?v=139"></script>
 </body>
 </html>
