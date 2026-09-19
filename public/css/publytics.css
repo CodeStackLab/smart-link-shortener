@@ -661,7 +661,7 @@
 .dd-back-circle {
   width: 38px;
   height: 38px;
-  border-radius: 50%;
+  border-radius: 12px;
   background: var(--p-card-inner);
   border: 1px solid var(--p-border);
   color: var(--p-text-primary);
@@ -677,6 +677,51 @@
   border-color: var(--p-cyan);
   color: var(--p-cyan);
   background: var(--p-card-hover);
+}
+
+.dd-date-pill-wrapper {
+  position: relative;
+}
+
+.dd-date-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #041538;
+  border: 1.5px solid #0090ff;
+  border-radius: 12px;
+  padding: 0.35rem;
+  min-width: 170px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dd-date-dropdown.open {
+  display: flex;
+}
+
+.dd-date-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #93c5fd;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dd-date-item:hover {
+  background: rgba(0, 144, 255, 0.2);
+  color: #ffffff;
+}
+
+.dd-date-item.active {
+  background: #0088ff;
+  color: #ffffff;
 }
 
 .dd-page-title {

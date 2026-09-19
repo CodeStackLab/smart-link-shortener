@@ -2942,7 +2942,9 @@
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(0,144,255,0.2);">
         <!-- Left: Back button + icon + page title -->
         <div style="display:flex; align-items:center; gap:0.65rem;">
-          <button onclick="closeDrilldownView();" title="Go back" style="width:36px; height:36px; border-radius:50%; background:#03112c; border:1px solid rgba(0,144,255,0.4); color:#ffffff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; flex-shrink:0; transition:all 0.18s ease;" onmouseover="this.style.borderColor='#00e5ff'; this.style.color='#00e5ff';" onmouseout="this.style.borderColor='rgba(0,144,255,0.4)'; this.style.color='#ffffff';">←</button>
+          <button onclick="closeDrilldownView();" title="Go back" style="width:38px; height:38px; border-radius:12px; background:#03112c; border:1px solid rgba(0,144,255,0.4); color:#ffffff; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.18s ease;" onmouseover="this.style.borderColor='#00e5ff'; this.style.color='#00e5ff';" onmouseout="this.style.borderColor='rgba(0,144,255,0.4)'; this.style.color='#ffffff';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </button>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
             <rect x="2" y="14" width="4" height="8" rx="1" fill="#00e5ff"/>
             <rect x="9" y="9" width="4" height="13" rx="1" fill="#00e5ff" opacity="0.75"/>
@@ -2950,11 +2952,22 @@
           </svg>
           <span id="dd-page-title-text" style="font-size:1.1rem; font-weight:900; color:#ffffff; letter-spacing:-0.01em;">UTM Source</span>
         </div>
-        <!-- Right: Date pill -->
-        <div onclick="promptCustomDateRange();" style="background:#03112c; border:1px solid rgba(0,144,255,0.35); border-radius:9999px; padding:0.4rem 0.85rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; flex-shrink:0;">
-          <span>📅</span>
-          <span id="dd-period-pill-text">Last 7 Days</span>
-          <span style="font-size:0.7rem;">▼</span>
+        <!-- Right: Date pill dropdown -->
+        <div class="dd-date-pill-wrapper">
+          <div onclick="toggleDrilldownDateDropdown(event);" style="background:#03112c; border:1px solid rgba(0,144,255,0.35); border-radius:9999px; padding:0.4rem 0.85rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span id="dd-period-pill-text">Last 7 Days</span>
+            <span style="font-size:0.7rem;">▼</span>
+          </div>
+          <div class="dd-date-dropdown" id="dd-date-dropdown-menu">
+            <div class="dd-date-item" onclick="selectDrilldownPeriod('realtime', 'Real-Time', event);">⚡ Real-Time</div>
+            <div class="dd-date-item" onclick="selectDrilldownPeriod('today', 'Today', event);">Today</div>
+            <div class="dd-date-item" onclick="selectDrilldownPeriod('yesterday', 'Yesterday', event);">Yesterday</div>
+            <div class="dd-date-item active" onclick="selectDrilldownPeriod('7d', 'Last 7 Days', event);">Last 7 Days</div>
+            <div class="dd-date-item" onclick="selectDrilldownPeriod('30d', 'Last 30 Days', event);">Last 30 Days</div>
+            <div class="dd-date-item" onclick="selectDrilldownPeriod('month', 'This Month', event);">This Month</div>
+            <div class="dd-date-item" onclick="selectDrilldownPeriod('custom', 'Custom', event);">📅 Custom Date...</div>
+          </div>
         </div>
       </div>
 
@@ -2972,25 +2985,37 @@
       <!-- 4 Mini Cards Grid (Exact Screenshot Match) -->
       <div class="dd-quad-grid" style="margin-bottom:0.85rem;">
         <div class="dd-metric-card">
-          <div class="dd-metric-label"><span>👥</span> Total Visitors</div>
+          <div class="dd-metric-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Total Visitors</span>
+          </div>
           <div class="dd-metric-val" id="dd-stat-visitors">12,482</div>
           <div class="dd-metric-delta delta-green">↑ 24%</div>
         </div>
 
         <div class="dd-metric-card">
-          <div class="dd-metric-label"><span>🕐</span> Avg. Duration</div>
+          <div class="dd-metric-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Avg. Duration</span>
+          </div>
           <div class="dd-metric-val" id="dd-stat-duration">2m 34s</div>
           <div class="dd-metric-delta delta-green">↑ 18%</div>
         </div>
 
         <div class="dd-metric-card">
-          <div class="dd-metric-label"><span>🔄</span> Bounce Rate</div>
+          <div class="dd-metric-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 5h18"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 19H3"></path></svg>
+            <span>Bounce Rate</span>
+          </div>
           <div class="dd-metric-val" id="dd-stat-bounce">32.4%</div>
           <div class="dd-metric-delta delta-green">↓ 6%</div>
         </div>
 
         <div class="dd-metric-card">
-          <div class="dd-metric-label"><span>👁️</span> Page Views</div>
+          <div class="dd-metric-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Page Views</span>
+          </div>
           <div class="dd-metric-val" id="dd-stat-views">38,721</div>
           <div class="dd-metric-delta delta-green">↑ 27%</div>
         </div>
@@ -3019,7 +3044,7 @@
       <!-- Details Table Section (Exact Screenshot Match) -->
       <div class="dd-table-card">
         <div class="dd-table-header">
-          <span>📊</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
           <span id="dd-table-header-title">UTM Source Details</span>
         </div>
 
@@ -3032,6 +3057,7 @@
                 <th>Visitors</th>
                 <th>% Share</th>
                 <th>Avg. Duration</th>
+                <th style="width:28px;"></th>
               </tr>
             </thead>
             <tbody id="dd-table-body-rows">

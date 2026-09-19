@@ -88,6 +88,81 @@
         </span>
       `;
     }
+    // UTM Term Keywords
+    if (n.includes('shortener') || n.includes('smart_')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #00e5ff); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('redirect') || n.includes('link_')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #38bdf8); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 10 4 15 9 20"></polyline>
+            <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('safe') || n.includes('shield')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #1877f2, #0060d0); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('monetize') || n.includes('adx') || n.includes('affiliate')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #f59e0b, #d97706); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('cpc') || n.includes('lead')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #0090ff); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('organic') || n.includes('sale')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #10b981, #059669); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('mobile')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #0284c7, #00e5ff); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+        </span>
+      `;
+    }
+    if (n.includes('desktop')) {
+      return `
+        <span class="brand-icon" style="background:linear-gradient(135deg, #7c3aed, #4f46e5); border-radius:50%; color:#ffffff;">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </span>
+      `;
+    }
     return `
       <span class="brand-icon" style="background:#0284c7; border-radius:50%; color:#ffffff; font-weight:900; font-size:0.7rem; letter-spacing:1px;">
         •••
@@ -172,6 +247,20 @@
       { name: 'instagram', visitors:  980, share:  7.9, duration: '1m 45s' },
       { name: 'tiktok',    visitors:  420, share:  3.4, duration: '1m 30s' },
       { name: 'others',    visitors:  252, share:  2.0, duration: '1m 15s' }
+    ],
+    'page': [
+      { name: '/',                  visitors: 5420, share: 43.4, duration: '2m 50s' },
+      { name: '/offer-claim',        visitors: 3180, share: 25.5, duration: '2m 20s' },
+      { name: '/checkout',           visitors: 1940, share: 15.5, duration: '3m 15s' },
+      { name: '/blog/traffic-guide', visitors: 1120, share:  9.0, duration: '1m 45s' },
+      { name: '/terms-privacy',      visitors:  510, share:  4.1, duration: '1m 10s' },
+      { name: 'others',              visitors:  312, share:  2.5, duration: '0m 55s' }
+    ],
+    'device': [
+      { name: 'Mobile',   visitors: 8920, share: 71.5, duration: '2m 25s' },
+      { name: 'Desktop',  visitors: 2840, share: 22.8, duration: '3m 10s' },
+      { name: 'Tablet',   visitors:  580, share:  4.6, duration: '2m 40s' },
+      { name: 'Smart TV', visitors:  142, share:  1.1, duration: '1m 15s' }
     ]
   };
   const MOCKUP_UTM_SOURCE_DATA = DIMENSION_MOCKUPS['utm_source'];
@@ -425,7 +514,7 @@
     }
   };
 
-  // Close website dropdown when clicking anywhere outside
+  // Close website dropdown & date dropdown when clicking anywhere outside
   document.addEventListener('click', (e) => {
     const card = document.getElementById('website-selector-card');
     const container = document.getElementById('website-list-container');
@@ -438,6 +527,14 @@
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
       }
     }
+
+    const ddMenus = document.querySelectorAll('.dd-date-dropdown.open');
+    ddMenus.forEach(menu => {
+      const parent = menu.closest('.dd-date-pill-wrapper');
+      if (parent && !parent.contains(e.target)) {
+        menu.classList.remove('open');
+      }
+    });
   });
 
   // Filter Buttons Initialization (Real-Time, Today, Yesterday, 7d, 30d, etc.)
@@ -501,6 +598,46 @@
     const ddPill = document.getElementById('dd-period-pill-text');
     if (ddPill) ddPill.textContent = txt;
   }
+
+  window.toggleDrilldownDateDropdown = function(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    const wrapper = e ? e.currentTarget.closest('.dd-date-pill-wrapper') : document.querySelector('.dd-date-pill-wrapper');
+    const menu = wrapper ? wrapper.querySelector('.dd-date-dropdown') : document.getElementById('dd-date-dropdown-menu');
+    if (!menu) return;
+    menu.classList.toggle('open');
+  };
+
+  window.selectDrilldownPeriod = function(period, label, e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    const menus = document.querySelectorAll('.dd-date-dropdown');
+    menus.forEach(m => m.classList.remove('open'));
+
+    if (period === 'custom') {
+      promptCustomDateRange();
+      return;
+    }
+
+    currentPeriod = period;
+    updatePeriodLabels(period);
+
+    // Sync active state on main dashboard filter buttons
+    const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col');
+    buttons.forEach(btn => {
+      if (btn.getAttribute('data-period') === period) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    loadAllAnalytics();
+  };
 
   window.promptCustomDateRange = function() {
     const from = prompt('Enter start date (YYYY-MM-DD):', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10));
