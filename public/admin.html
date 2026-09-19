@@ -13,6 +13,7 @@
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/css/style.css?v=125">
+  <link rel="stylesheet" href="/css/publytics.css?v=142">
   <script>
     (function() {
       try {
@@ -1031,9 +1032,7 @@
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
   <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
-  <a href="/publytics.html" class="tab-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem; background:linear-gradient(135deg, rgba(24,119,242,0.12), rgba(0,198,255,0.12)); border:1.5px solid rgba(24,119,242,0.35); color:#1877f2; font-weight:700;">
-    📊 Publytics Analytics ↗
-  </a>
+  <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics">📊 Publytics Analytics</button>
 </div>
 
 <!-- ── GLOBAL ALERT ── -->
@@ -2617,6 +2616,435 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════
+     TAB 6 — PUBLYTICS ANALYTICS DASHBOARD (Exact Pixel Match to Mockups)
+══════════════════════════════ -->
+<div id="tab-publytics" class="tab-content publytics-tab-wrapper" style="display:none;">
+  <div class="main-container" id="main-dashboard-view">
+
+    <!-- TOP TWO COLUMNS WRAPPER (desktop: 2-col, mobile: stacked) -->
+    <div class="top-two-col">
+
+    <!-- 1. SELECT WEBSITE PILL SELECTOR CARD -->
+    <div class="p-card" id="website-selector-card">
+      <!-- Single-line pill showing selected website (or placeholder) -->
+      <div class="website-selector-pill" id="website-selector-trigger" onclick="toggleWebsiteDropdown();" role="button" aria-expanded="false">
+        <div class="website-selector-left">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="website-selector-name" id="website-selector-label">Select website</span>
+        </div>
+        <div class="website-selector-arrow" id="site-chevron-arrow">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="#00e5ff">
+            <polygon points="1,3 9,3 5,8"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Dropdown list (hidden until clicked) -->
+      <div class="website-dropdown" id="website-list-container">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- 2. TIME & DATE FILTER BUTTONS -->
+    <div class="p-card" style="padding:0.85rem 1rem;">
+      <!-- Row 1: Real-Time, Today, Yesterday -->
+      <div class="filter-row-1">
+        <button class="filter-btn-pill active" data-period="realtime">
+          <span class="bolt-icon" style="color:#fbbf24; font-size:1.1rem;">⚡</span>
+          <span>Real-Time</span>
+        </button>
+        <button class="filter-btn-text" data-period="today">Today</button>
+        <button class="filter-btn-text" data-period="yesterday">Yesterday</button>
+      </div>
+
+      <div class="card-inner-divider"></div>
+
+      <!-- Row 2: Last 7 Days | Last 30 Days -->
+      <div class="filter-row-2col">
+        <button class="filter-btn-col border-r" data-period="7d">Last 7 Days</button>
+        <button class="filter-btn-col" data-period="30d">Last 30 Days</button>
+      </div>
+
+      <div class="card-inner-divider"></div>
+
+      <!-- Row 3: This Month | Custom -->
+      <div class="filter-row-2col">
+        <button class="filter-btn-col border-r" data-period="month">This Month</button>
+        <button class="filter-btn-col" data-period="custom" id="btn-custom-date">Custom</button>
+      </div>
+
+      <div class="card-inner-divider"></div>
+
+      <!-- Row 4: Auto-refresh (15s) | Updated: 12:43:14 PM -->
+      <div class="filter-row-2col">
+        <div class="auto-refresh-ctrl border-r" onclick="toggleAutoRefreshCheckbox();">
+          <div class="custom-checkbox checked" id="custom-auto-refresh-box">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <input type="checkbox" id="auto-refresh-check" checked style="display:none;">
+          <div class="ctrl-text-col">
+            <div class="ctrl-title">Auto-refresh</div>
+            <div class="ctrl-sub">(15s)</div>
+          </div>
+        </div>
+
+        <div class="refresh-status-ctrl" onclick="loadAllAnalytics();" title="Click to refresh now">
+          <svg class="refresh-spin-svg" id="refresh-spin-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+          <div class="ctrl-text-col">
+            <div class="ctrl-title-blue" id="last-updated-clock-time">Updated: 12:43:14</div>
+            <div class="ctrl-sub-blue" id="last-updated-clock-ampm">PM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div><!-- end top-two-col -->
+
+    <!-- 3. ACTIVE VISITORS RIGHT NOW HERO CARD -->
+    <div class="p-card realtime-card" id="realtime-hero-card">
+      <div class="realtime-badge-pill">
+        <span class="pulse-dot"></span>
+        <span>ACTIVE VISITORS RIGHT NOW</span>
+      </div>
+
+      <div class="realtime-number-row">
+        <div class="realtime-number" id="rt-active-visitors">0</div>
+        <span class="realtime-users-icon">👥</span>
+      </div>
+
+      <div class="realtime-subtitle">
+        Live traffic on selected Publytics site
+      </div>
+
+      <div class="time-pills-row">
+        <div class="time-stat-pill">
+          <span>🕐</span> 1m: <strong id="rt-1m-val">0</strong>
+        </div>
+        <div class="time-stat-pill">
+          <span>🕐</span> 5m: <strong id="rt-5m-val">0</strong>
+        </div>
+        <div class="time-stat-pill">
+          <span>🕐</span> 30m: <strong id="rt-30m-val">0</strong>
+        </div>
+      </div>
+
+      <div class="realtime-pages-box">
+        <div class="pages-box-title">
+          <span style="color:var(--p-green);">((•))</span>
+          <span>ACTIVE REAL-TIME PAGES</span>
+        </div>
+        <div class="pages-box-body" id="rt-pages-content">
+          Listening for real-time visitors...
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 STANDALONE KPI CARDS (Exact Screenshot 3 Match) -->
+    <div class="kpi-four-col" id="kpi-cards-wrapper">
+
+      <!-- KPI Card 1: PAGE VIEWS -->
+      <div class="kpi-standalone-card" onclick="openDrilldownPage('page', 'Page Views');">
+        <div class="kpi-left">
+          <div class="kpi-icon-box views">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">PAGE VIEWS</div>
+            <div class="kpi-val" id="kpi-views-val">0</div>
+            <div class="kpi-sub">Total pages viewed</div>
+          </div>
+        </div>
+        <div class="kpi-right-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        </div>
+      </div>
+
+      <!-- KPI Card 2: SESSIONS -->
+      <div class="kpi-standalone-card" onclick="openDrilldownPage('source', 'Sessions');">
+        <div class="kpi-left">
+          <div class="kpi-icon-box sessions">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">SESSIONS</div>
+            <div class="kpi-val" id="kpi-sessions-val">0</div>
+            <div class="kpi-sub">Browsing sessions</div>
+          </div>
+        </div>
+        <div class="kpi-right-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 5h18"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 19H3"></path></svg>
+        </div>
+      </div>
+
+      <!-- KPI Card 3: AVERAGE DURATION -->
+      <div class="kpi-standalone-card" onclick="openDrilldownPage('device', 'Average Duration');">
+        <div class="kpi-left">
+          <div class="kpi-icon-box duration">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">AVERAGE DURATION</div>
+            <div class="kpi-val" id="kpi-duration-val">0s</div>
+            <div class="kpi-sub">Time spent per session</div>
+          </div>
+        </div>
+        <div class="kpi-right-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
+        </div>
+      </div>
+
+      <!-- KPI Card 4: BOUNCE RATE -->
+      <div class="kpi-standalone-card" onclick="openDrilldownPage('device', 'Bounce Rate');">
+        <div class="kpi-left">
+          <div class="kpi-icon-box bounce">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          </div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">BOUNCE RATE</div>
+            <div class="kpi-val" id="kpi-bounce-val">0%</div>
+            <div class="kpi-sub">Single-page exits</div>
+          </div>
+        </div>
+        <div class="kpi-right-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+        </div>
+      </div>
+    </div><!-- end kpi-four-col -->
+
+    <!-- 4. UTM / TRAFFIC SOURCE CARD (Exact Screenshot 4 & 6 & 7 Match) -->
+    <div class="p-card" id="utm-source-section-card">
+      <!-- Card Header: icon + title + subtitle (NO date pill on this card) -->
+      <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:1.1rem;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <rect x="2" y="14" width="4" height="8" rx="1" fill="#00e5ff"/>
+          <rect x="9" y="9" width="4" height="13" rx="1" fill="#00e5ff" opacity="0.75"/>
+          <rect x="16" y="4" width="4" height="18" rx="1" fill="#00e5ff" opacity="0.5"/>
+        </svg>
+        <div>
+          <div style="color:#ffffff; font-size:1.18rem; font-weight:900; letter-spacing:-0.01em;">UTM / Traffic Source</div>
+          <div style="color:#7f9bc2; font-size:0.8rem; font-weight:500; margin-top:0.15rem;">Select a filter to view detailed analytics</div>
+        </div>
+      </div>
+
+      <div class="accordion-list">
+        <!-- Row 1: UTM Source -->
+        <div class="accordion-item" onclick="openDrilldownPage('utm_source', 'UTM Source');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="21.17" y1="8" x2="12" y2="8"></line><line x1="3.95" y1="6.06" x2="8.54" y2="14"></line><line x1="10.88" y1="21.94" x2="15.46" y2="14"></line></svg>
+            </div>
+            <div>
+              <div class="acc-name">UTM Source</div>
+              <div class="acc-desc">View traffic by UTM source</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+
+        <!-- Row 2: UTM Medium -->
+        <div class="accordion-item" onclick="openDrilldownPage('utm_medium', 'UTM Medium');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </div>
+            <div>
+              <div class="acc-name">UTM Medium</div>
+              <div class="acc-desc">View traffic by UTM medium</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+
+        <!-- Row 3: UTM Campaign -->
+        <div class="accordion-item" onclick="openDrilldownPage('utm_campaign', 'UTM Campaign');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12"></path><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            </div>
+            <div>
+              <div class="acc-name">UTM Campaign</div>
+              <div class="acc-desc">View traffic by UTM campaign</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+
+        <!-- Row 4: UTM Term -->
+        <div class="accordion-item" onclick="openDrilldownPage('utm_term', 'UTM Term');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div>
+              <div class="acc-name">UTM Term</div>
+              <div class="acc-desc">View traffic by UTM term</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+
+        <!-- Row 5: UTM Content -->
+        <div class="accordion-item" onclick="openDrilldownPage('utm_content', 'UTM Content');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            </div>
+            <div>
+              <div class="acc-name">UTM Content</div>
+              <div class="acc-desc">View traffic by UTM content</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+
+        <!-- Row 6: Referrals -->
+        <div class="accordion-item" onclick="openDrilldownPage('referrer', 'Referrals');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            </div>
+            <div>
+              <div class="acc-name">Referrals</div>
+              <div class="acc-desc">View traffic from referrals</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+
+        <!-- Row 7: Source -->
+        <div class="accordion-item" onclick="openDrilldownPage('source', 'Source');">
+          <div class="acc-left">
+            <div class="acc-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </div>
+            <div>
+              <div class="acc-name">Source</div>
+              <div class="acc-desc">View traffic by source</div>
+            </div>
+          </div>
+          <div class="acc-chevron-btn">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. THE COMPLETE DRILLDOWN / DETAIL ANALYTICS VIEW (Exact Screenshot 5 Match) -->
+    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:1.5rem;">
+
+      <!-- NAV HEADER: ← Back + Title + Date Pill -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(0,144,255,0.2);">
+        <!-- Left: Back button + icon + page title -->
+        <div style="display:flex; align-items:center; gap:0.65rem;">
+          <button onclick="closeDrilldownView();" title="Go back" style="width:36px; height:36px; border-radius:50%; background:#03112c; border:1px solid rgba(0,144,255,0.4); color:#ffffff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; flex-shrink:0; transition:all 0.18s ease;" onmouseover="this.style.borderColor='#00e5ff'; this.style.color='#00e5ff';" onmouseout="this.style.borderColor='rgba(0,144,255,0.4)'; this.style.color='#ffffff';">←</button>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+            <rect x="2" y="14" width="4" height="8" rx="1" fill="#00e5ff"/>
+            <rect x="9" y="9" width="4" height="13" rx="1" fill="#00e5ff" opacity="0.75"/>
+            <rect x="16" y="4" width="4" height="18" rx="1" fill="#00e5ff" opacity="0.5"/>
+          </svg>
+          <span id="dd-page-title-text" style="font-size:1.1rem; font-weight:900; color:#ffffff; letter-spacing:-0.01em;">UTM Source</span>
+        </div>
+        <!-- Right: Date pill -->
+        <div onclick="promptCustomDateRange();" style="background:#03112c; border:1px solid rgba(0,144,255,0.35); border-radius:9999px; padding:0.4rem 0.85rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; flex-shrink:0;">
+          <span>📅</span>
+          <span id="dd-period-pill-text">Last 7 Days</span>
+          <span style="font-size:0.7rem;">▼</span>
+        </div>
+      </div>
+
+      <!-- HERO BANNER CARD (Screenshot 5 Top Banner) -->
+      <div class="dd-hero-card" style="margin-bottom:0.85rem;">
+        <div class="dd-hero-icon-box">
+          <span id="dd-hero-icon" style="font-size:1.45rem;">🎯</span>
+        </div>
+        <div>
+          <div class="dd-hero-title" id="dd-hero-title-text">UTM Source Analytics</div>
+          <div class="dd-hero-sub" id="dd-hero-sub-text">Traffic breakdown by UTM source</div>
+        </div>
+      </div>
+
+      <!-- 4 Mini Cards Grid (Exact Screenshot Match) -->
+      <div class="dd-quad-grid" style="margin-bottom:0.85rem;">
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>👥</span> Total Visitors</div>
+          <div class="dd-metric-val" id="dd-stat-visitors">12,482</div>
+          <div class="dd-metric-delta delta-green">↑ 24%</div>
+        </div>
+
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>🕐</span> Avg. Duration</div>
+          <div class="dd-metric-val" id="dd-stat-duration">2m 34s</div>
+          <div class="dd-metric-delta delta-green">↑ 18%</div>
+        </div>
+
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>🔄</span> Bounce Rate</div>
+          <div class="dd-metric-val" id="dd-stat-bounce">32.4%</div>
+          <div class="dd-metric-delta delta-green">↓ 6%</div>
+        </div>
+
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>👁️</span> Page Views</div>
+          <div class="dd-metric-val" id="dd-stat-views">38,721</div>
+          <div class="dd-metric-delta delta-green">↑ 27%</div>
+        </div>
+      </div>
+
+      <!-- Donut Chart & Legend Section (Exact Screenshot Match) -->
+      <div class="dd-chart-card" style="margin-bottom:0.85rem;">
+        <div class="donut-container">
+          <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg-element">
+            <!-- Rendered dynamically by JS -->
+          </svg>
+          <div class="donut-center-info">
+            <div class="donut-center-big" id="donut-center-num-text">12,482</div>
+            <div class="donut-center-subtext">Total Visitors</div>
+          </div>
+        </div>
+
+        <div class="dd-legend-column">
+          <div class="dd-legend-title" id="dd-legend-title-text">Traffic by UTM Source</div>
+          <div id="dd-legend-items-container">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Table Section (Exact Screenshot Match) -->
+      <div class="dd-table-card">
+        <div class="dd-table-header">
+          <span>📊</span>
+          <span id="dd-table-header-title">UTM Source Details</span>
+        </div>
+
+        <div class="table-scroll">
+          <table class="screenshot-table">
+            <thead>
+              <tr>
+                <th style="width:36px;">#</th>
+                <th id="th-dim-label">UTM Source</th>
+                <th>Visitors</th>
+                <th>% Share</th>
+                <th>Avg. Duration</th>
+              </tr>
+            </thead>
+            <tbody id="dd-table-body-rows">
+              <!-- Rendered dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
 
 
@@ -2823,10 +3251,10 @@
     <span class="nav-icon">⚙️</span>
     <span>Settings</span>
   </button>
-  <a href="/publytics.html" class="mobile-nav-item" style="text-decoration:none; color:inherit;">
-    <span class="nav-icon">📈</span>
+  <button class="mobile-nav-item" data-tab="tab-publytics">
+    <span class="nav-icon">📊</span>
     <span>Publytics</span>
-  </a>
+  </button>
 </nav>
 
 <script src="/js/dashboard.js?v=122"></script>
@@ -3334,6 +3762,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-
+<script src="/js/publytics.js?v=142"></script>
 </body>
 </html>

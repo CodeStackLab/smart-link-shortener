@@ -126,15 +126,21 @@
   ];
 
   // --- INITIALIZATION ---
+  window.initPublyticsDashboard = function() {
+    if (document.getElementById('website-list-container')) {
+      initSessionAndConfig();
+      initFilterButtons();
+      renderScreenshotAnalyticsView('utm_source', MOCKUP_UTM_SOURCE_DATA);
+      updateClockDisplay();
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initHeaderAndDrawer();
-    initSessionAndConfig();
-    initFilterButtons();
+    window.initPublyticsDashboard();
     initHistoryPopstate();
     startAutoRefresh();
-    renderScreenshotAnalyticsView('utm_source', MOCKUP_UTM_SOURCE_DATA);
-    updateClockDisplay();
 
     // Support deep-link to drilldown view (e.g. publytics.html?dim=utm_source)
     const urlParams = new URLSearchParams(window.location.search);
@@ -264,10 +270,14 @@
       } else {
         availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
       }
-      if (cfg.currentSiteId && availableWebsites.some(s => s.toLowerCase() === cfg.currentSiteId.toLowerCase())) {
+      const savedSite = localStorage.getItem('publytics_selected_site');
+      if (savedSite && availableWebsites.some(s => s.toLowerCase() === savedSite.toLowerCase())) {
+        currentSiteId = savedSite;
+      } else if (cfg.currentSiteId && availableWebsites.some(s => s.toLowerCase() === cfg.currentSiteId.toLowerCase())) {
         currentSiteId = cfg.currentSiteId;
       } else {
-        currentSiteId = 'India.com';
+        // User requested: Default: 🌐 Select website
+        currentSiteId = '';
       }
 
       renderWebsiteList();
@@ -275,7 +285,8 @@
 
     } catch (err) {
       availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
-      currentSiteId = 'India.com';
+      const savedSite = localStorage.getItem('publytics_selected_site');
+      currentSiteId = savedSite || '';
       renderWebsiteList();
       loadAllAnalytics();
     }
@@ -287,7 +298,7 @@
     if (!container) return;
 
     container.innerHTML = availableWebsites.map(siteName => {
-      const isSel = siteName.toLowerCase() === currentSiteId.toLowerCase();
+      const isSel = currentSiteId && siteName.toLowerCase() === currentSiteId.toLowerCase();
       return `
         <div class="site-option ${isSel ? 'active' : ''}" onclick="selectWebsite('${escapeHtml(siteName)}')">
           <span class="radio-circle"></span>
@@ -303,13 +314,17 @@
   function updateSelectorPillLabel() {
     const label = document.getElementById('website-selector-label');
     if (!label) return;
-    // Show selected site name, or placeholder
-    const selected = availableWebsites.find(s => s.toLowerCase() === currentSiteId.toLowerCase());
-    label.textContent = selected || 'Select website';
+    if (currentSiteId) {
+      const selected = availableWebsites.find(s => s.toLowerCase() === currentSiteId.toLowerCase());
+      label.textContent = selected || currentSiteId;
+    } else {
+      label.textContent = 'Select website';
+    }
   }
 
   window.selectWebsite = function(siteName) {
     currentSiteId = siteName;
+    try { localStorage.setItem('publytics_selected_site', siteName); } catch(e) {}
     renderWebsiteList();
     // Close dropdown after selection
     const container = document.getElementById('website-list-container');
@@ -608,6 +623,10 @@
     const ddView = document.getElementById('drilldown-page-view');
     if (ddView) {
       ddView.style.display = 'none';
+    }
+    const utmCard = document.getElementById('utm-source-section-card');
+    if (utmCard) {
+      utmCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     if (popHistory && window.history.state && window.history.state.view === 'drilldown') {

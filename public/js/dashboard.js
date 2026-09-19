@@ -1047,10 +1047,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      if (targetTab === 'tab-publytics' && !isSuperAdminUser()) {
-        return;
-      }
-
       tabBtns.forEach(b => b.classList.remove('active'));
       tabContents.forEach(c => c.style.display = 'none');
 
@@ -1086,6 +1082,11 @@ document.addEventListener('DOMContentLoaded', () => {
         load2FAStatus();
         if (window.loadPublyticsApiTokenSettings) {
           window.loadPublyticsApiTokenSettings();
+        }
+      }
+      if (targetTab === 'tab-publytics') {
+        if (window.initPublyticsDashboard) {
+          window.initPublyticsDashboard();
         }
       }
     });
