@@ -11,19 +11,18 @@
   
   <style>
     /* ==========================================================================
-       PUBLYTICS DEEP MIDNIGHT BLUE CYBER THEME (Matches Exact Screenshot Mockup)
+       PUBLYTICS DEEP MIDNIGHT BLUE CYBER THEME (Exact Pixel Match to Screenshots)
        ========================================================================== */
     :root {
-      --p-bg: #050b18;
-      --p-card-bg: #0b172d;
-      --p-card-inner: #0f203f;
-      --p-card-hover: #13274d;
-      --p-border: rgba(56, 189, 248, 0.15);
-      --p-border-bright: rgba(56, 189, 248, 0.35);
-      --p-blue-glow: 0 0 20px rgba(14, 165, 233, 0.25);
+      --p-bg: #040a18;
+      --p-card-bg: #071329;
+      --p-card-inner: #0b1c3d;
+      --p-card-hover: #0f244c;
+      --p-border: rgba(56, 189, 248, 0.16);
+      --p-border-bright: rgba(56, 189, 248, 0.4);
       --p-cyan: #38bdf8;
       --p-blue-brand: #0284c7;
-      --p-blue-active: #0ea5e9;
+      --p-blue-active: #00a2ff;
       --p-green: #10b981;
       --p-text-primary: #ffffff;
       --p-text-secondary: #94a3b8;
@@ -40,7 +39,6 @@
       --p-card-hover: #f1f5f9;
       --p-border: #cbd5e1;
       --p-border-bright: #94a3b8;
-      --p-blue-glow: 0 4px 16px rgba(14, 165, 233, 0.15);
       --p-cyan: #0284c7;
       --p-blue-brand: #1877f2;
       --p-blue-active: #0284c7;
@@ -62,12 +60,12 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-bottom: 75px; /* Space for bottom navigation */
+      padding-bottom: 75px; /* Space for bottom dock */
       overflow-x: hidden;
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* TOP HEADER BAR (Exact Screenshot Top) */
+    /* TOP HEADER BAR (Exact Screenshot 2) */
     .top-header {
       background: var(--p-card-bg);
       border-bottom: 1px solid var(--p-border);
@@ -122,31 +120,24 @@
       border-color: var(--p-cyan);
       box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
     }
-
-    .header-pill.theme-btn {
-      color: #f59e0b;
-    }
-    .header-pill.admin-badge {
-      color: var(--p-cyan);
-    }
-    .header-pill.logout-btn {
-      color: #f87171;
-    }
+    .header-pill.theme-btn { color: #f59e0b; }
+    .header-pill.admin-badge { color: var(--p-cyan); }
+    .header-pill.logout-btn { color: #f87171; }
 
     /* MAIN APP CONTAINER */
     .main-container {
       max-width: 680px;
       width: 100%;
       margin: 0 auto;
-      padding: 0.9rem 1rem 3rem;
+      padding: 0.85rem 1rem 3rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.9rem;
     }
 
     @media (min-width: 1024px) {
       .main-container {
-        max-width: 900px;
+        max-width: 820px;
       }
     }
 
@@ -155,12 +146,12 @@
       background: var(--p-card-bg);
       border: 1px solid var(--p-border);
       border-radius: var(--p-radius-lg);
-      padding: 1.1rem 1.15rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      padding: 1.05rem 1.15rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
       position: relative;
     }
 
-    /* 1. SELECT WEBSITE ACCORDION CARD */
+    /* 1. SELECT WEBSITE ACCORDION CARD (Exact Screenshot 2) */
     .website-header {
       display: flex;
       align-items: center;
@@ -188,7 +179,6 @@
       flex-direction: column;
       gap: 0.45rem;
       margin-top: 0.85rem;
-      transition: max-height 0.3s ease;
     }
 
     .site-option {
@@ -211,11 +201,11 @@
     }
 
     .site-option.active {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: #0084ff;
       color: #ffffff;
       font-weight: 700;
       border: 1px solid var(--p-cyan);
-      box-shadow: 0 0 15px rgba(2, 132, 199, 0.45);
+      box-shadow: 0 0 16px rgba(0, 132, 255, 0.5);
     }
 
     .radio-circle {
@@ -238,21 +228,47 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #0284c7;
+      background: #0084ff;
     }
 
-    /* 2. TIME & DATE FILTER GRID */
-    .filter-grid {
+    /* 2. TIME & DATE FILTER GRID (Exact Screenshot 2) */
+    .filter-grid-row1 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
+      gap: 0.45rem;
     }
 
-    .filter-grid-row2 {
+    .filter-grid-split {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-      margin-top: 0.5rem;
+      grid-template-columns: 1fr 1fr;
+      margin-top: 0.45rem;
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-md);
+      overflow: hidden;
+      background: var(--p-card-inner);
+    }
+
+    .filter-btn-split {
+      background: transparent;
+      border: none;
+      color: var(--p-text-secondary);
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.65rem 0.5rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s ease;
+    }
+    .filter-btn-split:first-child {
+      border-right: 1px solid var(--p-border);
+    }
+    .filter-btn-split:hover {
+      color: var(--p-text-primary);
+      background: var(--p-card-hover);
+    }
+    .filter-btn-split.active {
+      background: #00a2ff;
+      color: #ffffff;
     }
 
     .filter-btn {
@@ -266,22 +282,16 @@
       cursor: pointer;
       text-align: center;
       transition: all 0.18s ease;
-      user-select: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
-
     .filter-btn:hover {
       border-color: var(--p-cyan);
       color: var(--p-text-primary);
     }
-
     .filter-btn.active {
-      background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+      background: #00a2ff;
       border-color: var(--p-cyan);
       color: #ffffff;
-      box-shadow: 0 0 15px rgba(0, 180, 216, 0.4);
+      box-shadow: 0 0 15px rgba(0, 162, 255, 0.45);
     }
 
     .refresh-row {
@@ -308,34 +318,28 @@
       cursor: pointer;
     }
 
-    /* 3. ACTIVE VISITORS RIGHT NOW HERO CARD */
+    /* 3. ACTIVE VISITORS RIGHT NOW HERO CARD (Exact Screenshot 3) */
     .realtime-card {
       border: 1px solid var(--p-border);
-      background: linear-gradient(180deg, #0d1e3d 0%, #09152b 100%);
+      background: linear-gradient(180deg, #091733 0%, #061026 100%);
       position: relative;
       overflow: hidden;
     }
 
-    .realtime-card::before {
-      content: '';
-      position: absolute;
-      top: -50px;
-      right: -50px;
-      width: 140px;
-      height: 140px;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 70%);
-      pointer-events: none;
-    }
-
-    .realtime-header {
-      display: flex;
+    .realtime-badge-pill {
+      display: inline-flex;
       align-items: center;
       gap: 0.45rem;
-      font-size: 0.8rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.76rem;
       font-weight: 800;
       letter-spacing: 0.5px;
       color: var(--p-green);
       text-transform: uppercase;
+      margin-bottom: 0.4rem;
     }
 
     .pulse-dot {
@@ -357,19 +361,19 @@
       display: flex;
       align-items: baseline;
       gap: 0.75rem;
-      margin: 0.45rem 0 0.2rem;
+      margin: 0.35rem 0 0.2rem;
     }
 
     .realtime-number {
-      font-size: 3.2rem;
+      font-size: 3.4rem;
       font-weight: 900;
       color: var(--p-cyan);
       line-height: 1;
-      text-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
     }
 
     .realtime-users-icon {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       color: var(--p-cyan);
       opacity: 0.85;
     }
@@ -388,7 +392,7 @@
     }
 
     .time-stat-pill {
-      background: rgba(15, 32, 63, 0.7);
+      background: #081630;
       border: 1px solid var(--p-border);
       border-radius: var(--p-radius-sm);
       padding: 0.45rem 0.6rem;
@@ -399,12 +403,10 @@
       color: var(--p-text-secondary);
     }
 
-    .time-stat-pill strong {
-      color: var(--p-text-primary);
-    }
+    .time-stat-pill strong { color: var(--p-text-primary); }
 
     .realtime-pages-box {
-      background: var(--p-card-inner);
+      background: #081630;
       border: 1px solid var(--p-border);
       border-radius: var(--p-radius-md);
       padding: 0.75rem 0.9rem;
@@ -413,7 +415,7 @@
     .pages-box-title {
       font-size: 0.78rem;
       font-weight: 800;
-      color: var(--p-cyan);
+      color: var(--p-green);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       display: flex;
@@ -428,7 +430,7 @@
       font-style: italic;
     }
 
-    /* 4. MAIN KPI METRICS LIST (Stacked Clickable Cards) */
+    /* 4. MAIN KPI METRICS LIST (Exact Screenshot 3) */
     .kpi-stack {
       display: flex;
       flex-direction: column;
@@ -447,11 +449,9 @@
       transition: all 0.18s ease;
       user-select: none;
     }
-
     .kpi-row-card:hover {
       background: var(--p-card-hover);
       border-color: var(--p-cyan);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transform: translateY(-1px);
     }
 
@@ -462,18 +462,21 @@
     }
 
     .kpi-icon-box {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
-      background: var(--p-card-inner);
+      background: #081630;
       border: 1px solid var(--p-border);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
-      color: var(--p-cyan);
       flex-shrink: 0;
     }
+    .kpi-icon-box.views { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+    .kpi-icon-box.sessions { color: #a855f7; border-color: rgba(168, 85, 247, 0.3); }
+    .kpi-icon-box.duration { color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+    .kpi-icon-box.bounce { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); }
 
     .kpi-text-col {
       display: flex;
@@ -489,7 +492,7 @@
     }
 
     .kpi-val {
-      font-size: 1.28rem;
+      font-size: 1.35rem;
       font-weight: 900;
       color: var(--p-text-primary);
       margin: 0.1rem 0;
@@ -500,19 +503,12 @@
       color: var(--p-text-muted);
     }
 
-    .kpi-chevron {
+    .kpi-right-icon {
       color: #64748b;
       font-size: 1.15rem;
-      font-weight: 800;
-      transition: transform 0.2s ease, color 0.2s ease;
     }
 
-    .kpi-row-card:hover .kpi-chevron {
-      color: var(--p-cyan);
-      transform: translateX(3px);
-    }
-
-    /* 5. ACCORDION LIST CARDS (UTM & Audience) */
+    /* 5. ACCORDION LIST CARDS (Exact Screenshot 4) */
     .section-card-header {
       display: flex;
       align-items: flex-start;
@@ -521,33 +517,18 @@
     }
 
     .section-card-title {
-      font-size: 1.05rem;
+      font-size: 1.12rem;
       font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
       color: var(--p-text-primary);
     }
 
     .section-card-sub {
       font-size: 0.78rem;
       color: var(--p-text-muted);
-      margin-top: 0.15rem;
-    }
-
-    .date-dropdown-pill {
-      background: var(--p-card-inner);
-      border: 1px solid var(--p-border);
-      color: var(--p-text-secondary);
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.35rem 0.65rem;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      cursor: pointer;
-      user-select: none;
+      margin-top: 0.2rem;
     }
 
     .accordion-list {
@@ -557,9 +538,9 @@
     }
 
     .accordion-item {
-      background: var(--p-card-inner);
+      background: #081630;
       border: 1px solid var(--p-border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 0.75rem 0.95rem;
       display: flex;
       align-items: center;
@@ -568,7 +549,6 @@
       transition: all 0.18s ease;
       user-select: none;
     }
-
     .accordion-item:hover {
       background: var(--p-card-hover);
       border-color: var(--p-cyan);
@@ -581,9 +561,18 @@
       gap: 0.75rem;
     }
 
-    .acc-icon {
-      font-size: 1.15rem;
+    .acc-icon-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(2, 132, 199, 0.18);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
       color: var(--p-cyan);
+      flex-shrink: 0;
     }
 
     .acc-name {
@@ -597,85 +586,192 @@
       color: var(--p-text-muted);
     }
 
-    /* 6. EXPANDED DETAILED DRILL-DOWN CONTAINER (Bottom of Screenshot) */
-    .drilldown-container {
-      margin-top: 0.5rem;
-      display: none; /* Shown dynamically or on click */
-      flex-direction: column;
-      gap: 1rem;
+    .chevron-right {
+      color: #64748b;
+      font-size: 1.15rem;
+      font-weight: 800;
     }
 
-    .metric-quad-grid {
+    /* ==========================================================================
+       6. THE COMPLETE DETAIL ANALYTICS VIEW (Exact Screenshot 5)
+       ========================================================================== */
+    #drilldown-page-view {
+      display: none; /* Shown when an item is clicked */
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .dd-nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+      padding: 0.5rem 0;
+      position: sticky;
+      top: 0;
+      background: var(--p-bg);
+      z-index: 90;
+    }
+
+    .dd-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .dd-back-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      color: var(--p-text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+    .dd-back-circle:hover {
+      border-color: var(--p-cyan);
+      color: var(--p-cyan);
+      background: var(--p-card-hover);
+    }
+
+    .dd-page-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: #ffffff;
+    }
+
+    .dd-date-pill {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      color: var(--p-text-secondary);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.38rem 0.75rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Hero Banner Card in Detail View (Screenshot 5 Top) */
+    .dd-hero-card {
+      background: linear-gradient(180deg, #091a38 0%, #061026 100%);
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-lg);
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .dd-hero-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      border: 1.5px solid var(--p-cyan);
+      box-shadow: 0 0 15px rgba(2, 132, 199, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .dd-hero-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .dd-hero-sub {
+      font-size: 0.78rem;
+      color: #7f9bc2;
+      margin-top: 0.15rem;
+    }
+
+    /* 4 Metric Mini Cards Grid (Screenshot 5) */
+    .dd-quad-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 0.6rem;
+      gap: 0.55rem;
     }
-    @media (min-width: 600px) {
-      .metric-quad-grid {
+    @media (min-width: 580px) {
+      .dd-quad-grid {
         grid-template-columns: repeat(4, 1fr);
       }
     }
 
-    .metric-mini-card {
-      background: var(--p-card-inner);
+    .dd-metric-card {
+      background: #081630;
       border: 1px solid var(--p-border);
-      border-radius: 12px;
-      padding: 0.75rem 0.85rem;
+      border-radius: 14px;
+      padding: 0.85rem 0.95rem;
     }
 
-    .metric-mini-label {
+    .dd-metric-label {
       font-size: 0.72rem;
-      color: var(--p-text-muted);
+      color: #7f9bc2;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.35rem;
       font-weight: 700;
-      text-transform: uppercase;
     }
 
-    .metric-mini-val {
-      font-size: 1.22rem;
+    .dd-metric-val {
+      font-size: 1.35rem;
       font-weight: 900;
-      color: var(--p-text-primary);
-      margin: 0.2rem 0;
+      color: #ffffff;
+      margin: 0.25rem 0 0.15rem;
     }
 
-    .metric-mini-delta {
-      font-size: 0.72rem;
+    .dd-metric-delta {
+      font-size: 0.74rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
       gap: 0.2rem;
     }
-    .delta-up { color: var(--p-green); }
-    .delta-down { color: #f87171; }
+    .delta-green { color: #10b981; }
 
-    /* DONUT CHART & LEGEND CARD */
-    .chart-legend-box {
-      background: var(--p-card-inner);
+    /* Donut Chart & Legend Card (Screenshot 5 Middle) */
+    .dd-chart-card {
+      background: #081630;
       border: 1px solid var(--p-border);
-      border-radius: var(--p-radius-md);
-      padding: 1rem;
+      border-radius: var(--p-radius-lg);
+      padding: 1.15rem 1.25rem;
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
     }
     @media (min-width: 580px) {
-      .chart-legend-box {
+      .dd-chart-card {
         flex-direction: row;
         align-items: center;
       }
     }
 
-    .donut-wrap {
+    .donut-container {
       position: relative;
-      width: 170px;
-      height: 170px;
+      width: 175px;
+      height: 175px;
       flex-shrink: 0;
       margin: 0 auto;
     }
 
-    .donut-center-text {
+    .donut-center-info {
       position: absolute;
       inset: 0;
       display: flex;
@@ -686,89 +782,129 @@
       pointer-events: none;
     }
 
-    .donut-center-num {
-      font-size: 1.25rem;
+    .donut-center-big {
+      font-size: 1.35rem;
       font-weight: 900;
-      color: var(--p-text-primary);
+      color: #ffffff;
       line-height: 1.1;
     }
 
-    .donut-center-sub {
+    .donut-center-subtext {
       font-size: 0.68rem;
-      color: var(--p-text-muted);
-      font-weight: 600;
+      color: #7f9bc2;
+      font-weight: 700;
     }
 
-    .legend-list {
+    .dd-legend-column {
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
+      gap: 0.55rem;
       width: 100%;
     }
 
-    .legend-row {
+    .dd-legend-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #cbd5e1;
+      margin-bottom: 0.2rem;
+    }
+
+    .dd-legend-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       padding: 0.25rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
 
-    .legend-row-left {
+    .dd-legend-item-left {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.55rem;
     }
 
-    .color-dot {
-      width: 9px;
-      height: 9px;
+    .brand-dot {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       flex-shrink: 0;
     }
 
-    .legend-row-right {
+    .dd-legend-item-right {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
       font-weight: 700;
     }
 
-    /* DETAILS TABLE */
-    .table-container {
-      width: 100%;
-      overflow-x: auto;
-      margin-top: 0.5rem;
+    /* Details Table Card (Screenshot 5 Bottom) */
+    .dd-table-card {
+      background: #081630;
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-lg);
+      padding: 1.15rem 1.25rem;
     }
 
-    .detail-table {
+    .dd-table-header {
+      font-size: 0.92rem;
+      font-weight: 900;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: #ffffff;
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .screenshot-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.82rem;
     }
 
-    .detail-table th {
+    .screenshot-table th {
       text-align: left;
-      padding: 0.6rem 0.75rem;
-      color: var(--p-text-muted);
+      padding: 0.65rem 0.75rem;
+      color: #7f9bc2;
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       border-bottom: 1px solid var(--p-border);
     }
 
-    .detail-table td {
-      padding: 0.7rem 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      color: var(--p-text-primary);
+    .screenshot-table td {
+      padding: 0.75rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #ffffff;
     }
 
-    .detail-table tr:hover td {
+    .screenshot-table tr:hover td {
       background: var(--p-card-hover);
     }
 
-    /* BOTTOM NAVIGATION DOCK (Exact Screenshot Bottom) */
+    .brand-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .brand-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+
+    /* BOTTOM NAVIGATION BAR (Exact Bottom Dock) */
     .bottom-nav-bar {
       position: fixed;
       bottom: 0;
@@ -799,14 +935,8 @@
       transition: all 0.15s ease;
       cursor: pointer;
     }
-
-    .nav-tab-item .nav-icon {
-      font-size: 1.25rem;
-    }
-
-    .nav-tab-item.active {
-      color: #ec4899; /* Vibrant magenta/purple from screenshot */
-    }
+    .nav-tab-item .nav-icon { font-size: 1.25rem; }
+    .nav-tab-item.active { color: #ec4899; }
     .nav-tab-item.active .nav-icon {
       filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.6));
     }
@@ -846,10 +976,7 @@
       cursor: pointer;
     }
 
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
+    .form-group { margin-bottom: 1rem; }
     .form-group label {
       display: block;
       font-size: 0.8rem;
@@ -868,15 +995,11 @@
       font-size: 0.88rem;
       outline: none;
     }
-    .p-input:focus {
-      border-color: var(--p-cyan);
-      box-shadow: var(--p-blue-glow);
-    }
   </style>
 </head>
 <body>
 
-  <!-- TOP HEADER (Exact Screenshot Top) -->
+  <!-- TOP HEADER (Exact Screenshot 2 Top) -->
   <header class="top-header">
     <div class="header-left">
       <button class="btn-hamburger" onclick="window.location.href='/admin';" title="Main Navigation Menu">
@@ -903,41 +1026,43 @@
     </div>
   </header>
 
-  <!-- MAIN DASHBOARD CONTENT -->
-  <main class="main-container">
+  <!-- ==========================================================================
+       VIEW 1: MAIN DASHBOARD VIEW (Screenshots 1, 2, 3, 4)
+       ========================================================================== -->
+  <main class="main-container" id="main-dashboard-view">
 
-    <!-- 1. SELECT WEBSITE ACCORDION CARD (Exact Mockup) -->
+    <!-- 1. SELECT WEBSITE ACCORDION CARD (Exact Screenshot 2) -->
     <div class="p-card">
       <div class="website-header" onclick="toggleWebsiteDropdown();">
         <div class="website-header-title">
           <span class="globe-icon">🌐</span>
           <span>Select website</span>
         </div>
-        <span id="site-chevron" style="color:var(--p-cyan); font-size:0.9rem; transition:transform 0.2s ease;">▼</span>
+        <span id="site-chevron" style="color:var(--p-cyan); font-size:0.9rem;">▼</span>
       </div>
 
-      <!-- Website radio selection list (Default visible as in mockup) -->
+      <!-- Website radio selection list -->
       <div class="website-list" id="website-list-container">
         <!-- Rendered by JS: Hero.com, India.com (Active), Pakistan.com, Bhai.com -->
       </div>
     </div>
 
-    <!-- 2. TIME & DATE FILTER BUTTONS (Exact Mockup 3 Rows) -->
+    <!-- 2. TIME & DATE FILTER BUTTONS (Exact Screenshot 2) -->
     <div class="p-card" style="padding:0.85rem 1rem;">
-      <div class="filter-grid" id="filter-row-1">
+      <div class="filter-grid-row1">
         <button class="filter-btn active" data-period="realtime">⚡ Real-Time</button>
         <button class="filter-btn" data-period="today">Today</button>
         <button class="filter-btn" data-period="yesterday">Yesterday</button>
       </div>
 
-      <div class="filter-grid-row2" id="filter-row-2">
-        <button class="filter-btn" data-period="7d">Last 7 Days</button>
-        <button class="filter-btn" data-period="30d">Last 30 Days</button>
+      <div class="filter-grid-split">
+        <button class="filter-btn-split" data-period="7d">Last 7 Days</button>
+        <button class="filter-btn-split" data-period="30d">Last 30 Days</button>
       </div>
 
-      <div class="filter-grid-row2" id="filter-row-3" style="margin-top:0.5rem;">
-        <button class="filter-btn" data-period="month">This Month</button>
-        <button class="filter-btn" data-period="custom" id="btn-custom-date">Custom</button>
+      <div class="filter-grid-split" style="margin-top:0.45rem;">
+        <button class="filter-btn-split" data-period="month">This Month</button>
+        <button class="filter-btn-split" data-period="custom" id="btn-custom-date">Custom</button>
       </div>
 
       <div class="refresh-row">
@@ -953,9 +1078,9 @@
       </div>
     </div>
 
-    <!-- 3. ACTIVE VISITORS RIGHT NOW HERO CARD (Exact Mockup) -->
+    <!-- 3. ACTIVE VISITORS RIGHT NOW HERO CARD (Exact Screenshot 3) -->
     <div class="p-card realtime-card" id="realtime-hero-card">
-      <div class="realtime-header">
+      <div class="realtime-badge-pill">
         <span class="pulse-dot"></span>
         <span>ACTIVE VISITORS RIGHT NOW</span>
       </div>
@@ -992,58 +1117,58 @@
       </div>
     </div>
 
-    <!-- 4. MAIN KPI METRICS LIST (Exact Mockup: Stacked Rows with Chevron >) -->
+    <!-- 4. MAIN KPI METRICS LIST (Exact Screenshot 3) -->
     <div class="kpi-stack">
-      <div class="kpi-row-card" onclick="openDrilldownView('pageviews', 'Page Views', 0);">
+      <div class="kpi-row-card" onclick="openDrilldownPage('page', 'Page Views');">
         <div class="kpi-left">
-          <div class="kpi-icon-box">👥</div>
+          <div class="kpi-icon-box views">👥</div>
           <div class="kpi-text-col">
             <div class="kpi-title">PAGE VIEWS</div>
             <div class="kpi-val" id="kpi-views-val">0</div>
             <div class="kpi-sub">Total pages viewed</div>
           </div>
         </div>
-        <div class="kpi-chevron">›</div>
+        <span class="kpi-right-icon">📄</span>
       </div>
 
-      <div class="kpi-row-card" onclick="openDrilldownView('sessions', 'Sessions', 0);">
+      <div class="kpi-row-card" onclick="openDrilldownPage('source', 'Sessions');">
         <div class="kpi-left">
-          <div class="kpi-icon-box">👤</div>
+          <div class="kpi-icon-box sessions">👤</div>
           <div class="kpi-text-col">
             <div class="kpi-title">SESSIONS</div>
             <div class="kpi-val" id="kpi-sessions-val">0</div>
             <div class="kpi-sub">Browsing sessions</div>
           </div>
         </div>
-        <div class="kpi-chevron">›</div>
+        <span class="kpi-right-icon">🔄</span>
       </div>
 
-      <div class="kpi-row-card" onclick="openDrilldownView('duration', 'Average Duration', 0);">
+      <div class="kpi-row-card" onclick="openDrilldownPage('device', 'Average Duration');">
         <div class="kpi-left">
-          <div class="kpi-icon-box">🕐</div>
+          <div class="kpi-icon-box duration">🕐</div>
           <div class="kpi-text-col">
             <div class="kpi-title">AVERAGE DURATION</div>
             <div class="kpi-val" id="kpi-duration-val">0s</div>
             <div class="kpi-sub">Time spent per session</div>
           </div>
         </div>
-        <div class="kpi-chevron">›</div>
+        <span class="kpi-right-icon">⏳</span>
       </div>
 
-      <div class="kpi-row-card" onclick="openDrilldownView('bounce', 'Bounce Rate', 0);">
+      <div class="kpi-row-card" onclick="openDrilldownPage('device', 'Bounce Rate');">
         <div class="kpi-left">
-          <div class="kpi-icon-box">📈</div>
+          <div class="kpi-icon-box bounce">📈</div>
           <div class="kpi-text-col">
             <div class="kpi-title">BOUNCE RATE</div>
             <div class="kpi-val" id="kpi-bounce-val">0%</div>
-            <div class="kpi-sub">Single-page visits</div>
+            <div class="kpi-sub">Single-page exits</div>
           </div>
         </div>
-        <div class="kpi-chevron">›</div>
+        <span class="kpi-right-icon">🎯</span>
       </div>
     </div>
 
-    <!-- 5. UTM / TRAFFIC SOURCE SECTION (Exact Mockup: Rows with Chevron >) -->
+    <!-- 5. UTM / TRAFFIC SOURCE SECTION (Exact Screenshot 4) -->
     <div class="p-card">
       <div class="section-card-header">
         <div>
@@ -1052,98 +1177,93 @@
             <span>UTM / Traffic Source</span>
           </div>
           <div class="section-card-sub">
-            See what brings visitors to your website and track
+            Select a filter to view detailed analytics
           </div>
-        </div>
-
-        <div class="date-dropdown-pill" onclick="promptCustomDateRange();">
-          <span>📅</span>
-          <span id="label-acq-date">Last 7 Days</span>
-          <span>▼</span>
         </div>
       </div>
 
       <div class="accordion-list">
-        <div class="accordion-item" onclick="triggerDrilldown('utm_source', 'UTM Source');">
+        <!-- Click UTM Source -> opens full detail view (Screenshot 5) -->
+        <div class="accordion-item" onclick="openDrilldownPage('utm_source', 'UTM Source');">
           <div class="acc-left">
-            <span class="acc-icon">🔗</span>
+            <div class="acc-icon-circle">🎯</div>
             <div>
               <div class="acc-name">UTM Source</div>
               <div class="acc-desc">View traffic by UTM source</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('utm_medium', 'UTM Medium');">
+        <div class="accordion-item" onclick="openDrilldownPage('utm_medium', 'UTM Medium');">
           <div class="acc-left">
-            <span class="acc-icon">🔀</span>
+            <div class="acc-icon-circle">🔀</div>
             <div>
               <div class="acc-name">UTM Medium</div>
               <div class="acc-desc">View traffic by UTM medium</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('utm_campaign', 'UTM Campaign');">
+        <div class="accordion-item" onclick="openDrilldownPage('utm_campaign', 'UTM Campaign');">
           <div class="acc-left">
-            <span class="acc-icon">🎯</span>
+            <div class="acc-icon-circle">📢</div>
             <div>
               <div class="acc-name">UTM Campaign</div>
               <div class="acc-desc">View traffic by UTM campaign</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('utm_term', 'UTM Term');">
+        <div class="accordion-item" onclick="openDrilldownPage('utm_term', 'UTM Term');">
           <div class="acc-left">
-            <span class="acc-icon">🏷️</span>
+            <div class="acc-icon-circle">📋</div>
             <div>
               <div class="acc-name">UTM Term</div>
               <div class="acc-desc">View traffic by UTM term</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('utm_content', 'UTM Content');">
+        <div class="accordion-item" onclick="openDrilldownPage('utm_content', 'UTM Content');">
           <div class="acc-left">
-            <span class="acc-icon">📄</span>
+            <div class="acc-icon-circle">&lt;/&gt;</div>
             <div>
               <div class="acc-name">UTM Content</div>
               <div class="acc-desc">View traffic by UTM content</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('referrer', 'Referrals');">
+        <div class="accordion-item" onclick="openDrilldownPage('referrer', 'Referrals');">
           <div class="acc-left">
-            <span class="acc-icon">📢</span>
+            <div class="acc-icon-circle">🔗</div>
             <div>
               <div class="acc-name">Referrals</div>
-              <div class="acc-desc">View traffic by referrals</div>
+              <div class="acc-desc">View traffic from referrals</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('source', 'Source');">
+        <div class="accordion-item" onclick="openDrilldownPage('source', 'Source');">
           <div class="acc-left">
-            <span class="acc-icon">🌐</span>
+            <div class="acc-icon-circle">🌐</div>
             <div>
               <div class="acc-name">Source</div>
               <div class="acc-desc">View traffic by source</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
       </div>
     </div>
 
-    <!-- 6. AUDIENCE & DEMOGRAPHICS SECTION (Rows with Chevron >) -->
+    <!-- 6. AUDIENCE SECTION -->
     <div class="p-card">
       <div class="section-card-header">
         <div>
@@ -1155,182 +1275,191 @@
             Devices, countries, browsers, and operating systems
           </div>
         </div>
-
-        <div class="date-dropdown-pill" onclick="promptCustomDateRange();">
-          <span>📅</span>
-          <span id="label-aud-date">Last 7 Days</span>
-          <span>▼</span>
-        </div>
       </div>
 
       <div class="accordion-list">
-        <div class="accordion-item" onclick="triggerDrilldown('country', 'Country');">
+        <div class="accordion-item" onclick="openDrilldownPage('country', 'Country');">
           <div class="acc-left">
-            <span class="acc-icon">🌍</span>
+            <div class="acc-icon-circle">🌍</div>
             <div>
               <div class="acc-name">Country</div>
               <div class="acc-desc">View traffic by visitor country</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('device', 'Device');">
+        <div class="accordion-item" onclick="openDrilldownPage('device', 'Device');">
           <div class="acc-left">
-            <span class="acc-icon">📱</span>
+            <div class="acc-icon-circle">📱</div>
             <div>
               <div class="acc-name">Device</div>
               <div class="acc-desc">Mobile, Desktop, and Tablet breakdown</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('os', 'Operating System');">
+        <div class="accordion-item" onclick="openDrilldownPage('os', 'Operating System');">
           <div class="acc-left">
-            <span class="acc-icon">💻</span>
+            <div class="acc-icon-circle">💻</div>
             <div>
               <div class="acc-name">Operating System</div>
               <div class="acc-desc">Windows, Mac, Android, iOS</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('browser', 'Browser');">
+        <div class="accordion-item" onclick="openDrilldownPage('browser', 'Browser');">
           <div class="acc-left">
-            <span class="acc-icon">🌐</span>
+            <div class="acc-icon-circle">🌐</div>
             <div>
               <div class="acc-name">Browser</div>
               <div class="acc-desc">Chrome, Safari, Firefox, Edge</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('hostname', 'Hostname');">
+        <div class="accordion-item" onclick="openDrilldownPage('hostname', 'Hostname');">
           <div class="acc-left">
-            <span class="acc-icon">🏷️</span>
+            <div class="acc-icon-circle">🏷️</div>
             <div>
               <div class="acc-name">Hostname</div>
-              <div class="acc-desc">Domains and subdomains receiving hits</div>
+              <div class="acc-desc">Domains receiving traffic hits</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
 
-        <div class="accordion-item" onclick="triggerDrilldown('page', 'Content / Top Pages');">
+        <div class="accordion-item" onclick="openDrilldownPage('page', 'Content / Top Pages');">
           <div class="acc-left">
-            <span class="acc-icon">📄</span>
+            <div class="acc-icon-circle">📄</div>
             <div>
               <div class="acc-name">Content / Top Pages</div>
-              <div class="acc-desc">Highest visited URLs and target links</div>
+              <div class="acc-desc">Highest visited URLs</div>
             </div>
           </div>
-          <div class="kpi-chevron">›</div>
+          <span class="chevron-right">›</span>
         </div>
       </div>
-    </div>
-
-    <!-- 7. DETAILED DRILL-DOWN CONTAINER (Matches Exact Bottom of Screenshot) -->
-    <div class="drilldown-container" id="drilldown-container">
-      
-      <div class="p-card">
-        <div class="section-card-header">
-          <div>
-            <div class="section-card-title">
-              <span id="dd-header-icon" style="color:var(--p-cyan);">🔗</span>
-              <span id="dd-header-title">UTM Source</span>
-            </div>
-            <div class="section-card-sub" id="dd-header-sub">
-              Traffic breakdown by UTM source
-            </div>
-          </div>
-
-          <div class="date-dropdown-pill" onclick="promptCustomDateRange();">
-            <span>📅</span>
-            <span id="dd-header-date">Last 7 Days</span>
-            <span>▼</span>
-          </div>
-        </div>
-
-        <!-- 4 Metric Cards in a Grid (Total Visitors, Avg Duration, Bounce Rate, Page Views) -->
-        <div class="metric-quad-grid">
-          <div class="metric-mini-card">
-            <div class="metric-mini-label">👥 Total Visitors</div>
-            <div class="metric-mini-val" id="dd-kpi-visitors">0</div>
-            <div class="metric-mini-delta delta-up">↑ 24%</div>
-          </div>
-
-          <div class="metric-mini-card">
-            <div class="metric-mini-label">🕐 Avg. Duration</div>
-            <div class="metric-mini-val" id="dd-kpi-duration">0s</div>
-            <div class="metric-mini-delta delta-up">↑ 18%</div>
-          </div>
-
-          <div class="metric-mini-card">
-            <div class="metric-mini-label">🎯 Bounce Rate</div>
-            <div class="metric-mini-val" id="dd-kpi-bounce">0%</div>
-            <div class="metric-mini-delta delta-down">↓ 6%</div>
-          </div>
-
-          <div class="metric-mini-card">
-            <div class="metric-mini-label">📄 Page Views</div>
-            <div class="metric-mini-val" id="dd-kpi-views">0</div>
-            <div class="metric-mini-delta delta-up">↑ 27%</div>
-          </div>
-        </div>
-
-        <!-- Donut Chart & Legend Section (Exact Layout in Screenshot) -->
-        <div class="chart-legend-box" style="margin-top:1rem;">
-          <div class="donut-wrap">
-            <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg">
-              <!-- Rendered via JS SVG segments -->
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#1e293b" stroke-width="12"></circle>
-            </svg>
-            <div class="donut-center-text">
-              <div class="donut-center-num" id="donut-center-total">0</div>
-              <div class="donut-center-sub">Total Visitors</div>
-            </div>
-          </div>
-
-          <div class="legend-list" id="donut-legend-list">
-            <!-- Rendered by JS: google 35.7% 4,461, facebook 22.9% 2,865, etc. -->
-          </div>
-        </div>
-
-        <!-- Details Table (Exact Layout in Screenshot) -->
-        <div style="margin-top:1.25rem;">
-          <div style="font-size:0.88rem; font-weight:800; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;">
-            <span>📊</span>
-            <span id="dd-table-title">UTM Source Details</span>
-          </div>
-
-          <div class="table-container">
-            <table class="detail-table">
-              <thead>
-                <tr>
-                  <th style="width:30px;">#</th>
-                  <th id="dd-col-dimension-name">UTM Source</th>
-                  <th>Visitors</th>
-                  <th>% Share</th>
-                  <th>Avg. Duration</th>
-                </tr>
-              </thead>
-              <tbody id="dd-table-tbody">
-                <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:#64748b;">Loading live data from Publytics API...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-
     </div>
 
   </main>
 
-  <!-- BOTTOM NAVIGATION BAR (Exact Bottom of Screenshot) -->
+  <!-- ==========================================================================
+       VIEW 2: THE COMPLETE DETAILED ANALYTICS PAGE (Exact Screenshot 5)
+       Opens immediately when user clicks on "UTM Source" or any item!
+       ========================================================================== -->
+  <main class="main-container" id="drilldown-page-view">
+    
+    <!-- Top Navigation Header (Back Button, Title, Date Pill) -->
+    <div class="dd-nav-header">
+      <div class="dd-nav-left">
+        <div class="dd-back-circle" onclick="closeDrilldownView();" title="Back to Overview">
+          ←
+        </div>
+        <div class="dd-page-title">
+          <span style="color:var(--p-cyan);">📊</span>
+          <span id="dd-page-title-text">UTM Source</span>
+        </div>
+      </div>
+
+      <div class="dd-date-pill" onclick="promptCustomDateRange();">
+        <span>📅</span>
+        <span id="dd-period-pill-text">Last 7 Days</span>
+        <span>▼</span>
+      </div>
+    </div>
+
+    <!-- Hero Banner (Screenshot 5 Top) -->
+    <div class="dd-hero-card">
+      <div class="dd-hero-icon-box" id="dd-hero-icon">
+        🎯
+      </div>
+      <div>
+        <div class="dd-hero-title" id="dd-hero-title-text">UTM Source Analytics</div>
+        <div class="dd-hero-sub" id="dd-hero-sub-text">Traffic breakdown by UTM source</div>
+      </div>
+    </div>
+
+    <!-- 4 Mini Cards Grid (Screenshot 5) -->
+    <div class="dd-quad-grid">
+      <div class="dd-metric-card">
+        <div class="dd-metric-label"><span>👥</span> Total Visitors</div>
+        <div class="dd-metric-val" id="dd-stat-visitors">12,482</div>
+        <div class="dd-metric-delta delta-green">↑ 24%</div>
+      </div>
+
+      <div class="dd-metric-card">
+        <div class="dd-metric-label"><span>🕐</span> Avg. Duration</div>
+        <div class="dd-metric-val" id="dd-stat-duration">2m 34s</div>
+        <div class="dd-metric-delta delta-green">↑ 18%</div>
+      </div>
+
+      <div class="dd-metric-card">
+        <div class="dd-metric-label"><span>🔄</span> Bounce Rate</div>
+        <div class="dd-metric-val" id="dd-stat-bounce">32.4%</div>
+        <div class="dd-metric-delta delta-green">↓ 6%</div>
+      </div>
+
+      <div class="dd-metric-card">
+        <div class="dd-metric-label"><span>👁️</span> Page Views</div>
+        <div class="dd-metric-val" id="dd-stat-views">38,721</div>
+        <div class="dd-metric-delta delta-green">↑ 27%</div>
+      </div>
+    </div>
+
+    <!-- Donut Chart & Legend Section (Screenshot 5 Middle) -->
+    <div class="dd-chart-card">
+      <div class="donut-container">
+        <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg-element">
+          <!-- Rendered dynamically by JS with colorful ring segments -->
+        </svg>
+        <div class="donut-center-info">
+          <div class="donut-center-big" id="donut-center-num-text">12,482</div>
+          <div class="donut-center-subtext">Total Visitors</div>
+        </div>
+      </div>
+
+      <div class="dd-legend-column">
+        <div class="dd-legend-title" id="dd-legend-title-text">Traffic by UTM Source</div>
+        <div id="dd-legend-items-container">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Table Card (Screenshot 5 Bottom) -->
+    <div class="dd-table-card">
+      <div class="dd-table-header">
+        <span>📋</span>
+        <span id="dd-table-header-title">UTM Source Details</span>
+      </div>
+
+      <div class="table-scroll">
+        <table class="screenshot-table">
+          <thead>
+            <tr>
+              <th style="width:36px;">#</th>
+              <th id="th-dim-label">UTM Source</th>
+              <th>Visitors</th>
+              <th>% Share</th>
+              <th>Avg. Duration</th>
+              <th style="width:24px;"></th>
+            </tr>
+          </thead>
+          <tbody id="dd-table-body-rows">
+            <!-- Rendered dynamically by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR (Exact Screenshot Bottom Dock) -->
   <nav class="bottom-nav-bar">
     <a href="/admin" class="nav-tab-item">
       <span class="nav-icon">🔗</span>
@@ -1353,8 +1482,10 @@
       <span>Settings</span>
     </a>
     <a href="/publytics.html" class="nav-tab-item active">
-      <span class="nav-icon">📊</span>
-      <span>Publytics</span>
+      <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color:#ffffff; font-weight:900; font-size:0.82rem; box-shadow:0 0 10px rgba(168,85,247,0.4);">
+        P
+      </span>
+      <span style="color:#c084fc; font-weight:700;">Publytics</span>
     </a>
   </nav>
 
