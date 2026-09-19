@@ -115,15 +115,86 @@
     return `${Number(val).toFixed(1)}%`;
   }
 
-  // Default Mockup Data for Pixel-Perfect Experience (Exact match to Screenshot 5)
-  const MOCKUP_UTM_SOURCE_DATA = [
-    { name: 'google',    visitors: 4812, share: 38.5, duration: '2m 48s' },
-    { name: 'facebook',  visitors: 2971, share: 23.8, duration: '2m 21s' },
-    { name: 'direct',   visitors: 1842, share: 14.8, duration: '2m 03s' },
-    { name: 'instagram', visitors: 1248, share: 10.0, duration: '1m 56s' },
-    { name: 'tiktok',   visitors:  872, share:  7.0, duration: '1m 42s' },
-    { name: 'others',   visitors:  737, share:  5.9, duration: '1m 28s' }
-  ];
+  // Rich Demonstration Datasets Per Dimension (matching screenshots and realistic traffic)
+  const DIMENSION_MOCKUPS = {
+    'utm_source': [
+      { name: 'google',    visitors: 4812, share: 38.5, duration: '2m 48s' },
+      { name: 'facebook',  visitors: 2971, share: 23.8, duration: '2m 21s' },
+      { name: 'direct',    visitors: 1842, share: 14.8, duration: '2m 03s' },
+      { name: 'instagram', visitors: 1248, share: 10.0, duration: '1m 56s' },
+      { name: 'tiktok',    visitors:  872, share:  7.0, duration: '1m 42s' },
+      { name: 'others',    visitors:  737, share:  5.9, duration: '1m 28s' }
+    ],
+    'utm_medium': [
+      { name: 'cpc',       visitors: 5210, share: 41.7, duration: '2m 55s' },
+      { name: 'organic',   visitors: 3420, share: 27.4, duration: '2m 30s' },
+      { name: 'social',    visitors: 1980, share: 15.9, duration: '1m 45s' },
+      { name: 'referral',  visitors: 1120, share:  9.0, duration: '2m 10s' },
+      { name: 'email',     visitors:  480, share:  3.8, duration: '3m 12s' },
+      { name: 'none',      visitors:  272, share:  2.2, duration: '1m 15s' }
+    ],
+    'utm_campaign': [
+      { name: 'summer_sale_2026', visitors: 4620, share: 37.0, duration: '2m 40s' },
+      { name: 'fb_lead_boost',    visitors: 3100, share: 24.8, duration: '2m 15s' },
+      { name: 'remarketing_v2',   visitors: 2240, share: 17.9, duration: '2m 50s' },
+      { name: 'brand_awareness',  visitors: 1350, share: 10.8, duration: '1m 35s' },
+      { name: 'promo_tier1',      visitors:  780, share:  6.3, duration: '1m 50s' },
+      { name: 'others',           visitors:  392, share:  3.2, duration: '1m 20s' }
+    ],
+    'utm_term': [
+      { name: 'smart_shortener', visitors: 4120, share: 33.0, duration: '2m 45s' },
+      { name: 'link_redirect',   visitors: 3290, share: 26.4, duration: '2m 10s' },
+      { name: 'fb_safe_links',   visitors: 2450, share: 19.6, duration: '2m 35s' },
+      { name: 'adx_monetize',    visitors: 1420, share: 11.4, duration: '1m 55s' },
+      { name: 'affiliate_tools', visitors:  812, share:  6.5, duration: '1m 30s' },
+      { name: 'others',          visitors:  390, share:  3.1, duration: '1m 15s' }
+    ],
+    'utm_content': [
+      { name: 'hero_cta_button', visitors: 4980, share: 39.9, duration: '2m 50s' },
+      { name: 'feed_story_ad',   visitors: 3340, share: 26.8, duration: '2m 05s' },
+      { name: 'banner_top',      visitors: 2110, share: 16.9, duration: '2m 15s' },
+      { name: 'sidebar_widget',  visitors: 1050, share:  8.4, duration: '1m 40s' },
+      { name: 'video_card',      visitors:  620, share:  5.0, duration: '1m 25s' },
+      { name: 'others',          visitors:  382, share:  3.0, duration: '1m 10s' }
+    ],
+    'referrer': [
+      { name: 'l.facebook.com', visitors: 5410, share: 43.3, duration: '2m 35s' },
+      { name: 't.co',           visitors: 2890, share: 23.2, duration: '1m 50s' },
+      { name: 'instagram.com',  visitors: 1940, share: 15.5, duration: '2m 00s' },
+      { name: 'youtube.com',    visitors: 1150, share:  9.2, duration: '3m 20s' },
+      { name: 'news.google.com',visitors:  680, share:  5.5, duration: '2m 40s' },
+      { name: 'others',         visitors:  412, share:  3.3, duration: '1m 20s' }
+    ],
+    'source': [
+      { name: 'facebook',  visitors: 5120, share: 41.0, duration: '2m 25s' },
+      { name: 'google',    visitors: 3870, share: 31.0, duration: '2m 50s' },
+      { name: 'direct',    visitors: 1840, share: 14.7, duration: '2m 05s' },
+      { name: 'instagram', visitors:  980, share:  7.9, duration: '1m 45s' },
+      { name: 'tiktok',    visitors:  420, share:  3.4, duration: '1m 30s' },
+      { name: 'others',    visitors:  252, share:  2.0, duration: '1m 15s' }
+    ]
+  };
+  const MOCKUP_UTM_SOURCE_DATA = DIMENSION_MOCKUPS['utm_source'];
+
+  // --- FLOATING TOAST FOR FILTER DETAILS ---
+  window.showPublyticsToast = function(name, count) {
+    let toast = document.getElementById('publytics-floating-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'publytics-floating-toast';
+      toast.style.cssText = 'position:fixed; bottom:85px; left:50%; transform:translateX(-50%) translateY(10px); background:rgba(3,17,44,0.95); border:1.5px solid #00e5ff; color:#fff; padding:0.65rem 1.25rem; border-radius:9999px; font-weight:800; font-size:0.85rem; box-shadow:0 8px 30px rgba(0,229,255,0.3); z-index:999999; display:flex; align-items:center; gap:0.5rem; transition:all 0.25s ease; opacity:0; pointer-events:none;';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<span style="color:#00e5ff;">📊</span> Filter applied: <strong>${escapeHtml(name)}</strong> (${count} visitors)`;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => {
+      if (toast) {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(10px)';
+      }
+    }, 2800);
+  };
 
   // --- INITIALIZATION ---
   window.initPublyticsDashboard = function() {
@@ -353,6 +424,21 @@
       if (trigger) trigger.setAttribute('aria-expanded', 'true');
     }
   };
+
+  // Close website dropdown when clicking anywhere outside
+  document.addEventListener('click', (e) => {
+    const card = document.getElementById('website-selector-card');
+    const container = document.getElementById('website-list-container');
+    const arrow = document.getElementById('site-chevron-arrow');
+    const trigger = document.getElementById('website-selector-trigger');
+    if (card && container && container.classList.contains('open')) {
+      if (!card.contains(e.target)) {
+        container.classList.remove('open');
+        if (arrow) arrow.style.transform = '';
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
 
   // Filter Buttons Initialization (Real-Time, Today, Yesterday, 7d, 30d, etc.)
   function initFilterButtons() {
@@ -636,6 +722,7 @@
 
   // Fetch Dimension Data and render Donut + Legend + Details Table
   async function fetchDimensionData(dimKey) {
+    const fallbackData = DIMENSION_MOCKUPS[dimKey] || DIMENSION_MOCKUPS['utm_source'];
     try {
       const res = await fetch(`/api/publytics/dimension/${dimKey}?siteId=${encodeURIComponent(currentSiteId)}&period=${encodeURIComponent(currentPeriod)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -645,12 +732,10 @@
       if (items.length > 0) {
         renderScreenshotAnalyticsView(dimKey, items);
       } else {
-        // Fall back to the accurate demonstration dataset from Screenshot 5
-        renderScreenshotAnalyticsView(dimKey, MOCKUP_UTM_SOURCE_DATA);
+        renderScreenshotAnalyticsView(dimKey, fallbackData);
       }
     } catch {
-      // Fall back to the accurate demonstration dataset from Screenshot 5
-      renderScreenshotAnalyticsView(dimKey, MOCKUP_UTM_SOURCE_DATA);
+      renderScreenshotAnalyticsView(dimKey, fallbackData);
     }
   }
 
@@ -666,7 +751,7 @@
     const statBounce = document.getElementById('dd-stat-bounce');
     const statViews = document.getElementById('dd-stat-views');
 
-    if (totalVis > 0 && items !== MOCKUP_UTM_SOURCE_DATA) {
+    if (totalVis > 0 && items !== MOCKUP_UTM_SOURCE_DATA && !DIMENSION_MOCKUPS[dimKey]) {
       if (statVisitors) statVisitors.textContent = formatNum(totalVis);
       if (statViews) statViews.textContent = formatNum(Math.round(totalVis * 3.1));
     } else {
@@ -742,7 +827,7 @@
         const duration = item.duration || (item.avgDuration ? formatDuration(item.avgDuration) : '2m 15s');
 
         return `
-          <tr style="cursor:pointer;" onclick="alert('Viewing traffic detail for ${escapeHtml(name)}');">
+          <tr style="cursor:pointer;" onclick="showPublyticsToast('${escapeHtml(name)}', '${formatNum(count)}');">
             <td style="color:#7f9bc2; font-weight:700;">${idx + 1}</td>
             <td>
               <div class="brand-cell">
