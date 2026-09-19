@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartlink-v135';
+const CACHE_NAME = 'smartlink-v136';
 const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
@@ -23,11 +23,11 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: Always network first, never cache stale admin.html or dashboard.js
+// Fetch: Always network first, never cache stale admin.html, publytics.html or scripts
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  // Always fetch API and admin scripts from network
-  if (url.pathname.startsWith('/api/') || url.pathname.includes('dashboard') || url.pathname.includes('admin') || url.pathname.includes('login')) {
+  // Always fetch API and admin/publytics scripts and pages from network
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('dashboard') || url.pathname.includes('admin') || url.pathname.includes('login') || url.pathname.includes('publytics')) {
     event.respondWith(fetch(event.request));
     return;
   }

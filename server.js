@@ -368,8 +368,16 @@ app.use(session({
   }
 }));
 
-// Serve static files from 'public' folder
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from 'public' folder (never cache HTML files)
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
 // ----------------------------------------------------
 // AUTO-DETECT UNKNOWN DOMAINS MIDDLEWARE
