@@ -30,6 +30,7 @@ const { generateQrDataUrl } = require('./utils/qrGenerator');
 const { fetchOgMeta } = require('./utils/ogFetcher');
 
 const totp = require('./utils/totp');
+const publyticsService = require('./services/publyticsService');
 
 function ensureAbsoluteUrl(url) {
   if (!url) return '';
@@ -1375,6 +1376,100 @@ app.post('/api/admin/publytics/test', requireAuth, async (req, res) => {
       success: false,
       error: 'Failed to verify tracking script: ' + (err.message || err)
     });
+  }
+});
+
+// ----------------------------------------------------
+// PUBLYTICS API REPORTING & DASHBOARD PROXY (Protected)
+// ----------------------------------------------------
+
+// Get configuration status (token masked)
+app.get('/api/publytics/config', requireAuth, (req, res) => {
+  res.json(publyticsService.getConfig());
+});
+
+// Update configuration (Master Admin only)
+app.post('/api/publytics/config', requireAuth, requireSuperAdmin, (req, res) => {
+  const { apiToken, siteId, sitesList } = req.body || {};
+  const updated = publyticsService.updateConfig({ apiToken, siteId, sitesList });
+  res.json({ success: true, config: updated });
+});
+
+// Test connection with token and siteId
+app.post('/api/publytics/test-connection', requireAuth, requireSuperAdmin, async (req, res) => {
+  try {
+    const { apiToken, siteId } = req.body || {};
+    const result = await publyticsService.testConnection({ apiToken, siteId });
+    res.json(result);
+  } catch (err) {
+    res.status(err.statusCode || 400).json({ success: false, error: err.message });
+  }
+});
+
+// Get available sites
+app.get('/api/publytics/sites', requireAuth, async (req, res) => {
+  try {
+    const result = await publyticsService.getSites();
+    res.json(result);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code });
+  }
+});
+
+// Real-Time analytics
+app.get('/api/publytics/realtime', requireAuth, async (req, res) => {
+  try {
+    const { siteId, ...query } = req.query;
+    const data = await publyticsService.getRealtime(siteId, query);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code, details: err.details });
+  }
+});
+
+// Overview / Main KPIs
+app.get('/api/publytics/overview', requireAuth, async (req, res) => {
+  try {
+    const { siteId, ...query } = req.query;
+    const data = await publyticsService.getOverview(siteId, query);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code, details: err.details });
+  }
+});
+
+// Dimensions (country, device, os, browser, hostname, page, referrer, source, utm_*)
+app.get('/api/publytics/dimension/:dimension', requireAuth, async (req, res) => {
+  try {
+    const { dimension } = req.params;
+    const { siteId, ...query } = req.query;
+    const data = await publyticsService.getDimension(siteId, dimension, query);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code, details: err.details });
+  }
+});
+
+// User list
+app.get('/api/publytics/users', requireAuth, async (req, res) => {
+  try {
+    const { siteId, ...query } = req.query;
+    const data = await publyticsService.getUsers(siteId, query);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code, details: err.details });
+  }
+});
+
+// User details
+app.get('/api/publytics/users/:userId', requireAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { siteId, ...query } = req.query;
+    const data = await publyticsService.getUserDetails(siteId, userId, query);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code, details: err.details });
   }
 });
 

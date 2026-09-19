@@ -275,13 +275,25 @@ module.exports = {
       blockAutomatedUnknown: true,
       editorCountryBlockEnabled: true,
       editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
-      publyticsTrackingScript: ''
+      publyticsTrackingScript: '',
+      publyticsApiToken: '',
+      publyticsSiteId: '',
+      publyticsSitesList: []
     });
     if (!Array.isArray(s.editorBlockedCountries)) {
       s.editorBlockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
     }
     if (typeof s.publyticsTrackingScript !== 'string') {
       s.publyticsTrackingScript = '';
+    }
+    if (typeof s.publyticsApiToken !== 'string') {
+      s.publyticsApiToken = '';
+    }
+    if (typeof s.publyticsSiteId !== 'string') {
+      s.publyticsSiteId = '';
+    }
+    if (!Array.isArray(s.publyticsSitesList)) {
+      s.publyticsSitesList = [];
     }
     return s;
   },

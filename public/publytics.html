@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publytics Analytics Dashboard | Live Traffic Intelligence</title>
+  <meta name="description" content="Dedicated Publytics Analytics Dashboard for real-time traffic, acquisition, audience, and user insights.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    :root {
+      --pub-brand: #0ea5e9;
+      --pub-brand-dark: #0284c7;
+      --pub-accent: #10b981;
+      --pub-card-bg: #ffffff;
+      --pub-border: #e2e8f0;
+      --pub-text-main: #0f172a;
+      --pub-text-sub: #64748b;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+      color: var(--pub-text-main);
+      margin: 0;
+      padding: 0;
+    }
+
+    .pub-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem;
+    }
+
+    /* Top Bar Header */
+    .pub-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--pub-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    .pub-header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0.9rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .pub-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .pub-badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .pub-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pubPulse 1.8s infinite;
+    }
+
+    @keyframes pubPulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .pub-actions-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .pub-select {
+      background: #f1f5f9;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .pub-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.95rem;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s ease;
+      text-decoration: none;
+    }
+
+    .pub-btn-default {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .pub-btn-default:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .pub-btn-primary {
+      background: #1877f2;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(24,119,242,0.25);
+    }
+    .pub-btn-primary:hover {
+      background: #0b57cf;
+    }
+
+    /* Date Filter Pills */
+    .pub-date-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin: 1.5rem 0 1.25rem;
+      background: #ffffff;
+      border: 1px solid var(--pub-border);
+      border-radius: 14px;
+      padding: 0.6rem 1rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      flex-wrap: wrap;
+    }
+
+    .pub-filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .pub-pill {
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .pub-pill:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .pub-pill.active {
+      background: #1877f2;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(24,119,242,0.25);
+    }
+
+    /* Cards Grid */
+    .pub-grid-kpi {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pub-card {
+      background: #ffffff;
+      border: 1px solid var(--pub-border);
+      border-radius: 16px;
+      padding: 1.25rem 1.4rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .pub-card:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    }
+
+    .pub-kpi-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--pub-text-sub);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pub-kpi-val {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .pub-kpi-sub {
+      font-size: 0.76rem;
+      color: var(--pub-text-sub);
+      margin-top: 0.35rem;
+    }
+
+    /* Real-Time Hero Card */
+    .pub-realtime-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: 18px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 30px rgba(15,23,42,0.18);
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.75rem;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .pub-realtime-hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pub-realtime-main {
+      border-right: 1px solid rgba(255,255,255,0.12);
+      padding-right: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .pub-realtime-main {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+        padding-right: 0;
+        padding-bottom: 1.25rem;
+      }
+    }
+
+    .pub-realtime-num {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: #38bdf8;
+      line-height: 1;
+      margin: 0.3rem 0;
+    }
+
+    .pub-realtime-badges {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    .pub-time-badge {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 8px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    /* Breakdown Tabs and Tables */
+    .pub-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+
+    .pub-section-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pub-subtabs {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--pub-border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .pub-subtab-btn {
+      background: none;
+      border: none;
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .pub-subtab-btn.active {
+      background: rgba(24, 119, 242, 0.1);
+      color: #1877f2;
+      font-weight: 700;
+    }
+
+    /* Tables & Progress Bars */
+    .pub-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .pub-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+    }
+
+    .pub-table th {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      color: #64748b;
+      font-weight: 700;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1.5px solid var(--pub-border);
+    }
+
+    .pub-table td {
+      padding: 0.75rem 0.85rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+    }
+
+    .pub-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .pub-interactive-row {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .pub-interactive-row:hover td {
+      background: #eff6ff !important;
+    }
+
+    .pub-progress-bg {
+      background: #f1f5f9;
+      height: 6px;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .pub-progress-fill {
+      background: #1877f2;
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    /* Modal Drawer for Clickable Detailed Data */
+    .pub-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .pub-modal-content {
+      background: #ffffff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 760px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: relative;
+      padding: 1.75rem 2rem;
+    }
+
+    .pub-modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+    }
+    .pub-modal-close:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    /* Setup Banner */
+    .pub-setup-banner {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 1.5px solid #f59e0b;
+      border-radius: 14px;
+      padding: 1rem 1.4rem;
+      margin-bottom: 1.5rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: #92400e;
+    }
+
+    .pub-empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: #64748b;
+    }
+
+    .pub-spin {
+      animation: pubRotate 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes pubRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="pub-header">
+    <div class="pub-header-inner">
+      <div class="pub-logo-wrap">
+        <a href="/admin" class="pub-btn pub-btn-default" title="Return to Shortener Dashboard">
+          ← Back to Shortener
+        </a>
+        <div style="font-weight:800; font-size:1.15rem; color:#0f172a; display:flex; align-items:center; gap:0.4rem;">
+          <span style="font-size:1.35rem;">📊</span> Publytics Intelligence
+        </div>
+        <div class="pub-badge-live" id="live-indicator">
+          <span class="pub-pulse-dot"></span> Live API
+        </div>
+      </div>
+
+      <div class="pub-actions-wrap">
+        <!-- Site Selector Dropdown -->
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <label for="site-select" style="font-size:0.8rem; font-weight:700; color:#64748b;">Site:</label>
+          <select id="site-select" class="pub-select">
+            <option value="">Loading sites...</option>
+          </select>
+        </div>
+
+        <button class="pub-btn pub-btn-default" id="btn-refresh" title="Refresh Live Data">
+          <span id="refresh-icon">🔄</span> Refresh
+        </button>
+
+        <button class="pub-btn pub-btn-primary" id="btn-open-config" title="Configure Publytics API Token & Sites">
+          ⚙️ API Settings
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="pub-container">
+
+    <!-- Setup Notice Banner (Visible when API token is not yet configured) -->
+    <div class="pub-setup-banner" id="setup-banner">
+      <div>
+        <strong style="font-size:0.95rem;">⚠️ Publytics API Token Required</strong>
+        <div style="font-size:0.82rem; margin-top:0.2rem;">
+          To view real-time data from the Publytics API without sample/dummy data, enter your Publytics Bearer Token.
+        </div>
+      </div>
+      <button class="pub-btn pub-btn-primary" onclick="openConfigModal();" style="background:#d97706; white-space:nowrap;">
+        Enter API Token
+      </button>
+    </div>
+
+    <!-- Date Range & Realtime Selector Bar -->
+    <div class="pub-date-bar">
+      <div class="pub-filter-group" id="date-pill-group">
+        <button class="pub-pill active" data-period="realtime">⚡ Real-Time</button>
+        <button class="pub-pill" data-period="today">Today</button>
+        <button class="pub-pill" data-period="yesterday">Yesterday</button>
+        <button class="pub-pill" data-period="7d">Last 7 Days</button>
+        <button class="pub-pill" data-period="30d">Last 30 Days</button>
+        <button class="pub-pill" data-period="month">This Month</button>
+        <button class="pub-pill" data-period="custom" id="btn-custom-date">📅 Custom</button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.8rem; color:#64748b;">
+        <label style="display:flex; align-items:center; gap:0.35rem; cursor:pointer;">
+          <input type="checkbox" id="auto-refresh-toggle" checked style="cursor:pointer;">
+          <span>Auto-refresh (15s)</span>
+        </label>
+        <span id="last-updated-text" style="color:#94a3b8;">Updated: Just now</span>
+      </div>
+    </div>
+
+    <!-- SECTION 1: Real-Time Active Monitoring Hero Card -->
+    <section class="pub-realtime-hero" id="realtime-hero-section">
+      <div class="pub-realtime-main">
+        <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; display:flex; align-items:center; gap:0.4rem;">
+          <span class="pub-pulse-dot"></span> Active Visitors Right Now
+        </div>
+        <div class="pub-realtime-num" id="rt-active-count">0</div>
+        <div style="font-size:0.8rem; color:#cbd5e1;">Live traffic on selected Publytics site</div>
+        <div class="pub-realtime-badges">
+          <div class="pub-time-badge">1m: <strong id="rt-1m">0</strong></div>
+          <div class="pub-time-badge">5m: <strong id="rt-5m">0</strong></div>
+          <div class="pub-time-badge">30m: <strong id="rt-30m">0</strong></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin-bottom:0.6rem;">
+          Active Real-Time Pages
+        </div>
+        <div id="rt-pages-container" style="display:flex; flex-direction:column; gap:0.4rem; max-height:160px; overflow-y:auto;">
+          <div style="font-size:0.82rem; color:#94a3b8; font-style:italic;">Listening for real-time visitors...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Main Analytics KPI Cards -->
+    <section class="pub-grid-kpi">
+      <div class="pub-card">
+        <div class="pub-kpi-label">
+          <span>👥 Unique Users</span>
+          <span>📈</span>
+        </div>
+        <div class="pub-kpi-val" id="kpi-users">--</div>
+        <div class="pub-kpi-sub" id="kpi-users-sub">Unique visitors in period</div>
+      </div>
+
+      <div class="pub-card">
+        <div class="pub-kpi-label">
+          <span>👀 Page Views</span>
+          <span>📄</span>
+        </div>
+        <div class="pub-kpi-val" id="kpi-views">--</div>
+        <div class="pub-kpi-sub" id="kpi-views-sub">Total pages viewed</div>
+      </div>
+
+      <div class="pub-card">
+        <div class="pub-kpi-label">
+          <span>⚡ Sessions</span>
+          <span>🔄</span>
+        </div>
+        <div class="pub-kpi-val" id="kpi-sessions">--</div>
+        <div class="pub-kpi-sub" id="kpi-sessions-sub">Browsing sessions</div>
+      </div>
+
+      <div class="pub-card">
+        <div class="pub-kpi-label">
+          <span>⏱️ Avg Duration</span>
+          <span>⏳</span>
+        </div>
+        <div class="pub-kpi-val" id="kpi-duration">--</div>
+        <div class="pub-kpi-sub">Time spent per session</div>
+      </div>
+
+      <div class="pub-card">
+        <div class="pub-kpi-label">
+          <span>📉 Bounce Rate</span>
+          <span>🎯</span>
+        </div>
+        <div class="pub-kpi-val" id="kpi-bounce">--</div>
+        <div class="pub-kpi-sub">Single-page exits</div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Acquisition & Campaign Tracking -->
+    <section class="pub-card" style="margin-bottom:1.5rem;">
+      <div class="pub-section-header">
+        <div class="pub-section-title">
+          <span>🚀</span> Acquisition & Campaigns
+        </div>
+        <div style="font-size:0.78rem; color:#64748b;">
+          👉 Click any item for complete detailed breakdown
+        </div>
+      </div>
+
+      <!-- Acquisition Subtabs -->
+      <div class="pub-subtabs" id="acq-subtabs">
+        <button class="pub-subtab-btn active" data-dim="utm_source">UTM Source</button>
+        <button class="pub-subtab-btn" data-dim="utm_medium">UTM Medium</button>
+        <button class="pub-subtab-btn" data-dim="utm_campaign">UTM Campaign</button>
+        <button class="pub-subtab-btn" data-dim="utm_term">UTM Term</button>
+        <button class="pub-subtab-btn" data-dim="utm_content">UTM Content</button>
+        <button class="pub-subtab-btn" data-dim="referrer">Referrers</button>
+        <button class="pub-subtab-btn" data-dim="source">Sources</button>
+      </div>
+
+      <div class="pub-table-wrap">
+        <table class="pub-table" id="acq-table">
+          <thead>
+            <tr>
+              <th id="acq-col-name" style="width:50%;">Dimension</th>
+              <th style="width:20%;">Visitors</th>
+              <th style="width:20%;">Share</th>
+              <th style="width:10%; text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="acq-tbody">
+            <tr><td colspan="4" class="pub-empty-state">Loading acquisition data from Publytics...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Audience Demographics & Systems -->
+    <section style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+      <!-- Countries -->
+      <div class="pub-card">
+        <div class="pub-section-header">
+          <div class="pub-section-title"><span>🌍</span> Countries</div>
+          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+        </div>
+        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
+          <table class="pub-table">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>Visitors</th>
+                <th style="width:30%;">Share</th>
+              </tr>
+            </thead>
+            <tbody id="audience-countries-tbody">
+              <tr><td colspan="3" class="pub-empty-state">Loading countries...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Devices -->
+      <div class="pub-card">
+        <div class="pub-section-header">
+          <div class="pub-section-title"><span>📱</span> Devices</div>
+          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+        </div>
+        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
+          <table class="pub-table">
+            <thead>
+              <tr>
+                <th>Device</th>
+                <th>Visitors</th>
+                <th style="width:30%;">Share</th>
+              </tr>
+            </thead>
+            <tbody id="audience-devices-tbody">
+              <tr><td colspan="3" class="pub-empty-state">Loading devices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Operating Systems -->
+      <div class="pub-card">
+        <div class="pub-section-header">
+          <div class="pub-section-title"><span>💻</span> Operating Systems</div>
+          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+        </div>
+        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
+          <table class="pub-table">
+            <thead>
+              <tr>
+                <th>OS</th>
+                <th>Visitors</th>
+                <th style="width:30%;">Share</th>
+              </tr>
+            </thead>
+            <tbody id="audience-os-tbody">
+              <tr><td colspan="3" class="pub-empty-state">Loading OS data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Browsers -->
+      <div class="pub-card">
+        <div class="pub-section-header">
+          <div class="pub-section-title"><span>🌐</span> Browsers</div>
+          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+        </div>
+        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
+          <table class="pub-table">
+            <thead>
+              <tr>
+                <th>Browser</th>
+                <th>Visitors</th>
+                <th style="width:30%;">Share</th>
+              </tr>
+            </thead>
+            <tbody id="audience-browsers-tbody">
+              <tr><td colspan="3" class="pub-empty-state">Loading browser data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Hostnames -->
+      <div class="pub-card">
+        <div class="pub-section-header">
+          <div class="pub-section-title"><span>🏷️</span> Hostnames</div>
+          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+        </div>
+        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
+          <table class="pub-table">
+            <thead>
+              <tr>
+                <th>Hostname</th>
+                <th>Visitors</th>
+                <th style="width:30%;">Share</th>
+              </tr>
+            </thead>
+            <tbody id="audience-hostnames-tbody">
+              <tr><td colspan="3" class="pub-empty-state">Loading hostnames...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Content / Top Pages -->
+      <div class="pub-card">
+        <div class="pub-section-header">
+          <div class="pub-section-title"><span>📄</span> Top Visited Pages</div>
+          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+        </div>
+        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
+          <table class="pub-table">
+            <thead>
+              <tr>
+                <th>Page Path</th>
+                <th>Views</th>
+                <th style="width:30%;">Share</th>
+              </tr>
+            </thead>
+            <tbody id="audience-pages-tbody">
+              <tr><td colspan="3" class="pub-empty-state">Loading pages...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: User List -->
+    <section class="pub-card" style="margin-bottom:2rem;">
+      <div class="pub-section-header">
+        <div class="pub-section-title">
+          <span>👤</span> User List & Profiles
+        </div>
+        <span style="font-size:0.78rem; color:#64748b;">
+          Click user row or action to view detailed user timeline
+        </span>
+      </div>
+
+      <div class="pub-table-wrap">
+        <table class="pub-table">
+          <thead>
+            <tr>
+              <th>User ID / Identifier</th>
+              <th>Country</th>
+              <th>Sessions</th>
+              <th>Pageviews</th>
+              <th>Last Seen</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="6" class="pub-empty-state">Fetching user records from Publytics API...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DETAIL DRILL-DOWN MODAL -->
+  <div class="pub-modal-backdrop" id="drilldown-modal">
+    <div class="pub-modal-content">
+      <button class="pub-modal-close" onclick="closeDrilldownModal();">&times;</button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+        <span style="font-size:1.35rem;" id="drilldown-icon">🔍</span>
+        <h3 id="drilldown-title" style="margin:0; font-size:1.25rem; font-weight:800; color:#0f172a;">Item Detail</h3>
+      </div>
+      <div id="drilldown-subtitle" style="font-size:0.84rem; color:#64748b; margin-bottom:1.25rem;">Detailed analytics breakdown from Publytics API</div>
+
+      <!-- Quick Metrics Bar inside Modal -->
+      <div id="drilldown-kpis" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem; margin-bottom:1.25rem;">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Raw & Structured Breakdown List -->
+      <div style="border-top:1px solid #e2e8f0; padding-top:1rem;">
+        <div style="font-weight:700; font-size:0.88rem; margin-bottom:0.6rem; color:#1e293b;">Associated Breakdown</div>
+        <div id="drilldown-details-body" style="max-height:360px; overflow-y:auto;">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API CONFIGURATION MODAL -->
+  <div class="pub-modal-backdrop" id="config-modal">
+    <div class="pub-modal-content" style="max-width:560px;">
+      <button class="pub-modal-close" onclick="closeConfigModal();">&times;</button>
+      <h3 style="margin:0 0 0.4rem; font-size:1.25rem; font-weight:800; color:#0f172a;">
+        ⚙️ Publytics API Configuration
+      </h3>
+      <p style="font-size:0.83rem; color:#64748b; margin-top:0; margin-bottom:1.25rem; line-height:1.45;">
+        Your API Token is stored securely on the backend and is never exposed in browser requests.
+      </p>
+
+      <form id="publytics-config-form" onsubmit="saveConfig(event); return false;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.84rem; font-weight:700; color:#1e293b; margin-bottom:0.35rem;">
+            Publytics API Bearer Token
+          </label>
+          <input type="password" id="cfg-token" class="form-control" placeholder="e.g. 1|AbCdEf123456789..." style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border:1.5px solid #cbd5e1; border-radius:10px; font-family:monospace; font-size:0.85rem;" autocomplete="off">
+          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:0.25rem;">
+            Generated in your Publytics Account &gt; Profile &gt; API &gt; Create.
+          </small>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.84rem; font-weight:700; color:#1e293b; margin-bottom:0.35rem;">
+            Default Site ID
+          </label>
+          <input type="text" id="cfg-site" class="form-control" placeholder="e.g. 33gb.online/bCatRU or mydomain.com" style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border:1.5px solid #cbd5e1; border-radius:10px; font-size:0.88rem;">
+          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:0.25rem;">
+            Found in your site Tracking Options page in Publytics.
+          </small>
+        </div>
+
+        <div style="margin-bottom:1.25rem;">
+          <label style="display:block; font-size:0.84rem; font-weight:700; color:#1e293b; margin-bottom:0.35rem;">
+            Additional Site IDs (one per line, optional)
+          </label>
+          <textarea id="cfg-sites-list" rows="3" class="form-control" placeholder="site1.com/ID1&#10;site2.com/ID2" style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border:1.5px solid #cbd5e1; border-radius:10px; font-size:0.85rem; font-family:monospace;"></textarea>
+        </div>
+
+        <div id="cfg-test-status" style="display:none; padding:0.6rem 0.85rem; border-radius:10px; font-size:0.82rem; margin-bottom:1rem;"></div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+          <button type="button" class="pub-btn pub-btn-default" onclick="testApiConnection();" id="btn-test-api">
+            🔌 Test Connection
+          </button>
+          <button type="submit" class="pub-btn pub-btn-primary" id="btn-save-cfg">
+            💾 Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/publytics.js"></script>
+</body>
+</html>
