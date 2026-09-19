@@ -697,107 +697,11 @@
     }
   }
 
-  // --- API SETTINGS MODAL HANDLERS ---
-  window.openConfigModal = async function() {
-    const modal = document.getElementById('api-modal');
-    if (modal) modal.style.display = 'flex';
-
-    try {
-      const res = await fetch('/api/publytics/config');
-      const cfg = await res.json();
-
-      document.getElementById('modal-default-site').value = cfg.currentSiteId || '';
-      document.getElementById('modal-sites-list').value = availableWebsites.join('\n');
-    } catch {}
+  // --- API SETTINGS REDIRECT TO SHORTENER SETTINGS ---
+  window.openConfigModal = function() {
+    window.location.href = '/admin#tab-settings';
   };
-
-  window.closeConfigModal = function() {
-    const modal = document.getElementById('api-modal');
-    if (modal) modal.style.display = 'none';
-  };
-
-  window.testConnectionFromModal = async function() {
-    const token = document.getElementById('modal-token').value.trim();
-    const site = document.getElementById('modal-default-site').value.trim();
-    const statusBox = document.getElementById('modal-status-msg');
-
-    if (!site) {
-      alert('Please provide a Site ID to test.');
-      return;
-    }
-
-    statusBox.style.display = 'block';
-    statusBox.style.background = '#0f203f';
-    statusBox.style.color = '#38bdf8';
-    statusBox.textContent = 'Testing connection with Publytics API...';
-
-    try {
-      const res = await fetch('/api/publytics/test-connection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiToken: token, siteId: site })
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        statusBox.style.background = 'rgba(16, 185, 129, 0.15)';
-        statusBox.style.color = '#10b981';
-        statusBox.textContent = '✅ ' + data.message;
-      } else {
-        statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
-        statusBox.style.color = '#f87171';
-        statusBox.textContent = '❌ ' + (data.error || 'Connection test failed.');
-      }
-    } catch (err) {
-      statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
-      statusBox.style.color = '#f87171';
-      statusBox.textContent = '❌ Error: ' + err.message;
-    }
-  };
-
-  window.saveApiSettings = async function(e) {
-    if (e) e.preventDefault();
-
-    const token = document.getElementById('modal-token').value.trim();
-    const defaultSite = document.getElementById('modal-default-site').value.trim();
-    const sitesRaw = document.getElementById('modal-sites-list').value;
-
-    const parsedSites = sitesRaw
-      .split('\n')
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    if (parsedSites.length > 0) {
-      availableWebsites = parsedSites;
-    }
-
-    const sitesList = availableWebsites.map(s => ({ id: s, name: s }));
-
-    try {
-      const res = await fetch('/api/publytics/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          apiToken: token || undefined,
-          siteId: defaultSite || currentSiteId,
-          sitesList
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        alert('Publytics API settings saved successfully!');
-        window.closeConfigModal();
-        if (defaultSite) currentSiteId = defaultSite;
-        renderWebsiteList();
-        loadAllAnalytics();
-      } else {
-        alert('Failed to save settings: ' + (data.error || 'Unknown error'));
-      }
-    } catch (err) {
-      alert('Error saving settings: ' + err.message);
-    }
-  };
+  window.closeConfigModal = function() {};
 
   window.logoutUser = async function() {
     try {

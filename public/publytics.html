@@ -1914,54 +1914,6 @@
     </a>
   </nav>
 
-  <!-- API SETTINGS MODAL -->
-  <div class="modal-overlay" id="api-modal">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeConfigModal();">&times;</button>
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
-        <span style="font-size:1.4rem;">⚙️</span>
-        <h3 style="font-size:1.2rem; font-weight:800;">Publytics API Setup</h3>
-      </div>
-      <p style="font-size:0.82rem; color:var(--p-text-muted); margin-bottom:1.15rem;">
-        Connect your official Publytics API token. Data is retrieved through our secure backend proxy.
-      </p>
-
-      <form onsubmit="saveApiSettings(event); return false;">
-        <div class="form-group">
-          <label>Publytics API Bearer Token</label>
-          <input type="password" id="modal-token" class="p-input" placeholder="e.g. 1|AbCdEf123456789..." autocomplete="off">
-          <small style="color:var(--p-text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
-            Generated in Publytics: User Icon &gt; API &gt; Create Token.
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>Default Website / Site ID</label>
-          <input type="text" id="modal-default-site" class="p-input" placeholder="e.g. 33gb.online/bCatRU or India.com">
-        </div>
-
-        <div class="form-group">
-          <label>Available Websites List (one per line)</label>
-          <textarea id="modal-sites-list" rows="4" class="p-input" placeholder="Hero.com&#10;India.com&#10;Pakistan.com&#10;Bhai.com"></textarea>
-          <small style="color:var(--p-text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
-            These appear directly in your "Select website" list.
-          </small>
-        </div>
-
-        <div id="modal-status-msg" style="display:none; padding:0.55rem 0.8rem; border-radius:8px; font-size:0.8rem; margin-bottom:1rem;"></div>
-
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
-          <button type="button" class="header-pill" onclick="testConnectionFromModal();" style="padding:0.6rem 0.9rem;">
-            🔌 Test Connection
-          </button>
-          <button type="submit" class="header-pill" style="background:#0284c7; color:#fff; border-color:#38bdf8; padding:0.6rem 1.1rem;">
-            💾 Save Settings
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="js/publytics.js?v=136"></script>
+  <script src="js/publytics.js?v=137"></script>
 </body>
 </html>

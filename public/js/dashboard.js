@@ -344,11 +344,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           if (isSuperAdminUser()) {
-            document.documentElement.classList.add('is-superadmin');
             document.body.classList.add('is-superadmin');
+            document.documentElement.classList.add('is-superadmin');
           } else {
-            document.documentElement.classList.remove('is-superadmin');
             document.body.classList.remove('is-superadmin');
+            document.documentElement.classList.remove('is-superadmin');
           }
 
           applyRoleUiScoping(currentLoggedInRole, data.permissions);
@@ -376,6 +376,14 @@ document.addEventListener('DOMContentLoaded', () => {
           if (isSuperAdminUser()) {
             loadDomains();
             loadDetectedDomains();
+          }
+          const curHash = (window.location.hash || '').replace('#', '').trim();
+          if (curHash) {
+            const tTabId = curHash.startsWith('tab-') ? curHash : ('tab-' + curHash);
+            const targetBtn = document.querySelector(`.tab-btn[data-tab="${tTabId}"]`);
+            if (targetBtn) {
+              setTimeout(() => { targetBtn.click(); }, 60);
+            }
           }
         }
       })
@@ -693,7 +701,12 @@ document.addEventListener('DOMContentLoaded', () => {
       customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
-    // 3. Change Password — Visible to anyone with Settings access
+    // 3. Change Password & Publytics API — Visible to anyone with Settings access
+    const publyticsApiCard = document.getElementById('publytics-api-card');
+    if (publyticsApiCard) {
+      publyticsApiCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
     const changePassCard = document.getElementById('change-password-card');
     if (changePassCard) {
       changePassCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
@@ -1071,6 +1084,9 @@ document.addEventListener('DOMContentLoaded', () => {
           loadDetectedDomains();
         }
         load2FAStatus();
+        if (window.loadPublyticsApiTokenSettings) {
+          window.loadPublyticsApiTokenSettings();
+        }
       }
     });
   });

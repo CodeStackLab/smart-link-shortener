@@ -1396,8 +1396,15 @@ app.get('/api/publytics/config', requireAuth, (req, res) => {
   res.json(publyticsService.getConfig());
 });
 
-// Update configuration (Master Admin only)
-app.post('/api/publytics/config', requireAuth, requireSuperAdmin, (req, res) => {
+// Update configuration (Admin or users with settings permission)
+function requireSettingsOrAdmin(req, res, next) {
+  if (isSuperAdminSession(req)) return next();
+  const perms = getUserPermissions(req.session && req.session.username, req.session && req.session.role);
+  if (Array.isArray(perms) && perms.includes('settings')) return next();
+  return res.status(403).json({ error: 'Access denied. You do not have permission to manage settings.' });
+}
+
+app.post('/api/publytics/config', requireAuth, requireSettingsOrAdmin, (req, res) => {
   const { apiToken, siteId, sitesList } = req.body || {};
   const updated = publyticsService.updateConfig({ apiToken, siteId, sitesList });
   res.json({ success: true, config: updated });

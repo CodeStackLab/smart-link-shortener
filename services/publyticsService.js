@@ -148,9 +148,11 @@ async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cac
 const publyticsService = {
   getConfig() {
     const config = getEffectiveConfig();
+    const masked = config.token ? (config.token.slice(0, 4) + '••••••••' + config.token.slice(-4)) : '';
     return {
       hasToken: Boolean(config.token),
-      tokenMasked: config.token ? (config.token.slice(0, 4) + '••••••••' + config.token.slice(-4)) : '',
+      tokenMasked: masked,
+      maskedToken: masked,
       currentSiteId: config.siteId,
       sitesList: config.sitesList
     };

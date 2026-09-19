@@ -2566,26 +2566,29 @@
         </form>
       </div>
 
-      <!-- Publytics Tracking Code Card (Master Admin Only) -->
       <!-- Publytics API Token Card (Exact Match to User Screenshot) -->
       <div class="card" style="padding:1.35rem; height:fit-content; margin-bottom:1.35rem;" id="publytics-api-card">
-        <div style="display:flex; align-items:center; gap:0.5rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a); margin-bottom:0.35rem;">
-          <span style="color:#2563eb; font-size:1.3rem;">📊</span>
-          <span>Publytics API Token</span>
+        <div style="display:flex; align-items:center; gap:0.6rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a); margin-bottom:0.35rem;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; display:inline-block; flex-shrink:0;">
+            <rect x="3" y="11" width="4.5" height="10" rx="2.25" fill="#2563eb"/>
+            <rect x="9.75" y="4" width="4.5" height="17" rx="2.25" fill="#2563eb"/>
+            <rect x="16.5" y="7.5" width="4.5" height="13.5" rx="2.25" fill="#2563eb"/>
+          </svg>
+          <span style="font-size:1.18rem; font-weight:800; color:var(--text-primary, #0f172a); letter-spacing:-0.01em;">Publytics API Token</span>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted, #64748b); margin:0 0 1rem 0;">
+        <p style="font-size:0.875rem; color:var(--text-muted, #64748b); margin:0 0 1.1rem 0; line-height:1.45;">
           Enter your Publytics API token to enable analytics integration.
         </p>
 
         <form id="publytics-api-form" onsubmit="event.preventDefault(); window.savePublyticsApiTokenSettings(event); return false;">
           <div style="position:relative; margin-bottom:1rem;">
-            <span style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-size:1.05rem; color:#64748b; pointer-events:none;">🔑</span>
-            <input type="password" id="publytics-settings-api-token" class="form-control" placeholder="Enter Publytics API Token" style="padding-left:2.75rem; border-radius:10px; height:48px; font-size:0.92rem;" autocomplete="off">
+            <span style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-size:1.1rem; color:#64748b; pointer-events:none;">🔑</span>
+            <input type="password" id="publytics-settings-api-token" class="form-control" placeholder="Enter Publytics API Token" style="padding-left:2.85rem; border-radius:10px; height:48px; font-size:0.95rem;" autocomplete="off">
           </div>
 
-          <div id="publytics-settings-token-feedback" style="display:none; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.82rem; font-weight:700; margin-bottom:0.75rem;"></div>
+          <div id="publytics-settings-token-feedback" style="display:none; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.85rem; font-weight:700; margin-bottom:0.75rem;"></div>
 
-          <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary btn-block" style="background:#3b82f6; border-color:#3b82f6; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; height:48px; border-radius:10px; font-size:0.95rem;">
+          <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary btn-block" style="background:#2563eb; border:none; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.45rem; height:48px; border-radius:10px; font-size:0.98rem; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.25); cursor:pointer; width:100%;">
             💾 Save
           </button>
         </form>
@@ -3232,8 +3235,9 @@ window.loadPublyticsApiTokenSettings = async function() {
     const res = await fetch('/api/publytics/config');
     if (!res.ok) return;
     const data = await res.json();
-    if (data && data.hasToken && data.maskedToken) {
-      tokenInput.placeholder = `Current: ${data.maskedToken} (Enter new to update)`;
+    const masked = data.maskedToken || data.tokenMasked;
+    if (data && data.hasToken && masked) {
+      tokenInput.placeholder = `Current: ${masked} (Enter new to update)`;
     }
   } catch(e) {}
 };
@@ -3282,7 +3286,7 @@ window.savePublyticsApiTokenSettings = async function(e) {
       }
       if (input) {
         input.value = '';
-        input.placeholder = `Saved: ${tokenVal.slice(0, 4)}...${tokenVal.slice(-4)}`;
+        input.placeholder = `Current: ${tokenVal.slice(0, 4)}••••••••${tokenVal.slice(-4)} (Enter new to update)`;
       }
     } else {
       throw new Error(result.error || 'Failed to save token');
@@ -3303,6 +3307,21 @@ window.savePublyticsApiTokenSettings = async function(e) {
   }
 };
 
+function activateTabFromUrlHash() {
+  const hash = (window.location.hash || '').replace('#', '').trim();
+  if (!hash) return;
+  const tabId = hash.startsWith('tab-') ? hash : ('tab-' + hash);
+  const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+  if (targetBtn) {
+    targetBtn.click();
+    const targetMobile = document.querySelector(`.mobile-nav-item[data-tab="${tabId}"]`);
+    if (targetMobile) {
+      document.querySelectorAll('.mobile-nav-item').forEach(m => m.classList.remove('active'));
+      targetMobile.classList.add('active');
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   window.loadPublyticsApiTokenSettings();
   const settingsTabBtn = document.querySelector('[data-tab="tab-settings"]');
@@ -3311,7 +3330,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.loadPublyticsApiTokenSettings();
     });
   }
+  setTimeout(activateTabFromUrlHash, 150);
 });
+window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
 
 </body>
