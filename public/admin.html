@@ -2567,21 +2567,26 @@
       </div>
 
       <!-- Publytics Tracking Code Card (Master Admin Only) -->
-      <div class="card" style="padding:1.5rem; height:fit-content; display:none;" id="publytics-tracking-card">
-        <!-- Title: Add Publytics Tracking Code (Centered) -->
-        <h2 style="font-size:1.35rem; font-weight:800; color:#0f172a; text-align:center; margin:0 0 1.15rem 0; letter-spacing:-0.02em;">
-          Add Publytics Tracking Code
-        </h2>
+      <!-- Publytics API Token Card (Exact Match to User Screenshot) -->
+      <div class="card" style="padding:1.35rem; height:fit-content; margin-bottom:1.35rem;" id="publytics-api-card">
+        <div style="display:flex; align-items:center; gap:0.5rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a); margin-bottom:0.35rem;">
+          <span style="color:#2563eb; font-size:1.3rem;">📊</span>
+          <span>Publytics API Token</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted, #64748b); margin:0 0 1rem 0;">
+          Enter your Publytics API token to enable analytics integration.
+        </p>
 
-        <!-- Script Input Textarea (Dark box matching screenshot) -->
-        <form id="publytics-tracking-form" onsubmit="event.preventDefault(); if(window.savePublyticsTrackingCode) window.savePublyticsTrackingCode(event); return false;">
-          <div style="margin-bottom:0.85rem;">
-            <textarea id="publytics-tracking-script-input" class="form-control" rows="5" placeholder="" spellcheck="false" style="font-family:monospace; font-size:0.88rem; font-weight:500; line-height:1.45; background:#ffffff; color:#0f172a; border:1.5px solid #cbd5e1; border-radius:14px; padding:0.9rem 1rem; width:100%; resize:vertical; box-sizing:border-box; outline:none; transition:border-color 0.2s ease;"></textarea>
+        <form id="publytics-api-form" onsubmit="event.preventDefault(); window.savePublyticsApiTokenSettings(event); return false;">
+          <div style="position:relative; margin-bottom:1rem;">
+            <span style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-size:1.05rem; color:#64748b; pointer-events:none;">🔑</span>
+            <input type="password" id="publytics-settings-api-token" class="form-control" placeholder="Enter Publytics API Token" style="padding-left:2.75rem; border-radius:10px; height:48px; font-size:0.92rem;" autocomplete="off">
           </div>
 
-          <!-- Save Button (Blue) -->
-          <button type="button" id="btn-save-publytics-tracking" class="btn btn-primary btn-block" onclick="if(window.savePublyticsTrackingCode) window.savePublyticsTrackingCode(event);" style="background:#1877f2; min-height:48px; font-weight:800; font-size:1.02rem; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; border-radius:12px; margin-bottom:0; box-shadow:0 3px 12px rgba(24,119,242,0.3); transition:all 0.2s ease;">
-            <span style="font-size:1.1rem;">💾</span> <span>Save Tracking Code</span>
+          <div id="publytics-settings-token-feedback" style="display:none; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.82rem; font-weight:700; margin-bottom:0.75rem;"></div>
+
+          <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary btn-block" style="background:#3b82f6; border-color:#3b82f6; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; height:48px; border-radius:10px; font-size:0.95rem;">
+            💾 Save
           </button>
         </form>
       </div>
@@ -3218,6 +3223,95 @@ window.submitAdminPasswordChange = async function(e) {
   }
   return false;
 };
+
+// ── Publytics API Token Settings Handler ──
+window.loadPublyticsApiTokenSettings = async function() {
+  const tokenInput = document.getElementById('publytics-settings-api-token');
+  if (!tokenInput) return;
+  try {
+    const res = await fetch('/api/publytics/config');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.hasToken && data.maskedToken) {
+      tokenInput.placeholder = `Current: ${data.maskedToken} (Enter new to update)`;
+    }
+  } catch(e) {}
+};
+
+window.savePublyticsApiTokenSettings = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  const input = document.getElementById('publytics-settings-api-token');
+  const btn = document.getElementById('btn-save-publytics-settings-token');
+  const feedback = document.getElementById('publytics-settings-token-feedback');
+
+  const tokenVal = input ? input.value.trim() : '';
+  if (!tokenVal) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = '❌ Please enter a valid Publytics API token.';
+    }
+    return false;
+  }
+
+  const origBtnText = btn ? btn.innerHTML : '💾 Save';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Saving...';
+  }
+
+  try {
+    const res = await fetch('/api/publytics/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiToken: tokenVal })
+    });
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#dcfce7';
+        feedback.style.color = '#15803d';
+        feedback.style.border = '1.5px solid #22c55e';
+        feedback.innerText = '✅ Publytics API token saved successfully!';
+      }
+      if (input) {
+        input.value = '';
+        input.placeholder = `Saved: ${tokenVal.slice(0, 4)}...${tokenVal.slice(-4)}`;
+      }
+    } else {
+      throw new Error(result.error || 'Failed to save token');
+    }
+  } catch (err) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = `❌ Error: ${err.message}`;
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.loadPublyticsApiTokenSettings();
+  const settingsTabBtn = document.querySelector('[data-tab="tab-settings"]');
+  if (settingsTabBtn) {
+    settingsTabBtn.addEventListener('click', () => {
+      window.loadPublyticsApiTokenSettings();
+    });
+  }
+});
 </script>
 
 </body>
