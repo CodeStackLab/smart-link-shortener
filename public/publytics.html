@@ -16,37 +16,22 @@
        PUBLYTICS DEEP MIDNIGHT BLUE CYBER THEME (Exact Pixel Match to Screenshots)
        ========================================================================== */
     :root {
-      --p-bg: #040a18;
-      --p-card-bg: #071329;
-      --p-card-inner: #0b1c3d;
-      --p-card-hover: #0f244c;
-      --p-border: rgba(56, 189, 248, 0.16);
-      --p-border-bright: rgba(56, 189, 248, 0.4);
-      --p-cyan: #38bdf8;
-      --p-blue-brand: #0284c7;
-      --p-blue-active: #00a2ff;
+      --p-bg: #020b1e;
+      --p-card-bg: #041538;
+      --p-card-inner: #03112c;
+      --p-card-hover: #07204f;
+      --p-border: rgba(0, 144, 255, 0.35);
+      --p-border-bright: #0090ff;
+      --p-cyan: #00e5ff;
+      --p-blue-brand: #0088ff;
+      --p-blue-active: #0088ff;
       --p-green: #10b981;
       --p-text-primary: #ffffff;
-      --p-text-secondary: #94a3b8;
+      --p-text-secondary: #93c5fd;
       --p-text-muted: #64748b;
       --p-radius-sm: 10px;
       --p-radius-md: 14px;
-      --p-radius-lg: 18px;
-    }
-
-    body.light-theme {
-      --p-bg: #f0f5ff;
-      --p-card-bg: #ffffff;
-      --p-card-inner: #f8fafc;
-      --p-card-hover: #f1f5f9;
-      --p-border: #cbd5e1;
-      --p-border-bright: #94a3b8;
-      --p-cyan: #0284c7;
-      --p-blue-brand: #1877f2;
-      --p-blue-active: #0284c7;
-      --p-text-primary: #0f172a;
-      --p-text-secondary: #334155;
-      --p-text-muted: #64748b;
+      --p-radius-lg: 16px;
     }
 
     * {
@@ -93,25 +78,26 @@
       gap: 0.75rem;
     }
     .hamburger-menu-btn {
-      width: 38px !important;
-      height: 38px !important;
-      padding: 7px 6px !important;
+      width: 42px !important;
+      height: 42px !important;
+      padding: 0 !important;
       border-radius: 12px !important;
-      border: 1.5px solid #dbeafe !important;
-      background: #f0f7ff !important;
+      border: 1.5px solid #bae6fd !important;
+      background: #e0f2fe !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important;
       align-items: center !important;
-      gap: 4px !important;
+      gap: 3.5px !important;
       cursor: pointer !important;
       flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
       transition: all 0.15s ease !important;
     }
     .hamburger-menu-btn span {
       display: block !important;
-      width: 18px !important;
-      height: 2.2px !important;
+      width: 20px !important;
+      height: 2.5px !important;
       background: #0f172a !important;
       border-radius: 2px !important;
       transition: all 0.2s ease !important;
@@ -370,42 +356,54 @@
         flex-shrink: 0 !important;
       }
       .hamburger-menu-btn {
-        width: 36px !important;
-        height: 36px !important;
-        padding: 6px 5px !important;
-        border-radius: 10px !important;
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
         flex-shrink: 0 !important;
+        background: #e0f2fe !important;
+        border: 1.5px solid #bae6fd !important;
       }
       .header-actions {
         display: flex !important;
         align-items: center !important;
-        gap: 0.22rem !important;
+        gap: 0.32rem !important;
         flex-shrink: 0 !important;
         flex-wrap: nowrap !important;
       }
       .top-pill-btn, .theme-toggle-btn, #logout-btn {
-        padding: 0 0.48rem !important;
-        font-size: 0.73rem !important;
-        font-weight: 700 !important;
-        height: 36px !important;
-        min-height: 36px !important;
+        padding: 0 0.65rem !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        border-radius: 9999px !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
         line-height: 1 !important;
-        gap: 0.2rem !important;
+        gap: 0.25rem !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
       }
       .user-badge-pill, #user-badge {
-        padding: 0 0.48rem !important;
-        font-size: 0.73rem !important;
-        font-weight: 700 !important;
-        height: 36px !important;
-        min-height: 36px !important;
+        padding: 0 0.65rem !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        border-radius: 9999px !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
         line-height: 1 !important;
-        gap: 0.2rem !important;
+        gap: 0.25rem !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
       }
 
       /* Mobile Drawer Menu */
@@ -516,84 +514,84 @@
 
     /* CARDS */
     .p-card {
-      background: var(--p-card-bg);
-      border: 1px solid var(--p-border);
-      border-radius: var(--p-radius-lg);
-      padding: 1.05rem 1.15rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      background: #041538;
+      border: 1.5px solid #0090ff;
+      border-radius: 16px;
+      padding: 1rem 1.15rem;
+      box-shadow: 0 4px 20px rgba(0, 144, 255, 0.15);
       position: relative;
     }
 
-    /* 1. SELECT WEBSITE ACCORDION CARD (Exact Screenshot 2) */
+    .card-inner-divider {
+      height: 1px;
+      background: rgba(0, 144, 255, 0.22);
+      margin: 0.8rem 0;
+      width: 100%;
+    }
+
+    /* 1. SELECT WEBSITE ACCORDION CARD (Exact Screenshot Match) */
     .website-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
       user-select: none;
-      font-weight: 800;
-      font-size: 1.05rem;
-      color: var(--p-text-primary);
+      padding: 0.1rem 0;
     }
 
     .website-header-title {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
-    }
-
-    .website-header-title .globe-icon {
-      color: var(--p-cyan);
-      font-size: 1.25rem;
+      gap: 0.65rem;
     }
 
     .website-list {
       display: flex;
       flex-direction: column;
       gap: 0.45rem;
-      margin-top: 0.85rem;
+      margin-top: 0.35rem;
     }
 
     .site-option {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
-      padding: 0.65rem 0.9rem;
+      padding: 0.55rem 0.5rem;
       border-radius: 12px;
       cursor: pointer;
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: var(--p-text-secondary);
-      border: 1px solid transparent;
       transition: all 0.18s ease;
+      user-select: none;
     }
-
     .site-option:hover {
-      background: var(--p-card-inner);
-      color: var(--p-text-primary);
+      background: rgba(0, 144, 255, 0.1);
     }
 
-    .site-option.active {
-      background: #0084ff;
-      color: #ffffff;
-      font-weight: 700;
-      border: 1px solid var(--p-cyan);
-      box-shadow: 0 0 16px rgba(0, 132, 255, 0.5);
-    }
-
-    .radio-circle {
-      width: 18px;
-      height: 18px;
+    .site-option .radio-circle {
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      border: 2px solid #64748b;
+      border: 2.2px solid #0090ff;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      transition: all 0.18s ease;
+    }
+    .site-option .site-name-text {
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-left: 0.95rem;
+      letter-spacing: -0.01em;
     }
 
+    .site-option.active {
+      background: #0088ff;
+      padding: 0.65rem 0.95rem;
+      box-shadow: 0 4px 16px rgba(0, 136, 255, 0.45);
+    }
     .site-option.active .radio-circle {
-      border-color: #ffffff;
+      border: none;
       background: #ffffff;
     }
     .site-option.active .radio-circle::after {
@@ -601,94 +599,151 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #0084ff;
+      background: #0088ff;
+    }
+    .site-option.active .site-name-text {
+      font-weight: 800;
     }
 
-    /* 2. TIME & DATE FILTER GRID (Exact Screenshot 2) */
-    .filter-grid-row1 {
+    /* 2. TIME & DATE FILTER GRID (Exact Screenshot Match) */
+    .filter-row-1 {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1.35fr 1fr 1fr;
       gap: 0.45rem;
+      align-items: center;
     }
 
-    .filter-grid-split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      margin-top: 0.45rem;
-      border: 1px solid var(--p-border);
-      border-radius: var(--p-radius-md);
-      overflow: hidden;
-      background: var(--p-card-inner);
+    .filter-btn-pill {
+      background: #0088ff;
+      color: #ffffff;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.98rem;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 136, 255, 0.35);
+      transition: all 0.18s ease;
+    }
+    .filter-btn-pill:not(.active) {
+      background: transparent;
+      color: #93c5fd;
+      box-shadow: none;
     }
 
-    .filter-btn-split {
+    .filter-btn-text {
       background: transparent;
       border: none;
-      color: var(--p-text-secondary);
-      font-size: 0.84rem;
+      color: #93c5fd;
       font-weight: 700;
-      padding: 0.65rem 0.5rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.18s ease;
-    }
-    .filter-btn-split:first-child {
-      border-right: 1px solid var(--p-border);
-    }
-    .filter-btn-split:hover {
-      color: var(--p-text-primary);
-      background: var(--p-card-hover);
-    }
-    .filter-btn-split.active {
-      background: #00a2ff;
-      color: #ffffff;
-    }
-
-    .filter-btn {
-      background: var(--p-card-inner);
-      border: 1px solid var(--p-border);
-      color: var(--p-text-secondary);
-      font-size: 0.85rem;
-      font-weight: 700;
-      padding: 0.65rem 0.5rem;
-      border-radius: var(--p-radius-md);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.18s ease;
-    }
-    .filter-btn:hover {
-      border-color: var(--p-cyan);
-      color: var(--p-text-primary);
-    }
-    .filter-btn.active {
-      background: #00a2ff;
-      border-color: var(--p-cyan);
-      color: #ffffff;
-      box-shadow: 0 0 15px rgba(0, 162, 255, 0.45);
-    }
-
-    .refresh-row {
+      font-size: 0.98rem;
+      height: 44px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-top: 0.75rem;
-      font-size: 0.78rem;
-      color: var(--p-text-muted);
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.18s ease;
+    }
+    .filter-btn-text:hover {
+      color: #ffffff;
+    }
+    .filter-btn-text.active {
+      background: #0088ff;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(0, 136, 255, 0.35);
     }
 
-    .refresh-label {
+    .filter-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+
+    .filter-btn-col {
+      background: transparent;
+      border: none;
+      color: #93c5fd;
+      font-weight: 700;
+      font-size: 0.98rem;
+      padding: 0.55rem 0;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 10px;
+      transition: all 0.18s ease;
+    }
+    .filter-btn-col:hover {
+      color: #ffffff;
+    }
+    .filter-btn-col.active {
+      background: #0088ff;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(0, 136, 255, 0.35);
+    }
+
+    .border-r {
+      border-right: 1px solid rgba(0, 144, 255, 0.22) !important;
+    }
+
+    .auto-refresh-ctrl {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.65rem;
+      padding-right: 0.5rem;
       cursor: pointer;
       user-select: none;
     }
 
-    .refresh-status {
+    .custom-checkbox {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: #00e5ff;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 229, 255, 0.3);
+      transition: all 0.18s ease;
+    }
+    .custom-checkbox:not(.checked) {
+      background: #03112c;
+      border: 1.5px solid #64748b;
+    }
+    .custom-checkbox:not(.checked) svg {
+      display: none;
+    }
+
+    .ctrl-text-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ctrl-title, .ctrl-sub {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      line-height: 1.25;
+    }
+
+    .refresh-status-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding-left: 0.85rem;
       cursor: pointer;
+      user-select: none;
+    }
+
+    .ctrl-title-blue, .ctrl-sub-blue {
+      color: #93c5fd;
+      font-weight: 600;
+      font-size: 0.85rem;
+      line-height: 1.25;
     }
 
     /* 3. ACTIVE VISITORS RIGHT NOW HERO CARD (Exact Screenshot 3) */
@@ -1458,15 +1513,24 @@
        ========================================================================== -->
   <main class="main-container" id="main-dashboard-view">
 
-    <!-- 1. SELECT WEBSITE ACCORDION CARD (Exact Screenshot 2) -->
-    <div class="p-card">
+    <!-- 1. SELECT WEBSITE ACCORDION CARD (Exact Screenshot Match) -->
+    <div class="p-card" style="margin-bottom:0.85rem;">
       <div class="website-header" onclick="toggleWebsiteDropdown();">
         <div class="website-header-title">
-          <span class="globe-icon">🌐</span>
-          <span>Select website</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span style="color:#ffffff; font-size:1.25rem; font-weight:800; letter-spacing:-0.01em;">Select website</span>
         </div>
-        <span id="site-chevron" style="color:var(--p-cyan); font-size:0.9rem;">▼</span>
+        <svg id="site-chevron" width="14" height="10" viewBox="0 0 14 10" fill="#00e5ff" style="flex-shrink:0; transition:transform 0.2s ease;">
+          <polygon points="0,0 14,0 7,10"/>
+        </svg>
       </div>
+
+      <!-- Divider line under header matching screenshot -->
+      <div class="card-inner-divider"></div>
 
       <!-- Website radio selection list -->
       <div class="website-list" id="website-list-container">
@@ -1474,33 +1538,59 @@
       </div>
     </div>
 
-    <!-- 2. TIME & DATE FILTER BUTTONS (Exact Screenshot 2) -->
-    <div class="p-card" style="padding:0.85rem 1rem;">
-      <div class="filter-grid-row1">
-        <button class="filter-btn active" data-period="realtime">⚡ Real-Time</button>
-        <button class="filter-btn" data-period="today">Today</button>
-        <button class="filter-btn" data-period="yesterday">Yesterday</button>
+    <!-- 2. TIME & DATE FILTER BUTTONS (Exact Screenshot Match) -->
+    <div class="p-card" style="padding:0.85rem 1rem; margin-bottom:0.85rem;">
+      <!-- Row 1: Real-Time, Today, Yesterday -->
+      <div class="filter-row-1">
+        <button class="filter-btn-pill active" data-period="realtime">
+          <span class="bolt-icon" style="color:#fbbf24; font-size:1.1rem;">⚡</span>
+          <span>Real-Time</span>
+        </button>
+        <button class="filter-btn-text" data-period="today">Today</button>
+        <button class="filter-btn-text" data-period="yesterday">Yesterday</button>
       </div>
 
-      <div class="filter-grid-split">
-        <button class="filter-btn-split" data-period="7d">Last 7 Days</button>
-        <button class="filter-btn-split" data-period="30d">Last 30 Days</button>
+      <div class="card-inner-divider"></div>
+
+      <!-- Row 2: Last 7 Days | Last 30 Days -->
+      <div class="filter-row-2col">
+        <button class="filter-btn-col border-r" data-period="7d">Last 7 Days</button>
+        <button class="filter-btn-col" data-period="30d">Last 30 Days</button>
       </div>
 
-      <div class="filter-grid-split" style="margin-top:0.45rem;">
-        <button class="filter-btn-split" data-period="month">This Month</button>
-        <button class="filter-btn-split" data-period="custom" id="btn-custom-date">Custom</button>
+      <div class="card-inner-divider"></div>
+
+      <!-- Row 3: This Month | Custom -->
+      <div class="filter-row-2col">
+        <button class="filter-btn-col border-r" data-period="month">This Month</button>
+        <button class="filter-btn-col" data-period="custom" id="btn-custom-date">Custom</button>
       </div>
 
-      <div class="refresh-row">
-        <label class="refresh-label">
-          <input type="checkbox" id="auto-refresh-check" checked style="accent-color:var(--p-cyan); cursor:pointer;">
-          <span>Auto-refresh (15s)</span>
-        </label>
+      <div class="card-inner-divider"></div>
 
-        <div class="refresh-status" onclick="loadAllAnalytics();" title="Click to refresh now">
-          <span id="refresh-spin-icon" style="display:inline-block;">🔄</span>
-          <span id="last-updated-clock">Updated: 12:43:14 PM</span>
+      <!-- Row 4: Auto-refresh (15s) | Updated: 12:43:14 PM -->
+      <div class="filter-row-2col">
+        <div class="auto-refresh-ctrl border-r" onclick="toggleAutoRefreshCheckbox();">
+          <div class="custom-checkbox checked" id="custom-auto-refresh-box">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <input type="checkbox" id="auto-refresh-check" checked style="display:none;">
+          <div class="ctrl-text-col">
+            <div class="ctrl-title">Auto-refresh</div>
+            <div class="ctrl-sub">(15s)</div>
+          </div>
+        </div>
+
+        <div class="refresh-status-ctrl" onclick="loadAllAnalytics();" title="Click to refresh now">
+          <svg class="refresh-spin-svg" id="refresh-spin-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+          <div class="ctrl-text-col">
+            <div class="ctrl-title-blue" id="last-updated-clock-time">Updated: 12:43:14</div>
+            <div class="ctrl-sub-blue" id="last-updated-clock-ampm">PM</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1690,13 +1780,112 @@
       </div>
     </div>
 
-    <!-- 6. AUDIENCE SECTION -->
+    <!-- 6. THE COMPLETE DETAILED ANALYTICS CARD (Exact Screenshot Match) -->
+    <div class="drilldown-wrapper" id="drilldown-page-view" style="display:flex; flex-direction:column; gap:0.85rem;">
+      <!-- Section Header matching Screenshot -->
+      <div class="p-card" style="padding:0.95rem 1.15rem; margin-bottom:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:0.55rem;">
+            <span style="font-size:1.2rem; color:#00e5ff;">🔗</span>
+            <span id="dd-page-title-text" style="font-size:1.15rem; font-weight:800; color:#ffffff;">UTM Source</span>
+          </div>
+          <div class="dd-date-pill" onclick="promptCustomDateRange();" style="background:#03112c; border:1px solid rgba(0,144,255,0.3); border-radius:9999px; padding:0.35rem 0.8rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer;">
+            <span>📅</span>
+            <span id="dd-period-pill-text">Last 7 Days</span>
+            <span>▼</span>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.45rem; margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid rgba(0,144,255,0.2);">
+          <span id="dd-hero-icon" style="font-size:1.1rem; color:#00e5ff;">🎯</span>
+          <div>
+            <div class="dd-hero-title" id="dd-hero-title-text" style="font-size:1.02rem; font-weight:800; color:#ffffff;">UTM Source Analytics</div>
+            <div class="dd-hero-sub" id="dd-hero-sub-text" style="font-size:0.76rem; color:#93c5fd;">Traffic breakdown by UTM source</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Mini Cards Grid (Exact Screenshot Match) -->
+      <div class="dd-quad-grid">
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>👥</span> Total Visitors</div>
+          <div class="dd-metric-val" id="dd-stat-visitors">12,482</div>
+          <div class="dd-metric-delta delta-green">↑ 24%</div>
+        </div>
+
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>🕐</span> Avg. Duration</div>
+          <div class="dd-metric-val" id="dd-stat-duration">2m 34s</div>
+          <div class="dd-metric-delta delta-green">↑ 18%</div>
+        </div>
+
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>🔄</span> Bounce Rate</div>
+          <div class="dd-metric-val" id="dd-stat-bounce">32.4%</div>
+          <div class="dd-metric-delta delta-green">↓ 6%</div>
+        </div>
+
+        <div class="dd-metric-card">
+          <div class="dd-metric-label"><span>👁️</span> Page Views</div>
+          <div class="dd-metric-val" id="dd-stat-views">38,721</div>
+          <div class="dd-metric-delta delta-green">↑ 27%</div>
+        </div>
+      </div>
+
+      <!-- Donut Chart & Legend Section (Exact Screenshot Match) -->
+      <div class="dd-chart-card">
+        <div class="donut-container">
+          <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg-element">
+            <!-- Rendered dynamically by JS with colorful ring segments -->
+          </svg>
+          <div class="donut-center-info">
+            <div class="donut-center-big" id="donut-center-num-text">12,482</div>
+            <div class="donut-center-subtext">Total Visitors</div>
+          </div>
+        </div>
+
+        <div class="dd-legend-column">
+          <div class="dd-legend-title" id="dd-legend-title-text">Traffic by UTM Source</div>
+          <div id="dd-legend-items-container">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Table Card (Exact Screenshot Match) -->
+      <div class="dd-table-card">
+        <div class="dd-table-header">
+          <span>📊</span>
+          <span id="dd-table-header-title">UTM Source Details</span>
+        </div>
+
+        <div class="table-scroll">
+          <table class="screenshot-table">
+            <thead>
+              <tr>
+                <th style="width:36px;">#</th>
+                <th id="th-dim-label">UTM Source</th>
+                <th>Visitors</th>
+                <th>% Share</th>
+                <th>Avg. Duration</th>
+                <th style="width:24px;"></th>
+              </tr>
+            </thead>
+            <tbody id="dd-table-body-rows">
+              <!-- Rendered dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. AUDIENCE SECTION -->
     <div class="p-card">
       <div class="section-card-header">
         <div>
           <div class="section-card-title">
             <span style="color:var(--p-cyan);">👥</span>
-            <span>Audience & Systems</span>
+            <span>Audience &amp; Systems</span>
           </div>
           <div class="section-card-sub">
             Devices, countries, browsers, and operating systems
@@ -1775,117 +1964,6 @@
 
   </main>
 
-  <!-- ==========================================================================
-       VIEW 2: THE COMPLETE DETAILED ANALYTICS PAGE (Exact Screenshot 5)
-       Opens immediately when user clicks on "UTM Source" or any item!
-       ========================================================================== -->
-  <main class="main-container" id="drilldown-page-view">
-    
-    <!-- Top Navigation Header (Back Button, Title, Date Pill) -->
-    <div class="dd-nav-header">
-      <div class="dd-nav-left">
-        <div class="dd-back-circle" onclick="closeDrilldownView();" title="Back to Overview">
-          ←
-        </div>
-        <div class="dd-page-title">
-          <span style="color:var(--p-cyan);">📊</span>
-          <span id="dd-page-title-text">UTM Source</span>
-        </div>
-      </div>
-
-      <div class="dd-date-pill" onclick="promptCustomDateRange();">
-        <span>📅</span>
-        <span id="dd-period-pill-text">Last 7 Days</span>
-        <span>▼</span>
-      </div>
-    </div>
-
-    <!-- Hero Banner (Screenshot 5 Top) -->
-    <div class="dd-hero-card">
-      <div class="dd-hero-icon-box" id="dd-hero-icon">
-        🎯
-      </div>
-      <div>
-        <div class="dd-hero-title" id="dd-hero-title-text">UTM Source Analytics</div>
-        <div class="dd-hero-sub" id="dd-hero-sub-text">Traffic breakdown by UTM source</div>
-      </div>
-    </div>
-
-    <!-- 4 Mini Cards Grid (Screenshot 5) -->
-    <div class="dd-quad-grid">
-      <div class="dd-metric-card">
-        <div class="dd-metric-label"><span>👥</span> Total Visitors</div>
-        <div class="dd-metric-val" id="dd-stat-visitors">12,482</div>
-        <div class="dd-metric-delta delta-green">↑ 24%</div>
-      </div>
-
-      <div class="dd-metric-card">
-        <div class="dd-metric-label"><span>🕐</span> Avg. Duration</div>
-        <div class="dd-metric-val" id="dd-stat-duration">2m 34s</div>
-        <div class="dd-metric-delta delta-green">↑ 18%</div>
-      </div>
-
-      <div class="dd-metric-card">
-        <div class="dd-metric-label"><span>🔄</span> Bounce Rate</div>
-        <div class="dd-metric-val" id="dd-stat-bounce">32.4%</div>
-        <div class="dd-metric-delta delta-green">↓ 6%</div>
-      </div>
-
-      <div class="dd-metric-card">
-        <div class="dd-metric-label"><span>👁️</span> Page Views</div>
-        <div class="dd-metric-val" id="dd-stat-views">38,721</div>
-        <div class="dd-metric-delta delta-green">↑ 27%</div>
-      </div>
-    </div>
-
-    <!-- Donut Chart & Legend Section (Screenshot 5 Middle) -->
-    <div class="dd-chart-card">
-      <div class="donut-container">
-        <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg-element">
-          <!-- Rendered dynamically by JS with colorful ring segments -->
-        </svg>
-        <div class="donut-center-info">
-          <div class="donut-center-big" id="donut-center-num-text">12,482</div>
-          <div class="donut-center-subtext">Total Visitors</div>
-        </div>
-      </div>
-
-      <div class="dd-legend-column">
-        <div class="dd-legend-title" id="dd-legend-title-text">Traffic by UTM Source</div>
-        <div id="dd-legend-items-container">
-          <!-- Rendered dynamically by JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Details Table Card (Screenshot 5 Bottom) -->
-    <div class="dd-table-card">
-      <div class="dd-table-header">
-        <span>📋</span>
-        <span id="dd-table-header-title">UTM Source Details</span>
-      </div>
-
-      <div class="table-scroll">
-        <table class="screenshot-table">
-          <thead>
-            <tr>
-              <th style="width:36px;">#</th>
-              <th id="th-dim-label">UTM Source</th>
-              <th>Visitors</th>
-              <th>% Share</th>
-              <th>Avg. Duration</th>
-              <th style="width:24px;"></th>
-            </tr>
-          </thead>
-          <tbody id="dd-table-body-rows">
-            <!-- Rendered dynamically by JS -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </main>
-
   <!-- ── MOBILE BOTTOM NAVIGATION BAR (Exact Match to Admin Dashboard) ── -->
   <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
     <a href="/admin" class="mobile-nav-item">
@@ -1914,6 +1992,6 @@
     </a>
   </nav>
 
-  <script src="js/publytics.js?v=137"></script>
+  <script src="js/publytics.js?v=138"></script>
 </body>
 </html>

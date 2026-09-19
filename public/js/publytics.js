@@ -115,14 +115,14 @@
     return `${Number(val).toFixed(1)}%`;
   }
 
-  // Default Mockup Data for Pixel-Perfect Experience when API has not loaded traffic
+  // Default Mockup Data for Pixel-Perfect Experience (Exact match to Screenshot 5)
   const MOCKUP_UTM_SOURCE_DATA = [
-    { name: 'google', visitors: 4812, share: 38.5, duration: '2m 48s' },
-    { name: 'facebook', visitors: 2971, share: 23.8, duration: '2m 21s' },
-    { name: 'direct', visitors: 1842, share: 14.8, duration: '2m 03s' },
-    { name: 'instagram', visitors: 1248, share: 10.0, duration: '1m 56s' },
-    { name: 'tiktok', visitors: 872, share: 7.0, duration: '1m 42s' },
-    { name: 'others', visitors: 737, share: 5.9, duration: '1m 28s' }
+    { name: 'google', visitors: 4461, share: 35.7, duration: '2m 34s' },
+    { name: 'facebook', visitors: 2865, share: 22.9, duration: '2m 12s' },
+    { name: 'direct', visitors: 1848, share: 14.8, duration: '1m 56s' },
+    { name: 'instagram', visitors: 1324, share: 10.6, duration: '1m 48s' },
+    { name: 'bing', visitors: 1026, share: 8.2, duration: '1m 39s' },
+    { name: 'others', visitors: 949, share: 7.7, duration: '1m 24s' }
   ];
 
   // --- INITIALIZATION ---
@@ -133,6 +133,8 @@
     initFilterButtons();
     initHistoryPopstate();
     startAutoRefresh();
+    renderScreenshotAnalyticsView('utm_source', MOCKUP_UTM_SOURCE_DATA);
+    updateClockDisplay();
 
     // Support deep-link to drilldown view (e.g. publytics.html?dim=utm_source)
     const urlParams = new URLSearchParams(window.location.search);
@@ -258,25 +260,29 @@
       const cfgRes = await fetch('/api/publytics/config');
       const cfg = await cfgRes.json();
 
-      if (Array.isArray(cfg.sitesList) && cfg.sitesList.length > 0) {
+      if (Array.isArray(cfg.sitesList) && cfg.sitesList.length > 1) {
         availableWebsites = cfg.sitesList.map(s => s.id || s.name || s);
+      } else {
+        availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
       }
-      if (cfg.currentSiteId) {
+      if (cfg.currentSiteId && availableWebsites.some(s => s.toLowerCase() === cfg.currentSiteId.toLowerCase())) {
         currentSiteId = cfg.currentSiteId;
-      } else if (!availableWebsites.includes(currentSiteId)) {
-        currentSiteId = availableWebsites[0] || 'India.com';
+      } else {
+        currentSiteId = 'India.com';
       }
 
       renderWebsiteList();
       loadAllAnalytics();
 
     } catch (err) {
+      availableWebsites = ['Hero.com', 'India.com', 'Pakistan.com', 'Bhai.com'];
+      currentSiteId = 'India.com';
       renderWebsiteList();
       loadAllAnalytics();
     }
   }
 
-  // Render "Select website" radio list (Screenshot 2)
+  // Render "Select website" radio list (Screenshot Match)
   function renderWebsiteList() {
     const container = document.getElementById('website-list-container');
     if (!container) return;
@@ -286,7 +292,7 @@
       return `
         <div class="site-option ${isSel ? 'active' : ''}" onclick="selectWebsite('${escapeHtml(siteName)}')">
           <span class="radio-circle"></span>
-          <span>${escapeHtml(siteName)}</span>
+          <span class="site-name-text">${escapeHtml(siteName)}</span>
         </div>
       `;
     }).join('');
@@ -305,16 +311,16 @@
 
     if (list.style.display === 'none') {
       list.style.display = 'flex';
-      if (chevron) chevron.textContent = '▼';
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
     } else {
       list.style.display = 'none';
-      if (chevron) chevron.textContent = '▶';
+      if (chevron) chevron.style.transform = 'rotate(-90deg)';
     }
   };
 
   // Filter Buttons Initialization (Real-Time, Today, Yesterday, 7d, 30d, etc.)
   function initFilterButtons() {
-    const buttons = document.querySelectorAll('.filter-btn, .filter-btn-split');
+    const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col');
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         buttons.forEach(b => b.classList.remove('active'));
@@ -335,11 +341,29 @@
     const autoRef = document.getElementById('auto-refresh-check');
     if (autoRef) {
       autoRef.addEventListener('change', () => {
+        const customBox = document.getElementById('custom-auto-refresh-box');
+        if (customBox) {
+          if (autoRef.checked) customBox.classList.add('checked');
+          else customBox.classList.remove('checked');
+        }
         if (autoRef.checked) startAutoRefresh();
         else stopAutoRefresh();
       });
     }
   }
+
+  window.toggleAutoRefreshCheckbox = function() {
+    const autoRef = document.getElementById('auto-refresh-check');
+    const customBox = document.getElementById('custom-auto-refresh-box');
+    if (!autoRef) return;
+    autoRef.checked = !autoRef.checked;
+    if (customBox) {
+      if (autoRef.checked) customBox.classList.add('checked');
+      else customBox.classList.remove('checked');
+    }
+    if (autoRef.checked) startAutoRefresh();
+    else stopAutoRefresh();
+  };
 
   function updatePeriodLabels(period) {
     const prettyMap = {
@@ -404,15 +428,29 @@
         await fetchDimensionData(currentActiveDimension);
       }
 
-      const clock = document.getElementById('last-updated-clock');
-      if (clock) {
-        clock.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
-      }
+      updateClockDisplay();
     } finally {
       isFetching = false;
       if (spin) spin.style.animation = '';
     }
   };
+
+  function updateClockDisplay() {
+    const now = new Date();
+    let hours = now.getHours();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const strTime = `${String(hours).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    
+    const timeEl = document.getElementById('last-updated-clock-time');
+    const ampmEl = document.getElementById('last-updated-clock-ampm');
+    if (timeEl) timeEl.textContent = `Updated: ${strTime}`;
+    if (ampmEl) ampmEl.textContent = ampm;
+
+    const legacyClock = document.getElementById('last-updated-clock');
+    if (legacyClock) legacyClock.textContent = `Updated: ${strTime} ${ampm}`;
+  }
 
   // 1. Realtime Data (Screenshot 3)
   async function fetchRealtime() {
@@ -485,17 +523,10 @@
   function showDrilldownViewInternal(dimensionKey, titleLabel, pushToHistory = true) {
     currentActiveDimension = dimensionKey;
 
-    const mainView = document.getElementById('main-dashboard-view');
     const ddView = document.getElementById('drilldown-page-view');
-    const siteHeader = document.querySelector('header.site-header') || document.querySelector('.top-header');
-    const tabsNav = document.getElementById('main-navigation-tabs') || document.querySelector('.tabs');
-
-    if (siteHeader) siteHeader.style.display = 'none';
-    if (tabsNav) tabsNav.style.display = 'none';
-    if (mainView) mainView.style.display = 'none';
     if (ddView) {
       ddView.style.display = 'flex';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      ddView.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     if (pushToHistory) {
@@ -553,17 +584,9 @@
   };
 
   function closeDrilldownViewInternal(popHistory = true) {
-    const mainView = document.getElementById('main-dashboard-view');
     const ddView = document.getElementById('drilldown-page-view');
-    const siteHeader = document.querySelector('header.site-header') || document.querySelector('.top-header');
-    const tabsNav = document.getElementById('main-navigation-tabs') || document.querySelector('.tabs');
-
-    if (siteHeader) siteHeader.style.display = '';
-    if (tabsNav) tabsNav.style.display = '';
-    if (ddView) ddView.style.display = 'none';
-    if (mainView) {
-      mainView.style.display = 'flex';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (ddView) {
+      ddView.style.display = 'none';
     }
 
     if (popHistory && window.history.state && window.history.state.view === 'drilldown') {
