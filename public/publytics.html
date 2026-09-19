@@ -2,890 +2,1403 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Publytics Analytics Dashboard | Live Traffic Intelligence</title>
-  <meta name="description" content="Dedicated Publytics Analytics Dashboard for real-time traffic, acquisition, audience, and user insights.">
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Publytics Intelligence Dashboard | Smart Analytics</title>
+  <meta name="description" content="Real-time Publytics Web Analytics Dashboard with acquisition, audience, and detailed drill-down insights.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <style>
+    /* ==========================================================================
+       PUBLYTICS DEEP MIDNIGHT BLUE CYBER THEME (Matches Exact Screenshot Mockup)
+       ========================================================================== */
     :root {
-      --pub-brand: #0ea5e9;
-      --pub-brand-dark: #0284c7;
-      --pub-accent: #10b981;
-      --pub-card-bg: #ffffff;
-      --pub-border: #e2e8f0;
-      --pub-text-main: #0f172a;
-      --pub-text-sub: #64748b;
+      --p-bg: #050b18;
+      --p-card-bg: #0b172d;
+      --p-card-inner: #0f203f;
+      --p-card-hover: #13274d;
+      --p-border: rgba(56, 189, 248, 0.15);
+      --p-border-bright: rgba(56, 189, 248, 0.35);
+      --p-blue-glow: 0 0 20px rgba(14, 165, 233, 0.25);
+      --p-cyan: #38bdf8;
+      --p-blue-brand: #0284c7;
+      --p-blue-active: #0ea5e9;
+      --p-green: #10b981;
+      --p-text-primary: #ffffff;
+      --p-text-secondary: #94a3b8;
+      --p-text-muted: #64748b;
+      --p-radius-sm: 10px;
+      --p-radius-md: 14px;
+      --p-radius-lg: 18px;
     }
 
-    body {
-      background: #f8fafc;
-      font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
-      color: var(--pub-text-main);
+    body.light-theme {
+      --p-bg: #f0f5ff;
+      --p-card-bg: #ffffff;
+      --p-card-inner: #f8fafc;
+      --p-card-hover: #f1f5f9;
+      --p-border: #cbd5e1;
+      --p-border-bright: #94a3b8;
+      --p-blue-glow: 0 4px 16px rgba(14, 165, 233, 0.15);
+      --p-cyan: #0284c7;
+      --p-blue-brand: #1877f2;
+      --p-blue-active: #0284c7;
+      --p-text-primary: #0f172a;
+      --p-text-secondary: #334155;
+      --p-text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    .pub-container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 1.5rem 2rem 4rem;
+    body {
+      background-color: var(--p-bg);
+      color: var(--p-text-primary);
+      font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 75px; /* Space for bottom navigation */
+      overflow-x: hidden;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* Top Bar Header */
-    .pub-header {
-      background: #ffffff;
-      border-bottom: 1px solid var(--pub-border);
+    /* TOP HEADER BAR (Exact Screenshot Top) */
+    .top-header {
+      background: var(--p-card-bg);
+      border-bottom: 1px solid var(--p-border);
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
 
-    .pub-header-inner {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 0.9rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .pub-logo-wrap {
+    .header-left {
       display: flex;
       align-items: center;
       gap: 0.75rem;
     }
 
-    .pub-badge-live {
+    .btn-hamburger {
+      background: none;
+      border: none;
+      color: var(--p-text-primary);
+      font-size: 1.35rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0.2rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .header-pill {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      background: rgba(16, 185, 129, 0.12);
-      color: #059669;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.2rem 0.6rem;
+      padding: 0.38rem 0.75rem;
       border-radius: 9999px;
-      border: 1px solid rgba(16, 185, 129, 0.25);
-    }
-
-    .pub-pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-      animation: pubPulse 1.8s infinite;
-    }
-
-    @keyframes pubPulse {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-
-    .pub-actions-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .pub-select {
-      background: #f1f5f9;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 0.45rem 0.85rem;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #1e293b;
+      font-size: 0.78rem;
+      font-weight: 700;
       cursor: pointer;
-      outline: none;
-    }
-
-    .pub-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.5rem 0.95rem;
-      border-radius: 10px;
-      font-size: 0.86rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.18s ease;
+      border: 1px solid var(--p-border);
+      background: var(--p-card-inner);
+      color: var(--p-text-primary);
+      transition: all 0.2s ease;
       text-decoration: none;
     }
-
-    .pub-btn-default {
-      background: #f1f5f9;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-    }
-    .pub-btn-default:hover {
-      background: #e2e8f0;
-      color: #0f172a;
+    .header-pill:hover {
+      border-color: var(--p-cyan);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
     }
 
-    .pub-btn-primary {
-      background: #1877f2;
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(24,119,242,0.25);
+    .header-pill.theme-btn {
+      color: #f59e0b;
     }
-    .pub-btn-primary:hover {
-      background: #0b57cf;
+    .header-pill.admin-badge {
+      color: var(--p-cyan);
+    }
+    .header-pill.logout-btn {
+      color: #f87171;
     }
 
-    /* Date Filter Pills */
-    .pub-date-bar {
+    /* MAIN APP CONTAINER */
+    .main-container {
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0.9rem 1rem 3rem;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin: 1.5rem 0 1.25rem;
-      background: #ffffff;
-      border: 1px solid var(--pub-border);
-      border-radius: 14px;
-      padding: 0.6rem 1rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-      flex-wrap: wrap;
-    }
-
-    .pub-filter-group {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      flex-wrap: wrap;
-    }
-
-    .pub-pill {
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      padding: 0.4rem 0.75rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.18s ease;
-    }
-
-    .pub-pill:hover {
-      background: #f1f5f9;
-      color: #0f172a;
-    }
-
-    .pub-pill.active {
-      background: #1877f2;
-      color: #ffffff;
-      box-shadow: 0 2px 6px rgba(24,119,242,0.25);
-    }
-
-    /* Cards Grid */
-    .pub-grid-kpi {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      flex-direction: column;
       gap: 1rem;
-      margin-bottom: 1.5rem;
     }
 
-    .pub-card {
-      background: #ffffff;
-      border: 1px solid var(--pub-border);
-      border-radius: 16px;
-      padding: 1.25rem 1.4rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    @media (min-width: 1024px) {
+      .main-container {
+        max-width: 900px;
+      }
+    }
+
+    /* CARDS */
+    .p-card {
+      background: var(--p-card-bg);
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-lg);
+      padding: 1.1rem 1.15rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
       position: relative;
     }
 
-    .pub-card:hover {
-      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-    }
-
-    .pub-kpi-label {
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--pub-text-sub);
-      margin-bottom: 0.4rem;
+    /* 1. SELECT WEBSITE ACCORDION CARD */
+    .website-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-    }
-
-    .pub-kpi-val {
-      font-size: 1.85rem;
+      cursor: pointer;
+      user-select: none;
       font-weight: 800;
-      color: #0f172a;
-      line-height: 1.2;
+      font-size: 1.05rem;
+      color: var(--p-text-primary);
     }
 
-    .pub-kpi-sub {
-      font-size: 0.76rem;
-      color: var(--pub-text-sub);
-      margin-top: 0.35rem;
-    }
-
-    /* Real-Time Hero Card */
-    .pub-realtime-hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #ffffff;
-      border-radius: 18px;
-      padding: 1.5rem 1.75rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 8px 30px rgba(15,23,42,0.18);
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 1.75rem;
+    .website-header-title {
+      display: flex;
       align-items: center;
+      gap: 0.55rem;
     }
 
-    @media (max-width: 900px) {
-      .pub-realtime-hero {
-        grid-template-columns: 1fr;
-      }
+    .website-header-title .globe-icon {
+      color: var(--p-cyan);
+      font-size: 1.25rem;
     }
 
-    .pub-realtime-main {
-      border-right: 1px solid rgba(255,255,255,0.12);
-      padding-right: 1.5rem;
+    .website-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.85rem;
+      transition: max-height 0.3s ease;
     }
 
-    @media (max-width: 900px) {
-      .pub-realtime-main {
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,0.12);
-        padding-right: 0;
-        padding-bottom: 1.25rem;
-      }
+    .site-option {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--p-text-secondary);
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
     }
 
-    .pub-realtime-num {
+    .site-option:hover {
+      background: var(--p-card-inner);
+      color: var(--p-text-primary);
+    }
+
+    .site-option.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      font-weight: 700;
+      border: 1px solid var(--p-cyan);
+      box-shadow: 0 0 15px rgba(2, 132, 199, 0.45);
+    }
+
+    .radio-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .site-option.active .radio-circle {
+      border-color: #ffffff;
+      background: #ffffff;
+    }
+    .site-option.active .radio-circle::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0284c7;
+    }
+
+    /* 2. TIME & DATE FILTER GRID */
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .filter-grid-row2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .filter-btn {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      color: var(--p-text-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.65rem 0.5rem;
+      border-radius: var(--p-radius-md);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s ease;
+      user-select: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--p-cyan);
+      color: var(--p-text-primary);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+      border-color: var(--p-cyan);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(0, 180, 216, 0.4);
+    }
+
+    .refresh-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+      font-size: 0.78rem;
+      color: var(--p-text-muted);
+    }
+
+    .refresh-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .refresh-status {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+    }
+
+    /* 3. ACTIVE VISITORS RIGHT NOW HERO CARD */
+    .realtime-card {
+      border: 1px solid var(--p-border);
+      background: linear-gradient(180deg, #0d1e3d 0%, #09152b 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .realtime-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 70%);
+      pointer-events: none;
+    }
+
+    .realtime-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--p-green);
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--p-green);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+      animation: pulseGreen 1.8s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .realtime-number-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin: 0.45rem 0 0.2rem;
+    }
+
+    .realtime-number {
       font-size: 3.2rem;
       font-weight: 900;
-      color: #38bdf8;
+      color: var(--p-cyan);
       line-height: 1;
-      margin: 0.3rem 0;
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
     }
 
-    .pub-realtime-badges {
-      display: flex;
-      gap: 0.6rem;
-      margin-top: 0.8rem;
+    .realtime-users-icon {
+      font-size: 1.5rem;
+      color: var(--p-cyan);
+      opacity: 0.85;
     }
 
-    .pub-time-badge {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 8px;
-      padding: 0.3rem 0.6rem;
-      font-size: 0.75rem;
+    .realtime-subtitle {
+      font-size: 0.82rem;
+      color: var(--p-text-secondary);
+      margin-bottom: 0.85rem;
     }
 
-    /* Breakdown Tabs and Tables */
-    .pub-section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .time-pills-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
       margin-bottom: 0.9rem;
     }
 
-    .pub-section-title {
+    .time-stat-pill {
+      background: rgba(15, 32, 63, 0.7);
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-sm);
+      padding: 0.45rem 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--p-text-secondary);
+    }
+
+    .time-stat-pill strong {
+      color: var(--p-text-primary);
+    }
+
+    .realtime-pages-box {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-md);
+      padding: 0.75rem 0.9rem;
+    }
+
+    .pages-box-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--p-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .pages-box-body {
+      font-size: 0.82rem;
+      color: var(--p-text-muted);
+      font-style: italic;
+    }
+
+    /* 4. MAIN KPI METRICS LIST (Stacked Clickable Cards) */
+    .kpi-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .kpi-row-card {
+      background: var(--p-card-bg);
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-md);
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .kpi-row-card:hover {
+      background: var(--p-card-hover);
+      border-color: var(--p-cyan);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transform: translateY(-1px);
+    }
+
+    .kpi-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .kpi-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: var(--p-cyan);
+      flex-shrink: 0;
+    }
+
+    .kpi-text-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kpi-title {
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--p-text-secondary);
+    }
+
+    .kpi-val {
+      font-size: 1.28rem;
+      font-weight: 900;
+      color: var(--p-text-primary);
+      margin: 0.1rem 0;
+    }
+
+    .kpi-sub {
+      font-size: 0.74rem;
+      color: var(--p-text-muted);
+    }
+
+    .kpi-chevron {
+      color: #64748b;
       font-size: 1.15rem;
       font-weight: 800;
-      color: #0f172a;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .kpi-row-card:hover .kpi-chevron {
+      color: var(--p-cyan);
+      transform: translateX(3px);
+    }
+
+    /* 5. ACCORDION LIST CARDS (UTM & Audience) */
+    .section-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-card-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--p-text-primary);
+    }
+
+    .section-card-sub {
+      font-size: 0.78rem;
+      color: var(--p-text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .date-dropdown-pill {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      color: var(--p-text-secondary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.35rem 0.65rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .accordion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .accordion-item {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      border-radius: 12px;
+      padding: 0.75rem 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .accordion-item:hover {
+      background: var(--p-card-hover);
+      border-color: var(--p-cyan);
+      transform: translateX(2px);
+    }
+
+    .acc-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .acc-icon {
+      font-size: 1.15rem;
+      color: var(--p-cyan);
+    }
+
+    .acc-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--p-text-primary);
+    }
+
+    .acc-desc {
+      font-size: 0.74rem;
+      color: var(--p-text-muted);
+    }
+
+    /* 6. EXPANDED DETAILED DRILL-DOWN CONTAINER (Bottom of Screenshot) */
+    .drilldown-container {
+      margin-top: 0.5rem;
+      display: none; /* Shown dynamically or on click */
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .metric-quad-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+    @media (min-width: 600px) {
+      .metric-quad-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .metric-mini-card {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+    }
+
+    .metric-mini-label {
+      font-size: 0.72rem;
+      color: var(--p-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .metric-mini-val {
+      font-size: 1.22rem;
+      font-weight: 900;
+      color: var(--p-text-primary);
+      margin: 0.2rem 0;
+    }
+
+    .metric-mini-delta {
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .delta-up { color: var(--p-green); }
+    .delta-down { color: #f87171; }
+
+    /* DONUT CHART & LEGEND CARD */
+    .chart-legend-box {
+      background: var(--p-card-inner);
+      border: 1px solid var(--p-border);
+      border-radius: var(--p-radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    @media (min-width: 580px) {
+      .chart-legend-box {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .donut-wrap {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      flex-shrink: 0;
+      margin: 0 auto;
+    }
+
+    .donut-center-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .donut-center-num {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--p-text-primary);
+      line-height: 1.1;
+    }
+
+    .donut-center-sub {
+      font-size: 0.68rem;
+      color: var(--p-text-muted);
+      font-weight: 600;
+    }
+
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      width: 100%;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .legend-row-left {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-    .pub-subtabs {
+    .color-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-row-right {
       display: flex;
-      gap: 0.35rem;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--pub-border);
-      padding-bottom: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .pub-subtab-btn {
-      background: none;
-      border: none;
-      padding: 0.4rem 0.85rem;
-      border-radius: 8px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .pub-subtab-btn.active {
-      background: rgba(24, 119, 242, 0.1);
-      color: #1877f2;
+      align-items: center;
+      gap: 1rem;
       font-weight: 700;
     }
 
-    /* Tables & Progress Bars */
-    .pub-table-wrap {
+    /* DETAILS TABLE */
+    .table-container {
       width: 100%;
       overflow-x: auto;
+      margin-top: 0.5rem;
     }
 
-    .pub-table {
+    .detail-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.87rem;
+      font-size: 0.82rem;
     }
 
-    .pub-table th {
+    .detail-table th {
       text-align: left;
-      padding: 0.65rem 0.85rem;
-      color: #64748b;
-      font-weight: 700;
-      font-size: 0.76rem;
+      padding: 0.6rem 0.75rem;
+      color: var(--p-text-muted);
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border-bottom: 1.5px solid var(--pub-border);
+      border-bottom: 1px solid var(--p-border);
     }
 
-    .pub-table td {
-      padding: 0.75rem 0.85rem;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
+    .detail-table td {
+      padding: 0.7rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--p-text-primary);
     }
 
-    .pub-table tr:hover td {
-      background: #f8fafc;
+    .detail-table tr:hover td {
+      background: var(--p-card-hover);
     }
 
-    .pub-interactive-row {
+    /* BOTTOM NAVIGATION DOCK (Exact Screenshot Bottom) */
+    .bottom-nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--p-card-bg);
+      border-top: 1px solid var(--p-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .nav-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--p-text-muted);
+      text-decoration: none;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      transition: all 0.15s ease;
       cursor: pointer;
-      transition: background 0.15s ease;
     }
 
-    .pub-interactive-row:hover td {
-      background: #eff6ff !important;
+    .nav-tab-item .nav-icon {
+      font-size: 1.25rem;
     }
 
-    .pub-progress-bg {
-      background: #f1f5f9;
-      height: 6px;
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 4px;
+    .nav-tab-item.active {
+      color: #ec4899; /* Vibrant magenta/purple from screenshot */
+    }
+    .nav-tab-item.active .nav-icon {
+      filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.6));
     }
 
-    .pub-progress-fill {
-      background: #1877f2;
-      height: 100%;
-      border-radius: 9999px;
-      transition: width 0.4s ease;
-    }
-
-    /* Modal Drawer for Clickable Detailed Data */
-    .pub-modal-backdrop {
+    /* CONFIG MODAL */
+    .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(3px);
-      z-index: 1000;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 500;
       display: none;
       align-items: center;
       justify-content: center;
       padding: 1rem;
     }
 
-    .pub-modal-content {
-      background: #ffffff;
-      border-radius: 20px;
+    .modal-card {
+      background: var(--p-card-bg);
+      border: 1px solid var(--p-border-bright);
+      border-radius: var(--p-radius-lg);
       width: 100%;
-      max-width: 760px;
-      max-height: 88vh;
-      overflow-y: auto;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      max-width: 520px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
       position: relative;
-      padding: 1.75rem 2rem;
     }
 
-    .pub-modal-close {
+    .modal-close {
       position: absolute;
-      top: 1.25rem;
-      right: 1.25rem;
-      background: #f1f5f9;
+      top: 1rem;
+      right: 1rem;
+      background: none;
       border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      font-size: 1.1rem;
+      color: var(--p-text-muted);
+      font-size: 1.35rem;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-    }
-    .pub-modal-close:hover {
-      background: #e2e8f0;
-      color: #0f172a;
     }
 
-    /* Setup Banner */
-    .pub-setup-banner {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border: 1.5px solid #f59e0b;
-      border-radius: 14px;
-      padding: 1rem 1.4rem;
-      margin-bottom: 1.5rem;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      color: #92400e;
+    .form-group {
+      margin-bottom: 1rem;
     }
 
-    .pub-empty-state {
-      text-align: center;
-      padding: 3rem 1.5rem;
-      color: #64748b;
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--p-text-secondary);
+      margin-bottom: 0.35rem;
     }
 
-    .pub-spin {
-      animation: pubRotate 1s linear infinite;
-      display: inline-block;
+    .p-input {
+      width: 100%;
+      background: var(--p-card-inner);
+      border: 1.5px solid var(--p-border);
+      color: var(--p-text-primary);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.88rem;
+      outline: none;
     }
-    @keyframes pubRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .p-input:focus {
+      border-color: var(--p-cyan);
+      box-shadow: var(--p-blue-glow);
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
-  <header class="pub-header">
-    <div class="pub-header-inner">
-      <div class="pub-logo-wrap">
-        <a href="/admin" class="pub-btn pub-btn-default" title="Return to Shortener Dashboard">
-          ← Back to Shortener
-        </a>
-        <div style="font-weight:800; font-size:1.15rem; color:#0f172a; display:flex; align-items:center; gap:0.4rem;">
-          <span style="font-size:1.35rem;">📊</span> Publytics Intelligence
-        </div>
-        <div class="pub-badge-live" id="live-indicator">
-          <span class="pub-pulse-dot"></span> Live API
-        </div>
-      </div>
-
-      <div class="pub-actions-wrap">
-        <!-- Site Selector Dropdown -->
-        <div style="display:flex; align-items:center; gap:0.4rem;">
-          <label for="site-select" style="font-size:0.8rem; font-weight:700; color:#64748b;">Site:</label>
-          <select id="site-select" class="pub-select">
-            <option value="">Loading sites...</option>
-          </select>
-        </div>
-
-        <button class="pub-btn pub-btn-default" id="btn-refresh" title="Refresh Live Data">
-          <span id="refresh-icon">🔄</span> Refresh
-        </button>
-
-        <button class="pub-btn pub-btn-primary" id="btn-open-config" title="Configure Publytics API Token & Sites">
-          ⚙️ API Settings
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="pub-container">
-
-    <!-- Setup Notice Banner (Visible when API token is not yet configured) -->
-    <div class="pub-setup-banner" id="setup-banner">
-      <div>
-        <strong style="font-size:0.95rem;">⚠️ Publytics API Token Required</strong>
-        <div style="font-size:0.82rem; margin-top:0.2rem;">
-          To view real-time data from the Publytics API without sample/dummy data, enter your Publytics Bearer Token.
-        </div>
-      </div>
-      <button class="pub-btn pub-btn-primary" onclick="openConfigModal();" style="background:#d97706; white-space:nowrap;">
-        Enter API Token
+  <!-- TOP HEADER (Exact Screenshot Top) -->
+  <header class="top-header">
+    <div class="header-left">
+      <button class="btn-hamburger" onclick="window.location.href='/admin';" title="Main Navigation Menu">
+        ☰
       </button>
     </div>
 
-    <!-- Date Range & Realtime Selector Bar -->
-    <div class="pub-date-bar">
-      <div class="pub-filter-group" id="date-pill-group">
-        <button class="pub-pill active" data-period="realtime">⚡ Real-Time</button>
-        <button class="pub-pill" data-period="today">Today</button>
-        <button class="pub-pill" data-period="yesterday">Yesterday</button>
-        <button class="pub-pill" data-period="7d">Last 7 Days</button>
-        <button class="pub-pill" data-period="30d">Last 30 Days</button>
-        <button class="pub-pill" data-period="month">This Month</button>
-        <button class="pub-pill" data-period="custom" id="btn-custom-date">📅 Custom</button>
+    <div class="header-right">
+      <button class="header-pill theme-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+        ☀️ Light Mode
+      </button>
+
+      <span class="header-pill admin-badge" id="role-badge">
+        🛡️ Master Admin
+      </span>
+
+      <button class="header-pill logout-btn" onclick="logoutUser();" title="Logout Session">
+        🔒 Logout
+      </button>
+
+      <button class="header-pill" onclick="openConfigModal();" style="color:var(--p-cyan);" title="Publytics API Token & Settings">
+        ⚙️ Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="main-container">
+
+    <!-- 1. SELECT WEBSITE ACCORDION CARD (Exact Mockup) -->
+    <div class="p-card">
+      <div class="website-header" onclick="toggleWebsiteDropdown();">
+        <div class="website-header-title">
+          <span class="globe-icon">🌐</span>
+          <span>Select website</span>
+        </div>
+        <span id="site-chevron" style="color:var(--p-cyan); font-size:0.9rem; transition:transform 0.2s ease;">▼</span>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.8rem; color:#64748b;">
-        <label style="display:flex; align-items:center; gap:0.35rem; cursor:pointer;">
-          <input type="checkbox" id="auto-refresh-toggle" checked style="cursor:pointer;">
-          <span>Auto-refresh (15s)</span>
-        </label>
-        <span id="last-updated-text" style="color:#94a3b8;">Updated: Just now</span>
+      <!-- Website radio selection list (Default visible as in mockup) -->
+      <div class="website-list" id="website-list-container">
+        <!-- Rendered by JS: Hero.com, India.com (Active), Pakistan.com, Bhai.com -->
       </div>
     </div>
 
-    <!-- SECTION 1: Real-Time Active Monitoring Hero Card -->
-    <section class="pub-realtime-hero" id="realtime-hero-section">
-      <div class="pub-realtime-main">
-        <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; display:flex; align-items:center; gap:0.4rem;">
-          <span class="pub-pulse-dot"></span> Active Visitors Right Now
+    <!-- 2. TIME & DATE FILTER BUTTONS (Exact Mockup 3 Rows) -->
+    <div class="p-card" style="padding:0.85rem 1rem;">
+      <div class="filter-grid" id="filter-row-1">
+        <button class="filter-btn active" data-period="realtime">⚡ Real-Time</button>
+        <button class="filter-btn" data-period="today">Today</button>
+        <button class="filter-btn" data-period="yesterday">Yesterday</button>
+      </div>
+
+      <div class="filter-grid-row2" id="filter-row-2">
+        <button class="filter-btn" data-period="7d">Last 7 Days</button>
+        <button class="filter-btn" data-period="30d">Last 30 Days</button>
+      </div>
+
+      <div class="filter-grid-row2" id="filter-row-3" style="margin-top:0.5rem;">
+        <button class="filter-btn" data-period="month">This Month</button>
+        <button class="filter-btn" data-period="custom" id="btn-custom-date">Custom</button>
+      </div>
+
+      <div class="refresh-row">
+        <label class="refresh-label">
+          <input type="checkbox" id="auto-refresh-check" checked style="accent-color:var(--p-cyan); cursor:pointer;">
+          <span>Auto-refresh (15s)</span>
+        </label>
+
+        <div class="refresh-status" onclick="loadAllAnalytics();" title="Click to refresh now">
+          <span id="refresh-spin-icon" style="display:inline-block;">🔄</span>
+          <span id="last-updated-clock">Updated: 12:43:14 PM</span>
         </div>
-        <div class="pub-realtime-num" id="rt-active-count">0</div>
-        <div style="font-size:0.8rem; color:#cbd5e1;">Live traffic on selected Publytics site</div>
-        <div class="pub-realtime-badges">
-          <div class="pub-time-badge">1m: <strong id="rt-1m">0</strong></div>
-          <div class="pub-time-badge">5m: <strong id="rt-5m">0</strong></div>
-          <div class="pub-time-badge">30m: <strong id="rt-30m">0</strong></div>
+      </div>
+    </div>
+
+    <!-- 3. ACTIVE VISITORS RIGHT NOW HERO CARD (Exact Mockup) -->
+    <div class="p-card realtime-card" id="realtime-hero-card">
+      <div class="realtime-header">
+        <span class="pulse-dot"></span>
+        <span>ACTIVE VISITORS RIGHT NOW</span>
+      </div>
+
+      <div class="realtime-number-row">
+        <div class="realtime-number" id="rt-active-visitors">0</div>
+        <span class="realtime-users-icon">👥</span>
+      </div>
+
+      <div class="realtime-subtitle">
+        Live traffic on selected Publytics site
+      </div>
+
+      <div class="time-pills-row">
+        <div class="time-stat-pill">
+          <span>🕐</span> 1m: <strong id="rt-1m-val">0</strong>
+        </div>
+        <div class="time-stat-pill">
+          <span>🕐</span> 5m: <strong id="rt-5m-val">0</strong>
+        </div>
+        <div class="time-stat-pill">
+          <span>🕐</span> 30m: <strong id="rt-30m-val">0</strong>
         </div>
       </div>
 
-      <div>
-        <div style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin-bottom:0.6rem;">
-          Active Real-Time Pages
+      <div class="realtime-pages-box">
+        <div class="pages-box-title">
+          <span>((•))</span>
+          <span>ACTIVE REAL-TIME PAGES</span>
         </div>
-        <div id="rt-pages-container" style="display:flex; flex-direction:column; gap:0.4rem; max-height:160px; overflow-y:auto;">
-          <div style="font-size:0.82rem; color:#94a3b8; font-style:italic;">Listening for real-time visitors...</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 2: Main Analytics KPI Cards -->
-    <section class="pub-grid-kpi">
-      <div class="pub-card">
-        <div class="pub-kpi-label">
-          <span>👥 Unique Users</span>
-          <span>📈</span>
-        </div>
-        <div class="pub-kpi-val" id="kpi-users">--</div>
-        <div class="pub-kpi-sub" id="kpi-users-sub">Unique visitors in period</div>
-      </div>
-
-      <div class="pub-card">
-        <div class="pub-kpi-label">
-          <span>👀 Page Views</span>
-          <span>📄</span>
-        </div>
-        <div class="pub-kpi-val" id="kpi-views">--</div>
-        <div class="pub-kpi-sub" id="kpi-views-sub">Total pages viewed</div>
-      </div>
-
-      <div class="pub-card">
-        <div class="pub-kpi-label">
-          <span>⚡ Sessions</span>
-          <span>🔄</span>
-        </div>
-        <div class="pub-kpi-val" id="kpi-sessions">--</div>
-        <div class="pub-kpi-sub" id="kpi-sessions-sub">Browsing sessions</div>
-      </div>
-
-      <div class="pub-card">
-        <div class="pub-kpi-label">
-          <span>⏱️ Avg Duration</span>
-          <span>⏳</span>
-        </div>
-        <div class="pub-kpi-val" id="kpi-duration">--</div>
-        <div class="pub-kpi-sub">Time spent per session</div>
-      </div>
-
-      <div class="pub-card">
-        <div class="pub-kpi-label">
-          <span>📉 Bounce Rate</span>
-          <span>🎯</span>
-        </div>
-        <div class="pub-kpi-val" id="kpi-bounce">--</div>
-        <div class="pub-kpi-sub">Single-page exits</div>
-      </div>
-    </section>
-
-    <!-- SECTION 3: Acquisition & Campaign Tracking -->
-    <section class="pub-card" style="margin-bottom:1.5rem;">
-      <div class="pub-section-header">
-        <div class="pub-section-title">
-          <span>🚀</span> Acquisition & Campaigns
-        </div>
-        <div style="font-size:0.78rem; color:#64748b;">
-          👉 Click any item for complete detailed breakdown
+        <div class="pages-box-body" id="rt-pages-content">
+          Listening for real-time visitors...
         </div>
       </div>
+    </div>
 
-      <!-- Acquisition Subtabs -->
-      <div class="pub-subtabs" id="acq-subtabs">
-        <button class="pub-subtab-btn active" data-dim="utm_source">UTM Source</button>
-        <button class="pub-subtab-btn" data-dim="utm_medium">UTM Medium</button>
-        <button class="pub-subtab-btn" data-dim="utm_campaign">UTM Campaign</button>
-        <button class="pub-subtab-btn" data-dim="utm_term">UTM Term</button>
-        <button class="pub-subtab-btn" data-dim="utm_content">UTM Content</button>
-        <button class="pub-subtab-btn" data-dim="referrer">Referrers</button>
-        <button class="pub-subtab-btn" data-dim="source">Sources</button>
-      </div>
-
-      <div class="pub-table-wrap">
-        <table class="pub-table" id="acq-table">
-          <thead>
-            <tr>
-              <th id="acq-col-name" style="width:50%;">Dimension</th>
-              <th style="width:20%;">Visitors</th>
-              <th style="width:20%;">Share</th>
-              <th style="width:10%; text-align:right;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="acq-tbody">
-            <tr><td colspan="4" class="pub-empty-state">Loading acquisition data from Publytics...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- SECTION 4: Audience Demographics & Systems -->
-    <section style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
-      <!-- Countries -->
-      <div class="pub-card">
-        <div class="pub-section-header">
-          <div class="pub-section-title"><span>🌍</span> Countries</div>
-          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+    <!-- 4. MAIN KPI METRICS LIST (Exact Mockup: Stacked Rows with Chevron >) -->
+    <div class="kpi-stack">
+      <div class="kpi-row-card" onclick="openDrilldownView('pageviews', 'Page Views', 0);">
+        <div class="kpi-left">
+          <div class="kpi-icon-box">👥</div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">PAGE VIEWS</div>
+            <div class="kpi-val" id="kpi-views-val">0</div>
+            <div class="kpi-sub">Total pages viewed</div>
+          </div>
         </div>
-        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
-          <table class="pub-table">
-            <thead>
-              <tr>
-                <th>Country</th>
-                <th>Visitors</th>
-                <th style="width:30%;">Share</th>
-              </tr>
-            </thead>
-            <tbody id="audience-countries-tbody">
-              <tr><td colspan="3" class="pub-empty-state">Loading countries...</td></tr>
-            </tbody>
-          </table>
+        <div class="kpi-chevron">›</div>
+      </div>
+
+      <div class="kpi-row-card" onclick="openDrilldownView('sessions', 'Sessions', 0);">
+        <div class="kpi-left">
+          <div class="kpi-icon-box">👤</div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">SESSIONS</div>
+            <div class="kpi-val" id="kpi-sessions-val">0</div>
+            <div class="kpi-sub">Browsing sessions</div>
+          </div>
+        </div>
+        <div class="kpi-chevron">›</div>
+      </div>
+
+      <div class="kpi-row-card" onclick="openDrilldownView('duration', 'Average Duration', 0);">
+        <div class="kpi-left">
+          <div class="kpi-icon-box">🕐</div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">AVERAGE DURATION</div>
+            <div class="kpi-val" id="kpi-duration-val">0s</div>
+            <div class="kpi-sub">Time spent per session</div>
+          </div>
+        </div>
+        <div class="kpi-chevron">›</div>
+      </div>
+
+      <div class="kpi-row-card" onclick="openDrilldownView('bounce', 'Bounce Rate', 0);">
+        <div class="kpi-left">
+          <div class="kpi-icon-box">📈</div>
+          <div class="kpi-text-col">
+            <div class="kpi-title">BOUNCE RATE</div>
+            <div class="kpi-val" id="kpi-bounce-val">0%</div>
+            <div class="kpi-sub">Single-page visits</div>
+          </div>
+        </div>
+        <div class="kpi-chevron">›</div>
+      </div>
+    </div>
+
+    <!-- 5. UTM / TRAFFIC SOURCE SECTION (Exact Mockup: Rows with Chevron >) -->
+    <div class="p-card">
+      <div class="section-card-header">
+        <div>
+          <div class="section-card-title">
+            <span style="color:var(--p-cyan);">📊</span>
+            <span>UTM / Traffic Source</span>
+          </div>
+          <div class="section-card-sub">
+            See what brings visitors to your website and track
+          </div>
+        </div>
+
+        <div class="date-dropdown-pill" onclick="promptCustomDateRange();">
+          <span>📅</span>
+          <span id="label-acq-date">Last 7 Days</span>
+          <span>▼</span>
         </div>
       </div>
 
-      <!-- Devices -->
-      <div class="pub-card">
-        <div class="pub-section-header">
-          <div class="pub-section-title"><span>📱</span> Devices</div>
-          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+      <div class="accordion-list">
+        <div class="accordion-item" onclick="triggerDrilldown('utm_source', 'UTM Source');">
+          <div class="acc-left">
+            <span class="acc-icon">🔗</span>
+            <div>
+              <div class="acc-name">UTM Source</div>
+              <div class="acc-desc">View traffic by UTM source</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
         </div>
-        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
-          <table class="pub-table">
-            <thead>
-              <tr>
-                <th>Device</th>
-                <th>Visitors</th>
-                <th style="width:30%;">Share</th>
-              </tr>
-            </thead>
-            <tbody id="audience-devices-tbody">
-              <tr><td colspan="3" class="pub-empty-state">Loading devices...</td></tr>
-            </tbody>
-          </table>
+
+        <div class="accordion-item" onclick="triggerDrilldown('utm_medium', 'UTM Medium');">
+          <div class="acc-left">
+            <span class="acc-icon">🔀</span>
+            <div>
+              <div class="acc-name">UTM Medium</div>
+              <div class="acc-desc">View traffic by UTM medium</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('utm_campaign', 'UTM Campaign');">
+          <div class="acc-left">
+            <span class="acc-icon">🎯</span>
+            <div>
+              <div class="acc-name">UTM Campaign</div>
+              <div class="acc-desc">View traffic by UTM campaign</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('utm_term', 'UTM Term');">
+          <div class="acc-left">
+            <span class="acc-icon">🏷️</span>
+            <div>
+              <div class="acc-name">UTM Term</div>
+              <div class="acc-desc">View traffic by UTM term</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('utm_content', 'UTM Content');">
+          <div class="acc-left">
+            <span class="acc-icon">📄</span>
+            <div>
+              <div class="acc-name">UTM Content</div>
+              <div class="acc-desc">View traffic by UTM content</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('referrer', 'Referrals');">
+          <div class="acc-left">
+            <span class="acc-icon">📢</span>
+            <div>
+              <div class="acc-name">Referrals</div>
+              <div class="acc-desc">View traffic by referrals</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('source', 'Source');">
+          <div class="acc-left">
+            <span class="acc-icon">🌐</span>
+            <div>
+              <div class="acc-name">Source</div>
+              <div class="acc-desc">View traffic by source</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. AUDIENCE & DEMOGRAPHICS SECTION (Rows with Chevron >) -->
+    <div class="p-card">
+      <div class="section-card-header">
+        <div>
+          <div class="section-card-title">
+            <span style="color:var(--p-cyan);">👥</span>
+            <span>Audience & Systems</span>
+          </div>
+          <div class="section-card-sub">
+            Devices, countries, browsers, and operating systems
+          </div>
+        </div>
+
+        <div class="date-dropdown-pill" onclick="promptCustomDateRange();">
+          <span>📅</span>
+          <span id="label-aud-date">Last 7 Days</span>
+          <span>▼</span>
         </div>
       </div>
 
-      <!-- Operating Systems -->
-      <div class="pub-card">
-        <div class="pub-section-header">
-          <div class="pub-section-title"><span>💻</span> Operating Systems</div>
-          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
+      <div class="accordion-list">
+        <div class="accordion-item" onclick="triggerDrilldown('country', 'Country');">
+          <div class="acc-left">
+            <span class="acc-icon">🌍</span>
+            <div>
+              <div class="acc-name">Country</div>
+              <div class="acc-desc">View traffic by visitor country</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
         </div>
-        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
-          <table class="pub-table">
-            <thead>
-              <tr>
-                <th>OS</th>
-                <th>Visitors</th>
-                <th style="width:30%;">Share</th>
-              </tr>
-            </thead>
-            <tbody id="audience-os-tbody">
-              <tr><td colspan="3" class="pub-empty-state">Loading OS data...</td></tr>
-            </tbody>
-          </table>
+
+        <div class="accordion-item" onclick="triggerDrilldown('device', 'Device');">
+          <div class="acc-left">
+            <span class="acc-icon">📱</span>
+            <div>
+              <div class="acc-name">Device</div>
+              <div class="acc-desc">Mobile, Desktop, and Tablet breakdown</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
         </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('os', 'Operating System');">
+          <div class="acc-left">
+            <span class="acc-icon">💻</span>
+            <div>
+              <div class="acc-name">Operating System</div>
+              <div class="acc-desc">Windows, Mac, Android, iOS</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('browser', 'Browser');">
+          <div class="acc-left">
+            <span class="acc-icon">🌐</span>
+            <div>
+              <div class="acc-name">Browser</div>
+              <div class="acc-desc">Chrome, Safari, Firefox, Edge</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('hostname', 'Hostname');">
+          <div class="acc-left">
+            <span class="acc-icon">🏷️</span>
+            <div>
+              <div class="acc-name">Hostname</div>
+              <div class="acc-desc">Domains and subdomains receiving hits</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+
+        <div class="accordion-item" onclick="triggerDrilldown('page', 'Content / Top Pages');">
+          <div class="acc-left">
+            <span class="acc-icon">📄</span>
+            <div>
+              <div class="acc-name">Content / Top Pages</div>
+              <div class="acc-desc">Highest visited URLs and target links</div>
+            </div>
+          </div>
+          <div class="kpi-chevron">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. DETAILED DRILL-DOWN CONTAINER (Matches Exact Bottom of Screenshot) -->
+    <div class="drilldown-container" id="drilldown-container">
+      
+      <div class="p-card">
+        <div class="section-card-header">
+          <div>
+            <div class="section-card-title">
+              <span id="dd-header-icon" style="color:var(--p-cyan);">🔗</span>
+              <span id="dd-header-title">UTM Source</span>
+            </div>
+            <div class="section-card-sub" id="dd-header-sub">
+              Traffic breakdown by UTM source
+            </div>
+          </div>
+
+          <div class="date-dropdown-pill" onclick="promptCustomDateRange();">
+            <span>📅</span>
+            <span id="dd-header-date">Last 7 Days</span>
+            <span>▼</span>
+          </div>
+        </div>
+
+        <!-- 4 Metric Cards in a Grid (Total Visitors, Avg Duration, Bounce Rate, Page Views) -->
+        <div class="metric-quad-grid">
+          <div class="metric-mini-card">
+            <div class="metric-mini-label">👥 Total Visitors</div>
+            <div class="metric-mini-val" id="dd-kpi-visitors">0</div>
+            <div class="metric-mini-delta delta-up">↑ 24%</div>
+          </div>
+
+          <div class="metric-mini-card">
+            <div class="metric-mini-label">🕐 Avg. Duration</div>
+            <div class="metric-mini-val" id="dd-kpi-duration">0s</div>
+            <div class="metric-mini-delta delta-up">↑ 18%</div>
+          </div>
+
+          <div class="metric-mini-card">
+            <div class="metric-mini-label">🎯 Bounce Rate</div>
+            <div class="metric-mini-val" id="dd-kpi-bounce">0%</div>
+            <div class="metric-mini-delta delta-down">↓ 6%</div>
+          </div>
+
+          <div class="metric-mini-card">
+            <div class="metric-mini-label">📄 Page Views</div>
+            <div class="metric-mini-val" id="dd-kpi-views">0</div>
+            <div class="metric-mini-delta delta-up">↑ 27%</div>
+          </div>
+        </div>
+
+        <!-- Donut Chart & Legend Section (Exact Layout in Screenshot) -->
+        <div class="chart-legend-box" style="margin-top:1rem;">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg">
+              <!-- Rendered via JS SVG segments -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#1e293b" stroke-width="12"></circle>
+            </svg>
+            <div class="donut-center-text">
+              <div class="donut-center-num" id="donut-center-total">0</div>
+              <div class="donut-center-sub">Total Visitors</div>
+            </div>
+          </div>
+
+          <div class="legend-list" id="donut-legend-list">
+            <!-- Rendered by JS: google 35.7% 4,461, facebook 22.9% 2,865, etc. -->
+          </div>
+        </div>
+
+        <!-- Details Table (Exact Layout in Screenshot) -->
+        <div style="margin-top:1.25rem;">
+          <div style="font-size:0.88rem; font-weight:800; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>📊</span>
+            <span id="dd-table-title">UTM Source Details</span>
+          </div>
+
+          <div class="table-container">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th style="width:30px;">#</th>
+                  <th id="dd-col-dimension-name">UTM Source</th>
+                  <th>Visitors</th>
+                  <th>% Share</th>
+                  <th>Avg. Duration</th>
+                </tr>
+              </thead>
+              <tbody id="dd-table-tbody">
+                <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:#64748b;">Loading live data from Publytics API...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Browsers -->
-      <div class="pub-card">
-        <div class="pub-section-header">
-          <div class="pub-section-title"><span>🌐</span> Browsers</div>
-          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
-        </div>
-        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
-          <table class="pub-table">
-            <thead>
-              <tr>
-                <th>Browser</th>
-                <th>Visitors</th>
-                <th style="width:30%;">Share</th>
-              </tr>
-            </thead>
-            <tbody id="audience-browsers-tbody">
-              <tr><td colspan="3" class="pub-empty-state">Loading browser data...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Hostnames -->
-      <div class="pub-card">
-        <div class="pub-section-header">
-          <div class="pub-section-title"><span>🏷️</span> Hostnames</div>
-          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
-        </div>
-        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
-          <table class="pub-table">
-            <thead>
-              <tr>
-                <th>Hostname</th>
-                <th>Visitors</th>
-                <th style="width:30%;">Share</th>
-              </tr>
-            </thead>
-            <tbody id="audience-hostnames-tbody">
-              <tr><td colspan="3" class="pub-empty-state">Loading hostnames...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Content / Top Pages -->
-      <div class="pub-card">
-        <div class="pub-section-header">
-          <div class="pub-section-title"><span>📄</span> Top Visited Pages</div>
-          <span style="font-size:0.75rem; color:#64748b;">Click row for details</span>
-        </div>
-        <div class="pub-table-wrap" style="max-height:300px; overflow-y:auto;">
-          <table class="pub-table">
-            <thead>
-              <tr>
-                <th>Page Path</th>
-                <th>Views</th>
-                <th style="width:30%;">Share</th>
-              </tr>
-            </thead>
-            <tbody id="audience-pages-tbody">
-              <tr><td colspan="3" class="pub-empty-state">Loading pages...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 5: User List -->
-    <section class="pub-card" style="margin-bottom:2rem;">
-      <div class="pub-section-header">
-        <div class="pub-section-title">
-          <span>👤</span> User List & Profiles
-        </div>
-        <span style="font-size:0.78rem; color:#64748b;">
-          Click user row or action to view detailed user timeline
-        </span>
-      </div>
-
-      <div class="pub-table-wrap">
-        <table class="pub-table">
-          <thead>
-            <tr>
-              <th>User ID / Identifier</th>
-              <th>Country</th>
-              <th>Sessions</th>
-              <th>Pageviews</th>
-              <th>Last Seen</th>
-              <th style="text-align:right;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="users-tbody">
-            <tr><td colspan="6" class="pub-empty-state">Fetching user records from Publytics API...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    </div>
 
   </main>
 
-  <!-- DETAIL DRILL-DOWN MODAL -->
-  <div class="pub-modal-backdrop" id="drilldown-modal">
-    <div class="pub-modal-content">
-      <button class="pub-modal-close" onclick="closeDrilldownModal();">&times;</button>
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="font-size:1.35rem;" id="drilldown-icon">🔍</span>
-        <h3 id="drilldown-title" style="margin:0; font-size:1.25rem; font-weight:800; color:#0f172a;">Item Detail</h3>
-      </div>
-      <div id="drilldown-subtitle" style="font-size:0.84rem; color:#64748b; margin-bottom:1.25rem;">Detailed analytics breakdown from Publytics API</div>
+  <!-- BOTTOM NAVIGATION BAR (Exact Bottom of Screenshot) -->
+  <nav class="bottom-nav-bar">
+    <a href="/admin" class="nav-tab-item">
+      <span class="nav-icon">🔗</span>
+      <span>Links</span>
+    </a>
+    <a href="/admin" class="nav-tab-item">
+      <span class="nav-icon">🌍</span>
+      <span>Geo</span>
+    </a>
+    <a href="/admin" class="nav-tab-item">
+      <span class="nav-icon">📊</span>
+      <span>Logs</span>
+    </a>
+    <a href="/admin" class="nav-tab-item">
+      <span class="nav-icon">🛡️</span>
+      <span>Firewall</span>
+    </a>
+    <a href="/admin" class="nav-tab-item">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </a>
+    <a href="/publytics.html" class="nav-tab-item active">
+      <span class="nav-icon">📊</span>
+      <span>Publytics</span>
+    </a>
+  </nav>
 
-      <!-- Quick Metrics Bar inside Modal -->
-      <div id="drilldown-kpis" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem; margin-bottom:1.25rem;">
-        <!-- Filled by JS -->
+  <!-- API SETTINGS MODAL -->
+  <div class="modal-overlay" id="api-modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeConfigModal();">&times;</button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
+        <span style="font-size:1.4rem;">⚙️</span>
+        <h3 style="font-size:1.2rem; font-weight:800;">Publytics API Setup</h3>
       </div>
-
-      <!-- Raw & Structured Breakdown List -->
-      <div style="border-top:1px solid #e2e8f0; padding-top:1rem;">
-        <div style="font-weight:700; font-size:0.88rem; margin-bottom:0.6rem; color:#1e293b;">Associated Breakdown</div>
-        <div id="drilldown-details-body" style="max-height:360px; overflow-y:auto;">
-          <!-- Filled by JS -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- API CONFIGURATION MODAL -->
-  <div class="pub-modal-backdrop" id="config-modal">
-    <div class="pub-modal-content" style="max-width:560px;">
-      <button class="pub-modal-close" onclick="closeConfigModal();">&times;</button>
-      <h3 style="margin:0 0 0.4rem; font-size:1.25rem; font-weight:800; color:#0f172a;">
-        ⚙️ Publytics API Configuration
-      </h3>
-      <p style="font-size:0.83rem; color:#64748b; margin-top:0; margin-bottom:1.25rem; line-height:1.45;">
-        Your API Token is stored securely on the backend and is never exposed in browser requests.
+      <p style="font-size:0.82rem; color:var(--p-text-muted); margin-bottom:1.15rem;">
+        Connect your official Publytics API token. Data is retrieved through our secure backend proxy.
       </p>
 
-      <form id="publytics-config-form" onsubmit="saveConfig(event); return false;">
-        <div style="margin-bottom:1rem;">
-          <label style="display:block; font-size:0.84rem; font-weight:700; color:#1e293b; margin-bottom:0.35rem;">
-            Publytics API Bearer Token
-          </label>
-          <input type="password" id="cfg-token" class="form-control" placeholder="e.g. 1|AbCdEf123456789..." style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border:1.5px solid #cbd5e1; border-radius:10px; font-family:monospace; font-size:0.85rem;" autocomplete="off">
-          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:0.25rem;">
-            Generated in your Publytics Account &gt; Profile &gt; API &gt; Create.
+      <form onsubmit="saveApiSettings(event); return false;">
+        <div class="form-group">
+          <label>Publytics API Bearer Token</label>
+          <input type="password" id="modal-token" class="p-input" placeholder="e.g. 1|AbCdEf123456789..." autocomplete="off">
+          <small style="color:var(--p-text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
+            Generated in Publytics: User Icon &gt; API &gt; Create Token.
           </small>
         </div>
 
-        <div style="margin-bottom:1rem;">
-          <label style="display:block; font-size:0.84rem; font-weight:700; color:#1e293b; margin-bottom:0.35rem;">
-            Default Site ID
-          </label>
-          <input type="text" id="cfg-site" class="form-control" placeholder="e.g. 33gb.online/bCatRU or mydomain.com" style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border:1.5px solid #cbd5e1; border-radius:10px; font-size:0.88rem;">
-          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:0.25rem;">
-            Found in your site Tracking Options page in Publytics.
+        <div class="form-group">
+          <label>Default Website / Site ID</label>
+          <input type="text" id="modal-default-site" class="p-input" placeholder="e.g. 33gb.online/bCatRU or India.com">
+        </div>
+
+        <div class="form-group">
+          <label>Available Websites List (one per line)</label>
+          <textarea id="modal-sites-list" rows="4" class="p-input" placeholder="Hero.com&#10;India.com&#10;Pakistan.com&#10;Bhai.com"></textarea>
+          <small style="color:var(--p-text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
+            These appear directly in your "Select website" list.
           </small>
         </div>
 
-        <div style="margin-bottom:1.25rem;">
-          <label style="display:block; font-size:0.84rem; font-weight:700; color:#1e293b; margin-bottom:0.35rem;">
-            Additional Site IDs (one per line, optional)
-          </label>
-          <textarea id="cfg-sites-list" rows="3" class="form-control" placeholder="site1.com/ID1&#10;site2.com/ID2" style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border:1.5px solid #cbd5e1; border-radius:10px; font-size:0.85rem; font-family:monospace;"></textarea>
-        </div>
-
-        <div id="cfg-test-status" style="display:none; padding:0.6rem 0.85rem; border-radius:10px; font-size:0.82rem; margin-bottom:1rem;"></div>
+        <div id="modal-status-msg" style="display:none; padding:0.55rem 0.8rem; border-radius:8px; font-size:0.8rem; margin-bottom:1rem;"></div>
 
         <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
-          <button type="button" class="pub-btn pub-btn-default" onclick="testApiConnection();" id="btn-test-api">
+          <button type="button" class="header-pill" onclick="testConnectionFromModal();" style="padding:0.6rem 0.9rem;">
             🔌 Test Connection
           </button>
-          <button type="submit" class="pub-btn pub-btn-primary" id="btn-save-cfg">
+          <button type="submit" class="header-pill" style="background:#0284c7; color:#fff; border-color:#38bdf8; padding:0.6rem 1.1rem;">
             💾 Save Settings
           </button>
         </div>
