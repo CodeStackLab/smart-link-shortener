@@ -10,8 +10,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <link rel="icon" href="/icon-192.png" type="image/png">
-  <link rel="stylesheet" href="/css/style.css?v=147">
-  <link rel="stylesheet" href="/css/publytics.css?v=147">
+  <link rel="stylesheet" href="/css/style.css?v=157">
+  <link rel="stylesheet" href="/css/publytics.css?v=157">
   
   <style>
     /* ==========================================================================
@@ -1659,7 +1659,7 @@
     <a href="/admin#tab-geo" class="tab-btn" style="display:none;">🌍 Country &amp; VPN</a>
     <a href="/admin#tab-analytics" class="tab-btn">📊 Traffic Logs</a>
     <a href="/admin#tab-publytics" class="tab-btn active">
-      <img src="/publytics-icon.png?v=156" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
+      <img src="/publytics-icon.png?v=157" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
     </a>
     <a href="/admin#tab-firewall" class="tab-btn">🛡️ IP Firewall</a>
     <a href="/admin#tab-settings" class="tab-btn">⚙️ Settings</a>
@@ -1677,20 +1677,25 @@
     <div class="top-two-col">
 
       <!-- 1. SELECT WEBSITE PILL SELECTOR CARD -->
-      <div class="p-card" id="website-selector-card">
-        <!-- Single-line pill showing selected website (or placeholder) -->
-        <div class="website-selector-pill" id="website-selector-trigger" onclick="toggleWebsiteDropdown();" role="button" aria-expanded="false">
-          <div class="website-selector-left">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-            <span class="website-selector-name" id="website-selector-label">Select website</span>
+      <div class="p-card website-card-exact" id="website-selector-card">
+        <!-- Exact Top Pill: Globe Icon Circle, Stacked Text, Downward Arrow Box -->
+        <div class="ws-selector-trigger" id="website-selector-trigger" onclick="toggleWebsiteDropdown();" role="button" aria-expanded="false">
+          <div class="ws-left-group">
+            <div class="ws-globe-circle">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <div class="ws-text-stack">
+              <span class="ws-subtitle">Select Website</span>
+              <span class="ws-site-title" id="website-selector-label">Choose your website</span>
+            </div>
           </div>
-          <div class="website-selector-arrow" id="site-chevron-arrow">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="#00e5ff">
-              <polygon points="1,3 9,3 5,8"/>
+          <div class="ws-arrow-box" id="site-chevron-arrow">
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
         </div>
@@ -1701,58 +1706,145 @@
         </div>
       </div>
 
-      <!-- 2. TIME & DATE FILTER BUTTONS -->
-      <div class="p-card" id="time-filter-card">
-        <!-- Row 1: Real-Time, Today, Yesterday -->
-        <div class="filter-row-1">
-          <button class="filter-btn-pill active" data-period="realtime">
-            <span class="bolt-icon" style="color:#fbbf24; font-size:0.95rem;">⚡</span>
-            <span>Real-Time</span>
-          </button>
-          <button class="filter-btn-text" data-period="today">Today</button>
-          <button class="filter-btn-text" data-period="yesterday">Yesterday</button>
-        </div>
-
-        <div class="card-inner-divider"></div>
-
-        <!-- Row 2: Last 7 Days | Last 30 Days -->
-        <div class="filter-row-2col">
-          <button class="filter-btn-col border-r" data-period="7d">Last 7 Days</button>
-          <button class="filter-btn-col" data-period="30d">Last 30 Days</button>
-        </div>
-
-        <div class="card-inner-divider"></div>
-
-        <!-- Row 3: This Month | Custom -->
-        <div class="filter-row-2col">
-          <button class="filter-btn-col border-r" data-period="month">This Month</button>
-          <button class="filter-btn-col" data-period="custom" id="btn-custom-date" onclick="openCustomDateModal();">Custom</button>
-        </div>
-
-        <div class="card-inner-divider"></div>
-
-        <!-- Row 4: Auto-refresh (15s) | Updated Clock -->
-        <div class="filter-row-2col">
-          <div class="auto-refresh-ctrl border-r" onclick="toggleAutoRefreshCheckbox();">
-            <div class="custom-checkbox checked" id="custom-auto-refresh-box">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
+      <!-- 2. TIME & DATE FILTER BUTTONS (Exact Symmetrical 2-Column Grid) -->
+      <div class="p-card time-filter-card-exact" id="time-filter-card">
+        <div class="f-two-col-grid">
+          <!-- Left Column -->
+          <div class="f-col">
+            <!-- Row 1: Today -->
+            <div class="f-row">
+              <button class="f-btn active" data-period="today">
+                <span class="f-bolt">⚡</span>
+                <span class="f-btn-label">Today</span>
+              </button>
             </div>
-            <input type="checkbox" id="auto-refresh-check" checked style="display:none;">
-            <div class="ctrl-text-col">
-              <div class="ctrl-title">Auto-refresh</div>
-              <div class="ctrl-sub">(15s)</div>
+            <div class="f-row-divider"></div>
+
+            <!-- Row 2: Last 7 Days -->
+            <div class="f-row">
+              <button class="f-btn f-btn-has-chevron" data-period="7d">
+                <div class="f-btn-left">
+                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="f-btn-label">Last 7 Days</span>
+                </div>
+                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div class="f-row-divider"></div>
+
+            <!-- Row 3: This Month -->
+            <div class="f-row">
+              <button class="f-btn f-btn-has-chevron" data-period="month">
+                <div class="f-btn-left">
+                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="f-btn-label">This Month</span>
+                </div>
+                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div class="f-row-divider"></div>
+
+            <!-- Row 4: Auto-refresh -->
+            <div class="f-row">
+              <div class="f-refresh-ctrl" onclick="toggleAutoRefreshCheckbox();">
+                <div class="custom-checkbox checked" id="custom-auto-refresh-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <input type="checkbox" id="auto-refresh-check" checked style="display:none;">
+                <div class="f-ctrl-text">
+                  <span class="f-ctrl-title">Auto-refresh</span>
+                  <span class="f-ctrl-sub">(15s)</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="refresh-status-ctrl" onclick="loadAllAnalytics();" title="Click to refresh now">
-            <svg class="refresh-spin-svg" id="refresh-spin-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-            </svg>
-            <div class="ctrl-text-col">
-              <div class="ctrl-title-blue" id="last-updated-clock-time">Updated: --:--:--</div>
-              <div class="ctrl-sub-blue" id="last-updated-clock-ampm">--</div>
+          <!-- Vertical Divider -->
+          <div class="f-vertical-divider"></div>
+
+          <!-- Right Column -->
+          <div class="f-col">
+            <!-- Row 1: Yesterday -->
+            <div class="f-row">
+              <button class="f-btn" data-period="yesterday">
+                <div class="f-btn-left">
+                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="f-btn-label">Yesterday</span>
+                </div>
+              </button>
+            </div>
+            <div class="f-row-divider"></div>
+
+            <!-- Row 2: Last 30 Days -->
+            <div class="f-row">
+              <button class="f-btn f-btn-has-chevron" data-period="30d">
+                <div class="f-btn-left">
+                  <div class="f-icon-30-wrap">
+                    <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                    </svg>
+                    <span class="f-icon-30-num">30</span>
+                  </div>
+                  <span class="f-btn-label">Last 30 Days</span>
+                </div>
+                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div class="f-row-divider"></div>
+
+            <!-- Row 3: Custom -->
+            <div class="f-row">
+              <button class="f-btn f-btn-has-chevron" data-period="custom" id="btn-custom-date" onclick="openCustomDateModal();">
+                <div class="f-btn-left">
+                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                  <span class="f-btn-label">Custom</span>
+                </div>
+                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div class="f-row-divider"></div>
+
+            <!-- Row 4: Updated Clock -->
+            <div class="f-row">
+              <div class="f-clock-ctrl" onclick="loadAllAnalytics();" title="Click to refresh now">
+                <svg class="refresh-spin-svg f-clock-icon" id="refresh-spin-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+                <div class="f-ctrl-text">
+                  <span class="f-clock-sub">UPDATED:</span>
+                  <span class="f-clock-time" id="last-updated-clock-time">10:30:17 PM</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2352,7 +2444,7 @@
     </a>
     <a href="/admin#tab-publytics" class="mobile-nav-item active">
       <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center;">
-        <img src="/publytics-icon.png?v=156" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
+        <img src="/publytics-icon.png?v=157" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
       </span>
       <span>Publytics</span>
     </a>
@@ -2366,6 +2458,6 @@
     </a>
   </nav>
 
-  <script src="js/publytics.js?v=147"></script>
+  <script src="js/publytics.js?v=157"></script>
 </body>
 </html>

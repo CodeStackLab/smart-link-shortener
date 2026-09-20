@@ -6,7 +6,7 @@
 (function() {
   'use strict';
 
-  let currentPeriod = '7d';
+  let currentPeriod = 'today';
   let currentSiteId = '';
   let currentActiveDimension = 'utm_source';
   let autoRefreshTimer = null;
@@ -376,7 +376,7 @@
     if (currentSiteId) {
       label.textContent = currentSiteId;
     } else {
-      label.textContent = 'Select website';
+      label.textContent = 'Choose your website';
     }
   }
 
@@ -439,7 +439,7 @@
 
   // Filter Buttons Initialization (Real-Time, Today, Yesterday, 7d, 30d, etc.)
   function initFilterButtons() {
-    const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col');
+    const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col, .f-btn, [data-period]');
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         const period = btn.getAttribute('data-period');
@@ -527,7 +527,7 @@
     updatePeriodLabels(period);
 
     // Sync active state on main dashboard filter buttons
-    const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col');
+    const buttons = document.querySelectorAll('.filter-btn-pill, .filter-btn-text, .filter-btn-col, .f-btn, [data-period]');
     buttons.forEach(btn => {
       if (btn.getAttribute('data-period') === period) {
         btn.classList.add('active');
@@ -626,7 +626,7 @@
 
     const timeEl = document.getElementById('last-updated-clock-time');
     const ampmEl = document.getElementById('last-updated-clock-ampm');
-    if (timeEl) timeEl.textContent = `Updated: ${strTime}`;
+    if (timeEl) timeEl.textContent = `${strTime} ${ampm}`;
     if (ampmEl) ampmEl.textContent = ampm;
   }
 
