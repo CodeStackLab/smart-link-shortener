@@ -626,7 +626,7 @@
 
     const timeEl = document.getElementById('last-updated-clock-time');
     const ampmEl = document.getElementById('last-updated-clock-ampm');
-    if (timeEl) timeEl.textContent = `${strTime} ${ampm}`;
+    if (timeEl) timeEl.innerHTML = `${strTime}&nbsp;${ampm}`;
     if (ampmEl) ampmEl.textContent = ampm;
   }
 
