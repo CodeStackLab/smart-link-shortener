@@ -170,40 +170,21 @@
       initSessionAndConfig();
       initFilterButtons();
       updateClockDisplay();
+      startAutoRefresh();
     }
   };
 
+  // DOMContentLoaded: Only auto-init on the standalone publytics.html page.
+  // On admin.html, dashboard.js calls initPublyticsDashboard() on tab switch.
   document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    initHeaderAndDrawer();
-    window.initPublyticsDashboard();
-    initHistoryPopstate();
-    startAutoRefresh();
-
-    // Support deep-link to drilldown view (e.g. publytics.html?dim=utm_source)
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialDim = urlParams.get('dim') || (window.location.hash ? window.location.hash.replace('#', '') : null);
-    if (initialDim) {
-      const dimLabels = {
-        'utm_source': 'UTM Source',
-        'utm_medium': 'UTM Medium',
-        'utm_campaign': 'UTM Campaign',
-        'utm_term': 'UTM Term',
-        'utm_content': 'UTM Content',
-        'referrer': 'Referrer',
-        'source': 'Source',
-        'source_medium': 'Source / Medium',
-        'country': 'Country',
-        'device': 'Device',
-        'os': 'Operating System',
-        'browser': 'Browser',
-        'hostname': 'Hostname',
-        'page': 'Content'
-      };
-      if (dimLabels[initialDim]) {
-        openDrilldownPage(initialDim, dimLabels[initialDim]);
-      }
+    const isStandalonePage = window.location.pathname.includes('publytics.html');
+    if (isStandalonePage) {
+      // Redirect standalone publytics.html to admin.html#tab-publytics
+      window.location.replace('/admin#tab-publytics');
+      return;
     }
+    // On admin.html, popstate and deep-link support only
+    initHistoryPopstate();
   });
 
   // History Popstate Navigation
@@ -290,30 +271,21 @@
       } catch (e) {}
 
       if (!session.authenticated) {
-        if (window.location.pathname.includes('publytics.html')) {
-          window.location.href = '/login';
-          return;
-        }
+        // If not authenticated on admin page, dashboard.js handles redirect
+        return;
       }
 
       // Check publytics permission
       const hasPubPerm = session.isSuperAdmin || (Array.isArray(session.permissions) && session.permissions.includes('publytics'));
       if (!hasPubPerm) {
-        if (window.location.pathname.includes('publytics.html')) {
-          document.body.innerHTML = `
-            <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#020b1e; color:#ffffff; font-family:sans-serif; text-align:center; padding:2rem;">
-              <div style="font-size:3.5rem; margin-bottom:1rem;">🚫</div>
-              <h1 style="font-size:1.8rem; font-weight:800; margin-bottom:0.75rem; color:#f43f5e;">Access Denied</h1>
-              <p style="color:#94a3b8; max-width:480px; margin-bottom:1.5rem; line-height:1.6;">You do not have permission to access the Publytics Analytics Dashboard. Please contact the Super Admin / Owner to grant you Publytics access.</p>
-              <a href="/admin" style="background:linear-gradient(135deg,#0088ff,#00e5ff); color:#020b1e; text-decoration:none; padding:0.75rem 1.75rem; border-radius:10px; font-weight:800; font-size:0.95rem;">← Back to Dashboard</a>
-            </div>
-          `;
-          return;
-        } else {
-          const tabPub = document.getElementById('tab-publytics');
-          if (tabPub) tabPub.style.display = 'none';
-          return;
-        }
+        // Hide publytics tab content inside admin.html
+        const tabPub = document.getElementById('tab-publytics');
+        if (tabPub) tabPub.style.display = 'none';
+        const tabBtn = document.getElementById('tab-btn-publytics');
+        if (tabBtn) tabBtn.style.display = 'none';
+        // Hide mobile nav item for publytics
+        document.querySelectorAll('.mobile-nav-item[data-tab="tab-publytics"]').forEach(el => el.style.display = 'none');
+        return;
       }
 
       const userBadge = document.getElementById('user-badge') || document.getElementById('role-badge');
@@ -598,6 +570,10 @@
   function startAutoRefresh() {
     stopAutoRefresh();
     autoRefreshTimer = setInterval(() => {
+      const tabPub = document.getElementById('tab-publytics');
+      if (tabPub && (tabPub.style.display === 'none' || getComputedStyle(tabPub).display === 'none')) {
+        return;
+      }
       const autoRef = document.getElementById('auto-refresh-check');
       if (autoRef && autoRef.checked && !isFetching && currentSiteId) {
         loadAllAnalytics(false);

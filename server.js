@@ -379,6 +379,11 @@ app.use(session({
   }
 }));
 
+// Publytics is fully merged into Admin Single Page Application (/admin#tab-publytics)
+app.get(['/publytics', '/publytics.html'], (req, res) => {
+  return res.redirect('/admin#tab-publytics');
+});
+
 // Serve static files from 'public' folder (never cache HTML files)
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, filePath) => {

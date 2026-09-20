@@ -1070,6 +1070,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetElem = document.getElementById(targetTab);
       if (targetElem) targetElem.style.display = 'block';
 
+      if (history.replaceState) {
+        try { history.replaceState(null, '', '#' + targetTab); } catch(e) {}
+      }
+      document.querySelectorAll('.mobile-nav-item').forEach(m => {
+        if (m.dataset.tab === targetTab) m.classList.add('active');
+        else m.classList.remove('active');
+      });
+
       // Close mobile navigation drawer
       document.body.classList.remove('menu-open');
 
