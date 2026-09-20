@@ -708,10 +708,15 @@ document.addEventListener('DOMContentLoaded', () => {
       customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
-    // 3. Publytics API Token Card — strictly Super Admin / Master Admin only
+    // 3. Publytics API Token Card — strictly Super Admin / Master Admin only (NEVER Editor)
     const publyticsApiCard = document.getElementById('publytics-api-card');
     if (publyticsApiCard) {
-      publyticsApiCard.style.display = isSuperAdminUser() ? '' : 'none';
+      if (isSuperAdminUser()) {
+        publyticsApiCard.style.removeProperty('display');
+        publyticsApiCard.style.display = 'block';
+      } else {
+        publyticsApiCard.style.setProperty('display', 'none', 'important');
+      }
     }
 
     const changePassCard = document.getElementById('change-password-card');

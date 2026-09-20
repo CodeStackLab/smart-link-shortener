@@ -12,8 +12,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=147">
-  <link rel="stylesheet" href="/css/publytics.css?v=147">
+  <link rel="stylesheet" href="/css/style.css?v=148">
+  <link rel="stylesheet" href="/css/publytics.css?v=148">
   <script>
     (function() {
       try {
@@ -2566,8 +2566,8 @@
         </form>
       </div>
 
-      <!-- Publytics API Token Card (Settings Section) -->
-      <div class="card" style="padding:1.35rem; height:fit-content; margin-bottom:1.35rem;" id="publytics-api-card">
+      <!-- Publytics API Token Card (Settings Section - STRICTLY Super Admin Only) -->
+      <div class="card" style="display:none !important; padding:1.35rem; height:fit-content; margin-bottom:1.35rem;" id="publytics-api-card">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.35rem;">
           <div style="display:flex; align-items:center; gap:0.6rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a);">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; display:inline-block; flex-shrink:0;">
@@ -3519,7 +3519,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=122"></script>
+<script src="/js/dashboard.js?v=148"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -3918,17 +3918,29 @@ window.submitAdminPasswordChange = async function(e) {
   return false;
 };
 
-// ── Publytics API Token Settings Handler ──
+// ── Publytics API Token Settings Handler (Super Admin Only) ──
 window.loadPublyticsApiTokenSettings = async function() {
+  const card = document.getElementById('publytics-api-card');
   const tokenInput = document.getElementById('publytics-settings-api-token');
   const statusPill = document.getElementById('publytics-settings-status-pill');
   const statusBanner = document.getElementById('publytics-settings-token-status');
-  if (!tokenInput) return;
 
   try {
     const res = await fetch('/api/publytics/config');
-    if (!res.ok) return;
+    // If not authenticated or forbidden (e.g. Editor), strictly keep hidden
+    if (!res.ok) {
+      if (card) card.style.setProperty('display', 'none', 'important');
+      return;
+    }
     const data = await res.json();
+
+    // Only Super Admin can view this card
+    if (card) {
+      card.style.removeProperty('display');
+      card.style.display = 'block';
+    }
+
+    if (!tokenInput) return;
     const masked = data.maskedToken || data.tokenMasked;
 
     if (data && data.hasToken && masked) {
@@ -3960,7 +3972,9 @@ window.loadPublyticsApiTokenSettings = async function() {
         statusBanner.innerHTML = `<span>⚠️</span> <span>Publytics API Token is not configured yet. Enter your Bearer token below to enable analytics.</span>`;
       }
     }
-  } catch(e) {}
+  } catch(e) {
+    if (card) card.style.setProperty('display', 'none', 'important');
+  }
 };
 
 window.savePublyticsApiTokenSettings = async function(e) {
@@ -4104,6 +4118,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=147"></script>
+<script src="/js/publytics.js?v=148"></script>
 </body>
 </html>

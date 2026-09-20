@@ -3397,6 +3397,14 @@ body.is-editor #custom-domains-card {
   display: none !important;
 }
 
+/* ── Publytics API Token Card: Strictly Hidden from Editors & Normal Admins (Super Admin Only) ── */
+body:not(.is-superadmin) #publytics-api-card,
+body.is-editor #publytics-api-card,
+html.is-editor #publytics-api-card,
+.is-editor #publytics-api-card {
+  display: none !important;
+}
+
 /* ── Google Authenticator 2FA Manager: Single-line Title ── */
 #two-factor-auth-card .section-title {
   white-space: nowrap !important;
