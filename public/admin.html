@@ -12,8 +12,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=153">
-  <link rel="stylesheet" href="/css/publytics.css?v=153">
+  <link rel="stylesheet" href="/css/style.css?v=154">
+  <link rel="stylesheet" href="/css/publytics.css?v=154">
   <script>
     (function() {
       try {
@@ -1030,10 +1030,10 @@
   <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
   <button class="tab-btn" data-tab="tab-geo" style="display:none;">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
-  <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics">
-    <img src="/publytics-icon.png?v=153" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
+    <img src="/publytics-icon.png?v=154" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
   </button>
+  <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
 </div>
 
@@ -3505,15 +3505,15 @@
     <span class="nav-icon">📊</span>
     <span>Logs</span>
   </button>
+  <button class="mobile-nav-item" data-tab="tab-publytics">
+    <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center;">
+      <img src="/publytics-icon.png?v=154" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
+    </span>
+    <span>Publytics</span>
+  </button>
   <button class="mobile-nav-item" data-tab="tab-firewall">
     <span class="nav-icon">🛡️</span>
     <span>Firewall</span>
-  </button>
-  <button class="mobile-nav-item" data-tab="tab-publytics">
-    <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center;">
-      <img src="/publytics-icon.png?v=153" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
-    </span>
-    <span>Publytics</span>
   </button>
   <button class="mobile-nav-item" data-tab="tab-settings">
     <span class="nav-icon">⚙️</span>
@@ -3521,7 +3521,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=153"></script>
+<script src="/js/dashboard.js?v=154"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -4133,6 +4133,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=153"></script>
+<script src="/js/publytics.js?v=154"></script>
 </body>
 </html>
