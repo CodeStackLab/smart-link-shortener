@@ -805,19 +805,19 @@
       const lastActive = u.lastActive || u.timestamp || u.lastSeen || 'Recent';
 
       return `
-        <tr class="clickable-row" onclick="openUserAnalytics('${escapeHtml(id)}', ${idx});" title="Click to view complete user analytics">
-          <td style="color:#7f9bc2; font-weight:700;">${idx + 1}</td>
-          <td>
+        <tr class="clickable-row publytics-tr" onclick="openUserAnalytics('${escapeHtml(id)}', ${idx});" title="Click to view complete user analytics">
+          <td data-label="#" style="color:#00e5ff; font-weight:800;">#${idx + 1}</td>
+          <td data-label="User">
             <div style="display:flex; align-items:center; gap:0.5rem;">
               <span style="font-size:1.1rem;">👤</span>
               <strong style="color:#00e5ff; font-family:monospace;">${escapeHtml(id)}</strong>
             </div>
           </td>
-          <td>${escapeHtml(location)}</td>
-          <td><span class="p-badge-pill">${escapeHtml(device)}</span></td>
-          <td><strong>${formatNum(sessions)}</strong></td>
-          <td style="color:#7f9bc2; font-size:0.75rem;">${escapeHtml(lastActive)}</td>
-          <td style="text-align:right;">
+          <td data-label="Location" style="color:#ffffff;">${escapeHtml(location)}</td>
+          <td data-label="Platform"><span class="p-badge-pill">${escapeHtml(device)}</span></td>
+          <td data-label="Sessions"><strong style="color:#ffffff;">${formatNum(sessions)}</strong></td>
+          <td data-label="Last Active" style="color:#7f9bc2; font-size:0.75rem;">${escapeHtml(lastActive)}</td>
+          <td data-label="Details" style="text-align:right;">
             <button type="button" class="btn btn-ghost btn-sm" style="color:#00e5ff; font-size:0.8rem; padding:0.2rem 0.45rem;">🔍</button>
           </td>
         </tr>
@@ -1145,18 +1145,18 @@
         const duration = item.duration || (item.avgDuration ? formatDuration(item.avgDuration) : 'N/A');
 
         return `
-          <tr class="clickable-row" onclick="openItemAnalytics('${escapeHtml(dimKey)}', ${idx});" title="Click to view full Publytics details for ${escapeHtml(name)}">
-            <td style="color:#7f9bc2; font-weight:700;">${idx + 1}</td>
-            <td>
+          <tr class="clickable-row publytics-tr" onclick="openItemAnalytics('${escapeHtml(dimKey)}', ${idx});" title="Click to view full Publytics details for ${escapeHtml(name)}">
+            <td data-label="#" style="color:#00e5ff; font-weight:800;">#${idx + 1}</td>
+            <td data-label="Item">
               <div class="brand-cell">
                 ${getBrandIconHtml(name)}
                 <span style="font-weight:700; color:#ffffff;">${escapeHtml(name)}</span>
               </div>
             </td>
-            <td><strong>${formatNum(count)}</strong></td>
-            <td style="color:#38bdf8; font-weight:700;">${share}%</td>
-            <td style="color:#7f9bc2;">${duration}</td>
-            <td style="text-align:right;">
+            <td data-label="Visitors"><strong style="color:#ffffff;">${formatNum(count)}</strong></td>
+            <td data-label="% Share" style="color:#00e5ff; font-weight:800;">${share}%</td>
+            <td data-label="Avg Duration" style="color:#7f9bc2;">${duration}</td>
+            <td data-label="Details" style="text-align:right;">
               <button type="button" class="btn btn-ghost btn-sm" style="color:#00e5ff; font-size:0.8rem; padding:0.2rem 0.45rem;">🔍</button>
             </td>
           </tr>

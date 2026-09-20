@@ -2333,22 +2333,38 @@ table td {
     width: 100% !important;
   }
   
-  table, thead, tbody, th, td, tr {
+  /* Admin table mobile transformation (Excludes Publytics) */
+  #tab-links table, #tab-logs table, #tab-users table, #tab-geo table, #tab-firewall table,
+  #tab-links thead, #tab-logs thead, #tab-users thead, #tab-geo thead, #tab-firewall thead,
+  #tab-links tbody, #tab-logs tbody, #tab-users tbody, #tab-geo tbody, #tab-firewall tbody,
+  #tab-links th, #tab-logs th, #tab-users th, #tab-geo th, #tab-firewall th,
+  #tab-links td, #tab-logs td, #tab-users td, #tab-geo td, #tab-firewall td,
+  #tab-links tr, #tab-logs tr, #tab-users tr, #tab-geo tr, #tab-firewall tr {
     display: block !important;
     width: 100% !important;
   }
   
-  thead {
+  #tab-links thead, #tab-logs thead, #tab-users thead, #tab-geo thead, #tab-firewall thead {
     display: none !important;
   }
   
-  tr {
+  #tab-links tr, #tab-logs tr, #tab-users tr, #tab-geo tr, #tab-firewall tr {
     background: #ffffff !important;
     border: 1.5px solid var(--border) !important;
     border-radius: var(--r-md) !important;
     padding: 0.85rem 1.1rem !important;
     margin-bottom: 1rem !important;
     box-shadow: var(--shadow-md) !important;
+  }
+
+  [data-theme="dark"] #tab-links tr,
+  [data-theme="dark"] #tab-logs tr,
+  [data-theme="dark"] #tab-users tr,
+  [data-theme="dark"] #tab-geo tr,
+  [data-theme="dark"] #tab-firewall tr {
+    background: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
   }
   
   td {

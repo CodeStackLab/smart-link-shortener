@@ -9,8 +9,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <link rel="icon" href="/icon-192.png" type="image/png">
-  <link rel="stylesheet" href="/css/style.css?v=136">
-  <link rel="stylesheet" href="/css/publytics.css?v=146">
+  <link rel="stylesheet" href="/css/style.css?v=147">
+  <link rel="stylesheet" href="/css/publytics.css?v=147">
   
   <style>
     /* ==========================================================================
@@ -1589,6 +1589,34 @@
       font-size: 0.88rem;
       outline: none;
     }
+
+    @media (max-width: 768px) {
+      .dd-table-card tr,
+      .screenshot-table tr,
+      #dd-table-body-rows tr,
+      #users-table-body tr,
+      tr.clickable-row {
+        background: #03112c !important;
+        border: 1px solid rgba(0, 144, 255, 0.25) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+        color: #ffffff !important;
+      }
+      .dd-table-card td,
+      .screenshot-table td,
+      #dd-table-body-rows td,
+      #users-table-body td {
+        background: transparent !important;
+        border-bottom: 1px dashed rgba(0, 144, 255, 0.2) !important;
+        color: #ffffff !important;
+      }
+      .dd-table-card td[data-label]::before,
+      .screenshot-table td[data-label]::before,
+      #dd-table-body-rows td[data-label]::before,
+      #users-table-body td[data-label]::before {
+        color: #7f9bc2 !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2335,6 +2363,6 @@
     </a>
   </nav>
 
-  <script src="js/publytics.js?v=146"></script>
+  <script src="js/publytics.js?v=147"></script>
 </body>
 </html>

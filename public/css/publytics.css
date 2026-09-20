@@ -1170,3 +1170,121 @@
   padding: 0.2rem 0.55rem;
   border-radius: 9999px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE CYBER THEME OVERRIDES (Match Deep Midnight Blue - Zero White Cards)
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Table container card */
+  .publytics-tab-wrapper .dd-table-card,
+  .dd-table-card {
+    background: #041432 !important;
+    border: 1px solid rgba(0, 144, 255, 0.25) !important;
+    border-radius: 14px !important;
+    padding: 1rem 0.85rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* Table structure in Publytics */
+  .publytics-tab-wrapper table,
+  .dd-table-card table,
+  .screenshot-table,
+  #tab-publytics table {
+    width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  /* When rendered as mobile cards */
+  .publytics-tab-wrapper tr,
+  #tab-publytics tr,
+  .dd-table-card tr,
+  .screenshot-table tr,
+  #dd-table-body-rows tr,
+  #users-table-body tr,
+  tr.clickable-row {
+    background: #03112c !important;
+    border: 1px solid rgba(0, 144, 255, 0.25) !important;
+    border-radius: 14px !important;
+    padding: 0.85rem 1rem !important;
+    margin-bottom: 0.75rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+    color: #ffffff !important;
+    transition: all 0.18s ease !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .publytics-tab-wrapper tr:hover,
+  .publytics-tab-wrapper tr:active,
+  #tab-publytics tr:hover,
+  #tab-publytics tr:active,
+  .dd-table-card tr:hover,
+  .dd-table-card tr:active,
+  .screenshot-table tr:hover,
+  .screenshot-table tr:active,
+  #dd-table-body-rows tr:hover,
+  #dd-table-body-rows tr:active,
+  #users-table-body tr:hover,
+  #users-table-body tr:active,
+  tr.clickable-row:hover,
+  tr.clickable-row:active {
+    background: #06193e !important;
+    border-color: #00e5ff !important;
+    box-shadow: 0 6px 22px rgba(0, 229, 255, 0.18) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  /* Inner cells */
+  .publytics-tab-wrapper td,
+  #tab-publytics td,
+  .dd-table-card td,
+  .screenshot-table td,
+  #dd-table-body-rows td,
+  #users-table-body td {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px dashed rgba(0, 144, 255, 0.2) !important;
+    color: #ffffff !important;
+    padding: 0.45rem 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-height: 32px !important;
+    font-size: 0.86rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .publytics-tab-wrapper td:last-child,
+  #tab-publytics td:last-child,
+  .dd-table-card td:last-child,
+  .screenshot-table td:last-child,
+  #dd-table-body-rows td:last-child,
+  #users-table-body td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Data label styling */
+  .publytics-tab-wrapper td[data-label]::before,
+  #tab-publytics td[data-label]::before,
+  .dd-table-card td[data-label]::before,
+  .screenshot-table td[data-label]::before,
+  #dd-table-body-rows td[data-label]::before,
+  #users-table-body td[data-label]::before {
+    content: attr(data-label) !important;
+    font-size: 0.74rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #7f9bc2 !important;
+  }
+
+  .publytics-tab-wrapper thead,
+  .dd-table-card thead,
+  .screenshot-table thead,
+  #tab-publytics thead {
+    display: none !important;
+  }
+}
