@@ -594,8 +594,8 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
       { key: 'analytics', tabId: 'tab-analytics', adminOnly: true },
       { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
-      { key: 'settings', tabId: 'tab-settings', adminOnly: false },
-      { key: 'publytics', tabId: 'tab-publytics', adminOnly: false }
+      { key: 'publytics', tabId: 'tab-publytics', adminOnly: false },
+      { key: 'settings', tabId: 'tab-settings', adminOnly: false }
     ];
 
     navMap.forEach(item => {
