@@ -161,30 +161,8 @@
     }, 2800);
   };
 
-  // --- STATUS & ERROR BANNER CONTROLLER ---
-  function showStatusAlert(type, message, actionLabel = null, actionCallback = null) {
-    const banner = document.getElementById('publytics-status-alert');
-    const textEl = document.getElementById('publytics-status-alert-text');
-    const actionBtn = document.getElementById('publytics-status-alert-action');
-    if (!banner || !textEl) return;
-
-    banner.className = `alert-${type}`;
-    banner.style.display = 'flex';
-    textEl.innerHTML = message;
-
-    if (actionLabel && actionCallback && actionBtn) {
-      actionBtn.textContent = actionLabel;
-      actionBtn.style.display = 'inline-block';
-      actionBtn.onclick = actionCallback;
-    } else if (actionBtn) {
-      actionBtn.style.display = 'none';
-    }
-  }
-
-  function hideStatusAlert() {
-    const banner = document.getElementById('publytics-status-alert');
-    if (banner) banner.style.display = 'none';
-  }
+  // Toast notification for user actions
+  function hideStatusAlert() {}
 
   // --- INITIALIZATION ---
   window.initPublyticsDashboard = function() {
@@ -345,22 +323,10 @@
         userBadge.style.display = 'inline-flex';
       }
 
-      // Fetch Publytics Config & Token status
+      // Fetch Publytics Config
       const cfgRes = await fetch('/api/publytics/config');
-      if (cfgRes.status === 403) {
-        showStatusAlert('error', '🚫 You do not have permission to view Publytics analytics.');
-        return;
-      }
+      if (cfgRes.status === 403) return;
       const cfg = await cfgRes.json();
-
-      if (!cfg.hasToken) {
-        showStatusAlert(
-          'warning',
-          '⚠️ Publytics API Bearer Token is not configured. Live analytics cannot load until configured in Settings.',
-          session.isSuperAdmin ? '⚙️ Open Settings' : null,
-          session.isSuperAdmin ? () => { window.location.href = '/admin#tab-settings'; } : null
-        );
-      }
 
       // Fetch sites list from Publytics API
       await fetchAvailableSites(cfg);
@@ -397,10 +363,7 @@
       renderWebsiteList();
 
       if (currentSiteId) {
-        hideStatusAlert();
         loadAllAnalytics();
-      } else if (cfg && cfg.hasToken) {
-        showStatusAlert('info', '🌐 Please select a website from the dropdown above to load live analytics.');
       }
     } catch (e) {
       renderWebsiteList();
@@ -698,13 +661,6 @@
       const res = await fetch(`/api/publytics/realtime?siteId=${encodeURIComponent(currentSiteId)}`);
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        if (res.status === 401) {
-          showStatusAlert('error', '❌ Publytics API: 401 Unauthorized. Invalid Bearer Token.');
-        } else if (res.status === 403) {
-          showStatusAlert('error', '❌ Publytics API: 403 Forbidden. Access Denied or site subscription inactive.');
-        } else if (res.status === 429) {
-          showStatusAlert('warning', '⚠️ Publytics API: 429 Rate Limit Exceeded. Backing off requests.');
-        }
         throw new Error(errJson.error || `HTTP ${res.status}`);
       }
       const data = await res.json();

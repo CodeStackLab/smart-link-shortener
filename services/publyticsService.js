@@ -177,12 +177,11 @@ const publyticsService = {
     if (!token) {
       throw new Error('Please provide an API Bearer token to test.');
     }
-    if (!site) {
-      throw new Error('Please provide a Site ID to test.');
-    }
 
-    // Attempt a lightweight test call to visitors/hostname or realtime
-    const url = `${PUBLYTICS_BASE_URL}/site/${encodeURIComponent(site)}/visitors/hostname`;
+    // If siteId provided, test site endpoint; otherwise test /sites endpoint to validate token
+    const url = site
+      ? `${PUBLYTICS_BASE_URL}/site/${encodeURIComponent(site)}/visitors/hostname`
+      : `${PUBLYTICS_BASE_URL}/sites`;
     const res = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,

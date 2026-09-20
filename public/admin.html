@@ -13,7 +13,7 @@
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/css/style.css?v=125">
-  <link rel="stylesheet" href="/css/publytics.css?v=145">
+  <link rel="stylesheet" href="/css/publytics.css?v=146">
   <script>
     (function() {
       try {
@@ -2566,31 +2566,50 @@
         </form>
       </div>
 
-      <!-- Publytics API Token Card (Exact Match to User Screenshot) -->
+      <!-- Publytics API Token Card (Settings Section) -->
       <div class="card" style="padding:1.35rem; height:fit-content; margin-bottom:1.35rem;" id="publytics-api-card">
-        <div style="display:flex; align-items:center; gap:0.6rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a); margin-bottom:0.35rem;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; display:inline-block; flex-shrink:0;">
-            <rect x="3" y="11" width="4.5" height="10" rx="2.25" fill="#2563eb"/>
-            <rect x="9.75" y="4" width="4.5" height="17" rx="2.25" fill="#2563eb"/>
-            <rect x="16.5" y="7.5" width="4.5" height="13.5" rx="2.25" fill="#2563eb"/>
-          </svg>
-          <span style="font-size:1.18rem; font-weight:800; color:var(--text-primary, #0f172a); letter-spacing:-0.01em;">Publytics API Token</span>
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.35rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; display:inline-block; flex-shrink:0;">
+              <rect x="3" y="11" width="4.5" height="10" rx="2.25" fill="#2563eb"/>
+              <rect x="9.75" y="4" width="4.5" height="17" rx="2.25" fill="#2563eb"/>
+              <rect x="16.5" y="7.5" width="4.5" height="13.5" rx="2.25" fill="#2563eb"/>
+            </svg>
+            <span style="font-size:1.18rem; font-weight:800; color:var(--text-primary, #0f172a); letter-spacing:-0.01em;">Publytics API Token</span>
+          </div>
+          <!-- Token Status Pill -->
+          <span id="publytics-settings-status-pill" style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.75rem; font-weight:800; padding:0.25rem 0.65rem; border-radius:9999px; background:#f1f5f9; color:#64748b;">
+            Checking status...
+          </span>
         </div>
-        <p style="font-size:0.875rem; color:var(--text-muted, #64748b); margin:0 0 1.1rem 0; line-height:1.45;">
-          Enter your Publytics API token to enable analytics integration.
+        <p style="font-size:0.875rem; color:var(--text-muted, #64748b); margin:0 0 1rem 0; line-height:1.45;">
+          Configure your Publytics Bearer API token to enable real-time analytics integration.
         </p>
 
+        <!-- Informational Status Banner inside Settings Card -->
+        <div id="publytics-settings-token-status" style="display:none; padding:0.65rem 0.9rem; border-radius:10px; font-size:0.84rem; font-weight:700; margin-bottom:1rem; align-items:center; gap:0.55rem;"></div>
+
         <form id="publytics-api-form" onsubmit="event.preventDefault(); window.savePublyticsApiTokenSettings(event); return false;">
-          <div style="position:relative; margin-bottom:1rem;">
-            <span style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-size:1.1rem; color:#64748b; pointer-events:none;">🔑</span>
-            <input type="password" id="publytics-settings-api-token" class="form-control" placeholder="Enter Publytics API Token" style="padding-left:2.85rem; border-radius:10px; height:48px; font-size:0.95rem;" autocomplete="off">
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <label for="publytics-settings-api-token" style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.45rem;">
+              Publytics Bearer API Token:
+            </label>
+            <div style="position:relative;">
+              <span style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-size:1.1rem; color:#64748b; pointer-events:none;">🔑</span>
+              <input type="password" id="publytics-settings-api-token" class="form-control" placeholder="Enter Publytics API Token (Bearer)" style="padding-left:2.85rem; border-radius:10px; height:48px; font-size:0.95rem;" autocomplete="off">
+            </div>
           </div>
 
           <div id="publytics-settings-token-feedback" style="display:none; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.85rem; font-weight:700; margin-bottom:0.75rem;"></div>
 
-          <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary btn-block" style="background:#2563eb; border:none; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.45rem; height:48px; border-radius:10px; font-size:0.98rem; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.25); cursor:pointer; width:100%;">
-            💾 Save
-          </button>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+            <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary" style="background:#2563eb; border:none; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.45rem; height:46px; border-radius:10px; font-size:0.95rem; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.25); cursor:pointer;">
+              💾 Save Token
+            </button>
+            <button type="button" id="btn-test-publytics-settings-token" onclick="window.testPublyticsApiTokenSettings(event);" class="btn btn-secondary" style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.45rem; height:46px; border-radius:10px; font-size:0.95rem; color:#38bdf8; cursor:pointer;">
+              🧪 Test Connection
+            </button>
+          </div>
         </form>
       </div>
 
@@ -2622,12 +2641,6 @@
 ══════════════════════════════ -->
       <div id="tab-publytics" class="tab-content publytics-tab-wrapper" style="display:none;">
   <div class="main-container" id="main-dashboard-view">
-
-    <!-- STATUS & ERROR BANNER -->
-    <div id="publytics-status-alert" style="display:none; padding:0.9rem 1.15rem; border-radius:14px; margin-bottom:0.75rem; font-size:0.88rem; font-weight:700; align-items:center; justify-content:space-between; gap:0.75rem;">
-      <div style="display:flex; align-items:center; gap:0.6rem;" id="publytics-status-alert-text"></div>
-      <button type="button" id="publytics-status-alert-action" style="display:none; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff; padding:0.35rem 0.75rem; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer;"></button>
-    </div>
 
     <!-- TOP TWO COLUMNS WRAPPER (desktop: 2-col, mobile: stacked) -->
     <div class="top-two-col">
@@ -3908,14 +3921,44 @@ window.submitAdminPasswordChange = async function(e) {
 // ── Publytics API Token Settings Handler ──
 window.loadPublyticsApiTokenSettings = async function() {
   const tokenInput = document.getElementById('publytics-settings-api-token');
+  const statusPill = document.getElementById('publytics-settings-status-pill');
+  const statusBanner = document.getElementById('publytics-settings-token-status');
   if (!tokenInput) return;
+
   try {
     const res = await fetch('/api/publytics/config');
     if (!res.ok) return;
     const data = await res.json();
     const masked = data.maskedToken || data.tokenMasked;
+
     if (data && data.hasToken && masked) {
-      tokenInput.placeholder = `Current: ${masked} (Enter new to update)`;
+      tokenInput.placeholder = `Current: ${masked} (Enter new token to replace)`;
+      if (statusPill) {
+        statusPill.style.background = 'rgba(16, 185, 129, 0.12)';
+        statusPill.style.color = '#10b981';
+        statusPill.innerHTML = '🟢 Token Configured';
+      }
+      if (statusBanner) {
+        statusBanner.style.display = 'flex';
+        statusBanner.style.background = 'rgba(16, 185, 129, 0.08)';
+        statusBanner.style.color = '#15803d';
+        statusBanner.style.border = '1px solid rgba(16, 185, 129, 0.25)';
+        statusBanner.innerHTML = `<span>✅</span> <span>Publytics API Token is active (<code>${masked}</code>). Analytics are enabled.</span>`;
+      }
+    } else {
+      tokenInput.placeholder = 'Enter Publytics API Token (Bearer)';
+      if (statusPill) {
+        statusPill.style.background = 'rgba(245, 158, 11, 0.12)';
+        statusPill.style.color = '#d97706';
+        statusPill.innerHTML = '⚠️ Not Configured';
+      }
+      if (statusBanner) {
+        statusBanner.style.display = 'flex';
+        statusBanner.style.background = 'rgba(245, 158, 11, 0.08)';
+        statusBanner.style.color = '#b45309';
+        statusBanner.style.border = '1px solid rgba(245, 158, 11, 0.25)';
+        statusBanner.innerHTML = `<span>⚠️</span> <span>Publytics API Token is not configured yet. Enter your Bearer token below to enable analytics.</span>`;
+      }
     }
   } catch(e) {}
 };
@@ -3940,7 +3983,7 @@ window.savePublyticsApiTokenSettings = async function(e) {
     return false;
   }
 
-  const origBtnText = btn ? btn.innerHTML : '💾 Save';
+  const origBtnText = btn ? btn.innerHTML : '💾 Save Token';
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '⏳ Saving...';
@@ -3964,8 +4007,8 @@ window.savePublyticsApiTokenSettings = async function(e) {
       }
       if (input) {
         input.value = '';
-        input.placeholder = `Current: ${tokenVal.slice(0, 4)}••••••••${tokenVal.slice(-4)} (Enter new to update)`;
       }
+      await window.loadPublyticsApiTokenSettings();
     } else {
       throw new Error(result.error || 'Failed to save token');
     }
@@ -3976,6 +4019,55 @@ window.savePublyticsApiTokenSettings = async function(e) {
       feedback.style.color = '#dc2626';
       feedback.style.border = '1.5px solid #ef4444';
       feedback.innerText = `❌ Error: ${err.message}`;
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
+  }
+};
+
+window.testPublyticsApiTokenSettings = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const input = document.getElementById('publytics-settings-api-token');
+  const btn = document.getElementById('btn-test-publytics-settings-token');
+  const feedback = document.getElementById('publytics-settings-token-feedback');
+
+  const tokenVal = input ? input.value.trim() : '';
+
+  const origBtnText = btn ? btn.innerHTML : '🧪 Test Connection';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Testing...';
+  }
+
+  try {
+    const res = await fetch('/api/publytics/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tokenVal ? { apiToken: tokenVal } : {})
+    });
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#dcfce7';
+        feedback.style.color = '#15803d';
+        feedback.style.border = '1.5px solid #22c55e';
+        feedback.innerText = '✅ ' + (result.message || 'Successfully connected to Publytics API!');
+      }
+    } else {
+      throw new Error(result.error || 'Connection failed');
+    }
+  } catch (err) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = `❌ ${err.message}`;
     }
   } finally {
     if (btn) {
@@ -4012,6 +4104,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=145"></script>
+<script src="/js/publytics.js?v=146"></script>
 </body>
 </html>
