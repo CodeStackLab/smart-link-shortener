@@ -1118,11 +1118,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Show Banner Alert
   function showAlert(msg, isError = false) {
+    const alertWrap = document.getElementById('dashboard-alert-container');
     alertBox.textContent = msg;
     alertBox.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
     alertBox.style.display = 'block';
+    if (alertWrap) alertWrap.style.display = 'block';
     setTimeout(() => {
       alertBox.style.display = 'none';
+      if (alertWrap) alertWrap.style.display = 'none';
     }, 4500);
   }
 

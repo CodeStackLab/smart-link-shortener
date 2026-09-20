@@ -15,8 +15,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=158">
-  <link rel="stylesheet" href="/css/publytics.css?v=158">
+  <link rel="stylesheet" href="/css/style.css?v=159">
+  <link rel="stylesheet" href="/css/publytics.css?v=159">
   <script>
     (function() {
       try {
@@ -76,6 +76,10 @@
             }
           }
         });
+        var h = window.location.hash || '';
+        if (h.indexOf('publytics') !== -1) {
+          document.documentElement.classList.add('tab-publytics-active');
+        }
       } catch(e) {}
     })();
   </script>
@@ -1041,7 +1045,7 @@
 </div>
 
 <!-- ── GLOBAL ALERT ── -->
-<div class="container" style="padding-top:0.5rem; padding-bottom:0;">
+<div id="dashboard-alert-container" class="container" style="padding-top:0.5rem; padding-bottom:0; display:none;">
   <div id="dashboard-alert" class="alert alert-success"></div>
 </div>
 
@@ -4228,6 +4232,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=158"></script>
+<script src="/js/publytics.js?v=159"></script>
 </body>
 </html>
