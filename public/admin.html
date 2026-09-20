@@ -12,8 +12,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=154">
-  <link rel="stylesheet" href="/css/publytics.css?v=154">
+  <link rel="stylesheet" href="/css/style.css?v=155">
+  <link rel="stylesheet" href="/css/publytics.css?v=155">
   <script>
     (function() {
       try {
@@ -1031,7 +1031,7 @@
   <button class="tab-btn" data-tab="tab-geo" style="display:none;">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
   <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics">
-    <img src="/publytics-icon.png?v=154" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
+    <img src="/publytics-icon.png?v=155" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
   </button>
   <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
   <button class="tab-btn" data-tab="tab-settings">⚙️ Settings</button>
@@ -2650,7 +2650,7 @@
         <!-- Single-line pill showing selected website (or placeholder) -->
         <div class="website-selector-pill" id="website-selector-trigger" onclick="toggleWebsiteDropdown();" role="button" aria-expanded="false">
           <div class="website-selector-left">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="2" y1="12" x2="22" y2="12"></line>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -2671,11 +2671,11 @@
       </div>
 
       <!-- 2. TIME & DATE FILTER BUTTONS -->
-      <div class="p-card" style="padding:0.85rem 1rem;">
+      <div class="p-card" id="time-filter-card">
         <!-- Row 1: Real-Time, Today, Yesterday -->
         <div class="filter-row-1">
           <button class="filter-btn-pill active" data-period="realtime">
-            <span class="bolt-icon" style="color:#fbbf24; font-size:1.1rem;">⚡</span>
+            <span class="bolt-icon" style="color:#fbbf24; font-size:0.95rem;">⚡</span>
             <span>Real-Time</span>
           </button>
           <button class="filter-btn-text" data-period="today">Today</button>
@@ -2704,7 +2704,7 @@
         <div class="filter-row-2col">
           <div class="auto-refresh-ctrl border-r" onclick="toggleAutoRefreshCheckbox();">
             <div class="custom-checkbox checked" id="custom-auto-refresh-box">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
@@ -2716,7 +2716,7 @@
           </div>
 
           <div class="refresh-status-ctrl" onclick="loadAllAnalytics();" title="Click to refresh now">
-            <svg class="refresh-spin-svg" id="refresh-spin-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="refresh-spin-svg" id="refresh-spin-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
             </svg>
             <div class="ctrl-text-col">
@@ -3507,7 +3507,7 @@
   </button>
   <button class="mobile-nav-item" data-tab="tab-publytics">
     <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center;">
-      <img src="/publytics-icon.png?v=154" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
+      <img src="/publytics-icon.png?v=155" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
     </span>
     <span>Publytics</span>
   </button>
@@ -3521,7 +3521,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=154"></script>
+<script src="/js/dashboard.js?v=155"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -4133,6 +4133,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=154"></script>
+<script src="/js/publytics.js?v=155"></script>
 </body>
 </html>
