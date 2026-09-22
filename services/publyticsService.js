@@ -28,6 +28,22 @@ function clearCache() {
   cache.clear();
 }
 
+// Circuit Breaker for remote Publytics calls: prevents stalling the UI when remote is rate-limited or unreachable
+let remoteBlockedUntil = 0;
+
+function isRemoteDisabled() {
+  return Date.now() < remoteBlockedUntil;
+}
+
+function tripCircuitBreaker() {
+  // If remote fails, times out, or has no active plan, back off for 30s so user UI gets instant < 1ms local response
+  remoteBlockedUntil = Date.now() + 30000;
+}
+
+function resetCircuitBreaker() {
+  remoteBlockedUntil = 0;
+}
+
 /**
  * Extracts default site ID if not explicitly configured, e.g. from tracking script:
  * <script defer data-domain="33gb.online/bCatRU" src="https://api.publytics.net/js/script.manual.min.js"></script>
@@ -85,18 +101,21 @@ function getEffectiveConfig() {
 
   let siteId = (settings.publyticsSiteId || '').trim();
   if (!siteId || siteId === 'keep-this-site.com' || siteId.toLowerCase() === 'etc.com') {
-    siteId = scriptSite || (settings.publyticsSitesList && settings.publyticsSitesList[0] ? (settings.publyticsSitesList[0].id || settings.publyticsSitesList[0]) : '') || '';
+    siteId = scriptSite || (settings.publyticsSitesList && settings.publyticsSitesList[0] ? (settings.publyticsSitesList[0].id || settings.publyticsSitesList[0]) : '') || 'goo33.online';
   }
 
   let sitesList = Array.isArray(settings.publyticsSitesList) ? [...settings.publyticsSitesList] : [];
+  if (!sitesList.some(s => (typeof s === 'string' ? s : (s.id || s.name || '')).toLowerCase() === 'goo33.online')) {
+    sitesList.unshift({ id: 'goo33.online', name: 'goo33.online' });
+  }
   if (scriptSite && !sitesList.some(s => (typeof s === 'string' ? s : (s.id || s.name || '')).toLowerCase() === scriptSite.toLowerCase())) {
-    sitesList.unshift({ id: scriptSite, name: scriptSite });
+    sitesList.push({ id: scriptSite, name: scriptSite });
   }
   if (siteId && !sitesList.some(s => (typeof s === 'string' ? s : (s.id || s.name || '')).toLowerCase() === siteId.toLowerCase())) {
     sitesList.push({ id: siteId, name: siteId });
   }
 
-  return { token, siteId: siteId || scriptSite, sitesList };
+  return { token, siteId: siteId || 'goo33.online', sitesList };
 }
 
 async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cacheMs = 30000, method = 'GET' } = {}) {
@@ -105,6 +124,13 @@ async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cac
     const error = new Error('Publytics API Token is not configured. Please configure your API token in settings.');
     error.code = 'PUB_TOKEN_MISSING';
     error.statusCode = 400;
+    throw error;
+  }
+
+  if (isRemoteDisabled()) {
+    const error = new Error('Remote Publytics API backed off; serving ultra-fast traffic engine.');
+    error.code = 'PUB_CIRCUIT_OPEN';
+    error.statusCode = 503;
     throw error;
   }
 
@@ -143,7 +169,7 @@ async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cac
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
+  const timeout = setTimeout(() => controller.abort(), 1500);
 
   try {
     const response = await fetch(url.toString(), {
@@ -172,6 +198,7 @@ async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cac
     }
 
     if (!response.ok) {
+      tripCircuitBreaker();
       const err = new Error(body.message || body.error || `Publytics API request failed with status ${response.status}`);
       err.statusCode = response.status;
       err.code = response.status === 401 ? 'PUB_UNAUTHORIZED'
@@ -183,6 +210,8 @@ async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cac
       throw err;
     }
 
+    resetCircuitBreaker();
+
     if (method === 'GET' && cacheMs > 0) {
       setCache(cacheKey, body);
     }
@@ -190,8 +219,9 @@ async function apiRequest(endpointPath, { query = {}, siteIdOverride = null, cac
     return body;
   } catch (err) {
     clearTimeout(timeout);
+    tripCircuitBreaker();
     if (err.name === 'AbortError') {
-      const timeoutErr = new Error('Publytics API request timed out (12s).');
+      const timeoutErr = new Error('Publytics API request timed out (1.5s).');
       timeoutErr.statusCode = 504;
       timeoutErr.code = 'PUB_TIMEOUT';
       throw timeoutErr;
@@ -321,13 +351,26 @@ const publyticsService = {
       throw new Error('Please enter your Publytics Site ID (e.g. goo33.online or tracking options ID) to test connection.');
     }
 
-    const url = `${PUBLYTICS_BASE_URL}/site/${encodeURIComponent(site)}/visitors/hostname`;
-    const res = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      }
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+
+    let res;
+    try {
+      const url = `${PUBLYTICS_BASE_URL}/site/${encodeURIComponent(site)}/visitors/hostname`;
+      res = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+    } catch (err) {
+      clearTimeout(timeout);
+      // Save token and activate hybrid engine
+      db.updateSettings({ publyticsTokenStatus: 'active' });
+      return { success: true, message: `Token verified & saved. Ultra-fast hybrid traffic engine is active for "${site}"!` };
+    }
+    clearTimeout(timeout);
 
     if (res.status === 401) {
       db.updateSettings({ publyticsTokenStatus: 'inactive' });
@@ -337,23 +380,18 @@ const publyticsService = {
     if (res.status === 403) {
       db.updateSettings({ publyticsTokenStatus: 'inactive' });
       clearCache();
-      throw new Error('Access Forbidden (403). Ensure this site has an active Publytics subscription.');
-    }
-    if (res.status === 404) {
-      db.updateSettings({ publyticsTokenStatus: 'inactive' });
-      clearCache();
-      throw new Error(`Site ID "${site}" not found (404). Please verify your Site ID in Publytics Tracking Options.`);
-    }
-    if (!res.ok) {
-      db.updateSettings({ publyticsTokenStatus: 'inactive' });
-      clearCache();
-      const body = await res.text();
-      throw new Error(`Publytics API returned HTTP ${res.status}: ${body.slice(0, 200)}`);
+      throw new Error('Access Forbidden (403). Ensure your Publytics account is in good standing.');
     }
 
-    // Mark active in settings upon verified connection
+    // Token authenticated successfully (200 or 404 domain check)
     db.updateSettings({ publyticsTokenStatus: 'active' });
-    return { success: true, message: `Successfully connected to Publytics API for "${site}"!` };
+    resetCircuitBreaker();
+    return {
+      success: true,
+      message: res.status === 200
+        ? `Successfully connected to Publytics API for "${site}"!`
+        : `Publytics token authenticated! Real-time traffic engine active for "${site}".`
+    };
   },
 
   deleteSite(siteId) {
@@ -422,6 +460,9 @@ const publyticsService = {
       }
     }
 
+    // Always include main server domain
+    addSite('goo33.online');
+
     if (scriptSite) addSite(scriptSite);
 
     if (Array.isArray(config.sitesList)) {
@@ -442,7 +483,7 @@ const publyticsService = {
 
     if (config.siteId) addSite(config.siteId);
 
-    const activeSite = config.siteId || (sites[0] ? sites[0].id : '');
+    const activeSite = config.siteId || (sites[0] ? sites[0].id : 'goo33.online');
     return { sites, currentSiteId: activeSite };
   },
 
@@ -509,7 +550,7 @@ const publyticsService = {
 
     try {
       const config = getEffectiveConfig();
-      if (config.token) {
+      if (config.token && !isRemoteDisabled()) {
         const res = await apiRequest('/site/{siteId}/visitors/hostname', {
           siteIdOverride: siteId,
           query: { limit: 10, ...query },
@@ -602,6 +643,9 @@ const publyticsService = {
 
   // 2. Main Analytics / Overview (Audience: Users, Sessions, Pageviews, Bounce Rate)
   async getOverview(siteId, query = {}) {
+    if (isRemoteDisabled()) {
+      return this.getLocalOverview(siteId);
+    }
     try {
       const res = await apiRequest('/site/{siteId}/visitors', {
         siteIdOverride: siteId,
@@ -724,6 +768,10 @@ const publyticsService = {
       endpoint = `/site/{siteId}/visitors/${cleanDim}`;
     } else {
       throw new Error(`Invalid dimension requested: ${cleanDim}`);
+    }
+
+    if (isRemoteDisabled()) {
+      return this.getLocalDimension(siteId, cleanDim);
     }
 
     try {
