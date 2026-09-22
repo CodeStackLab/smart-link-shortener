@@ -704,6 +704,16 @@
         margin-bottom: 0.4rem !important;
       }
 
+      /* ── CUSTOM DOMAINS: MASTER ADMIN ONLY ── */
+      body:not(.is-superadmin) #custom-domains-card,
+      html:not(.is-superadmin) #custom-domains-card,
+      body:not(.is-superadmin) #detected-domains-section,
+      html:not(.is-superadmin) #detected-domains-section,
+      body:not(.is-superadmin) #installing-ssl-section,
+      html:not(.is-superadmin) #installing-ssl-section {
+        display: none !important;
+      }
+
       /* ── ACTIVE CUSTOM DOMAINS MOBILE CARD TRANSFORMATION ── */
       #custom-domains-card {
         box-sizing: border-box !important;

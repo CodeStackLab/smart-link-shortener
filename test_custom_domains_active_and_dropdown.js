@@ -96,8 +96,10 @@ const mockWindow = {
       return {
         ok: true,
         json: async () => ({
+          authenticated: true,
           username: 'admin',
-          role: 'Admin',
+          role: 'Master Admin',
+          isSuperAdmin: true,
           permissions: ['facebook','instagram','custom_website','links','domains','geo','analytics','firewall','settings','publytics']
         })
       };

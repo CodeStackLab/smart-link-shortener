@@ -493,7 +493,15 @@ app.post('/api/login', (req, res) => {
   req.session.role = user.role || 'Admin';
   req.session.permissions = userPerms;
 
-  return res.json({ success: true, message: 'Login successful', username: user.username, role: user.role, permissions: userPerms });
+  const isSuperAdmin = isSuperAdminSession(req);
+  return res.json({
+    success: true,
+    message: 'Login successful',
+    username: user.username,
+    role: user.role,
+    isSuperAdmin: isSuperAdmin,
+    permissions: userPerms
+  });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -1925,8 +1933,10 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
   if (assignedRole !== 'Admin') {
     assignedPerms = assignedPerms.filter(p => p !== 'firewall');
   }
+  // Domains is strictly Master Admin exclusive — invited users can NEVER have domains permission
+  assignedPerms = assignedPerms.filter(p => p !== 'domains');
   if (!isSuperAdminSession(req)) {
-    assignedPerms = assignedPerms.filter(p => p !== 'domains' && p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
+    assignedPerms = assignedPerms.filter(p => p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
   }
 
   let processedAllowed = [];
@@ -1997,12 +2007,14 @@ app.post('/api/admin/users/update-role', requireAuth, (req, res) => {
   }
 
   let finalPerms = Array.isArray(permissions) ? [...permissions] : [];
+  // Domains is strictly Master Admin exclusive — non-master-admins can NEVER have domains permission
+  finalPerms = finalPerms.filter(p => p !== 'domains');
   if (!isSuperAdminSession(req)) {
-    // Domains, Fallback URL column, and Fallback Clicks section control are strictly Master Admin exclusive!
+    // Fallback URL column and Fallback Clicks section control are strictly Master Admin exclusive!
     // Normal Admin cannot grant or revoke col_fallback_url or logs_fallback_clicks. Preserve target's existing setting:
     const hadFallbackPerm = Array.isArray(target.permissions) && target.permissions.includes('col_fallback_url');
     const hadLogsFallbackPerm = Array.isArray(target.permissions) && target.permissions.includes('logs_fallback_clicks');
-    finalPerms = finalPerms.filter(p => p !== 'domains' && p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
+    finalPerms = finalPerms.filter(p => p !== 'col_fallback_url' && p !== 'logs_fallback_clicks');
     if (hadFallbackPerm) {
       finalPerms.push('col_fallback_url');
     }
@@ -2088,7 +2100,7 @@ async function probeSsl(domain) {
   });
 }
 
-app.post('/api/admin/domains', requireAuth, requireAdminOrSuperAdmin, async (req, res) => {
+app.post('/api/admin/domains', requireAuth, requireSuperAdmin, async (req, res) => {
   const { domain } = req.body;
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required.' });
@@ -2115,19 +2127,19 @@ app.post('/api/admin/domains', requireAuth, requireAdminOrSuperAdmin, async (req
   res.json({ success: true, domain: newDomain });
 });
 
-app.post('/api/admin/domains/:id/activate', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+app.post('/api/admin/domains/:id/activate', requireAuth, requireSuperAdmin, (req, res) => {
   const { id } = req.params;
   db.updateCustomDomainSslStatus(id, 'active');
   res.json({ success: true, message: 'Domain marked as active.' });
 });
 
-app.delete('/api/admin/domains/:id', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+app.delete('/api/admin/domains/:id', requireAuth, requireSuperAdmin, (req, res) => {
   const { id } = req.params;
   db.deleteCustomDomain(id);
   res.json({ success: true });
 });
 
-app.delete('/api/admin/domains', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+app.delete('/api/admin/domains', requireAuth, requireSuperAdmin, (req, res) => {
   const target = req.query.domain || (req.body && req.body.domain) || req.query.id || (req.body && req.body.id);
   if (target) {
     db.deleteCustomDomain(target);
@@ -2151,20 +2163,20 @@ app.get('/api/admin/domains/check', (req, res) => {
 });
 
 // ----------------------------------------------------
-// DETECTED DOMAINS API (Super Admin & Full Admin)
+// DETECTED DOMAINS API (Master Admin Only)
 // ----------------------------------------------------
-app.get('/api/admin/detected-domains', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+app.get('/api/admin/detected-domains', requireAuth, requireSuperAdmin, (req, res) => {
   res.json(db.getDetectedDomains());
 });
 
 // Clear all detected domains
-app.delete('/api/admin/detected-domains/clear-all', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+app.delete('/api/admin/detected-domains/clear-all', requireAuth, requireSuperAdmin, (req, res) => {
   db.clearAllDetectedDomains();
   res.json({ success: true, message: 'All detected domains cleared.' });
 });
 
 // Approve a detected domain → moves to custom_domains + triggers SSL
-app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireAdminOrSuperAdmin, async (req, res) => {
+app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireSuperAdmin, async (req, res) => {
   const { id } = req.params;
   const newDomain = db.approveDetectedDomain(id);
   if (!newDomain) return res.status(400).json({ error: 'Domain not found or already exists.' });
@@ -2174,7 +2186,7 @@ app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireAdminOrS
 });
 
 // Ignore/dismiss/delete a detected domain
-app.delete('/api/admin/detected-domains/:id', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+app.delete('/api/admin/detected-domains/:id', requireAuth, requireSuperAdmin, (req, res) => {
   db.removeDetectedDomain(req.params.id);
   res.json({ success: true });
 });

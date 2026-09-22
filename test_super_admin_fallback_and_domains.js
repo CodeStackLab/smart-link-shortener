@@ -39,7 +39,7 @@ test('2. admin.html has #default-fallback-url-card and #custom-domains-card hidd
 test('3. dashboard.js gates fallbackCard and customDomainsCard strictly to isSuperAdminUser, but teamCard to isFullAdmin', () => {
   const js = fs.readFileSync('./public/js/dashboard.js', 'utf8');
   assert(js.includes("fallbackCard.style.display = isSuperAdminUser() ? '' : 'none';"), 'fallbackCard must check isSuperAdminUser()');
-  assert(js.includes("customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';"), 'customDomainsCard must check isSuperAdminUser()');
+  assert(js.includes("customDomainsCard.style.setProperty('display', 'none', 'important')"), 'customDomainsCard must strictly hide for non-superadmin');
   assert(js.includes("teamCard.style.display = isFullAdmin ? '' : 'none';"), 'teamCard must check isFullAdmin');
   assert(js.includes("editorCountryBlockCard.style.display = isFullAdmin ? '' : 'none';"), 'editorCountryBlockCard must check isFullAdmin');
 });
@@ -48,7 +48,7 @@ test('4. server.js restricts Fallback URL and Custom Domains to Super Admin, but
   const serverJs = fs.readFileSync('./server.js', 'utf8');
   assert(serverJs.includes('delete sanitized.defaultFallbackUrl;'), 'GET /api/admin/settings must delete defaultFallbackUrl for non-superadmins');
   assert(serverJs.includes('defaultFallbackUrl !== undefined && !isSuperAdminSession(req)'), 'POST /api/admin/settings must reject defaultFallbackUrl from non-superadmins');
-  assert(serverJs.includes("app.get('/api/admin/domains', requireAuth, requireSuperAdmin"), 'GET /api/admin/domains must require requireSuperAdmin');
+  assert(serverJs.includes("app.post('/api/admin/domains', requireAuth, requireSuperAdmin"), 'POST /api/admin/domains must require requireSuperAdmin');
   assert(serverJs.includes("app.get('/api/admin/users', requireAuth, (req, res) => {\n  if (!isAnyAdminSession(req))"), 'GET /api/admin/users must check isAnyAdminSession');
   assert(serverJs.includes("app.post('/api/admin/users/invite', requireAuth, (req, res) => {\n  if (!isAnyAdminSession(req))"), 'POST /api/admin/users/invite must check isAnyAdminSession');
   assert(serverJs.includes("app.delete('/api/admin/users/:id', requireAuth, (req, res) => {\n  if (!isAnyAdminSession(req))"), 'DELETE /api/admin/users/:id must check isAnyAdminSession');

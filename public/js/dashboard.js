@@ -271,9 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const r = String(currentLoggedInRole || localStorage.getItem('cachedUserRole') || '').toLowerCase().trim();
     const u = String(currentLoggedInUsername || localStorage.getItem('cachedUsername') || '').toLowerCase().trim();
-    const cleanU = u.replace(/[^\w\s]/g, '').trim();
-    const cleanR = r.replace(/[^\w\s]/g, '').trim();
-    return cleanU === 'admin' || cleanU === 'master admin' || cleanU === 'super admin' || cleanR === 'super admin' || cleanR === 'master admin';
+    return u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
   }
   window.isSuperAdminUser = isSuperAdminUser;
 
@@ -302,9 +300,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const uName = (data.username || 'admin').trim();
         const uRole = (data.role || 'Admin').trim();
         const cleanU = uName.toLowerCase().replace(/[^\w\s]/g, '').trim();
-        const cleanR = uRole.toLowerCase().replace(/[^\w\s]/g, '').trim();
-        const isMaster = (data.isSuperAdmin === true) || cleanU === 'admin' || cleanU === 'master admin' || cleanU === 'super admin' || cleanR === 'super admin' || cleanR === 'master admin';
+        const isMaster = (typeof data.isSuperAdmin === 'boolean')
+          ? data.isSuperAdmin
+          : ((uName.toLowerCase() === 'admin') || (uName.toLowerCase() === 'master admin') || (uRole.toLowerCase() === 'super admin') || (uRole.toLowerCase() === 'master admin'));
         currentLoggedInIsSuperAdmin = isMaster;
+        localStorage.setItem('cachedIsSuperAdmin', isMaster ? 'true' : 'false');
 
         if (userBadge) {
           if (isMaster) {
@@ -743,10 +743,23 @@ document.addEventListener('DOMContentLoaded', () => {
       twoFaCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
 
-    // Custom Domains Card in Settings — Visible ONLY to Super Admin
+    // Custom Domains Card in Settings — Visible ONLY to Master Admin
     const customDomainsCard = document.getElementById('custom-domains-card');
     if (customDomainsCard) {
-      customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';
+      if (isSuperAdminUser()) {
+        customDomainsCard.style.removeProperty('display');
+        customDomainsCard.style.display = 'block';
+      } else {
+        customDomainsCard.style.setProperty('display', 'none', 'important');
+      }
+    }
+    const detectedSec = document.getElementById('detected-domains-section');
+    if (detectedSec && !isSuperAdminUser()) {
+      detectedSec.style.setProperty('display', 'none', 'important');
+    }
+    const installingSec = document.getElementById('installing-ssl-section');
+    if (installingSec && !isSuperAdminUser()) {
+      installingSec.style.setProperty('display', 'none', 'important');
     }
 
     // 3. Publytics API Token Card — Accessible to Super Admin, Master Admin, and Admin
@@ -4358,7 +4371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     newUserRoleSelect.addEventListener('change', () => {
       const selectedRole = newUserRoleSelect.value;
       const defaultPerms = selectedRole === 'Admin'
-        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'publytics']
+        ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'publytics']
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
 
       document.querySelectorAll('.new-perm-cb').forEach(cb => {
@@ -4914,9 +4927,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const domains = await res.json();
       const allDomains = Array.isArray(domains) ? domains : [];
+
+      // Always populate domain selects so all authenticated roles can use existing domains
+      try {
+        populateDomainSelects(allDomains);
+      } catch(err) {
+        console.error('populateDomainSelects error:', err);
+      }
+
+      // STRICT MASTER ADMIN CHECK: Non-master-admins never see or manage custom domains
+      if (!isSuperAdminUser()) {
+        const cCard = document.getElementById('custom-domains-card');
+        if (cCard) cCard.style.setProperty('display', 'none', 'important');
+        const instSec = document.getElementById('installing-ssl-section');
+        if (instSec) instSec.style.setProperty('display', 'none', 'important');
+        const detSec = document.getElementById('detected-domains-section');
+        if (detSec) detSec.style.setProperty('display', 'none', 'important');
+        return;
+      }
+
       const active = allDomains.filter(d => d.sslStatus === 'active');
       const installing = allDomains.filter(d => d.sslStatus && d.sslStatus !== 'active');
-      // Render in Active Custom Domains table so user can see and delete their added domains
+      // Render in Active Custom Domains table so Master Admin can see and manage domains
       const toRender = allDomains;
       try {
         renderDomainsTable(toRender);
@@ -4927,11 +4959,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderInstallingSection(installing);
       } catch(err) {
         console.error('renderInstallingSection error:', err);
-      }
-      try {
-        populateDomainSelects(allDomains);
-      } catch(err) {
-        console.error('populateDomainSelects error:', err);
       }
       // Poll if any still installing
       if (installing.length > 0) {
@@ -4949,6 +4976,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Poll every 12s while domains are installing
   function startDomainPoll() {
+    if (!isSuperAdminUser()) return;
     if (_domainPollTimer) return;
     _domainPollTimer = setInterval(() => loadDomains(), 12000);
   }
@@ -4960,6 +4988,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderDomainsTable(domains) {
     const tbody = document.getElementById('domains-tbody');
     if (!tbody) return;
+    if (!isSuperAdminUser()) {
+      tbody.innerHTML = '';
+      return;
+    }
     if (!Array.isArray(domains) || domains.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.25rem;">No active domains yet. Add a domain above!</td></tr>`;
       return;
@@ -4981,6 +5013,11 @@ function renderInstallingSection(installing) {
   const sec = document.getElementById('installing-ssl-section');
   const list = document.getElementById('installing-ssl-list');
   if (!sec || !list) return;
+  if (!isSuperAdminUser()) {
+    sec.style.setProperty('display', 'none', 'important');
+    list.innerHTML = '';
+    return;
+  }
   if (!installing || installing.length === 0) {
     sec.style.display = 'none';
     list.innerHTML = '';
@@ -5013,7 +5050,7 @@ function renderInstallingSection(installing) {
 
 // ── DETECTED DOMAINS ──
 async function loadDetectedDomains() {
-  if (!isFullAdminUser()) return;
+  if (!isSuperAdminUser()) return;
   try {
     const res = await fetch('/api/admin/detected-domains');
     if (!res.ok) return;
@@ -5027,6 +5064,11 @@ function renderDetectedDomains(detected) {
   const list = document.getElementById('detected-domains-list');
   const badge = document.getElementById('detected-domains-count-badge');
   if (!sec || !list) return;
+  if (!isSuperAdminUser()) {
+    sec.style.setProperty('display', 'none', 'important');
+    list.innerHTML = '';
+    return;
+  }
   if (!Array.isArray(detected) || detected.length === 0) {
     sec.style.display = 'none';
     list.innerHTML = '';
@@ -5363,6 +5405,10 @@ const addDomainForm = document.getElementById('add-domain-form');
 if (addDomainForm) {
   addDomainForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!isSuperAdminUser()) {
+      showAlert('⚠️ Only Master Admin can manage domains.', true);
+      return;
+    }
     const domainInput = document.getElementById('new-domain-input');
     let domain = (domainInput ? domainInput.value : '').trim().toLowerCase();
     domain = domain.replace(/^https?:\/\//, '').split('/')[0].replace(/:\d+$/, '').trim();
@@ -5393,6 +5439,10 @@ if (addDomainForm) {
 }
 
 window.forceActivateDomain = async function(id, domain) {
+  if (!isSuperAdminUser()) {
+    showAlert('⚠️ Only Master Admin can manage domains.', true);
+    return;
+  }
   if (!confirm(`Kya aap "${domain}" ko Active mark karna chahte hain?`)) return;
   try {
     const res = await fetch(`/api/admin/domains/${id}/activate`, { method: 'POST' });
@@ -5409,6 +5459,10 @@ window.forceActivateDomain = async function(id, domain) {
 };
 
 window.deleteDomain = async function(id) {
+  if (!isSuperAdminUser()) {
+    showAlert('⚠️ Only Master Admin can manage domains.', true);
+    return;
+  }
   if (!confirm('Are you sure you want to delete this domain? Links using it will stop working.')) return;
   try {
     const res = await fetch(`/api/admin/domains/${id}`, { method: 'DELETE' });

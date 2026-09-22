@@ -125,7 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const uName = (data.username || payload.username || '').trim();
           const uRole = (data.role || 'Admin').trim();
-          const isMaster = uName.toLowerCase() === 'admin' || uName.toLowerCase() === 'master admin' || uRole.toLowerCase() === 'super admin' || uRole.toLowerCase() === 'master admin';
+          const isMaster = (typeof data.isSuperAdmin === 'boolean')
+            ? data.isSuperAdmin
+            : (uName.toLowerCase() === 'admin' || uName.toLowerCase() === 'master admin' || uRole.toLowerCase() === 'super admin' || uRole.toLowerCase() === 'master admin');
           const icon = (isMaster || uRole === 'Admin') ? '🛡️' : '👤';
           const formattedName = uName ? uName.replace(/\b\w/g, c => c.toUpperCase()) : '';
           const badgeText = isMaster ? '🛡️ Master Admin' : `${icon} ${formattedName}`;
