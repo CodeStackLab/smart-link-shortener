@@ -16,7 +16,8 @@ const FILES = {
   settings: path.join(DATA_DIR, 'settings.json'),
   blockedIps: path.join(DATA_DIR, 'blocked_ips.json'),
   customDomains: path.join(DATA_DIR, 'custom_domains.json'),
-  detectedDomains: path.join(DATA_DIR, 'detected_domains.json')
+  detectedDomains: path.join(DATA_DIR, 'detected_domains.json'),
+  ignoredDomains: path.join(DATA_DIR, 'ignored_domains.json')
 };
 
 function readJson(file, defaultValue = []) {
@@ -278,7 +279,10 @@ module.exports = {
       publyticsTrackingScript: '',
       publyticsApiToken: '',
       publyticsSiteId: '',
-      publyticsSitesList: []
+      publyticsSitesList: [],
+      publyticsTokenStatus: 'inactive',
+      publyticsLoginEmail: 'E@gmail.com',
+      publyticsLoginPassword: '12@abc'
     });
     if (!Array.isArray(s.editorBlockedCountries)) {
       s.editorBlockedCountries = ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'];
@@ -294,6 +298,15 @@ module.exports = {
     }
     if (!Array.isArray(s.publyticsSitesList)) {
       s.publyticsSitesList = [];
+    }
+    if (typeof s.publyticsTokenStatus !== 'string') {
+      s.publyticsTokenStatus = 'inactive';
+    }
+    if (typeof s.publyticsLoginEmail !== 'string') {
+      s.publyticsLoginEmail = 'E@gmail.com';
+    }
+    if (typeof s.publyticsLoginPassword !== 'string') {
+      s.publyticsLoginPassword = '12@abc';
     }
     return s;
   },
@@ -369,7 +382,7 @@ module.exports = {
   getUsers: () => readJson(FILES.users, []),
   getDefaultPermissions: (role) => {
     if (role === 'Super Admin' || role === 'Master Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'domains', 'publytics'];
-    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image'];
+    if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'publytics'];
     return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image']; // Editor default
   },
   getUsersPublic: () => {
@@ -378,7 +391,7 @@ module.exports = {
       const role = u.role || 'Editor';
       const isSuper = (u.username || '').toLowerCase() === 'admin' || (u.username || '').toLowerCase() === 'master admin' || role === 'Super Admin' || role === 'Master Admin';
       const defaultPerms = (isSuper || role === 'Admin')
-        ? (isSuper ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'domains', 'publytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image'])
+        ? (isSuper ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'domains', 'publytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'publytics'])
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
@@ -686,7 +699,7 @@ module.exports = {
       const entry = {
         id: 'dom_' + Date.now(),
         domain: cleanDomain,
-        sslStatus: 'installing', // starts as installing, becomes 'active' when SSL confirmed
+        sslStatus: 'active', // Active immediately for On-Demand TLS
         createdAt: new Date().toISOString()
       };
       domains.push(entry);
@@ -695,19 +708,20 @@ module.exports = {
     }
     return null;
   },
-  deleteCustomDomain: (id) => {
+  deleteCustomDomain: (idOrDomain) => {
     let domains = readJson(FILES.customDomains, []);
-    domains = domains.filter(d => d.id !== id);
+    const target = (idOrDomain || '').trim().toLowerCase();
+    domains = domains.filter(d => d.id !== idOrDomain && (d.domain || '').toLowerCase() !== target);
     writeJson(FILES.customDomains, domains);
   },
   isCustomDomainAllowed: (domain) => {
     const domains = readJson(FILES.customDomains, []);
     const cleanDomain = (domain || '').trim().toLowerCase();
     // Allow main domain, localhost and internal IPs by default
-    if (cleanDomain === 'goo33.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1') {
+    if (cleanDomain === 'goo33.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1' || cleanDomain.endsWith('.goo33.online')) {
       return true;
     }
-    return domains.some(d => d.domain === cleanDomain);
+    return domains.some(d => d.domain === cleanDomain || cleanDomain.endsWith('.' + d.domain) || d.domain.endsWith('.' + cleanDomain));
   },
   updateCustomDomainSslStatus: (id, status) => {
     const domains = readJson(FILES.customDomains, []);
@@ -723,6 +737,8 @@ module.exports = {
   addDetectedDomain: (domain) => {
     const cleanDomain = (domain || '').trim().toLowerCase();
     if (!cleanDomain) return null;
+    const ignored = readJson(FILES.ignoredDomains, []);
+    if (ignored.includes(cleanDomain)) return null;
     const detected = readJson(FILES.detectedDomains, []);
     const custom = readJson(FILES.customDomains, []);
     // Don't add if already in custom domains or already detected
@@ -734,20 +750,42 @@ module.exports = {
     writeJson(FILES.detectedDomains, detected);
     return entry;
   },
-  removeDetectedDomain: (id) => {
+  getIgnoredDomains: () => {
+    return readJson(FILES.ignoredDomains, []);
+  },
+  removeDetectedDomain: (idOrDomain) => {
     let detected = readJson(FILES.detectedDomains, []);
-    detected = detected.filter(d => d.id !== id);
+    const entry = detected.find(d => d.id === idOrDomain || d.domain === idOrDomain);
+    const domainName = entry ? entry.domain : (typeof idOrDomain === 'string' && !idOrDomain.startsWith('det_') ? idOrDomain : null);
+    if (domainName) {
+      const ignored = readJson(FILES.ignoredDomains, []);
+      if (!ignored.includes(domainName)) {
+        ignored.push(domainName);
+        writeJson(FILES.ignoredDomains, ignored);
+      }
+    }
+    detected = detected.filter(d => d.id !== idOrDomain && d.domain !== idOrDomain);
     writeJson(FILES.detectedDomains, detected);
   },
-  approveDetectedDomain: (id) => {
+  clearAllDetectedDomains: () => {
+    const detected = readJson(FILES.detectedDomains, []);
+    const ignored = readJson(FILES.ignoredDomains, []);
+    const domainsToIgnore = detected.map(d => d.domain).filter(Boolean);
+    const newIgnored = [...new Set([...ignored, ...domainsToIgnore])];
+    writeJson(FILES.ignoredDomains, newIgnored);
+    writeJson(FILES.detectedDomains, []);
+    return true;
+  },
+  approveDetectedDomain: (idOrDomain) => {
     let detected = readJson(FILES.detectedDomains, []);
-    const entry = detected.find(d => d.id === id);
+    const entry = detected.find(d => d.id === idOrDomain || d.domain === idOrDomain);
     if (!entry) return null;
-    // Move from detected to custom_domains with sslStatus: 'installing'
-    detected = detected.filter(d => d.id !== id);
+    // Remove from detected domains
+    detected = detected.filter(d => d.id !== entry.id && d.domain !== entry.domain);
     writeJson(FILES.detectedDomains, detected);
     const domains = readJson(FILES.customDomains, []);
-    if (domains.some(d => d.domain === entry.domain)) return null;
+    const existing = domains.find(d => d.domain === entry.domain);
+    if (existing) return existing;
     const newEntry = { id: 'dom_' + Date.now(), domain: entry.domain, sslStatus: 'installing', createdAt: new Date().toISOString() };
     domains.push(newEntry);
     writeJson(FILES.customDomains, domains);

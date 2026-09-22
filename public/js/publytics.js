@@ -16,6 +16,7 @@
 
   // Available websites fetched from Publytics API
   let availableWebsites = [];
+  let isCurrentUserSuperAdmin = null;
 
   // Vibrant Cyber Palette for Donut Segments
   const DONUT_COLORS = [
@@ -275,6 +276,15 @@
         return;
       }
 
+      isCurrentUserSuperAdmin = (session.isSuperAdmin === true) || (session.username || '').toLowerCase() === 'admin' || (session.role || '').toLowerCase() === 'master admin';
+      if (isCurrentUserSuperAdmin) {
+        document.body.classList.add('is-superadmin');
+        document.documentElement.classList.add('is-superadmin');
+      } else {
+        document.body.classList.remove('is-superadmin');
+        document.documentElement.classList.remove('is-superadmin');
+      }
+
       // Check publytics permission
       const hasPubPerm = session.isSuperAdmin || (Array.isArray(session.permissions) && session.permissions.includes('publytics'));
       if (!hasPubPerm) {
@@ -300,6 +310,12 @@
       if (cfgRes.status === 403) return;
       const cfg = await cfgRes.json();
 
+      // Update Official Publytics Login credentials display
+      const dispEmail = document.getElementById('official-pub-email-val');
+      const dispPass = document.getElementById('official-pub-pass-val');
+      if (dispEmail && cfg.loginEmail) dispEmail.textContent = cfg.loginEmail;
+      if (dispPass && cfg.loginPassword) dispPass.textContent = cfg.loginPassword;
+
       // Fetch sites list from Publytics API
       await fetchAvailableSites(cfg);
 
@@ -308,28 +324,80 @@
     }
   }
 
+  window.copyPubCredential = function(type, btn) {
+    let val = '';
+    if (type === 'email') {
+      const el = document.getElementById('official-pub-email-val');
+      val = el ? el.textContent.trim() : '';
+    } else if (type === 'password') {
+      const el = document.getElementById('official-pub-pass-val');
+      val = el ? el.textContent.trim() : '';
+    }
+    if (!val) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = val;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    if (btn) {
+      const origHTML = btn.innerHTML;
+      btn.innerHTML = '<span style="font-size:0.8rem;">✅ Copied!</span>';
+      btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      setTimeout(() => {
+        btn.innerHTML = origHTML;
+        btn.style.background = 'linear-gradient(135deg, #0070f3, #00a8ff)';
+      }, 2000);
+    }
+  };
+
+  // Valid domain check helper
+  function isValidSiteEntry(id) {
+    if (!id || typeof id !== 'string') return false;
+    const s = id.trim();
+    return s.length >= 4 && s.length < 200
+      && !s.includes('<') && !s.includes('>')
+      && s.includes('.') // must have a dot
+      && /^[a-zA-Z0-9][a-zA-Z0-9.\-]+(\.[a-zA-Z]{2,})(\/.*)?\.?$/.test(s);
+  }
+
   async function fetchAvailableSites(cfg) {
     try {
-      const sRes = await fetch('/api/publytics/sites');
+      // Always fetch fresh from server — add cache-busting timestamp
+      const sRes = await fetch('/api/publytics/sites?_t=' + Date.now());
       const data = await sRes.json();
       const rawList = Array.isArray(data.sites) ? data.sites : (Array.isArray(data) ? data : []);
 
-      availableWebsites = rawList.map(s => {
-        if (typeof s === 'string') return s;
-        return s.id || s.name || s.domain || '';
-      }).filter(Boolean);
+      // Filter: only valid domain-like entries (no junk/script tags)
+      availableWebsites = rawList.map(s =>
+        typeof s === 'string' ? s : (s.id || s.name || s.domain || '')
+      ).filter(s => isValidSiteEntry(s));
 
       if (availableWebsites.length === 0 && cfg && Array.isArray(cfg.sitesList) && cfg.sitesList.length > 0) {
-        availableWebsites = cfg.sitesList.map(s => s.id || s.name || s).filter(Boolean);
+        availableWebsites = cfg.sitesList.map(s => s.id || s.name || s).filter(s => isValidSiteEntry(s));
       }
 
+      // Check if localStorage saved site is still valid in current server list
       const savedSite = localStorage.getItem('publytics_selected_site');
-      if (savedSite && availableWebsites.includes(savedSite)) {
+      if (savedSite && isValidSiteEntry(savedSite) && availableWebsites.includes(savedSite)) {
         currentSiteId = savedSite;
-      } else if (availableWebsites.length > 0) {
-        currentSiteId = availableWebsites[0];
       } else {
-        currentSiteId = (cfg && cfg.currentSiteId) || '';
+        // Stale/invalid localStorage — clear it and use server's first site
+        try { localStorage.removeItem('publytics_selected_site'); } catch(e) {}
+        const serverSiteId = (cfg && cfg.currentSiteId && isValidSiteEntry(cfg.currentSiteId)) ? cfg.currentSiteId : '';
+        if (serverSiteId && availableWebsites.includes(serverSiteId)) {
+          currentSiteId = serverSiteId;
+        } else if (availableWebsites.length > 0) {
+          currentSiteId = availableWebsites[0];
+        } else {
+          currentSiteId = serverSiteId || '';
+        }
       }
 
       renderWebsiteList();
@@ -342,7 +410,23 @@
     }
   }
 
-  // Render "Select website" radio list
+  // Helper: check if current user is Super Admin / Master Admin
+  function isSuperAdmin() {
+    if (isCurrentUserSuperAdmin !== null) {
+      return isCurrentUserSuperAdmin === true;
+    }
+    if (typeof window.isSuperAdminUser === 'function') {
+      return window.isSuperAdminUser();
+    }
+    if (document.documentElement.classList.contains('is-superadmin') || document.body.classList.contains('is-superadmin')) {
+      return true;
+    }
+    const r = (localStorage.getItem('cachedUserRole') || '').toLowerCase().trim();
+    const u = (localStorage.getItem('cachedUsername') || '').toLowerCase().trim();
+    return u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
+  }
+
+  // Render "Select website" radio list with delete buttons (Super Admin Only)
   function renderWebsiteList() {
     const container = document.getElementById('website-list-container');
     if (!container) return;
@@ -357,18 +441,64 @@
       return;
     }
 
+    const canDelete = isSuperAdmin();
+
     container.innerHTML = availableWebsites.map(siteName => {
       const isSel = currentSiteId && siteName.toLowerCase() === currentSiteId.toLowerCase();
+      const deleteBtn = canDelete ? `
+        <button onclick="event.stopPropagation(); removeSiteFromList('${escapeHtml(siteName)}')" title="Remove site (Super Admin only)"
+          style="flex-shrink:0; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#ef4444; border-radius:6px; width:26px; height:26px; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" 
+          onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">
+          ✕
+        </button>
+      ` : '';
+
       return `
-        <div class="site-option ${isSel ? 'active' : ''}" onclick="selectWebsite('${escapeHtml(siteName)}')">
-          <span class="radio-circle"></span>
-          <span class="site-name-text">${escapeHtml(siteName)}</span>
+        <div class="site-option ${isSel ? 'active' : ''}" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; padding-right:${canDelete ? '0.5rem' : '0.85rem'};">
+          <div style="display:flex; align-items:center; gap:0.55rem; flex:1; min-width:0; cursor:pointer;" onclick="selectWebsite('${escapeHtml(siteName)}')">
+            <span class="radio-circle" style="flex-shrink:0;"></span>
+            <span class="site-name-text" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(siteName)}</span>
+          </div>
+          ${deleteBtn}
         </div>
       `;
     }).join('');
 
     updateSelectorPillLabel();
   }
+
+  // Remove a site from the saved list (Super Admin Only)
+  window.removeSiteFromList = async function(siteName) {
+    if (!isSuperAdmin()) {
+      alert('⚠️ Only Super Admin / Master Admin can remove websites.');
+      return;
+    }
+    if (!confirm(`Remove "${siteName}" from your website list?`)) return;
+    try {
+      // Remove from local array first
+      availableWebsites = availableWebsites.filter(s => s.toLowerCase() !== siteName.toLowerCase());
+      // If removed site was active, switch to first remaining
+      if (currentSiteId && currentSiteId.toLowerCase() === siteName.toLowerCase()) {
+        currentSiteId = availableWebsites[0] || '';
+        try { localStorage.setItem('publytics_selected_site', currentSiteId); } catch(e) {}
+      }
+      renderWebsiteList();
+      updateSelectorPillLabel();
+
+      // Send delete request to server
+      await fetch('/api/publytics/delete-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteId: siteName })
+      });
+
+      // Reload fresh list from server
+      await fetchAvailableSites();
+      if (currentSiteId) loadAllAnalytics();
+    } catch(e) {
+      console.error('Failed to remove site:', e);
+    }
+  };
 
   function updateSelectorPillLabel() {
     const label = document.getElementById('website-selector-label');
@@ -567,18 +697,33 @@
     loadAllAnalytics();
   };
 
+  let realtimeTimer = null;
+
   function startAutoRefresh() {
     stopAutoRefresh();
+
+    // Mobile & distant cell tower optimized real-time pulse (5s, pauses when tab is hidden or inactive)
+    realtimeTimer = setInterval(() => {
+      if (document.hidden) return;
+      const tabPub = document.getElementById('tab-publytics');
+      if (tabPub && (tabPub.style.display === 'none' || getComputedStyle(tabPub).display === 'none')) {
+        return;
+      }
+      fetchRealtime();
+    }, 5000);
+
+    // Full dashboard refresh every 20s
     autoRefreshTimer = setInterval(() => {
+      if (document.hidden) return;
       const tabPub = document.getElementById('tab-publytics');
       if (tabPub && (tabPub.style.display === 'none' || getComputedStyle(tabPub).display === 'none')) {
         return;
       }
       const autoRef = document.getElementById('auto-refresh-check');
-      if (autoRef && autoRef.checked && !isFetching && currentSiteId) {
+      if (autoRef && autoRef.checked && !isFetching) {
         loadAllAnalytics(false);
       }
-    }, 15000);
+    }, 20000);
   }
 
   function stopAutoRefresh() {
@@ -586,11 +731,15 @@
       clearInterval(autoRefreshTimer);
       autoRefreshTimer = null;
     }
+    if (realtimeTimer) {
+      clearInterval(realtimeTimer);
+      realtimeTimer = null;
+    }
   }
 
   // --- CORE DATA FETCHING ---
   window.loadAllAnalytics = async function(showSpin = true) {
-    if (isFetching || !currentSiteId) return;
+    if (isFetching) return;
     isFetching = true;
 
     const spin = document.getElementById('refresh-spin-icon');
@@ -632,9 +781,9 @@
 
   // 1. Real-Time Data (Section 1)
   async function fetchRealtime() {
-    if (!currentSiteId) return;
     try {
-      const res = await fetch(`/api/publytics/realtime?siteId=${encodeURIComponent(currentSiteId)}`);
+      const q = currentSiteId ? `?siteId=${encodeURIComponent(currentSiteId)}` : '';
+      const res = await fetch(`/api/publytics/realtime${q}`);
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.error || `HTTP ${res.status}`);
@@ -656,6 +805,17 @@
       if (document.getElementById('rt-5m-val')) document.getElementById('rt-5m-val').textContent = formatNum(m5);
       if (document.getElementById('rt-30m-val')) document.getElementById('rt-30m-val').textContent = formatNum(m30);
 
+      const subEl = document.getElementById('rt-site-subtitle');
+      if (subEl) {
+        if (data.source === 'publytics_api') {
+          subEl.innerHTML = '<span style="color:#10b981; font-weight:700;">🟢 Live traffic directly from Publytics API</span>';
+        } else if (data.source === 'local_traffic') {
+          subEl.innerHTML = '<span style="color:#38bdf8; font-weight:600;">⚡ Live shortlink clicks (Local Traffic Engine)</span>';
+        } else {
+          subEl.textContent = 'Live real-time traffic pulse';
+        }
+      }
+
       const pagesBox = document.getElementById('rt-pages-content');
       const pages = data.pages || data.activePages || [];
       if (pagesBox) {
@@ -666,17 +826,14 @@
               <strong style="color:var(--p-cyan);">${formatNum(p.visitors || p.count || 1)}</strong>
             </div>
           `).join('');
+        } else if (data.error && active === 0) {
+          pagesBox.innerHTML = `<span style="color:#f59e0b; font-size:0.8rem;">⚠️ ${escapeHtml(data.error)}</span>`;
         } else {
           pagesBox.textContent = active > 0 ? `${active} active visitor(s) across site` : 'No active visitors right now';
         }
       }
     } catch (e) {
-      if (document.getElementById('rt-active-visitors')) document.getElementById('rt-active-visitors').textContent = '0';
-      if (document.getElementById('rt-1m-val')) document.getElementById('rt-1m-val').textContent = '0';
-      if (document.getElementById('rt-5m-val')) document.getElementById('rt-5m-val').textContent = '0';
-      if (document.getElementById('rt-30m-val')) document.getElementById('rt-30m-val').textContent = '0';
-      const pagesBox = document.getElementById('rt-pages-content');
-      if (pagesBox) pagesBox.textContent = 'Listening for real-time visitors...';
+      // Keep last known counts on network error
     }
   }
 
@@ -738,11 +895,25 @@
 
       renderUsersTable(users);
     } catch (e) {
+      const tableScroll = document.getElementById('users-table-scroll');
+      const emptyCont = document.getElementById('users-empty-container');
+      const tbody = document.getElementById('users-table-body');
+      if (tableScroll) tableScroll.style.display = 'none';
+      if (emptyCont) {
+        emptyCont.style.display = 'block';
+        emptyCont.innerHTML = `
+          <div class="p-empty-state" style="width:100% !important; min-width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0.4rem 0 !important;">
+            <div class="p-empty-icon">👤</div>
+            <div class="p-empty-title">No User Identifiers Found</div>
+            <div class="p-empty-sub">No user sessions were recorded by the Publytics API for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
+          </div>
+        `;
+      }
       if (tbody) {
         tbody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              <div class="p-empty-state">
+          <tr style="width:100% !important; display:block !important; border:none !important; background:transparent !important; box-shadow:none !important; padding:0 !important; margin:0 !important;">
+            <td colspan="7" style="width:100% !important; min-width:100% !important; display:block !important; border:none !important; padding:0 !important; box-sizing:border-box !important;">
+              <div class="p-empty-state" style="width:100% !important; min-width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0.4rem 0 !important;">
                 <div class="p-empty-icon">👤</div>
                 <div class="p-empty-title">No User Identifiers Found</div>
                 <div class="p-empty-sub">No user sessions were recorded by the Publytics API for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
@@ -755,23 +926,41 @@
   };
 
   function renderUsersTable(users) {
+    const tableScroll = document.getElementById('users-table-scroll');
+    const emptyCont = document.getElementById('users-empty-container');
     const tbody = document.getElementById('users-table-body');
-    if (!tbody) return;
+    if (!tbody && !emptyCont) return;
 
     if (!Array.isArray(users) || users.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7">
-            <div class="p-empty-state">
-              <div class="p-empty-icon">👥</div>
-              <div class="p-empty-title">No User Sessions Recorded</div>
-              <div class="p-empty-sub">Publytics API recorded no active user sessions for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
-            </div>
-          </td>
-        </tr>
-      `;
+      if (tableScroll) tableScroll.style.display = 'none';
+      if (emptyCont) {
+        emptyCont.style.display = 'block';
+        emptyCont.innerHTML = `
+          <div class="p-empty-state" style="width:100% !important; min-width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0.4rem 0 !important;">
+            <div class="p-empty-icon">👥</div>
+            <div class="p-empty-title">No User Sessions Recorded</div>
+            <div class="p-empty-sub">Publytics API recorded no active user sessions for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
+          </div>
+        `;
+      }
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr style="width:100% !important; display:block !important; border:none !important; background:transparent !important; box-shadow:none !important; padding:0 !important; margin:0 !important;">
+            <td colspan="7" style="width:100% !important; min-width:100% !important; display:block !important; border:none !important; padding:0 !important; box-sizing:border-box !important;">
+              <div class="p-empty-state" style="width:100% !important; min-width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0.4rem 0 !important;">
+                <div class="p-empty-icon">👥</div>
+                <div class="p-empty-title">No User Sessions Recorded</div>
+                <div class="p-empty-sub">Publytics API recorded no active user sessions for <strong>${escapeHtml(currentSiteId)}</strong> in this period.</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
       return;
     }
+
+    if (emptyCont) emptyCont.style.display = 'none';
+    if (tableScroll) tableScroll.style.display = 'block';
 
     tbody.innerHTML = users.map((u, idx) => {
       const id = u.userId || u.id || u.user_id || `User #${idx + 1}`;
@@ -999,6 +1188,11 @@
   // Fetch Dimension Data directly from Publytics API (Zero Synthetic Fallbacks)
   async function fetchDimensionData(dimKey) {
     if (!currentSiteId) return;
+    const ddTableScroll = document.getElementById('dd-table-scroll');
+    const ddEmptyCont = document.getElementById('dd-empty-container');
+    if (ddEmptyCont) ddEmptyCont.style.display = 'none';
+    if (ddTableScroll) ddTableScroll.style.display = 'block';
+
     const tbody = document.getElementById('dd-table-body-rows');
     if (tbody) {
       tbody.innerHTML = `
@@ -1035,15 +1229,30 @@
     const legendContainer = document.getElementById('dd-legend-items-container');
     const tbody = document.getElementById('dd-table-body-rows');
     const chartCard = document.getElementById('dd-chart-section');
+    const ddTableScroll = document.getElementById('dd-table-scroll');
+    const ddEmptyCont = document.getElementById('dd-empty-container');
 
     // If zero data: render clean empty state
     if (!Array.isArray(items) || items.length === 0 || totalVis === 0) {
       if (chartCard) chartCard.style.display = 'none';
+      if (ddTableScroll) ddTableScroll.style.display = 'none';
+      if (ddEmptyCont) {
+        ddEmptyCont.style.display = 'block';
+        ddEmptyCont.innerHTML = `
+          <div class="p-empty-state" style="width:100% !important; min-width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0.4rem 0 !important;">
+            <div class="p-empty-icon">📊</div>
+            <div class="p-empty-title">No Traffic Data Recorded</div>
+            <div class="p-empty-sub">
+              Publytics API recorded no visitor data for <strong>${escapeHtml(dimKey)}</strong> on <strong>${escapeHtml(currentSiteId)}</strong> in this period.
+            </div>
+          </div>
+        `;
+      }
       if (tbody) {
         tbody.innerHTML = `
-          <tr>
-            <td colspan="6">
-              <div class="p-empty-state">
+          <tr style="width:100% !important; display:block !important; border:none !important; background:transparent !important; box-shadow:none !important; padding:0 !important; margin:0 !important;">
+            <td colspan="6" style="width:100% !important; min-width:100% !important; display:block !important; border:none !important; padding:0 !important; box-sizing:border-box !important;">
+              <div class="p-empty-state" style="width:100% !important; min-width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0.4rem 0 !important;">
                 <div class="p-empty-icon">📊</div>
                 <div class="p-empty-title">No Traffic Data Recorded</div>
                 <div class="p-empty-sub">
@@ -1056,6 +1265,9 @@
       }
       return;
     }
+
+    if (ddEmptyCont) ddEmptyCont.style.display = 'none';
+    if (ddTableScroll) ddTableScroll.style.display = 'block';
 
     if (chartCard) chartCard.style.display = 'flex';
 

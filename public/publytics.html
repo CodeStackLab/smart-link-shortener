@@ -10,8 +10,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <link rel="icon" href="/icon-192.png" type="image/png">
-  <link rel="stylesheet" href="/css/style.css?v=160">
-  <link rel="stylesheet" href="/css/publytics.css?v=160">
+  <link rel="stylesheet" href="/css/style.css?v=210">
+  <link rel="stylesheet" href="/css/publytics.css?v=210">
   
   <style>
     /* ==========================================================================
@@ -605,6 +605,9 @@
       margin-top: 0.75rem;
       padding-top: 0.75rem;
       border-top: 1px solid rgba(0, 144, 255, 0.22);
+      max-height: 280px;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     .website-dropdown.open {
       display: flex;
@@ -613,12 +616,15 @@
     .site-option {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
       padding: 0.6rem 0.65rem;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.18s ease;
       user-select: none;
       border: 1px solid transparent;
+      min-width: 0;
     }
     .site-option:hover {
       background: rgba(0, 144, 255, 0.1);
@@ -639,9 +645,14 @@
     }
     .site-option .site-name-text {
       color: #93c5fd;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
-      margin-left: 0.85rem;
+      margin-left: 0.65rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
     }
 
     .site-option.active {
@@ -664,6 +675,26 @@
       color: #ffffff;
       font-weight: 800;
     }
+
+    /* Mobile responsive for website selector */
+    @media (max-width: 480px) {
+      .website-selector-name,
+      .ws-site-title {
+        font-size: 1rem !important;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .site-option .site-name-text {
+        font-size: 0.85rem;
+      }
+      .website-dropdown {
+        max-height: 220px;
+      }
+    }
+
+
 
     /* 2. TIME & DATE FILTER GRID (Exact Screenshot Match) */
     .filter-row-1 {
@@ -2212,7 +2243,7 @@
         </button>
       </div>
 
-      <div class="table-scroll">
+      <div class="table-scroll" id="users-table-scroll">
         <table class="screenshot-table" id="users-table">
           <thead>
             <tr>
@@ -2234,10 +2265,76 @@
           </tbody>
         </table>
       </div>
+      <div id="users-empty-container" style="display:none; width:100% !important; box-sizing:border-box !important;"></div>
+    </div>
+
+    <!-- 5B. OFFICIAL PUBLYTICS LOGIN CARD (Exact Reference Design) -->
+    <div class="p-card official-publytics-card" id="official-publytics-login-card">
+      <!-- Header with Glowing Shield Icon -->
+      <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.15rem;">
+        <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, #0080ff, #00d4ff); display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 180, 255, 0.45); flex-shrink:0;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <rect x="9" y="11" width="6" height="4" rx="1"></rect>
+            <circle cx="12" cy="10" r="1.5"></circle>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="color:#ffffff; font-size:1.32rem; font-weight:900; letter-spacing:-0.01em; line-height:1.2;">Official Publytics Login</div>
+          <div style="color:#93c5fd; font-size:0.84rem; font-weight:500; margin-top:0.25rem;">Use your credentials to access the Publytics platform.</div>
+        </div>
+      </div>
+
+      <!-- Credential Rows Container -->
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <!-- Email Row -->
+        <div class="pub-cred-row">
+          <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
+            <div style="width:34px; height:34px; border-radius:10px; background:rgba(0, 144, 255, 0.18); border:1px solid rgba(0, 144, 255, 0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+            </div>
+            <span style="font-weight:800; color:#ffffff; font-size:0.95rem; white-space:nowrap;">Email :</span>
+            <span id="official-pub-email-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">E@gmail.com</span>
+          </div>
+          <button type="button" class="pub-cred-copy-btn" onclick="copyPubCredential('email', this);" title="Copy Email">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy</span>
+          </button>
+        </div>
+
+        <!-- Password Row -->
+        <div class="pub-cred-row">
+          <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
+            <div style="width:34px; height:34px; border-radius:10px; background:rgba(0, 144, 255, 0.18); border:1px solid rgba(0, 144, 255, 0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <span style="font-weight:800; color:#ffffff; font-size:0.95rem; white-space:nowrap;">Paswrd :</span>
+            <span id="official-pub-pass-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">12@abc</span>
+          </div>
+          <button type="button" class="pub-cred-copy-btn" onclick="copyPubCredential('password', this);" title="Copy Password">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action: Open Publytics Official Login -->
+      <div style="margin-top:0.9rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+        <a href="https://publytics.net/login" target="_blank" rel="noopener noreferrer" style="flex:1; min-width:200px; background:rgba(0, 144, 255, 0.15); border:1px solid rgba(0, 144, 255, 0.45); color:#93c5fd; font-weight:800; font-size:0.86rem; padding:0.62rem 1rem; border-radius:12px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:all 0.18s ease;" onmouseover="this.style.background='rgba(0,144,255,0.28)'; this.style.borderColor='#00e5ff'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(0,144,255,0.15)'; this.style.borderColor='rgba(0,144,255,0.45)'; this.style.color='#93c5fd';">
+          <span>🚀</span> Open Publytics Official Login
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
+      </div>
     </div>
 
     <!-- 6. THE COMPLETE DRILLDOWN / DETAIL ANALYTICS VIEW (Section 6) -->
-    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:1.5rem; display:none;">
+    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:0.75rem; display:none;">
 
       <!-- NAV HEADER: ← Back + Title + Date Pill -->
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(0,144,255,0.2); flex-wrap:wrap; gap:0.5rem;">
@@ -2349,7 +2446,7 @@
           <span style="font-size:0.72rem; color:#7f9bc2;">💡 Click any row to view complete API breakdown</span>
         </div>
 
-        <div class="table-scroll">
+        <div class="table-scroll" id="dd-table-scroll">
           <table class="screenshot-table">
             <thead>
               <tr>
@@ -2366,6 +2463,7 @@
             </tbody>
           </table>
         </div>
+        <div id="dd-empty-container" style="display:none; width:100% !important; box-sizing:border-box !important;"></div>
       </div>
     </div><!-- end drilldown-page-view -->
 
@@ -2459,6 +2557,6 @@
     </a>
   </nav>
 
-  <script src="/js/publytics.js?v=161"></script>
+  <script src="/js/publytics.js?v=210"></script>
 </body>
 </html>

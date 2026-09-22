@@ -86,6 +86,11 @@ function requireSuperAdmin(req, res, next) {
   return res.status(403).json({ error: 'Access denied. Only Master Admin can manage domains.' });
 }
 
+function requireAdminOrSuperAdmin(req, res, next) {
+  if (isAnyAdminSession(req)) return next();
+  return res.status(403).json({ error: 'Access denied. Admin access required.' });
+}
+
 function getUserPermissions(username, role) {
   const user = db.getUserByUsername(username);
   const storedPerms = (user && Array.isArray(user.permissions))
@@ -148,8 +153,8 @@ function requirePermission(...permissions) {
     });
     if (hasImplied) return next();
 
-    // Admin role bypass for standard operational tabs EXCEPT publytics and domains (which require explicit Super Admin grant)
-    if (isAdminRole(req.session && req.session.role) && !permissions.includes('publytics') && !permissions.includes('domains')) {
+    // Admin role bypass for standard operational tabs (including Publytics) EXCEPT domains (which require explicit Super Admin grant)
+    if (isAdminRole(req.session && req.session.role) && !permissions.includes('domains')) {
       return next();
     }
 
@@ -384,13 +389,26 @@ app.get(['/publytics', '/publytics.html'], (req, res) => {
   return res.redirect('/admin#tab-publytics');
 });
 
-// Serve static files from 'public' folder (never cache HTML files)
+try {
+  const compression = require('compression');
+  app.use(compression({
+    threshold: 1024,
+    level: 6
+  }));
+} catch (e) {
+  // Compression handled upstream by Caddy reverse proxy (encode zstd gzip)
+}
+
+// Serve static files from 'public' folder (never cache HTML files, cache versioned assets)
 app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+    } else if (/\.(js|css|svg|png|jpg|jpeg|webp|ico|woff2?)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
     }
   }
 }));
@@ -400,20 +418,34 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // Captures any domain hitting this server that is not
 // registered — logs it for admin to review & approve
 // ----------------------------------------------------
+const dns = require('dns');
 const _knownHosts = new Set(['goo33.online', '33gb.online', 'localhost', '127.0.0.1', '89.117.51.151']);
-app.use((req, res, next) => {
-  try {
-    const host = (req.get('host') || '').replace(/:\d+$/, '').trim().toLowerCase();
-    if (host && !_knownHosts.has(host) && !host.startsWith('192.168.') && !host.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-      // Only log if not already a registered custom domain
-      const knownCustom = db.getCustomDomains().map(d => d.domain);
-      if (!knownCustom.includes(host)) {
-        db.addDetectedDomain(host); // silently logs, ignores duplicates
-      }
+const _serverIps = new Set(['89.117.51.151']);
+
+function verifyAndAddDetectedDomain(rawHost) {
+  if (!rawHost) return;
+  const host = rawHost.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0].replace(/:\d+$/, '');
+  if (!host || host.length < 3 || _knownHosts.has(host) || host.startsWith('192.168.') || host.match(/^\d+\.\d+\.\d+\.\d+$/)) return;
+
+  const knownCustom = db.getCustomDomains().map(d => d.domain);
+  if (knownCustom.includes(host)) return;
+
+  const ignored = typeof db.getIgnoredDomains === 'function' ? db.getIgnoredDomains() : [];
+  if (ignored.includes(host)) return;
+
+  // Resolve IPv4 DNS: Only log if domain's DNS actually points to our server IP!
+  dns.resolve4(host, (err, addresses) => {
+    if (err || !Array.isArray(addresses) || addresses.length === 0) return;
+    const isPointingToUs = addresses.some(ip => _serverIps.has(ip));
+    if (isPointingToUs) {
+      db.addDetectedDomain(host);
+      console.log(`🔍 [AUTO-DETECT] Verified real domain pointing to server: ${host}`);
     }
-  } catch(e) {}
-  next();
-});
+  });
+}
+
+// Note: On-demand TLS domain verification is handled securely at /api/admin/domains/check
+
 
 // ----------------------------------------------------
 // AUTHENTICATION ROUTES
@@ -718,7 +750,7 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
   // Server-side: enforce platform permissions for non-Admin users
   let finalAllowedPlatforms = (Array.isArray(allowedPlatforms) && allowedPlatforms.length > 0)
     ? allowedPlatforms
-    : ['facebook', 'direct'];
+    : ['facebook'];
   if (!isAdminRole(req.session.role)) {
     const userPerms = getUserPermissions(req.session.username, req.session.role);
     // Only keep platforms the user has permission for
@@ -1370,16 +1402,19 @@ app.post('/api/admin/publytics/test', requireAuth, async (req, res) => {
     // Fire traffic event to Publytics API if reachable
     try {
       if (typeof fetch === 'function') {
-        await fetch('https://api.publytics.net/api/event', {
+        await fetch('https://api.publytics.net/events', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': req.headers['user-agent'] || 'SmartShortener/1.0'
+            'Content-Type': 'text/plain',
+            'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'X-Forwarded-For': req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''
           },
           body: JSON.stringify({
-            name: 'pageview',
-            domain: domainId,
-            url: `https://${domainId}/test-event`
+            n: 'pageview',
+            u: `https://${domainId.split('/')[0]}/test-event`,
+            d: domainId,
+            r: null,
+            w: 1920
           }),
           signal: AbortSignal.timeout(3500)
         });
@@ -1407,20 +1442,68 @@ app.post('/api/admin/publytics/test', requireAuth, async (req, res) => {
 // PUBLYTICS API REPORTING & DASHBOARD PROXY (Protected)
 // ----------------------------------------------------
 
-// Get configuration status (token masked) - Protected by publytics permission
-app.get('/api/publytics/config', requireAuth, requirePermission('publytics'), (req, res) => {
+// Get configuration status (token masked) - Protected by publytics / settings / admin permission
+app.get('/api/publytics/config', requireAuth, (req, res, next) => {
+  if (isAdminRole(req.session && req.session.role)) return next();
+  const perms = getUserPermissions(req.session.username, req.session.role);
+  if (perms.includes('publytics') || perms.includes('settings')) return next();
+  return res.status(403).json({ error: 'Permission denied: publytics or settings required.' });
+}, (req, res) => {
   res.json(publyticsService.getConfig());
 });
 
-// Update configuration (SUPER ADMIN / MASTER ADMIN ONLY)
-app.post('/api/publytics/config', requireAuth, requireSuperAdmin, (req, res) => {
-  const { apiToken, siteId, sitesList } = req.body || {};
-  const updated = publyticsService.updateConfig({ apiToken, siteId, sitesList });
-  res.json({ success: true, config: updated });
+// Update configuration (Admin & Super Admin)
+app.post('/api/publytics/config', requireAuth, requireAdminOrSuperAdmin, async (req, res) => {
+  try {
+    const { apiToken, siteId, sitesList, loginEmail, loginPassword } = req.body || {};
+    const result = await publyticsService.updateConfig({ apiToken, siteId, sitesList, loginEmail, loginPassword });
+    res.json(result);
+  } catch (err) {
+    res.status(err.statusCode || 400).json({ success: false, error: err.message });
+  }
 });
 
-// Test connection with token and siteId (Super Admin only)
-app.post('/api/publytics/test-connection', requireAuth, requireSuperAdmin, async (req, res) => {
+// Delete a site from Publytics Websites List (Admin & Super Admin)
+app.post('/api/publytics/delete-site', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+  try {
+    const siteId = req.body?.siteId || req.body?.site || req.body?.id;
+    if (!siteId) {
+      return res.status(400).json({ success: false, error: 'Site ID is required to delete.' });
+    }
+    const result = publyticsService.deleteSite(siteId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/publytics/sites/:siteId', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const result = publyticsService.deleteSite(decodeURIComponent(siteId));
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Update Official Publytics Login Credentials (Admin & Super Admin)
+app.post('/api/publytics/credentials', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+  const { loginEmail, loginPassword } = req.body || {};
+  const updates = {};
+  if (loginEmail !== undefined) updates.publyticsLoginEmail = String(loginEmail || '').trim();
+  if (loginPassword !== undefined) updates.publyticsLoginPassword = String(loginPassword || '').trim();
+  db.updateSettings(updates);
+  res.json({
+    success: true,
+    message: 'Official Publytics Login Credentials updated successfully!',
+    loginEmail: updates.publyticsLoginEmail !== undefined ? updates.publyticsLoginEmail : db.getSettings().publyticsLoginEmail,
+    loginPassword: updates.publyticsLoginPassword !== undefined ? updates.publyticsLoginPassword : db.getSettings().publyticsLoginPassword
+  });
+});
+
+// Test connection with token and siteId (Admin & Super Admin)
+app.post('/api/publytics/test-connection', requireAuth, requireAdminOrSuperAdmin, async (req, res) => {
   try {
     const { apiToken, siteId } = req.body || {};
     const result = await publyticsService.testConnection({ apiToken, siteId });
@@ -1444,7 +1527,12 @@ app.get('/api/publytics/sites', requireAuth, requirePermission('publytics'), asy
 app.get('/api/publytics/realtime', requireAuth, requirePermission('publytics'), async (req, res) => {
   try {
     const { siteId, ...query } = req.query;
-    const data = await publyticsService.getRealtime(siteId, query);
+    const settings = db.getSettings();
+    const effectiveSite = (siteId && String(siteId).trim())
+      || settings.publyticsSiteId
+      || (settings.publyticsSitesList && settings.publyticsSitesList[0] && (settings.publyticsSitesList[0].id || settings.publyticsSitesList[0]))
+      || '';
+    const data = await publyticsService.getRealtime(effectiveSite, query);
     res.json(data);
   } catch (err) {
     res.status(err.statusCode || 500).json({ error: err.message, code: err.code, details: err.details });
@@ -1979,21 +2067,11 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
 });
 
 // ----------------------------------------------------
-// CUSTOM DOMAINS API (Super Admin Only)
+// CUSTOM DOMAINS API (Read for all auth, Edit for Admins)
 // ----------------------------------------------------
-app.get('/api/admin/domains', requireAuth, requireSuperAdmin, async (req, res) => {
+app.get('/api/admin/domains', requireAuth, async (req, res) => {
   const domains = db.getCustomDomains();
-  // For each domain, check SSL status via HTTPS probe
-  const withSsl = await Promise.all(domains.map(async (dom) => {
-    if (dom.sslStatus === 'active') return dom; // already verified
-    const isLive = await probeSsl(dom.domain);
-    if (isLive && dom.sslStatus !== 'active') {
-      db.updateCustomDomainSslStatus(dom.id, 'active');
-      return { ...dom, sslStatus: 'active' };
-    }
-    return { ...dom, sslStatus: dom.sslStatus || 'pending' };
-  }));
-  res.json(withSsl);
+  res.json(domains);
 });
 
 // Helper: probe HTTPS to check if SSL is live
@@ -2010,24 +2088,50 @@ async function probeSsl(domain) {
   });
 }
 
-app.post('/api/admin/domains', requireAuth, requireSuperAdmin, async (req, res) => {
+app.post('/api/admin/domains', requireAuth, requireAdminOrSuperAdmin, async (req, res) => {
   const { domain } = req.body;
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required.' });
   }
-  const cleanDomain = domain.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0];
+  const cleanDomain = domain.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0].replace(/:\d+$/, '');
+  if (!cleanDomain || cleanDomain.length < 3) {
+    return res.status(400).json({ error: 'Invalid domain or subdomain name.' });
+  }
+
+  // If already registered, ensure active status and return without error
+  const existing = db.getCustomDomains().find(d => d.domain === cleanDomain);
+  if (existing) {
+    db.updateCustomDomainSslStatus(existing.id, 'active');
+    triggerSslInstall(cleanDomain);
+    return res.json({ success: true, domain: existing, message: 'Domain already registered.' });
+  }
+
   const newDomain = db.addCustomDomain(cleanDomain);
   if (!newDomain) {
-    return res.status(400).json({ error: 'Domain already exists or is invalid.' });
+    return res.status(400).json({ error: 'Failed to add domain.' });
   }
   // Trigger Caddy SSL immediately (fire-and-forget)
   triggerSslInstall(cleanDomain);
   res.json({ success: true, domain: newDomain });
 });
 
-app.delete('/api/admin/domains/:id', requireAuth, requireSuperAdmin, (req, res) => {
+app.post('/api/admin/domains/:id/activate', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+  const { id } = req.params;
+  db.updateCustomDomainSslStatus(id, 'active');
+  res.json({ success: true, message: 'Domain marked as active.' });
+});
+
+app.delete('/api/admin/domains/:id', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
   const { id } = req.params;
   db.deleteCustomDomain(id);
+  res.json({ success: true });
+});
+
+app.delete('/api/admin/domains', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+  const target = req.query.domain || (req.body && req.body.domain) || req.query.id || (req.body && req.body.id);
+  if (target) {
+    db.deleteCustomDomain(target);
+  }
   res.json({ success: true });
 });
 
@@ -2040,23 +2144,27 @@ app.get('/api/admin/domains/check', (req, res) => {
     return res.status(200).send('OK');
   }
 
-  // If this unknown domain is hitting our server via DNS, auto-detect it so admin can approve!
-  if (!_knownHosts.has(rawDomain) && !rawDomain.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-    db.addDetectedDomain(rawDomain);
-  }
+  // Only auto-detect if domain genuinely resolves to our server IP via DNS
+  verifyAndAddDetectedDomain(rawDomain);
 
   return res.status(404).send('Not Allowed');
 });
 
 // ----------------------------------------------------
-// DETECTED DOMAINS API (Super Admin Only)
+// DETECTED DOMAINS API (Super Admin & Full Admin)
 // ----------------------------------------------------
-app.get('/api/admin/detected-domains', requireAuth, requireSuperAdmin, (req, res) => {
+app.get('/api/admin/detected-domains', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
   res.json(db.getDetectedDomains());
 });
 
+// Clear all detected domains
+app.delete('/api/admin/detected-domains/clear-all', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
+  db.clearAllDetectedDomains();
+  res.json({ success: true, message: 'All detected domains cleared.' });
+});
+
 // Approve a detected domain → moves to custom_domains + triggers SSL
-app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireSuperAdmin, async (req, res) => {
+app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireAdminOrSuperAdmin, async (req, res) => {
   const { id } = req.params;
   const newDomain = db.approveDetectedDomain(id);
   if (!newDomain) return res.status(400).json({ error: 'Domain not found or already exists.' });
@@ -2065,8 +2173,8 @@ app.post('/api/admin/detected-domains/:id/approve', requireAuth, requireSuperAdm
   res.json({ success: true, domain: newDomain });
 });
 
-// Ignore/dismiss a detected domain
-app.delete('/api/admin/detected-domains/:id', requireAuth, requireSuperAdmin, (req, res) => {
+// Ignore/dismiss/delete a detected domain
+app.delete('/api/admin/detected-domains/:id', requireAuth, requireAdminOrSuperAdmin, (req, res) => {
   db.removeDetectedDomain(req.params.id);
   res.json({ success: true });
 });
@@ -2267,17 +2375,18 @@ async function handleShortlinkRedirect(req, res) {
     `);
   }
 
-  if (link.domain) {
-    const reqHost = req.hostname.toLowerCase();
-    if (link.domain !== reqHost && reqHost !== 'goo33.online' && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && reqHost !== '89.117.51.151') {
-      return res.status(404).send(`
-        <!DOCTYPE html>
-        <html>
-          <head><title>Link Not Found</title><style>body{font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2rem;background:#1e293b;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
-          <body><div class="box"><h1>404 - Link Not Found</h1><p>This link is configured to work only on a specific domain.</p></div></body>
-        </html>
-      `);
-    }
+  // Allow links to resolve across all authorized domains and hosts
+  const reqHost = req.hostname.toLowerCase();
+  const allowedCustom = db.getCustomDomains().map(d => (d.domain || '').toLowerCase());
+  const isAllowedHost = (reqHost === 'goo33.online' || reqHost === '33gb.online' || reqHost === 'localhost' || reqHost === '127.0.0.1' || reqHost === '89.117.51.151' || allowedCustom.includes(reqHost) || (link.domain && link.domain.toLowerCase() === reqHost));
+  if (!isAllowedHost) {
+    return res.status(404).send(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>Link Not Found</title><style>body{font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;} .box{text-align:center;padding:2rem;background:#1e293b;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head>
+        <body><div class="box"><h1>404 - Link Not Found</h1><p>Domain not recognized.</p></div></body>
+      </html>
+    `);
   }
 
   if (!link.active) {
@@ -2516,17 +2625,23 @@ async function handleShortlinkRedirect(req, res) {
     }
 
     const ogSiteName = (ogMeta && ogMeta.siteName) ? ogMeta.siteName : host;
+    const imgMime = ogImage.endsWith('.png') ? 'image/png' : (ogImage.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
 
     const ogImageTag = ogImage ? `
     <meta property="og:image" content="${ogImage}" />
     <meta property="og:image:secure_url" content="${ogImage}" />
+    <meta property="og:image:type" content="${imgMime}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${ogTitle}" />
+    <link rel="image_src" href="${ogImage}" />
     <meta name="twitter:image" content="${ogImage}" />
     <meta name="twitter:image:src" content="${ogImage}" />` : '';
 
     const ogSiteTag = ogSiteName ? `<meta property="og:site_name" content="${ogSiteName}" />` : '';
+
+    const pubScriptTag = settings.publyticsTrackingScript
+      || (settings.publyticsSiteId ? `<script defer data-domain="${settings.publyticsSiteId.replace(/[^\w.\-\/]/g, '')}" src="https://api.publytics.net/js/script.manual.min.js"></script>` : '');
 
     res.set('Cache-Control', 'public, max-age=3600');
     res.set('Content-Type', 'text/html; charset=utf-8');
@@ -2545,6 +2660,7 @@ async function handleShortlinkRedirect(req, res) {
     <meta property="og:url" content="${shortUrl}" />
     ${ogImageTag}
     ${ogSiteTag}
+    ${pubScriptTag}
     <meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}" />
     <meta name="twitter:title" content="${ogTitle}" />
     <meta name="twitter:description" content="${ogDesc}" />
@@ -2843,32 +2959,54 @@ async function handleShortlinkRedirect(req, res) {
   };
   db.addLog(logEntry);
 
-  // Asynchronously fire Publytics pageview if tracking script is active
-  if (isGenuineOrganic && settings.publyticsTrackingScript) {
+  // Asynchronously fire Publytics pageview to official /events endpoint
+  const pubTrackingScript = (typeof settings.publyticsTrackingScript === 'string') ? settings.publyticsTrackingScript : '';
+  const scriptDomainMatch = pubTrackingScript.match(/data-domain=["']([^"']+)["']/i);
+  let pubDomain = (scriptDomainMatch && scriptDomainMatch[1]) ? scriptDomainMatch[1].trim() : '';
+  if (!pubDomain && settings.publyticsSiteId) {
+    pubDomain = String(settings.publyticsSiteId).trim();
+  }
+  if (!pubDomain && Array.isArray(settings.publyticsSitesList) && settings.publyticsSitesList.length > 0) {
+    const reqHost = (req.headers.host || '').split(':')[0].toLowerCase();
+    const matched = settings.publyticsSitesList.find(s => {
+      const sId = typeof s === 'string' ? s : (s.id || s.name || '');
+      return sId.toLowerCase().startsWith(reqHost);
+    });
+    if (matched) {
+      pubDomain = typeof matched === 'string' ? matched : (matched.id || matched.name || '');
+    } else {
+      const first = settings.publyticsSitesList[0];
+      pubDomain = typeof first === 'string' ? first : (first.id || first.name || '');
+    }
+  }
+
+  if (pubDomain && typeof fetch === 'function') {
     try {
-      const pDomainMatch = settings.publyticsTrackingScript.match(/data-domain=["']([^"']+)["']/i);
-      if (pDomainMatch && pDomainMatch[1] && typeof fetch === 'function') {
-        const pubDomain = pDomainMatch[1].trim();
-        fetch('https://api.publytics.net/api/event', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': userAgent || 'Mozilla/5.0 (SmartShortener)'
-          },
-          body: JSON.stringify({
-            name: 'pageview',
-            domain: pubDomain,
-            url: `https://${pubDomain}/s/${link.code}`,
-            referrer: rawReferer || ''
-          }),
-          signal: AbortSignal.timeout(2500)
-        }).catch(() => {});
-      }
+      const currentHost = (req.headers.host || pubDomain.split('/')[0] || 'localhost').split(':')[0];
+      const pageUrl = `https://${currentHost}/s/${link.code}`;
+      fetch('https://api.publytics.net/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+          'User-Agent': userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'X-Forwarded-For': clientIp || ''
+        },
+        body: JSON.stringify({
+          n: 'pageview',
+          u: pageUrl,
+          d: pubDomain,
+          r: rawReferer || null,
+          w: 1920
+        }),
+        signal: AbortSignal.timeout(3000)
+      }).catch(() => {});
     } catch (pubErr) {}
   }
 
   // If Delay Timer set (> 0 seconds), serve dynamic countdown screen!
   if (delaySec > 0) {
+    const pubScriptTag = settings.publyticsTrackingScript
+      || (pubDomain ? `<script defer data-domain="${pubDomain.replace(/[^\w.\-\/]/g, '')}" src="https://api.publytics.net/js/script.manual.min.js"></script>` : '');
     return res.send(`
       <!DOCTYPE html>
       <html>
@@ -2876,7 +3014,7 @@ async function handleShortlinkRedirect(req, res) {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Redirecting in ${delaySec}s...</title>
-          ${settings.publyticsTrackingScript || ''}
+          ${pubScriptTag}
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Inter:wght@400;600&display=swap');
             * { box-sizing: border-box; margin: 0; padding: 0; }

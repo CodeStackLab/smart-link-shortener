@@ -132,6 +132,13 @@ async function fetchOgMeta(targetUrl) {
     return meta;
   } catch (err) {
     console.error('[OG Fetcher] Failed to fetch metadata from:', targetUrl, err.message);
+    ogCache.set(targetUrl, {
+      title: 'Shared Link',
+      description: 'Click the link to view the full content.',
+      image: '',
+      siteName: '',
+      fetchedAt: Date.now()
+    });
     return null;
   }
 }

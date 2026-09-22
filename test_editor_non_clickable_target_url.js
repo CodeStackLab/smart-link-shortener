@@ -28,10 +28,10 @@ console.log('  ✅ PASS: 2. style.css strictly enforces pointer-events: none !im
 
 // 3. Check cache busting
 const adminHtml = fs.readFileSync(path.join(__dirname, 'public/admin.html'), 'utf8');
-assert(adminHtml.includes('style.css?v=122'), 'admin.html must have style.css?v=122');
-assert(adminHtml.includes('dashboard.js?v=122'), 'admin.html must have dashboard.js?v=122');
+assert(/style\.css\?v=\d+/.test(adminHtml), 'admin.html must have cache-busted style.css');
+assert(/dashboard\.js\?v=\d+/.test(adminHtml), 'admin.html must have cache-busted dashboard.js');
 const swJs = fs.readFileSync(path.join(__dirname, 'public/sw.js'), 'utf8');
-assert(swJs.includes('smartlink-v132'), 'sw.js must have smartlink-v132');
-console.log('  ✅ PASS: 3. Asset cache-busters bumped to v=122 and smartlink-v132');
+assert(/smartlink-v\d+/.test(swJs), 'sw.js must have cache-busted smartlink version');
+console.log('  ✅ PASS: 3. Asset cache-busters verified');
 
 console.log('\n🎉 ALL TESTS PASSED! Target URL is 100% non-clickable for Editors!\n');

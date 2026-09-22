@@ -12,11 +12,14 @@
   <meta name="theme-color" content="#1877f2">
   <meta name="description" content="Admin dashboard for Smart FB Link Shortner. Manage shortlinks, analytics, VPN detection and IP firewall.">
   <title>Admin Dashboard — Smart FB Link Shortner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" media="print" onload="this.media='all'">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=160">
-  <link rel="stylesheet" href="/css/publytics.css?v=161">
+  <link rel="stylesheet" href="/css/style.css?v=221">
+  <link rel="stylesheet" href="/css/publytics.css?v=221">
   <script>
     (function() {
       try {
@@ -78,7 +81,11 @@
         });
         var h = window.location.hash || '';
         if (h.indexOf('publytics') !== -1) {
-          document.documentElement.classList.add('tab-publytics-active');
+          document.documentElement.classList.add('tab-publytics-active', 'is-publytics-tab');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('tab-publytics-active', 'is-publytics-tab');
+          document.documentElement.setAttribute('data-theme', 'light');
         }
       } catch(e) {}
     })();
@@ -247,6 +254,9 @@
 
     @media (max-width: 768px) {
       /* Mobile Reason & Signals cell: full width column to prevent vertical word wrapping */
+      #tab-links td[data-label="Reason & Signals"],
+      #tab-analytics td[data-label="Reason & Signals"],
+      #tab-logs td[data-label="Reason & Signals"],
       td[data-label="Reason & Signals"] {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -256,10 +266,16 @@
         gap: 0.35rem !important;
         box-sizing: border-box !important;
       }
+      #tab-links td[data-label="Reason & Signals"]::before,
+      #tab-analytics td[data-label="Reason & Signals"]::before,
+      #tab-logs td[data-label="Reason & Signals"]::before,
       td[data-label="Reason & Signals"]::before {
         text-align: left !important;
         margin-bottom: 0.2rem !important;
       }
+      #tab-links td[data-label="Reason & Signals"] > *,
+      #tab-analytics td[data-label="Reason & Signals"] > *,
+      #tab-logs td[data-label="Reason & Signals"] > *,
       td[data-label="Reason & Signals"] > *,
       td[data-label="Reason & Signals"] .reason-signals-wrap {
         width: 100% !important;
@@ -308,8 +324,182 @@
         color: #cbd5e1 !important;
       }
 
+      /* ── SHORT LINK ROW ON MOBILE (Full Width Column, Zero Overflow) ── */
+      #tab-links td.col-shortlink,
+      #tab-links td[data-label="Short Link"],
+      #tab-logs td.col-shortlink,
+      #tab-logs td[data-label="Short Link"],
+      td.col-shortlink,
+      td[data-label="Short Link"] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0.6rem 0 !important;
+        gap: 0.35rem !important;
+        overflow: hidden !important;
+      }
+      #tab-links td.col-shortlink::before,
+      #tab-links td[data-label="Short Link"]::before,
+      #tab-logs td.col-shortlink::before,
+      #tab-logs td[data-label="Short Link"]::before,
+      td.col-shortlink::before,
+      td[data-label="Short Link"]::before {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        margin-bottom: 0.25rem !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        color: var(--text-secondary) !important;
+        letter-spacing: 0.04em !important;
+      }
+      #tab-links td.col-shortlink > *,
+      #tab-links td[data-label="Short Link"] > *,
+      td.col-shortlink > *,
+      td[data-label="Short Link"] > * {
+        text-align: left !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #tab-links td.col-shortlink .shortlink-card-component,
+      #tab-links td[data-label="Short Link"] .shortlink-card-component,
+      td[data-label="Short Link"] .shortlink-card-component {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.35rem !important;
+      }
+      #tab-links td.col-shortlink .shortlink-action-box,
+      #tab-links td[data-label="Short Link"] .shortlink-action-box,
+      td[data-label="Short Link"] .shortlink-action-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 6px !important;
+        overflow: hidden !important;
+      }
+      #tab-links td.col-shortlink .shortlink-url-display,
+      #tab-links td[data-label="Short Link"] .shortlink-url-display,
+      td[data-label="Short Link"] .shortlink-url-display {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        width: 0 !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+        font-size: 0.8rem !important;
+      }
+      #tab-links td.col-shortlink .btn-copy-shortlink,
+      #tab-links td[data-label="Short Link"] .btn-copy-shortlink,
+      td[data-label="Short Link"] .btn-copy-shortlink {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        padding: 0.35rem 0.65rem !important;
+        font-size: 0.74rem !important;
+      }
+
+      /* ── BLOCKED COUNTRIES MOBILE ROW (Full Width Column, Responsive Wrapping Pills) ── */
+      #tab-links td.col-blocked-countries,
+      #tab-links td[data-label="Blocked Countries"],
+      #tab-logs td.col-blocked-countries,
+      #tab-logs td[data-label="Blocked Countries"],
+      td.col-blocked-countries,
+      td[data-label="Blocked Countries"] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0.6rem 0 !important;
+        gap: 0.35rem !important;
+        overflow: hidden !important;
+      }
+      #tab-links td.col-blocked-countries::before,
+      #tab-links td[data-label="Blocked Countries"]::before,
+      #tab-logs td.col-blocked-countries::before,
+      #tab-logs td[data-label="Blocked Countries"]::before,
+      td.col-blocked-countries::before,
+      td[data-label="Blocked Countries"]::before {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        margin-bottom: 0.25rem !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        color: var(--text-secondary) !important;
+        letter-spacing: 0.04em !important;
+      }
+      [data-theme="dark"] #tab-links td.col-blocked-countries::before,
+      [data-theme="dark"] #tab-links td[data-label="Blocked Countries"]::before {
+        color: #cbd5e1 !important;
+      }
+      #tab-links td.col-blocked-countries > *,
+      #tab-links td[data-label="Blocked Countries"] > *,
+      td.col-blocked-countries > *,
+      td[data-label="Blocked Countries"] > * {
+        text-align: left !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .blocked-countries-wrap,
+      #tab-links td.col-blocked-countries .blocked-countries-wrap,
+      #tab-links td[data-label="Blocked Countries"] .blocked-countries-wrap {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 0.35rem 0.45rem !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .blocked-country-pill,
+      .blocked-country-pill-none,
+      #tab-links td.col-blocked-countries .blocked-country-pill,
+      #tab-links td[data-label="Blocked Countries"] .blocked-country-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.35rem !important;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+      }
+      .blocked-country-pill span,
+      .blocked-country-pill-none span {
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+      }
+
       /* Mobile Actions: 2-column grid filling card width */
+      #tab-links td.col-actions,
+      #tab-links td[data-label="Actions"],
+      #tab-analytics td.col-actions,
+      #tab-analytics td[data-label="Actions"],
+      #tab-logs td.col-actions,
+      #tab-logs td[data-label="Actions"],
+      td.col-actions,
       td[data-label="Actions"] {
+        display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
         border-bottom: none !important;
@@ -318,9 +508,21 @@
         width: 100% !important;
         box-sizing: border-box !important;
       }
+      #tab-links td.col-actions::before,
+      #tab-links td[data-label="Actions"]::before,
+      #tab-analytics td.col-actions::before,
+      #tab-analytics td[data-label="Actions"]::before,
+      #tab-logs td.col-actions::before,
+      #tab-logs td[data-label="Actions"]::before,
+      td.col-actions::before,
       td[data-label="Actions"]::before {
+        display: block !important;
         margin-bottom: 0.5rem !important;
         text-align: left !important;
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        color: var(--text-secondary) !important;
+        text-transform: uppercase !important;
       }
       table td .action-btn-group,
       td[data-label="Actions"] .action-btn-group,
@@ -353,6 +555,269 @@
         border-radius: 10px !important;
         box-sizing: border-box !important;
         text-align: center !important;
+      }
+
+      /* ── TRAFFIC LOGS TAB (#tab-analytics) FULL MOBILE CARD TRANSFORMATION ── */
+      #tab-analytics table,
+      #tab-analytics thead,
+      #tab-analytics tbody,
+      #tab-analytics th,
+      #tab-analytics td,
+      #tab-analytics tr {
+        display: block !important;
+        width: 100% !important;
+      }
+      #tab-analytics thead {
+        display: none !important;
+      }
+      #tab-analytics tr {
+        background: #ffffff !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: var(--r-md) !important;
+        padding: 0.85rem 1.1rem !important;
+        margin-bottom: 1rem !important;
+        box-shadow: var(--shadow-md) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      }
+      [data-theme="dark"] #tab-analytics tr {
+        background: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #f8fafc !important;
+      }
+      #tab-analytics td:not(.col-actions):not([data-label="Actions"]):not([data-label="IP / ISP"]):not([data-label="Reason & Signals"]) {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.42rem 0 !important;
+        border: none !important;
+        border-bottom: 1px dashed var(--border) !important;
+        min-height: 34px !important;
+        white-space: normal !important;
+        text-align: right !important;
+        gap: 0.6rem !important;
+        font-size: 0.88rem !important;
+        background: transparent !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #tab-analytics td[data-label]::before {
+        content: attr(data-label) !important;
+        font-weight: 800 !important;
+        color: var(--text-secondary) !important;
+        font-size: 0.78rem !important;
+        text-transform: uppercase !important;
+        text-align: left !important;
+        flex-shrink: 0 !important;
+        letter-spacing: 0.03em !important;
+      }
+      #tab-analytics td:last-child {
+        border-bottom: none !important;
+      }
+      #tab-analytics td[data-label="IP / ISP"] {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0.5rem 0 !important;
+        border-bottom: 1px dashed var(--border) !important;
+        overflow: hidden !important;
+      }
+      #tab-analytics td[data-label="IP / ISP"]::before {
+        display: none !important;
+      }
+      .ip-isp-cell {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.35rem !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      }
+      .ip-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding-bottom: 0.35rem !important;
+        border-bottom: 1px dashed var(--border, #e2e8f0) !important;
+        overflow: hidden !important;
+      }
+      .ip-row code {
+        white-space: nowrap !important;
+        word-break: normal !important;
+        font-family: monospace, SFMono-Regular, Consolas, monospace !important;
+        font-weight: 700 !important;
+        font-size: 0.84rem !important;
+        background: rgba(59, 130, 246, 0.08) !important;
+        color: #1d4ed8 !important;
+        padding: 0.15rem 0.45rem !important;
+        border-radius: 6px !important;
+        max-width: 70% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        box-sizing: border-box !important;
+        text-align: right !important;
+      }
+      .isp-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        gap: 0.5rem !important;
+        overflow: hidden !important;
+      }
+      .isp-text {
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        color: var(--text-primary, #1e293b) !important;
+        text-align: right !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        max-width: 70% !important;
+        box-sizing: border-box !important;
+      }
+
+      /* Publytics Bottom Clearance: Remove redundant double bottom space */
+      .publytics-tab-wrapper {
+        padding-bottom: 0 !important;
+      }
+      .publytics-tab-wrapper .main-container {
+        padding-bottom: 0.35rem !important;
+      }
+      .publytics-tab-wrapper #drilldown-page-view {
+        margin-bottom: 0.35rem !important;
+      }
+      .publytics-tab-wrapper .official-publytics-card {
+        margin-bottom: 0.4rem !important;
+      }
+
+      /* ── ACTIVE CUSTOM DOMAINS MOBILE CARD TRANSFORMATION ── */
+      #custom-domains-card {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+      }
+      #custom-domains-table-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      }
+      #custom-domains-table,
+      #custom-domains-table thead,
+      #custom-domains-table tbody,
+      #custom-domains-table th,
+      #custom-domains-table td,
+      #custom-domains-table tr {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #custom-domains-table thead {
+        display: none !important;
+      }
+      #custom-domains-table tr {
+        background: #ffffff !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: var(--r-md) !important;
+        padding: 0.85rem 1rem !important;
+        margin-bottom: 0.85rem !important;
+        box-shadow: var(--shadow-sm) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      }
+      [data-theme="dark"] #custom-domains-table tr {
+        background: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #f8fafc !important;
+      }
+      #custom-domains-table td[colspan] {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+        padding: 1.15rem 0.5rem !important;
+        border: none !important;
+        font-size: 0.85rem !important;
+        color: var(--text-muted) !important;
+      }
+      #custom-domains-table td:not(.col-actions):not([data-label="Actions"]):not([colspan]) {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.45rem 0 !important;
+        border: none !important;
+        border-bottom: 1px dashed var(--border) !important;
+        min-height: 34px !important;
+        white-space: normal !important;
+        text-align: right !important;
+        gap: 0.6rem !important;
+        font-size: 0.88rem !important;
+        background: transparent !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #custom-domains-table td[data-label]::before {
+        content: attr(data-label) !important;
+        font-weight: 800 !important;
+        color: var(--text-secondary) !important;
+        font-size: 0.78rem !important;
+        text-transform: uppercase !important;
+        text-align: left !important;
+        flex-shrink: 0 !important;
+        letter-spacing: 0.03em !important;
+      }
+      #custom-domains-table td:not(.col-actions):not([data-label="Actions"]):not([colspan]) > * {
+        text-align: right !important;
+        max-width: 65% !important;
+        word-break: break-all !important;
+      }
+      #custom-domains-table td[data-label="Actions"],
+      #custom-domains-table td.col-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        border-bottom: none !important;
+        margin-top: 0.45rem !important;
+        padding-top: 0.45rem !important;
+        padding-bottom: 0.15rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #custom-domains-table td[data-label="Actions"]::before,
+      #custom-domains-table td.col-actions::before {
+        display: none !important;
+      }
+      #custom-domains-table td[data-label="Actions"] .btn,
+      #custom-domains-table td[data-label="Actions"] button {
+        width: 100% !important;
+        min-height: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.85rem !important;
+        font-weight: 800 !important;
+        border-radius: 10px !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2) !important;
       }
     }
 
@@ -1075,8 +1540,8 @@
 
           <!-- Hidden short code input (Auto-generated random slug on submission) -->
           <input type="hidden" id="link-code" value="">
-          <!-- Hidden Domain (Backend functionality preserved) -->
-          <input type="hidden" id="link-domain" value="">
+
+
         </div>
 
         <!-- Row 2: traffic sources -->
@@ -1164,11 +1629,44 @@
         <input type="hidden" id="daily-limit" value="0">
         <input type="hidden" id="monthly-limit" value="0">
 
-        <!-- Generate Button — directly after traffic sources -->
-        <div style="display:flex; justify-content:center; width:100%; margin-top:1rem;">
-          <button type="submit" style="margin:0 auto; min-height:48px; padding:0.7rem 1.6rem; font-size:0.97rem; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color:#fff; border:none; font-weight:800; cursor:pointer; box-shadow:0 4px 16px rgba(239,68,68,0.4); letter-spacing:0.01em; width:90%; max-width:320px;">
-            ⚡ Generate Smart Shortlink
+        <!-- Select Short Domain (Pixel-perfect match to user screenshot) -->
+        <!-- Select Short Domain (Pixel-perfect match to user screenshot) -->
+        <div class="form-group" id="link-domain-selector-wrap" style="margin-top:0.95rem; width:100%; box-sizing:border-box;">
+          <label style="font-weight:800; font-size:0.88rem; letter-spacing:0.02em; display:flex; align-items:center; gap:0.4rem; color:var(--text-primary,#0f172a); margin-bottom:0.45rem;">
+            <span>🔗</span> <span>Select Short Domain</span>
+          </label>
+          
+          <!-- Hidden standard input holding the selected domain for form submission -->
+          <input type="hidden" id="link-domain" value="goo33.online">
+
+          <!-- Dropdown Trigger Box -->
+          <div id="custom-domain-selector-trigger" onclick="window.toggleDomainDropdown(event)" style="position:relative; width:100%; height:50px; background:#ffffff; border:1.5px solid var(--border,#cbd5e1); border-radius:12px; padding:0 1.05rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer; box-sizing:border-box; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display:flex; align-items:center; gap:0.65rem; min-width:0;">
+              <span style="font-size:1.15rem; flex-shrink:0;">🌐</span>
+              <span id="custom-domain-selector-label" style="font-weight:700; font-size:0.98rem; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                goo33.online
+              </span>
+            </div>
+            <div style="flex-shrink:0; color:#64748b; font-size:0.85rem; display:flex; align-items:center; transition:transform 0.2s ease;" id="custom-domain-chevron">
+              <svg width="14" height="9" viewBox="0 0 14 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 1 7 7 13 1"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate Button — directly after domain selector trigger -->
+        <div style="display:flex; justify-content:center; width:100%; margin-top:0.95rem;">
+          <button type="submit" id="btn-generate-link" style="margin:0 auto; min-height:50px; padding:0.75rem 1.6rem; font-size:1.02rem; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color:#fff; border:none; font-weight:800; cursor:pointer; box-shadow:0 4px 16px rgba(239,68,68,0.4); letter-spacing:0.01em; width:100%; box-sizing:border-box;">
+            ⚡ Generate Short Link
           </button>
+        </div>
+
+        <!-- Domain Options List Container — positioned directly below Generate Button as in user screenshot -->
+        <div id="custom-domain-dropdown-menu" style="display:none; margin-top:0.85rem; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; box-shadow:0 4px 15px rgba(0,0,0,0.04); overflow:hidden; width:100%; box-sizing:border-box; z-index:10;">
+          <div id="custom-domain-options-list" style="display:flex; flex-direction:column; max-height:360px; overflow-y:auto;">
+            <!-- Dynamically populated by JS -->
+          </div>
         </div>
       </form>
     </div>
@@ -2056,9 +2554,9 @@
 <!-- ══════════════════════════════
      TAB 5 — SETTINGS
 ══════════════════════════════ -->
-<div id="tab-settings" class="tab-content" style="display:none;">
-  <div class="container">
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem;">
+<div id="tab-settings" class="tab-content" style="display:none; max-width:100vw; overflow-x:hidden;">
+  <div class="container settings-container" style="max-width:100% !important; box-sizing:border-box !important;">
+    <div class="settings-grid" style="display:flex; flex-direction:column; gap:1.25rem; width:100%; max-width:100%; box-sizing:border-box;">
 
       <!-- Team Panel (Master Admin Only) -->
       <div class="card" style="padding:1.35rem;" id="team-management-card">
@@ -2127,7 +2625,7 @@
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="domains"> 🌐 Domains</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo" checked> 🌍 Geo</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="analytics" checked> 📊 Analytics</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="publytics"> 📈 Publytics</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="publytics" checked> 📈 Publytics</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="settings"> ⚙️ Settings</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="upload_image" checked> 🖼️ Upload Image</label>
@@ -2431,12 +2929,12 @@
         </div>
 
         <!-- Active Custom Domains Table -->
-        <div style="margin-top:1.25rem; border-top:1px solid var(--border,#e2e8f0); padding-top:1rem;">
+        <div style="margin-top:1.25rem; border-top:1px solid var(--border,#e2e8f0); padding-top:1rem; width:100%; box-sizing:border-box;">
           <div class="section-title" style="font-size:0.95rem; font-weight:800; margin-bottom:0.65rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.45rem;">
             <span class="accent">✅</span> Active Custom Domains
           </div>
-          <div class="table-wrap" style="overflow-x:auto;">
-            <table class="table" style="width:100%; margin:0;">
+          <div class="table-wrap custom-domains-table-wrap" id="custom-domains-table-wrap" style="width:100%; box-sizing:border-box; overflow:hidden;">
+            <table class="table" id="custom-domains-table" style="width:100%; margin:0;">
               <thead>
                 <tr>
                   <th>Domain</th>
@@ -2446,7 +2944,7 @@
                 </tr>
               </thead>
               <tbody id="domains-tbody">
-                <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1.25rem;">Loading domains…</td></tr>
+                <!-- Domains loaded dynamically -->
               </tbody>
             </table>
           </div>
@@ -2575,48 +3073,115 @@
         </form>
       </div>
 
-      <!-- Publytics API Token Card (Settings Section - STRICTLY Super Admin Only) -->
-      <div class="card" style="display:none !important; padding:1.35rem; height:fit-content; margin-bottom:1.35rem;" id="publytics-api-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.35rem;">
-          <div style="display:flex; align-items:center; gap:0.6rem; font-size:1.15rem; font-weight:800; color:var(--text-primary, #0f172a);">
-            <img src="/publytics-icon.png?v=150" alt="Publytics" style="width:24px; height:24px; border-radius:6px; object-fit:cover; display:inline-block; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-            <span style="font-size:1.18rem; font-weight:800; color:var(--text-primary, #0f172a); letter-spacing:-0.01em;">Publytics API Token</span>
+      <!-- Publytics API Token Card (Settings Section - Admin & Super Admin) -->
+      <div class="card" style="padding:1.5rem; height:fit-content; margin-bottom:1.35rem; border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.05);" id="publytics-api-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.35rem;">
+          <div style="display:flex; align-items:center; gap:0.65rem; font-size:1.25rem; font-weight:800; color:var(--text-primary, #0f172a);">
+            <img src="/publytics-icon.png?v=150" alt="Publytics" style="width:26px; height:26px; border-radius:6px; object-fit:cover; display:inline-block; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+            <span style="font-size:1.25rem; font-weight:800; color:var(--text-primary, #0f172a); letter-spacing:-0.02em;">Publytics API Token</span>
           </div>
-          <!-- Token Status Pill -->
-          <span id="publytics-settings-status-pill" style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.75rem; font-weight:800; padding:0.25rem 0.65rem; border-radius:9999px; background:#f1f5f9; color:#64748b;">
-            Checking status...
+          <!-- Token Status Pill (Pixel-perfect match to screenshot) -->
+          <span id="publytics-settings-status-pill" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; font-weight:700; padding:0.25rem 0.85rem; border-radius:9999px; background:#fce8e6; color:#c5221f;">
+            <span style="color:#d93025; font-size:0.85rem;">🔴</span> Inactive <span style="opacity:0.35; margin:0 0.15rem;">|</span> <span style="color:#d93025; font-size:0.85rem;">🔴</span> Not Configured
           </span>
         </div>
-        <p style="font-size:0.875rem; color:var(--text-muted, #64748b); margin:0 0 1rem 0; line-height:1.45;">
-          Configure your Publytics Bearer API token to enable real-time analytics integration.
+        
+        <!-- Subtitle matching user screenshot -->
+        <p id="publytics-settings-subtext" style="font-size:0.95rem; color:var(--text-muted, #5f6368); margin:0.35rem 0 1.25rem 0; line-height:1.45;">
+          Publytics API token is not active. Please add your API token to enable analytics.
         </p>
 
         <!-- Informational Status Banner inside Settings Card -->
         <div id="publytics-settings-token-status" style="display:none; padding:0.65rem 0.9rem; border-radius:10px; font-size:0.84rem; font-weight:700; margin-bottom:1rem; align-items:center; gap:0.55rem;"></div>
 
-        <form id="publytics-api-form" onsubmit="event.preventDefault(); window.savePublyticsApiTokenSettings(event); return false;">
-          <div class="form-group" style="margin-bottom:0.75rem;">
-            <label for="publytics-settings-api-token" style="font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
-              <span>🔑</span> PUBLYTICS BEARER API TOKEN:
+        <form id="publytics-api-form" onsubmit="event.preventDefault(); window.savePublyticsApiTokenSettings(event); return false;" style="width:100%; box-sizing:border-box;">
+          <div class="form-group" style="margin-bottom:1.15rem; width:100%; box-sizing:border-box;">
+            <label for="publytics-settings-api-token" class="publytics-token-label">
+              <span class="publytics-token-key-icon">🔑</span>
+              <span class="publytics-token-title-dark">PUBLYTICS</span>
+              <span class="publytics-token-title-blue">BEARER API TOKEN:</span>
             </label>
-            <div style="position:relative; display:flex; align-items:center; width:100%;">
-              <input type="password" id="publytics-settings-api-token" class="form-control" placeholder="Enter Publytics API Token (Bearer)" style="padding:0.7rem 2.85rem 0.7rem 0.95rem !important; border-radius:10px; height:48px; font-size:0.95rem; font-weight:600; width:100%; box-sizing:border-box;" autocomplete="off">
-              <button type="button" id="btn-toggle-publytics-token-visibility" onclick="window.togglePublyticsTokenVisibility();" style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer; font-size:1.15rem; padding:0.25rem; display:flex; align-items:center; justify-content:center; z-index:2;" title="Show/Hide Token">
-                👁️
+            <div class="publytics-token-pill-wrap">
+              <input type="password" id="publytics-settings-api-token" class="publytics-token-input" placeholder="Current:" autocomplete="off">
+              <div class="publytics-token-divider"></div>
+              <button type="button" id="btn-publytics-toggle-token" class="publytics-token-toggle-btn" onclick="window.togglePublyticsTokenVisibility();" title="Toggle Token Visibility" aria-label="Toggle Token Visibility">
+                <!-- Eye Slash SVG (shown when password is hidden) -->
+                <svg id="publytics-token-eye-slash-icon" class="publytics-token-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+                <!-- Eye Open SVG (shown when password is visible) -->
+                <svg id="publytics-token-eye-icon" class="publytics-token-svg" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
               </button>
             </div>
           </div>
 
-          <div id="publytics-settings-token-feedback" style="display:none; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.85rem; font-weight:700; margin-bottom:0.75rem;"></div>
+          <!-- Direct Visible Site ID / Domain Input (Exact match to screenshot) -->
+          <div class="form-group" style="margin-bottom:1.25rem; width:100%; box-sizing:border-box;">
+            <label for="publytics-settings-site-id" style="font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted,#475569); display:flex; align-items:center; gap:0.45rem; margin-bottom:0.55rem;">
+              <span>🌐</span> PUBLYTICS SITE ID / DOMAIN:
+            </label>
+            <input type="text" id="publytics-settings-site-id" class="form-control" placeholder="example.com" autocomplete="off" style="width:100% !important; box-sizing:border-box !important; height:50px; font-size:0.98rem; font-weight:500; border-radius:12px; padding:0.75rem 1.15rem; border:1.5px solid var(--border,#cbd5e1); background:#ffffff;">
+          </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
-            <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary" style="background:#2563eb; border:none; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.45rem; height:46px; border-radius:10px; font-size:0.95rem; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.25); cursor:pointer;">
-              💾 Save Token
+          <!-- Saved Websites Chips / List (hidden helper) -->
+          <div id="publytics-saved-sites-box" style="display:none; width:100%; box-sizing:border-box;">
+            <div id="publytics-sites-list-ui" style="display:none;"></div>
+          </div>
+
+          <div id="publytics-settings-token-feedback" style="display:none; padding:0.75rem 1rem; border-radius:10px; font-size:0.88rem; font-weight:700; margin-bottom:0.85rem; word-break:break-word; width:100%; box-sizing:border-box;"></div>
+
+          <!-- Full Width Action Buttons (Vertical Stack - 100% Mobile Responsive) -->
+          <div style="display:flex; flex-direction:column; gap:0.65rem; width:100%; box-sizing:border-box; margin-top:0.6rem;">
+            <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:#2563eb; border:none; box-shadow:0 4px 12px rgba(37,99,235,0.25); color:#fff; cursor:pointer; box-sizing:border-box;">
+              💾 Save Settings
             </button>
-            <button type="button" id="btn-test-publytics-settings-token" onclick="window.testPublyticsApiTokenSettings(event);" class="btn btn-secondary" style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.45rem; height:46px; border-radius:10px; font-size:0.95rem; color:#38bdf8; cursor:pointer;">
+            <button type="button" id="btn-test-publytics-settings-token" onclick="window.testPublyticsApiTokenSettings(event);" class="btn btn-secondary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#38bdf8; cursor:pointer; box-sizing:border-box;">
               🧪 Test Connection
             </button>
           </div>
+        </form>
+      </div>
+
+      <!-- Dedicated Official Publytics Login Credentials Card (Configurable by Admin) -->
+      <div class="card" style="padding:1.5rem; height:fit-content; margin-bottom:1.35rem; border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.05);" id="official-publytics-creds-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.35rem;">
+          <div style="display:flex; align-items:center; gap:0.65rem; font-size:1.22rem; font-weight:800; color:var(--text-primary, #0f172a);">
+            <span style="font-size:1.3rem;">🛡️</span>
+            <span style="letter-spacing:-0.01em;">Official Publytics Login Info</span>
+          </div>
+          <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.8rem; font-weight:700; padding:0.25rem 0.75rem; border-radius:9999px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">
+            <span>👥</span> Team Login Info
+          </span>
+        </div>
+
+        <p style="font-size:0.9rem; color:var(--text-muted, #5f6368); margin:0.35rem 0 1.25rem 0; line-height:1.45;">
+          Ye email aur password <b>Publytics Tab</b> par users ko display honge jahan se wo copy karke Official Publytics portal par login kar sakenge.
+        </p>
+
+        <form id="publytics-login-creds-form" onsubmit="event.preventDefault(); window.savePublyticsLoginCredentials(event); return false;" style="width:100%; box-sizing:border-box;">
+          <div class="form-group" style="margin-bottom:1rem; width:100%; box-sizing:border-box;">
+            <label for="publytics-settings-login-email" style="font-size:0.78rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted,#475569); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem;">
+              <span>📧</span> USERNAME / EMAIL:
+            </label>
+            <input type="text" id="publytics-settings-login-email" class="form-control" placeholder="e.g. Bhai gmail.com" autocomplete="off" style="width:100% !important; box-sizing:border-box !important; height:48px; font-size:0.95rem; font-weight:600; border-radius:12px; padding:0.75rem 1.15rem; border:1.5px solid var(--border,#cbd5e1); background:#ffffff;">
+          </div>
+
+          <div class="form-group" style="margin-bottom:1.15rem; width:100%; box-sizing:border-box;">
+            <label for="publytics-settings-login-password" style="font-size:0.78rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted,#475569); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem;">
+              <span>🔑</span> PASSWORD:
+            </label>
+            <input type="text" id="publytics-settings-login-password" class="form-control" placeholder="e.g. 123@etc" autocomplete="off" style="width:100% !important; box-sizing:border-box !important; height:48px; font-size:0.95rem; font-weight:600; border-radius:12px; padding:0.75rem 1.15rem; border:1.5px solid var(--border,#cbd5e1); background:#ffffff;">
+          </div>
+
+          <div id="publytics-settings-creds-feedback" style="display:none; padding:0.75rem 1rem; border-radius:10px; font-size:0.88rem; font-weight:700; margin-bottom:0.85rem; word-break:break-word; width:100%; box-sizing:border-box;"></div>
+
+          <button type="submit" id="btn-save-publytics-creds" class="btn btn-primary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border:none; box-shadow:0 4px 14px rgba(37,99,235,0.25); color:#fff; cursor:pointer; box-sizing:border-box;">
+            <span>💾 Save Publytics Login Info</span>
+          </button>
         </form>
       </div>
 
@@ -3188,7 +3753,7 @@
         </button>
       </div>
 
-      <div class="table-scroll">
+      <div class="table-scroll" id="users-table-scroll">
         <table class="screenshot-table" id="users-table">
           <thead>
             <tr>
@@ -3210,10 +3775,76 @@
           </tbody>
         </table>
       </div>
+      <div id="users-empty-container" style="display:none; width:100% !important; box-sizing:border-box !important;"></div>
+    </div>
+
+    <!-- 5B. OFFICIAL PUBLYTICS LOGIN CARD (Exact Reference Design) -->
+    <div class="p-card official-publytics-card" id="official-publytics-login-card">
+      <!-- Header with Glowing Shield Icon -->
+      <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.15rem;">
+        <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, #0080ff, #00d4ff); display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 180, 255, 0.45); flex-shrink:0;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <rect x="9" y="11" width="6" height="4" rx="1"></rect>
+            <circle cx="12" cy="10" r="1.5"></circle>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="color:#ffffff; font-size:1.32rem; font-weight:900; letter-spacing:-0.01em; line-height:1.2;">Official Publytics Login</div>
+          <div style="color:#93c5fd; font-size:0.84rem; font-weight:500; margin-top:0.25rem;">Use your credentials to access the Publytics platform.</div>
+        </div>
+      </div>
+
+      <!-- Credential Rows Container -->
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <!-- Email Row -->
+        <div class="pub-cred-row">
+          <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
+            <div style="width:34px; height:34px; border-radius:10px; background:rgba(0, 144, 255, 0.18); border:1px solid rgba(0, 144, 255, 0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+            </div>
+            <span style="font-weight:800; color:#ffffff; font-size:0.95rem; white-space:nowrap;">Email :</span>
+            <span id="official-pub-email-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">E@gmail.com</span>
+          </div>
+          <button type="button" class="pub-cred-copy-btn" onclick="copyPubCredential('email', this);" title="Copy Email">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy</span>
+          </button>
+        </div>
+
+        <!-- Password Row -->
+        <div class="pub-cred-row">
+          <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
+            <div style="width:34px; height:34px; border-radius:10px; background:rgba(0, 144, 255, 0.18); border:1px solid rgba(0, 144, 255, 0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <span style="font-weight:800; color:#ffffff; font-size:0.95rem; white-space:nowrap;">Paswrd :</span>
+            <span id="official-pub-pass-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">12@abc</span>
+          </div>
+          <button type="button" class="pub-cred-copy-btn" onclick="copyPubCredential('password', this);" title="Copy Password">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action: Open Publytics Official Login -->
+      <div style="margin-top:0.9rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+        <a href="https://publytics.net/login" target="_blank" rel="noopener noreferrer" style="flex:1; min-width:200px; background:rgba(0, 144, 255, 0.15); border:1px solid rgba(0, 144, 255, 0.45); color:#93c5fd; font-weight:800; font-size:0.86rem; padding:0.62rem 1rem; border-radius:12px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:all 0.18s ease;" onmouseover="this.style.background='rgba(0,144,255,0.28)'; this.style.borderColor='#00e5ff'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(0,144,255,0.15)'; this.style.borderColor='rgba(0,144,255,0.45)'; this.style.color='#93c5fd';">
+          <span>🚀</span> Open Publytics Official Login
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
+      </div>
     </div>
 
     <!-- 6. THE COMPLETE DRILLDOWN / DETAIL ANALYTICS VIEW (Section 6) -->
-    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:1.5rem; display:none;">
+    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:0.35rem; display:none;">
 
       <!-- NAV HEADER: ← Back + Title + Date Pill -->
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(0,144,255,0.2); flex-wrap:wrap; gap:0.5rem;">
@@ -3325,7 +3956,7 @@
           <span style="font-size:0.72rem; color:#7f9bc2;">💡 Click any row to view complete API breakdown</span>
         </div>
 
-        <div class="table-scroll">
+        <div class="table-scroll" id="dd-table-scroll">
           <table class="screenshot-table">
             <thead>
               <tr>
@@ -3342,6 +3973,7 @@
             </tbody>
           </table>
         </div>
+        <div id="dd-empty-container" style="display:none; width:100% !important; box-sizing:border-box !important;"></div>
       </div>
     </div><!-- end drilldown-page-view -->
 
@@ -3621,7 +4253,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=157"></script>
+<script src="/js/dashboard.js?v=221"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -4020,58 +4652,178 @@ window.submitAdminPasswordChange = async function(e) {
   return false;
 };
 
-// ── Publytics API Token Settings Handler (Super Admin Only) ──
+// ── Publytics Sites Manager state ──
+window._publyticsSitesList = [];
+
+function renderPublyticsSitesListUI(sitesList, activeSiteId) {
+  const container = document.getElementById('publytics-sites-list-ui');
+  const box = document.getElementById('publytics-saved-sites-box');
+  const siteInput = document.getElementById('publytics-settings-site-id');
+  if (!container) return;
+
+  window._publyticsSitesList = Array.isArray(sitesList) ? sitesList : [];
+
+  if (!window._publyticsSitesList || window._publyticsSitesList.length === 0) {
+    if (box) box.style.display = 'none';
+    return;
+  }
+
+  if (box) box.style.display = 'block';
+
+  container.innerHTML = window._publyticsSitesList.map((site) => {
+    const isActive = site === activeSiteId;
+    return `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:0.4rem; padding:0.4rem 0.6rem; border-radius:8px; background:${isActive ? 'rgba(37,99,235,0.1)' : 'rgba(100,116,139,0.06)'}; border:1.5px solid ${isActive ? 'rgba(37,99,235,0.35)' : 'rgba(100,116,139,0.15)'}; min-width:0; box-sizing:border-box;">
+        <div onclick="window.publyticsSetActiveSite('${site.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; gap:0.45rem; flex:1; min-width:0; cursor:pointer;" title="Click to use this site">
+          <span style="flex-shrink:0; width:16px; height:16px; border-radius:50%; border:2px solid ${isActive ? '#2563eb' : '#94a3b8'}; background:${isActive ? '#2563eb' : 'transparent'}; display:flex; align-items:center; justify-content:center;">
+            ${isActive ? '<span style="width:6px;height:6px;border-radius:50%;background:#fff;display:block;"></span>' : ''}
+          </span>
+          <span style="font-size:0.86rem; font-weight:${isActive ? '800' : '600'}; color:${isActive ? '#2563eb' : '#334155'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${site}</span>
+          ${isActive ? '<span style="font-size:0.65rem; font-weight:800; background:#2563eb; color:#fff; padding:0.1rem 0.4rem; border-radius:12px; white-space:nowrap; flex-shrink:0;">ACTIVE</span>' : ''}
+        </div>
+        <button type="button" onclick="window.publyticsRemoveSiteFromList('${site.replace(/'/g, "\\'")}', this)" title="Remove domain"
+          style="flex-shrink:0; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; border-radius:6px; width:26px; height:26px; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+          ✕
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.publyticsAddSiteToList = async function(siteToAdd) {
+  const site = String(siteToAdd || (document.getElementById('publytics-settings-site-id') || {}).value || '').trim();
+  if (!site) return;
+  const currentList = Array.isArray(window._publyticsSitesList) ? [...window._publyticsSitesList] : [];
+  if (!currentList.includes(site)) currentList.unshift(site);
+  try {
+    await fetch('/api/publytics/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sitesList: currentList.map(id => ({ id, name: id })), siteId: site })
+    });
+    renderPublyticsSitesListUI(currentList, site);
+  } catch(e) {}
+};
+
+window.publyticsSetActiveSite = function(site) {
+  const siteInput = document.getElementById('publytics-settings-site-id');
+  if (siteInput) siteInput.value = site;
+  renderPublyticsSitesListUI(window._publyticsSitesList, site);
+};
+
+window.publyticsRemoveSiteFromList = async function(site, btn) {
+  if (!confirm(`Remove "${site}" from your Publytics websites list?`)) return;
+  const cleanSite = (site || '').trim().toLowerCase();
+  const newList = (window._publyticsSitesList || []).filter(s => s.trim().toLowerCase() !== cleanSite);
+  const siteInput = document.getElementById('publytics-settings-site-id');
+  let activeSite = (siteInput && siteInput.value) || '';
+  if (activeSite.trim().toLowerCase() === cleanSite) activeSite = newList[0] || '';
+
+  try {
+    await fetch('/api/publytics/delete-site', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ siteId: site })
+    });
+    if (siteInput) siteInput.value = activeSite;
+    renderPublyticsSitesListUI(newList, activeSite);
+  } catch(e) {
+    alert('❌ Failed to remove. Try again.');
+  }
+};
+
+// ── Publytics API Token Settings Handler (Admin & Super Admin) ──
 window.loadPublyticsApiTokenSettings = async function() {
   const card = document.getElementById('publytics-api-card');
   const tokenInput = document.getElementById('publytics-settings-api-token');
+  const siteIdInput = document.getElementById('publytics-settings-site-id');
+  const loginEmailInput = document.getElementById('publytics-settings-login-email');
+  const loginPassInput = document.getElementById('publytics-settings-login-password');
   const statusPill = document.getElementById('publytics-settings-status-pill');
+  const subtext = document.getElementById('publytics-settings-subtext');
   const statusBanner = document.getElementById('publytics-settings-token-status');
+
+  // Display spans on the Publytics tab card
+  const dispEmail = document.getElementById('official-pub-email-val');
+  const dispPass = document.getElementById('official-pub-pass-val');
 
   try {
     const res = await fetch('/api/publytics/config');
-    // If not authenticated or forbidden (e.g. Editor), strictly keep hidden
     if (!res.ok) {
       if (card) card.style.setProperty('display', 'none', 'important');
       return;
     }
     const data = await res.json();
 
-    // Only Super Admin can view this card
     if (card) {
       card.style.removeProperty('display');
       card.style.display = 'block';
     }
 
+    // Render the Sites Manager list
+    const sitesList = Array.isArray(data.sitesList) ? data.sitesList.map(s => s.id || s.name || s) : [];
+    const activeSite = data.currentSiteId || (sitesList[0] || '');
+    renderPublyticsSitesListUI(sitesList, activeSite);
+    if (siteIdInput) siteIdInput.value = activeSite || '';
+
+    // Update login credentials inputs & display
+    const emailVal = data.loginEmail || 'E@gmail.com';
+    const passVal = data.loginPassword || '12@abc';
+    if (loginEmailInput) loginEmailInput.value = emailVal;
+    if (loginPassInput) loginPassInput.value = passVal;
+    if (dispEmail) dispEmail.textContent = emailVal;
+    if (dispPass) dispPass.textContent = passVal;
+
     if (!tokenInput) return;
     const masked = data.maskedToken || data.tokenMasked;
 
-    if (data && data.hasToken && masked) {
-      tokenInput.placeholder = `Current: ${masked} (Enter new token to replace)`;
+    // ONLY SHOW ACTIVE IF REAL CONNECTION IS VERIFIED
+    if (data && data.hasToken && data.isConnected && data.tokenStatus === 'active') {
+      tokenInput.placeholder = `Current: ${masked}`;
       if (statusPill) {
-        statusPill.style.background = 'rgba(16, 185, 129, 0.12)';
-        statusPill.style.color = '#10b981';
-        statusPill.innerHTML = '🟢 Token Configured';
+        statusPill.style.background = '#e6f4ea';
+        statusPill.style.color = '#137333';
+        statusPill.innerHTML = '<span style="color:#34a853;">🟢</span> Active &amp; Configured';
+      }
+      if (subtext) {
+        subtext.textContent = 'Real-time Publytics connection is active and verified with Publytics API.';
       }
       if (statusBanner) {
         statusBanner.style.display = 'flex';
         statusBanner.style.background = 'rgba(16, 185, 129, 0.08)';
         statusBanner.style.color = '#15803d';
         statusBanner.style.border = '1px solid rgba(16, 185, 129, 0.25)';
-        statusBanner.innerHTML = `<span>✅</span> <span>Publytics API Token is active (<code>${masked}</code>). Analytics are enabled.</span>`;
+        statusBanner.innerHTML = `<span>✅</span> <span>Publytics API Token is active &amp; verified (<code>${masked}</code>)${data.currentSiteId ? ` | Site ID: <code>${data.currentSiteId}</code>` : ''}. Live analytics enabled.</span>`;
       }
-    } else {
-      tokenInput.placeholder = 'Enter Publytics API Token (Bearer)';
+    } else if (data && data.hasToken && !data.isConnected) {
+      tokenInput.placeholder = `Current: ${masked}`;
       if (statusPill) {
-        statusPill.style.background = 'rgba(245, 158, 11, 0.12)';
-        statusPill.style.color = '#d97706';
-        statusPill.innerHTML = '⚠️ Not Configured';
+        statusPill.style.background = '#fce8e6';
+        statusPill.style.color = '#c5221f';
+        statusPill.innerHTML = '<span style="color:#d93025;">🔴</span> Inactive <span style="opacity:0.35; margin:0 0.15rem;">|</span> <span style="color:#d93025;">🔴</span> Connection Failed';
+      }
+      if (subtext) {
+        subtext.textContent = 'Publytics API connection failed or token is invalid. Please enter a valid Bearer token from Publytics.';
       }
       if (statusBanner) {
         statusBanner.style.display = 'flex';
-        statusBanner.style.background = 'rgba(245, 158, 11, 0.08)';
-        statusBanner.style.color = '#b45309';
-        statusBanner.style.border = '1px solid rgba(245, 158, 11, 0.25)';
-        statusBanner.innerHTML = `<span>⚠️</span> <span>Publytics API Token is not configured yet. Enter your Bearer token below to enable analytics.</span>`;
+        statusBanner.style.background = 'rgba(239, 68, 68, 0.08)';
+        statusBanner.style.color = '#dc2626';
+        statusBanner.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+        statusBanner.innerHTML = `<span>⚠️</span> <span>Publytics API token (<code>${masked}</code>) could not establish a connection with Publytics API. Please check your credentials or test connection.</span>`;
+      }
+    } else {
+      tokenInput.placeholder = 'Current:';
+      if (statusPill) {
+        statusPill.style.background = '#fce8e6';
+        statusPill.style.color = '#c5221f';
+        statusPill.innerHTML = '<span style="color:#d93025;">🔴</span> Inactive <span style="opacity:0.35; margin:0 0.15rem;">|</span> <span style="color:#d93025;">🔴</span> Not Configured';
+      }
+      if (subtext) {
+        subtext.textContent = 'Publytics API token is not active. Please add your API token to enable analytics.';
+      }
+      if (statusBanner) {
+        statusBanner.style.display = 'none';
       }
     }
   } catch(e) {
@@ -4079,50 +4831,89 @@ window.loadPublyticsApiTokenSettings = async function() {
   }
 };
 
-window.togglePublyticsTokenVisibility = function() {
+window.setPublyticsTokenVisible = function(visible) {
   const input = document.getElementById('publytics-settings-api-token');
-  const btn = document.getElementById('btn-toggle-publytics-token-visibility');
+  const slashIcon = document.getElementById('publytics-token-eye-slash-icon');
+  const eyeIcon = document.getElementById('publytics-token-eye-icon');
+  const toggleBtn = document.getElementById('btn-publytics-toggle-token');
   if (!input) return;
-  if (input.type === 'password') {
+  if (visible) {
     input.type = 'text';
-    if (btn) btn.innerText = '🙈';
+    input.style.letterSpacing = 'normal';
+    if (slashIcon) slashIcon.style.display = 'none';
+    if (eyeIcon) eyeIcon.style.display = 'block';
+    if (toggleBtn) toggleBtn.setAttribute('title', 'Hide Token');
   } else {
     input.type = 'password';
-    if (btn) btn.innerText = '👁️';
+    input.style.letterSpacing = '0.16em';
+    if (slashIcon) slashIcon.style.display = 'block';
+    if (eyeIcon) eyeIcon.style.display = 'none';
+    if (toggleBtn) toggleBtn.setAttribute('title', 'Unhide Token');
   }
 };
 
-window.savePublyticsApiTokenSettings = async function(e) {
+window.togglePublyticsTokenVisibility = function() {
+  const input = document.getElementById('publytics-settings-api-token');
+  if (!input) return;
+  window.setPublyticsTokenVisible(input.type === 'password');
+};
+
+window.copyPubCredential = function(type, btn) {
+  let val = '';
+  if (type === 'email') {
+    const el = document.getElementById('official-pub-email-val');
+    val = el ? el.textContent.trim() : '';
+  } else if (type === 'password') {
+    const el = document.getElementById('official-pub-pass-val');
+    val = el ? el.textContent.trim() : '';
+  }
+  if (!val) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(val);
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = val;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  if (btn) {
+    const origHTML = btn.innerHTML;
+    btn.innerHTML = '<span style="font-size:0.8rem;">✅ Copied!</span>';
+    btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    setTimeout(() => {
+      btn.innerHTML = origHTML;
+      btn.style.background = 'linear-gradient(135deg, #0070f3, #00a8ff)';
+    }, 2000);
+  }
+};
+
+window.savePublyticsLoginCredentials = async function(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (e && e.stopPropagation) e.stopPropagation();
 
-  const input = document.getElementById('publytics-settings-api-token');
-  const btn = document.getElementById('btn-save-publytics-settings-token');
-  const feedback = document.getElementById('publytics-settings-token-feedback');
+  const emailInput = document.getElementById('publytics-settings-login-email');
+  const passInput = document.getElementById('publytics-settings-login-password');
+  const btn = document.getElementById('btn-save-publytics-creds');
+  const feedback = document.getElementById('publytics-settings-creds-feedback');
 
-  const tokenVal = input ? input.value.trim() : '';
-  if (!tokenVal) {
-    if (feedback) {
-      feedback.style.display = 'block';
-      feedback.style.background = '#fee2e2';
-      feedback.style.color = '#dc2626';
-      feedback.style.border = '1.5px solid #ef4444';
-      feedback.innerText = '❌ Please enter a valid Publytics API token.';
-    }
-    return false;
-  }
+  const loginEmail = emailInput ? emailInput.value.trim() : '';
+  const loginPassword = passInput ? passInput.value.trim() : '';
 
-  const origBtnText = btn ? btn.innerHTML : '💾 Save Token';
+  const origBtnText = btn ? btn.innerHTML : '💾 Save Publytics Login Info';
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '⏳ Saving...';
   }
 
   try {
-    const res = await fetch('/api/publytics/config', {
+    const res = await fetch('/api/publytics/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiToken: tokenVal })
+      body: JSON.stringify({ loginEmail, loginPassword })
     });
     const result = await res.json();
 
@@ -4132,14 +4923,20 @@ window.savePublyticsApiTokenSettings = async function(e) {
         feedback.style.background = '#dcfce7';
         feedback.style.color = '#15803d';
         feedback.style.border = '1.5px solid #22c55e';
-        feedback.innerText = '✅ Publytics API token saved successfully!';
+        feedback.innerText = '✅ ' + (result.message || 'Official Publytics Login Credentials saved successfully!');
       }
-      if (input) {
-        input.value = '';
-      }
-      await window.loadPublyticsApiTokenSettings();
+
+      // Update the display spans on Publytics tab immediately
+      const dispEmail = document.getElementById('official-pub-email-val');
+      const dispPass = document.getElementById('official-pub-pass-val');
+      if (dispEmail) dispEmail.textContent = result.loginEmail || loginEmail || 'E@gmail.com';
+      if (dispPass) dispPass.textContent = result.loginPassword || loginPassword || '12@abc';
+
+      setTimeout(() => {
+        if (feedback) feedback.style.display = 'none';
+      }, 5000);
     } else {
-      throw new Error(result.error || 'Failed to save token');
+      throw new Error(result.error || 'Failed to save login credentials');
     }
   } catch (err) {
     if (feedback) {
@@ -4147,7 +4944,100 @@ window.savePublyticsApiTokenSettings = async function(e) {
       feedback.style.background = '#fee2e2';
       feedback.style.color = '#dc2626';
       feedback.style.border = '1.5px solid #ef4444';
-      feedback.innerText = `❌ Error: ${err.message}`;
+      feedback.innerText = `❌ ${err.message}`;
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
+  }
+  return false;
+};
+
+window.savePublyticsApiTokenSettings = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  const tokenInput = document.getElementById('publytics-settings-api-token');
+  const siteIdInput = document.getElementById('publytics-settings-site-id');
+  const btn = document.getElementById('btn-save-publytics-settings-token');
+  const feedback = document.getElementById('publytics-settings-token-feedback');
+
+  const tokenVal = tokenInput ? tokenInput.value.trim() : '';
+  const siteIdVal = siteIdInput ? siteIdInput.value.trim() : '';
+
+  const hasExistingToken = tokenInput && tokenInput.placeholder && tokenInput.placeholder.includes('Current:') && !tokenInput.placeholder.endsWith('Current:');
+
+  if (!tokenVal && !hasExistingToken) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = '❌ Please enter your Publytics Bearer API token.';
+    }
+    return false;
+  }
+
+  if (!siteIdVal) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = '❌ Please enter your Publytics Site ID (e.g. goo33.online or tracking code ID).';
+    }
+    return false;
+  }
+
+  const origBtnText = btn ? btn.innerHTML : '💾 Save Settings';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Verifying with Publytics API...';
+  }
+
+  try {
+    let currentList = Array.isArray(window._publyticsSitesList) ? [...window._publyticsSitesList] : [];
+    if (siteIdVal && !currentList.includes(siteIdVal)) {
+      currentList.unshift(siteIdVal);
+    }
+    const payload = {
+      siteId: siteIdVal,
+      sitesList: currentList.map(id => ({ id, name: id }))
+    };
+    if (tokenVal) payload.apiToken = tokenVal;
+
+    const res = await fetch('/api/publytics/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#dcfce7';
+        feedback.style.color = '#15803d';
+        feedback.style.border = '1.5px solid #22c55e';
+        feedback.innerText = '✅ ' + (result.message || 'Publytics API credentials verified and saved successfully!');
+      }
+      if (tokenInput && tokenVal) {
+        tokenInput.value = '';
+      }
+      await window.loadPublyticsApiTokenSettings();
+    } else {
+      await window.loadPublyticsApiTokenSettings();
+      throw new Error(result.error || 'Connection failed with Publytics API');
+    }
+  } catch (err) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = `❌ ${err.message}`;
     }
   } finally {
     if (btn) {
@@ -4159,23 +5049,39 @@ window.savePublyticsApiTokenSettings = async function(e) {
 
 window.testPublyticsApiTokenSettings = async function(e) {
   if (e && e.preventDefault) e.preventDefault();
-  const input = document.getElementById('publytics-settings-api-token');
+  const tokenInput = document.getElementById('publytics-settings-api-token');
+  const siteIdInput = document.getElementById('publytics-settings-site-id');
   const btn = document.getElementById('btn-test-publytics-settings-token');
   const feedback = document.getElementById('publytics-settings-token-feedback');
 
-  const tokenVal = input ? input.value.trim() : '';
+  const tokenVal = tokenInput ? tokenInput.value.trim() : '';
+  const siteIdVal = siteIdInput ? siteIdInput.value.trim() : '';
+
+  if (!siteIdVal) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#fee2e2';
+      feedback.style.color = '#dc2626';
+      feedback.style.border = '1.5px solid #ef4444';
+      feedback.innerText = '❌ Please enter your Publytics Site ID to test connection.';
+    }
+    return;
+  }
 
   const origBtnText = btn ? btn.innerHTML : '🧪 Test Connection';
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '⏳ Testing...';
+    btn.innerHTML = '⏳ Testing connection...';
   }
 
   try {
+    const payload = { siteId: siteIdVal };
+    if (tokenVal) payload.apiToken = tokenVal;
+
     const res = await fetch('/api/publytics/test-connection', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tokenVal ? { apiToken: tokenVal } : {})
+      body: JSON.stringify(payload)
     });
     const result = await res.json();
 
@@ -4187,7 +5093,9 @@ window.testPublyticsApiTokenSettings = async function(e) {
         feedback.style.border = '1.5px solid #22c55e';
         feedback.innerText = '✅ ' + (result.message || 'Successfully connected to Publytics API!');
       }
+      await window.loadPublyticsApiTokenSettings();
     } else {
+      await window.loadPublyticsApiTokenSettings();
       throw new Error(result.error || 'Connection failed');
     }
   } catch (err) {
@@ -4223,16 +5131,15 @@ function activateTabFromUrlHash() {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.loadPublyticsApiTokenSettings();
-  const settingsTabBtn = document.querySelector('[data-tab="tab-settings"]');
-  if (settingsTabBtn) {
-    settingsTabBtn.addEventListener('click', () => {
+  document.querySelectorAll('[data-tab="tab-settings"]').forEach(btn => {
+    btn.addEventListener('click', () => {
       window.loadPublyticsApiTokenSettings();
     });
-  }
+  });
   setTimeout(activateTabFromUrlHash, 150);
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=161"></script>
+<script src="/js/publytics.js?v=221"></script>
 </body>
 </html>

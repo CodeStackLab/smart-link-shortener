@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const icon = (isMaster || uRole === 'Admin') ? '🛡️' : '👤';
           const formattedName = uName ? uName.replace(/\b\w/g, c => c.toUpperCase()) : '';
           const badgeText = isMaster ? '🛡️ Master Admin' : `${icon} ${formattedName}`;
+          localStorage.setItem('cachedIsSuperAdmin', isMaster ? 'true' : 'false');
           localStorage.setItem('cachedUserBadge', badgeText);
           localStorage.setItem('cachedUserRole', uRole);
           localStorage.setItem('cachedUsername', uName);

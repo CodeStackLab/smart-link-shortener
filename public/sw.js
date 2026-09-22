@@ -1,12 +1,16 @@
-const CACHE_NAME = 'smartlink-v161';
+const CACHE_NAME = 'smartlink-v221';
 const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/publytics-icon.png',
-  '/manifest.json'
+  '/manifest.json',
+  '/css/style.css?v=221',
+  '/css/publytics.css?v=221',
+  '/js/dashboard.js?v=221',
+  '/js/publytics.js?v=221'
 ];
 
-// Install: cache icons
+// Install: pre-cache static assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS)).catch(() => {})
@@ -24,24 +28,28 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: Always network first, never cache stale admin.html, publytics.html or scripts
+// Fetch: Network-first for dynamic API & HTML; Stale-While-Revalidate for CSS/JS/images
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  // Always fetch API and admin/publytics scripts and pages from network
-  if (url.pathname.startsWith('/api/') || url.pathname.includes('dashboard') || url.pathname.includes('admin') || url.pathname.includes('login') || url.pathname.includes('publytics')) {
+
+  // Dynamic API calls, shortlinks and HTML pages always fetch from network
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/s/') || url.pathname === '/admin' || url.pathname === '/login' || url.pathname.endsWith('.html')) {
     event.respondWith(fetch(event.request));
     return;
   }
-  // Static assets (icons)
+
+  // Static assets (CSS, JS, images, fonts): Stale-While-Revalidate for instant 0ms load on distant cell towers
   event.respondWith(
-    fetch(event.request)
-      .then(res => {
-        if (res && res.status === 200) {
-          const clone = res.clone();
+    caches.match(event.request).then(cachedResponse => {
+      const fetchPromise = fetch(event.request).then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
-        return res;
-      })
-      .catch(() => caches.match(event.request))
+        return networkResponse;
+      }).catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
+    })
   );
 });

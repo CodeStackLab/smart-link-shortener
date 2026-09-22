@@ -104,14 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'https://www.' + u;
   }
 
-  // Theme Switcher Engine
-  let currentTheme = localStorage.getItem('theme') || 'light';
+  // Theme Switcher Engine: Normal tabs default to Light mode; Only Publytics defaults to Dark mode
+  const isPublyticsInitial = (window.location.hash || '').includes('publytics');
+  let currentTheme = isPublyticsInitial ? 'dark' : 'light';
+  if (!isPublyticsInitial) {
+    try { localStorage.setItem('theme', 'light'); } catch(e) {}
+  }
 
-  window.applyTheme = function(theme) {
+  window.applyTheme = function(theme, isPublyticsTab = false) {
     currentTheme = theme;
     document.documentElement.setAttribute('data-theme', theme);
     document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    if (!isPublyticsTab) {
+      try { localStorage.setItem('theme', theme); } catch(e) {}
+    }
     if (themeToggleBtn) {
       if (theme === 'light') themeToggleBtn.innerHTML = '☀️ Light Mode';
       else if (theme === 'dark') themeToggleBtn.innerHTML = '🌙 Dark Mode';
@@ -124,7 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Define local variable applyTheme as a shortcut
   const applyTheme = window.applyTheme;
-  applyTheme(currentTheme);
+  if (isPublyticsInitial) {
+    document.body.classList.add('is-publytics-tab');
+    document.documentElement.classList.add('is-publytics-tab');
+    applyTheme('dark', true);
+  } else {
+    document.body.classList.remove('is-publytics-tab');
+    document.documentElement.classList.remove('is-publytics-tab');
+    applyTheme('light', false);
+  }
 
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
@@ -243,24 +257,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  let currentLoggedInUsername = '';
-  let currentLoggedInRole = '';
+  let currentLoggedInUsername = localStorage.getItem('cachedUsername') || '';
+  let currentLoggedInRole = localStorage.getItem('cachedUserRole') || '';
   let currentLoggedInFbTrafficSettings = null;
+  let currentLoggedInIsSuperAdmin = (localStorage.getItem('cachedIsSuperAdmin') === 'true') ? true : (localStorage.getItem('cachedIsSuperAdmin') === 'false' ? false : null);
   let currentPermissionsString = '';
   let currentAllowedSitesString = '';
   let currentMaskString = '';
 
   function isSuperAdminUser() {
-    const r = String(currentLoggedInRole || '').toLowerCase().trim();
-    const u = String(currentLoggedInUsername || '').toLowerCase().trim();
-    return u === 'admin' || u === 'master admin' || r === 'super admin' || r === 'master admin';
+    if (currentLoggedInIsSuperAdmin !== null) {
+      return currentLoggedInIsSuperAdmin === true;
+    }
+    const r = String(currentLoggedInRole || localStorage.getItem('cachedUserRole') || '').toLowerCase().trim();
+    const u = String(currentLoggedInUsername || localStorage.getItem('cachedUsername') || '').toLowerCase().trim();
+    const cleanU = u.replace(/[^\w\s]/g, '').trim();
+    const cleanR = r.replace(/[^\w\s]/g, '').trim();
+    return cleanU === 'admin' || cleanU === 'master admin' || cleanU === 'super admin' || cleanR === 'super admin' || cleanR === 'master admin';
   }
+  window.isSuperAdminUser = isSuperAdminUser;
 
   function isFullAdminUser() {
-    const r = String(currentLoggedInRole || '').toLowerCase().trim();
-    const u = String(currentLoggedInUsername || '').toLowerCase().trim();
-    return u === 'admin' || u === 'master admin' || r === 'admin' || r === 'super admin' || r === 'master admin';
+    const r = String(currentLoggedInRole || localStorage.getItem('cachedUserRole') || '').toLowerCase().trim();
+    const u = String(currentLoggedInUsername || localStorage.getItem('cachedUsername') || '').toLowerCase().trim();
+    const cleanU = u.replace(/[^\w\s]/g, '').trim();
+    const cleanR = r.replace(/[^\w\s]/g, '').trim();
+    return isSuperAdminUser() || cleanR === 'admin' || cleanU === 'admin';
   }
+  window.isFullAdminUser = isFullAdminUser;
 
   function syncSessionLive(isInitial = false) {
     fetch('/api/session')
@@ -275,10 +299,14 @@ document.addEventListener('DOMContentLoaded', () => {
         currentLoggedInRole = data.role || 'Admin';
         currentLoggedInFbTrafficSettings = data.fbTrafficSettings || null;
 
+        const uName = (data.username || 'admin').trim();
+        const uRole = (data.role || 'Admin').trim();
+        const cleanU = uName.toLowerCase().replace(/[^\w\s]/g, '').trim();
+        const cleanR = uRole.toLowerCase().replace(/[^\w\s]/g, '').trim();
+        const isMaster = (data.isSuperAdmin === true) || cleanU === 'admin' || cleanU === 'master admin' || cleanU === 'super admin' || cleanR === 'super admin' || cleanR === 'master admin';
+        currentLoggedInIsSuperAdmin = isMaster;
+
         if (userBadge) {
-          const uName = (data.username || 'admin').trim();
-          const uRole = (data.role || 'Admin').trim();
-          const isMaster = uName.toLowerCase() === 'admin' || uName.toLowerCase() === 'master admin' || uRole.toLowerCase() === 'super admin' || uRole.toLowerCase() === 'master admin';
           if (isMaster) {
             userBadge.textContent = '🛡️ Master Admin';
             userBadge.style.display = 'inline-flex';
@@ -298,6 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userBadge.className = 'badge user-badge-pill';
           }
           try {
+            localStorage.setItem('cachedIsSuperAdmin', isMaster ? 'true' : 'false');
             localStorage.setItem('cachedUserBadge', userBadge.textContent);
             localStorage.setItem('cachedUserRole', uRole);
             localStorage.setItem('cachedUsername', uName);
@@ -373,8 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (isFullAdminUser()) {
             loadUsers();
           }
+          loadDomains();
           if (isSuperAdminUser()) {
-            loadDomains();
             loadDetectedDomains();
           }
           const curHash = (window.location.hash || '').replace('#', '').trim();
@@ -398,10 +427,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial session check & UI setup
   syncSessionLive(true);
 
-  // REALTIME LIVE PERMISSION STREAM (Polls every 3.5 seconds)
-  setInterval(() => {
-    syncSessionLive(false);
-  }, 3500);
+  // REALTIME LIVE PERMISSION STREAM (Mobile battery & bandwidth optimized: 12s interval, paused when backgrounded)
+  let sessionSyncTimer = null;
+  function startSessionSync() {
+    if (sessionSyncTimer) clearInterval(sessionSyncTimer);
+    sessionSyncTimer = setInterval(() => {
+      if (document.hidden) return; // Do not consume data over distant cell towers when tab is backgrounded
+      syncSessionLive(false);
+    }, 12000);
+  }
+  startSessionSync();
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      syncSessionLive(false); // Instant fresh sync upon returning to tab
+    }
+  });
 
   function updateTargetUrlFieldForRole(sessionData) {
     const targetInput = document.getElementById('target-url');
@@ -600,11 +641,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     navMap.forEach(item => {
       // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
-      // Publytics requires Super Admin OR explicit 'publytics' permission granted by Super Admin
+      // Publytics requires Super Admin OR Normal Admin OR explicit 'publytics' permission granted by Super Admin
       const hasAccess = item.key === 'firewall'
         ? true
         : item.key === 'publytics'
-          ? (isSuperAdminUser() || userPerms.includes('publytics'))
+          ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
           : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
@@ -708,14 +749,25 @@ document.addEventListener('DOMContentLoaded', () => {
       customDomainsCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
-    // 3. Publytics API Token Card — strictly Super Admin / Master Admin only (NEVER Editor)
+    // 3. Publytics API Token Card — Accessible to Super Admin, Master Admin, and Admin
     const publyticsApiCard = document.getElementById('publytics-api-card');
     if (publyticsApiCard) {
-      if (isSuperAdminUser()) {
+      if (isFullAdmin || isSuperAdminUser() || userPerms.includes('publytics') || userPerms.includes('settings')) {
         publyticsApiCard.style.removeProperty('display');
         publyticsApiCard.style.display = 'block';
       } else {
         publyticsApiCard.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    // Official Publytics Login Credentials Card in Settings
+    const publyticsCredsCard = document.getElementById('official-publytics-creds-card');
+    if (publyticsCredsCard) {
+      if (isFullAdmin || isSuperAdminUser() || userPerms.includes('publytics') || userPerms.includes('settings')) {
+        publyticsCredsCard.style.removeProperty('display');
+        publyticsCredsCard.style.display = 'block';
+      } else {
+        publyticsCredsCard.style.setProperty('display', 'none', 'important');
       }
     }
 
@@ -1001,6 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('cachedUserRole');
         localStorage.removeItem('cachedUsername');
         localStorage.removeItem('cachedPermissions');
+        localStorage.removeItem('cachedIsSuperAdmin');
       } catch (e) {}
       await fetch('/api/logout', { method: 'POST' });
       window.location.href = '/admin';
@@ -1059,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      if (targetTab === 'tab-publytics' && !(isSuperAdminUser() || userCurrentPermissions.includes('publytics'))) {
+      if (targetTab === 'tab-publytics' && !(isSuperAdminUser() || isFullAdminUser() || userCurrentPermissions.includes('publytics'))) {
         return;
       }
 
@@ -1078,10 +1131,32 @@ document.addEventListener('DOMContentLoaded', () => {
         else m.classList.remove('active');
       });
 
+      // Automatic theme switching: ONLY Publytics is Dark Mode, Baqi Tabs ALWAYS Normal Light Mode
+      if (targetTab === 'tab-publytics') {
+        document.body.classList.add('is-publytics-tab');
+        document.documentElement.classList.add('is-publytics-tab');
+        if (window.applyTheme) {
+          window.applyTheme('dark', true);
+        }
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', '#020b1e');
+      } else {
+        document.body.classList.remove('is-publytics-tab');
+        document.documentElement.classList.remove('is-publytics-tab');
+        if (window.applyTheme) {
+          window.applyTheme('light', false);
+        }
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', '#1877f2');
+      }
+
       // Close mobile navigation drawer
       document.body.classList.remove('menu-open');
 
-      if (targetTab === 'tab-links') loadLinks();
+      if (targetTab === 'tab-links') {
+        loadLinks();
+        loadDomains();
+      }
       if (targetTab === 'tab-domains') {
         loadDomains();
         loadDetectedDomains();
@@ -1098,9 +1173,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       if (targetTab === 'tab-settings') {
+        loadDomains();
         if (isSuperAdminUser()) {
           loadUsers();
-          loadDomains();
           loadDetectedDomains();
         }
         load2FAStatus();
@@ -1116,18 +1191,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Show Banner Alert
+  // Fixed Floating Toast Notification (Always visible anywhere on screen / mobile)
+  function showFloatingToast(msg, isError = false) {
+    let toast = document.getElementById('global-floating-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'global-floating-toast';
+      toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999999;max-width:92vw;width:max-content;padding:0.65rem 1.15rem;border-radius:12px;font-size:0.86rem;font-weight:700;font-family:"Outfit",sans-serif;box-shadow:0 12px 35px rgba(0,0,0,0.45);display:flex;align-items:center;gap:0.5rem;transition:all 0.28s cubic-bezier(0.16, 1, 0.3, 1);pointer-events:none;opacity:0;';
+      document.body.appendChild(toast);
+    }
+    toast.style.background = isError ? 'linear-gradient(135deg, #ef4444, #b91c1c)' : 'linear-gradient(135deg, #10b981, #047857)';
+    toast.style.color = '#ffffff';
+    toast.style.border = isError ? '1px solid #f87171' : '1px solid #34d399';
+    const cleanMsg = msg.replace(/^(✅|⚠️|❌|🗑️|⏳)\s*/, '');
+    toast.textContent = (isError ? '⚠️ ' : '✅ ') + cleanMsg;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+
+    if (window._floatingToastTimer) clearTimeout(window._floatingToastTimer);
+    window._floatingToastTimer = setTimeout(() => {
+      if (toast) {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-10px)';
+      }
+    }, 3500);
+  }
+  window.showFloatingToast = showFloatingToast;
+
+  // Show Banner Alert + Always Show Instant Floating Toast
   function showAlert(msg, isError = false) {
     const alertWrap = document.getElementById('dashboard-alert-container');
-    alertBox.textContent = msg;
-    alertBox.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
-    alertBox.style.display = 'block';
+    if (alertBox) {
+      alertBox.textContent = msg;
+      alertBox.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
+      alertBox.style.display = 'block';
+    }
     if (alertWrap) alertWrap.style.display = 'block';
     setTimeout(() => {
-      alertBox.style.display = 'none';
+      if (alertBox) alertBox.style.display = 'none';
       if (alertWrap) alertWrap.style.display = 'none';
     }, 4500);
+
+    // High-priority Fixed Floating Toast: ALWAYS VISIBLE anywhere on mobile/desktop
+    showFloatingToast(msg, isError);
   }
+  window.showAlert = showAlert;
 
   // Collapsible DNS Setup Guide Toggle
   const toggleDnsGuideBtn = document.getElementById('toggle-dns-guide-btn');
@@ -1309,9 +1417,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const shortUrl = `${window.location.protocol}//${domainToUse}/s/${link.code}`;
       
       const rawAllowed = (Array.isArray(link.allowedPlatforms) && link.allowedPlatforms.length > 0)
-        ? link.allowedPlatforms
+        ? link.allowedPlatforms.filter(p => p && p !== 'direct')
         : ['facebook'];
-      const presetBadges = rawAllowed.map(p => {
+      const effectiveAllowed = rawAllowed.length > 0 ? rawAllowed : ['facebook'];
+      const presetBadges = effectiveAllowed.map(p => {
         if (p === 'facebook') {
           return `<span class="badge" style="background:#1877f2; color:#ffffff; font-weight:800; padding:0.3rem 0.65rem; border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; font-size:0.78rem; box-shadow:0 2px 8px rgba(24,119,242,0.25);">
             <svg width="14" height="14" fill="#ffffff" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
@@ -1390,7 +1499,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${blockedList.map(c => `
             <div class="blocked-country-pill">
               <span class="country-flag">${getCountryFlagEmoji(c)}</span>
-              <span class="country-code">${c}</span>
+              <span class="country-code" style="white-space:nowrap; word-break:keep-all;">${c}</span>
             </div>
           `).join('')}
         </div>
@@ -1398,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="blocked-countries-wrap">
           <div class="blocked-country-pill-none">
             <span>🌐</span>
-            <span>None (All Allowed)</span>
+            <span style="white-space:nowrap; word-break:keep-all;">None (All Allowed)</span>
           </div>
         </div>
       `;
@@ -1426,7 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return `
         <tr>
-          <td data-label="Short Link">
+          <td data-label="Short Link" class="col-shortlink">
             <div class="shortlink-card-component">
               <div class="shortlink-meta-row">
                 <div class="shortlink-code-group">
@@ -2109,7 +2218,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (response.ok && data.success) {
           const generatedCode = data.link.code;
-          const shortUrl = `${location.origin}/s/${generatedCode}`;
+          // Use the domain set on the link (custom domain or default)
+          const linkDomain = data.link.domain || window.location.hostname;
+          const shortUrl = `${window.location.protocol}//${linkDomain}/s/${generatedCode}`;
           
           createForm.reset();
           const fbInputReset = document.getElementById('fallback-url');
@@ -4247,7 +4358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     newUserRoleSelect.addEventListener('change', () => {
       const selectedRole = newUserRoleSelect.value;
       const defaultPerms = selectedRole === 'Admin'
-        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings']
+        ? ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings', 'publytics']
         : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
 
       document.querySelectorAll('.new-perm-cb').forEach(cb => {
@@ -4594,8 +4705,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load 2FA status when dashboard loads
   load2FAStatus();
 
+  const passwordChangeForm = document.getElementById('password-change-form');
   if (passwordChangeForm) {
     passwordChangeForm.addEventListener('submit', async (e) => {
+      if (window.submitAdminPasswordChange) {
+        return window.submitAdminPasswordChange(e);
+      }
       e.preventDefault();
       const newPassInput = document.getElementById('new-password');
       const newPassword = newPassInput ? newPassInput.value.trim() : '';
@@ -4781,76 +4896,87 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // loadLinks(), loadUsers(), loadDomains() are called after session check completes (see above)
-  if (isSuperAdminUser()) {
-    loadDomains();
+  // --------------------------------------------------------
+  // CUSTOM DOMAINS MANAGEMENT LOGIC (Super Admin Only)
+  // --------------------------------------------------------
+  let _domainPollTimer = null;
+  let _detectedPollTimer = null;
+
+  // Load ALL domains — split into installing / active
+  async function loadDomains() {
+    const tbody = document.getElementById('domains-tbody');
+    try {
+      const res = await fetch('/api/admin/domains');
+      if (!res.ok) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Failed to load domains (HTTP ${res.status})</td></tr>`;
+        try { populateDomainSelects([]); } catch(e) {}
+        return;
+      }
+      const domains = await res.json();
+      const allDomains = Array.isArray(domains) ? domains : [];
+      const active = allDomains.filter(d => d.sslStatus === 'active');
+      const installing = allDomains.filter(d => d.sslStatus && d.sslStatus !== 'active');
+      // Render in Active Custom Domains table so user can see and delete their added domains
+      const toRender = allDomains;
+      try {
+        renderDomainsTable(toRender);
+      } catch(err) {
+        console.error('renderDomainsTable error:', err);
+      }
+      try {
+        renderInstallingSection(installing);
+      } catch(err) {
+        console.error('renderInstallingSection error:', err);
+      }
+      try {
+        populateDomainSelects(allDomains);
+      } catch(err) {
+        console.error('populateDomainSelects error:', err);
+      }
+      // Poll if any still installing
+      if (installing.length > 0) {
+        startDomainPoll();
+      } else {
+        stopDomainPoll();
+      }
+    } catch (err) {
+      console.error('loadDomains error:', err);
+      if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Network error. <a href="#" onclick="loadDomains();return false;">Retry</a></td></tr>`;
+      try { populateDomainSelects([]); } catch(e) {}
+    }
+  }
+  window.loadDomains = loadDomains;
+
+  // Poll every 12s while domains are installing
+  function startDomainPoll() {
+    if (_domainPollTimer) return;
+    _domainPollTimer = setInterval(() => loadDomains(), 12000);
+  }
+  function stopDomainPoll() {
+    if (_domainPollTimer) { clearInterval(_domainPollTimer); _domainPollTimer = null; }
   }
 
-// --------------------------------------------------------
-// CUSTOM DOMAINS MANAGEMENT LOGIC (Super Admin Only)
-// --------------------------------------------------------
-// ── DOMAIN MANAGEMENT ──
-const domainsTbody = document.getElementById('domains-tbody');
-const addDomainForm = document.getElementById('add-domain-form');
-const domainSelect = document.getElementById('link-domain');
-let _domainPollTimer = null;
-let _detectedPollTimer = null;
-
-// Load ALL domains — split into installing / active
-async function loadDomains() {
-  if (!isSuperAdminUser()) return;
-  try {
-    const res = await fetch('/api/admin/domains');
-    if (!res.ok) {
-      if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Failed to load domains (HTTP ${res.status})</td></tr>`;
+  // Render ACTIVE domains table
+  function renderDomainsTable(domains) {
+    const tbody = document.getElementById('domains-tbody');
+    if (!tbody) return;
+    if (!Array.isArray(domains) || domains.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.25rem;">No active domains yet. Add a domain above!</td></tr>`;
       return;
     }
-    const domains = await res.json();
-    const active = domains.filter(d => d.sslStatus === 'active');
-    const installing = domains.filter(d => d.sslStatus !== 'active');
-    renderDomainsTable(active);
-    renderInstallingSection(installing);
-    populateDomainSelects(active);
-    // Poll if any still installing
-    if (installing.length > 0) {
-      startDomainPoll();
-    } else {
-      stopDomainPoll();
-    }
-  } catch (err) {
-    if (domainsTbody) domainsTbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);text-align:center;padding:1rem;">⚠️ Network error. <a href="#" onclick="loadDomains();return false;">Retry</a></td></tr>`;
+    tbody.innerHTML = domains.map(dom => `
+      <tr>
+        <td data-label="Domain"><strong style="word-break:break-all; font-family:'Outfit',sans-serif; color:var(--text-primary); font-size:0.92rem;">${dom.domain}</strong></td>
+        <td data-label="SSL Status"><span style="background:#10b981;color:#fff;padding:0.22rem 0.65rem;border-radius:20px;font-size:0.72rem;font-weight:800;display:inline-flex;align-items:center;gap:0.25rem;white-space:nowrap;">🔒 SSL Active ✅</span></td>
+        <td data-label="Added At" style="font-size:0.8rem; color:var(--text-secondary);">${new Date(dom.createdAt).toLocaleString()}</td>
+        <td data-label="Actions" class="col-actions" style="text-align:right;">
+          <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')" style="width:100%; min-height:38px; display:flex; align-items:center; justify-content:center; gap:0.35rem; font-weight:700; border-radius:10px;">🗑️ Delete</button>
+        </td>
+      </tr>
+    `).join('');
   }
-}
 
-// Poll every 12s while domains are installing
-function startDomainPoll() {
-  if (_domainPollTimer) return;
-  _domainPollTimer = setInterval(() => loadDomains(), 12000);
-}
-function stopDomainPoll() {
-  if (_domainPollTimer) { clearInterval(_domainPollTimer); _domainPollTimer = null; }
-}
-
-// Render ACTIVE domains table
-function renderDomainsTable(domains) {
-  if (!domainsTbody) return;
-  if (!Array.isArray(domains) || domains.length === 0) {
-    domainsTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.25rem;">No active domains yet. Add a domain above!</td></tr>`;
-    return;
-  }
-  domainsTbody.innerHTML = domains.map(dom => `
-    <tr>
-      <td data-label="Domain"><strong>${dom.domain}</strong></td>
-      <td data-label="SSL"><span style="background:#10b981;color:#fff;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:800;">🔒 SSL ✅</span></td>
-      <td data-label="Added At">${new Date(dom.createdAt).toLocaleString()}</td>
-      <td data-label="Actions" style="text-align:right;">
-        <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')">🗑️ Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-// Render INSTALLING SSL section
+// Render INSTALLING SSL section with 1-Click Activate and DNS Guide
 function renderInstallingSection(installing) {
   const sec = document.getElementById('installing-ssl-section');
   const list = document.getElementById('installing-ssl-list');
@@ -4860,24 +4986,34 @@ function renderInstallingSection(installing) {
     list.innerHTML = '';
     return;
   }
-  sec.style.display = '';
-  list.innerHTML = installing.map(dom => `
-    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.3);border-radius:12px;padding:0.6rem 0.9rem;">
-      <div style="display:flex;align-items:center;gap:0.55rem;">
-        <span style="font-size:1rem;animation:spin 1.2s linear infinite;display:inline-block;">⏳</span>
-        <div>
-          <div style="font-weight:800;font-size:0.88rem;">${dom.domain}</div>
-          <div style="font-size:0.7rem;color:#d97706;font-weight:600;">Installing SSL Certificate... Please wait</div>
+  sec.style.display = 'block';
+  list.innerHTML = installing.map(dom => {
+    const parts = (dom.domain || '').split('.');
+    const hostLabel = parts.length > 2 ? parts[0] : '@';
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.3);border-radius:12px;padding:0.75rem 0.95rem;gap:0.6rem;box-sizing:border-box;">
+        <div style="display:flex;align-items:center;gap:0.6rem;min-width:0;flex:1 1 200px;">
+          <span style="font-size:1.15rem;display:inline-block;flex-shrink:0;">⏳</span>
+          <div style="min-width:0;overflow:hidden;">
+            <div style="font-weight:800;font-size:0.92rem;word-break:break-all;color:var(--text-primary);">🌐 ${dom.domain}</div>
+            <div style="font-size:0.75rem;color:#d97706;font-weight:700;margin-top:0.2rem;">Installing SSL Certificate...</div>
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:0.2rem;line-height:1.4;">
+              DNS Setup: Add <strong>A Record</strong> in Hostinger/DNS ➔ Host: <code style="background:rgba(0,0,0,0.07);padding:0.1rem 0.35rem;border-radius:4px;font-weight:700;">${hostLabel}</code>, Points to: <code style="background:rgba(0,0,0,0.07);padding:0.1rem 0.35rem;border-radius:4px;font-weight:700;">89.117.51.151</code>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+          <button type="button" class="btn btn-sm" onclick="forceActivateDomain('${dom.id}','${dom.domain}')" style="background:#10b981;color:#fff;font-size:0.74rem;padding:0.4rem 0.75rem;border-radius:8px;font-weight:800;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:0.25rem;" title="Mark Active if already pointed or using Cloudflare">⚡ Activate</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')" style="font-size:0.74rem;padding:0.4rem 0.65rem;border-radius:8px;font-weight:800;" title="Delete domain">✕</button>
         </div>
       </div>
-      <button class="btn btn-danger btn-sm" onclick="deleteDomain('${dom.id}')" style="font-size:0.72rem;padding:0.25rem 0.55rem;">✕</button>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // ── DETECTED DOMAINS ──
 async function loadDetectedDomains() {
-  if (!isSuperAdminUser()) return;
+  if (!isFullAdminUser()) return;
   try {
     const res = await fetch('/api/admin/detected-domains');
     if (!res.ok) return;
@@ -4898,62 +5034,338 @@ function renderDetectedDomains(detected) {
   }
   sec.style.display = 'block';
   if (badge) badge.textContent = `${detected.length} New`;
-  list.innerHTML = detected.map(det => `
-    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(59,130,246,0.06);border:1.5px solid rgba(59,130,246,0.2);border-radius:12px;padding:0.6rem 0.9rem;">
-      <div>
-        <div style="font-weight:800;font-size:0.88rem;">🌐 ${det.domain}</div>
-        <div style="font-size:0.7rem;color:var(--text-muted);">Detected: ${new Date(det.detectedAt).toLocaleString()}</div>
+
+  const clearAllHtml = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+      <span style="font-size:0.76rem; color:var(--text-muted); font-weight:700;">Pending Review (${detected.length}):</span>
+      <button type="button" id="btn-clear-all-det" onclick="clearAllDetectedDomains()" style="background:rgba(239,68,68,0.12); color:#dc2626; border:1.5px solid rgba(239,68,68,0.3); border-radius:8px; padding:0.35rem 0.8rem; font-size:0.75rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:0.35rem; box-shadow:0 2px 6px rgba(239,68,68,0.1);">
+        🗑️ Clear All (${detected.length})
+      </button>
+    </div>
+  `;
+
+  list.innerHTML = clearAllHtml + detected.map(det => `
+    <div id="det-row-${det.id}" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;background:rgba(59,130,246,0.06);border:1.5px solid rgba(59,130,246,0.2);border-radius:12px;padding:0.65rem 0.9rem;gap:0.5rem;box-sizing:border-box;transition:all 0.25s ease;">
+      <div style="min-width:0; flex:1 1 180px;">
+        <div style="font-weight:800;font-size:0.88rem;word-break:break-all;color:var(--text-primary);">🌐 ${det.domain}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.15rem;">Detected: ${new Date(det.detectedAt).toLocaleString()}</div>
       </div>
       <div style="display:flex;gap:0.4rem;flex-shrink:0;">
-        <button onclick="approveDetectedDomain('${det.id}','${det.domain}')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:0.3rem 0.65rem;font-size:0.75rem;font-weight:800;cursor:pointer;">✅ Add</button>
-        <button onclick="ignoreDetectedDomain('${det.id}')" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:0.3rem 0.65rem;font-size:0.75rem;font-weight:700;cursor:pointer;">✕ Ignore</button>
+        <button type="button" id="btn-add-det-${det.id}" onclick="approveDetectedDomain('${det.id}','${det.domain}')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:0.4rem 0.75rem;font-size:0.76rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:0.25rem;">✅ Add</button>
+        <button type="button" id="btn-del-det-${det.id}" onclick="ignoreDetectedDomain('${det.id}','${det.domain}')" style="background:#fee2e2;color:#dc2626;border:1.5px solid #ef4444;border-radius:8px;padding:0.4rem 0.75rem;font-size:0.76rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:0.25rem;">🗑️ Delete</button>
       </div>
     </div>
   `).join('');
 }
 
+function updateDetectedBadgeAndSection() {
+  const list = document.getElementById('detected-domains-list');
+  const sec = document.getElementById('detected-domains-section');
+  const badge = document.getElementById('detected-domains-count-badge');
+  const remainingRows = list ? list.querySelectorAll('[id^="det-row-"]').length : 0;
+  if (badge) badge.textContent = `${remainingRows} New`;
+  if (remainingRows === 0) {
+    if (sec) sec.style.display = 'none';
+    if (list) list.innerHTML = '';
+  }
+}
+
+window.clearAllDetectedDomains = async function() {
+  if (!confirm('Kya aap tamam detected domains ko delete / clear karna chahte hain?')) return;
+  const btn = document.getElementById('btn-clear-all-det');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Clearing...';
+  }
+  try {
+    const res = await fetch('/api/admin/detected-domains/clear-all', { method: 'DELETE' });
+    if (res.ok) {
+      const list = document.getElementById('detected-domains-list');
+      const sec = document.getElementById('detected-domains-section');
+      if (list) list.innerHTML = '';
+      if (sec) sec.style.display = 'none';
+      showAlert('✅ All detected domains cleared successfully!');
+      loadDetectedDomains();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showAlert(data.error || 'Failed to clear domains', true);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '🗑️ Clear All';
+      }
+    }
+  } catch(e) {
+    showAlert('Error clearing domains: ' + e.message, true);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '🗑️ Clear All';
+    }
+  }
+};
+
 window.approveDetectedDomain = async function(id, domain) {
+  const row = document.getElementById(`det-row-${id}`);
+  const btn = document.getElementById(`btn-add-det-${id}`);
+  const delBtn = document.getElementById(`btn-del-det-${id}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Adding...';
+  }
+  if (delBtn) delBtn.disabled = true;
+  if (row) row.style.opacity = '0.6';
+
   try {
     const res = await fetch(`/api/admin/detected-domains/${id}/approve`, { method: 'POST' });
     const data = await res.json();
     if (res.ok) {
+      if (row) {
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          row.remove();
+          updateDetectedBadgeAndSection();
+        }, 220);
+      }
       showAlert(`✅ ${domain} added! Installing SSL...`);
-      loadDetectedDomains();
-      loadDomains();
-      startDomainPoll();
+      if (typeof loadDomains === 'function') loadDomains();
+      if (typeof startDomainPoll === 'function') startDomainPoll();
     } else {
       showAlert(data.error || 'Failed to approve domain', true);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '✅ Add';
+      }
+      if (delBtn) delBtn.disabled = false;
+      if (row) row.style.opacity = '1';
     }
   } catch(e) {
-    showAlert('Error approving domain', true);
+    showAlert('Error approving domain: ' + e.message, true);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '✅ Add';
+    }
+    if (delBtn) delBtn.disabled = false;
+    if (row) row.style.opacity = '1';
   }
 };
 
-window.ignoreDetectedDomain = async function(id) {
+window.ignoreDetectedDomain = async function(id, domain) {
+  const row = document.getElementById(`det-row-${id}`);
+  const btn = document.getElementById(`btn-del-det-${id}`);
+  const addBtn = document.getElementById(`btn-add-det-${id}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Deleting...';
+  }
+  if (addBtn) addBtn.disabled = true;
+  if (row) row.style.opacity = '0.4';
+
   try {
-    await fetch(`/api/admin/detected-domains/${id}`, { method: 'DELETE' });
-    loadDetectedDomains();
-  } catch(e) {}
+    const res = await fetch(`/api/admin/detected-domains/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      if (row) {
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          row.remove();
+          updateDetectedBadgeAndSection();
+        }, 220);
+      }
+      showAlert(`🗑️ ${domain || 'Domain'} deleted and ignored`);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showAlert(data.error || 'Could not delete domain', true);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '🗑️ Delete';
+      }
+      if (addBtn) addBtn.disabled = false;
+      if (row) row.style.opacity = '1';
+    }
+  } catch(e) {
+    showAlert('Network error while deleting domain', true);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '🗑️ Delete';
+    }
+    if (addBtn) addBtn.disabled = false;
+    if (row) row.style.opacity = '1';
+  }
 };
 
-function populateDomainSelects(domains) {
-  if (!domainSelect) return;
-  const currentVal = domainSelect.value;
-  domainSelect.innerHTML = '<option value="">Default (goo33.online)</option>';
-  (domains || []).forEach(dom => {
-    const option = document.createElement('option');
-    option.value = dom.domain;
-    option.textContent = dom.domain;
-    domainSelect.appendChild(option);
-  });
-  domainSelect.value = currentVal;
+const _detectedHost = (window.location.hostname || '').toLowerCase().trim();
+let currentSelectedDomain = (_detectedHost && _detectedHost !== 'localhost' && _detectedHost !== '127.0.0.1' && !/^\d+\.\d+\.\d+\.\d+$/.test(_detectedHost))
+  ? _detectedHost
+  : 'goo33.online';
+
+function isDomainSubdomain(domain) {
+  if (!domain) return false;
+  const parts = domain.toLowerCase().split('.');
+  if (parts.length > 2) {
+    const secondLevel = ['co', 'com', 'org', 'net', 'edu', 'gov'];
+    if (parts.length === 3 && secondLevel.includes(parts[1])) return false;
+    return true;
+  }
+  return false;
 }
 
+function getBadgeStyle(domain, idx, isDefault) {
+  const domLower = (domain || '').toLowerCase().trim();
+  const siteHost = (window.location.hostname || '').toLowerCase().trim();
+  
+  // Default Site Domain gets special Default Domain badge
+  if (isDefault || domLower === siteHost || (domLower === 'goo33.online' && (siteHost === 'goo33.online' || siteHost === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(siteHost)))) {
+    return {
+      text: 'Default',
+      bg: '#dcfce7',
+      color: '#15803d'
+    };
+  }
+
+  if (isDomainSubdomain(domLower)) {
+    return {
+      text: 'Subdomain',
+      bg: '#fee2e2',
+      color: '#dc2626'
+    };
+  }
+
+  const rootThemes = [
+    { bg: '#dbeafe', color: '#1d4ed8' }, // Blue
+    { bg: '#f3e8ff', color: '#7c3aed' }, // Purple
+    { bg: '#dcfce7', color: '#15803d' }, // Green
+    { bg: '#ffedd5', color: '#c2410c' }  // Orange
+  ];
+  const theme = rootThemes[idx % rootThemes.length];
+  return {
+    text: 'Root Domain',
+    bg: theme.bg,
+    color: theme.color
+  };
+}
+
+let _cachedCustomDomains = [];
+
+function populateDomainSelects(customDomains) {
+  if (Array.isArray(customDomains)) {
+    _cachedCustomDomains = customDomains;
+  }
+  const domainsSource = _cachedCustomDomains;
+
+  const siteHost = (window.location.hostname || '').toLowerCase().trim();
+  const defaultSiteDomain = (siteHost && siteHost !== 'localhost' && siteHost !== '127.0.0.1' && !/^\d+\.\d+\.\d+\.\d+$/.test(siteHost))
+    ? siteHost
+    : 'goo33.online';
+
+  // 1. Default Domain always placed first at top
+  const defaultList = [
+    { domain: defaultSiteDomain, isDefault: true }
+  ];
+
+  const existingSet = new Set([defaultSiteDomain.toLowerCase()]);
+
+  // Add ONLY real domains from custom domains DB / backend (NO hardcoded presets!)
+  domainsSource.forEach(d => {
+    const dom = (typeof d === 'string' ? d : (d.domain || '')).toLowerCase().trim();
+    if (dom && !existingSet.has(dom)) {
+      defaultList.push({ domain: dom, isDefault: dom === defaultSiteDomain.toLowerCase() });
+      existingSet.add(dom);
+    }
+  });
+
+  const hiddenInput = document.getElementById('link-domain');
+  const triggerLabel = document.getElementById('custom-domain-selector-label');
+  const optionsList = document.getElementById('custom-domain-options-list');
+  const selectorWrap = document.getElementById('link-domain-selector-wrap');
+
+  if (selectorWrap) {
+    selectorWrap.style.display = 'block';
+  }
+
+  if (!currentSelectedDomain || !existingSet.has(currentSelectedDomain.toLowerCase())) {
+    currentSelectedDomain = defaultList[0].domain;
+  }
+
+  if (hiddenInput) hiddenInput.value = currentSelectedDomain;
+  if (triggerLabel) triggerLabel.textContent = currentSelectedDomain;
+
+  if (optionsList) {
+    optionsList.innerHTML = defaultList.map((item, idx) => {
+      const isSelected = item.domain.toLowerCase() === currentSelectedDomain.toLowerCase();
+      const badge = getBadgeStyle(item.domain, idx, item.isDefault);
+      return `
+        <div class="custom-domain-option-row" onclick="window.selectDomain('${item.domain}')"
+          style="background:${isSelected ? 'rgba(59,130,246,0.09)' : '#ffffff'};"
+          onmouseenter="if (!${isSelected}) this.style.background='#f8fafc';"
+          onmouseleave="if (!${isSelected}) this.style.background='#ffffff';">
+          
+          <div class="custom-domain-option-left">
+            <span class="custom-domain-option-icon">🌐</span>
+            <span class="custom-domain-option-name">${item.domain}</span>
+          </div>
+
+          <div class="custom-domain-option-right">
+            <span class="custom-domain-option-badge" style="background:${badge.bg}; color:${badge.color};">
+              ${badge.text}
+            </span>
+            <div class="custom-domain-option-check">
+              ${isSelected ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+window.toggleDomainDropdown = function(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  const menu = document.getElementById('custom-domain-dropdown-menu');
+  const chevron = document.getElementById('custom-domain-chevron');
+  if (!menu) return;
+  const isHidden = (menu.style.display === 'none' || getComputedStyle(menu).display === 'none');
+  menu.style.display = isHidden ? 'block' : 'none';
+  if (chevron) {
+    chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+};
+
+window.selectDomain = function(domain) {
+  currentSelectedDomain = domain;
+  const hiddenInput = document.getElementById('link-domain');
+  const triggerLabel = document.getElementById('custom-domain-selector-label');
+
+  if (hiddenInput) hiddenInput.value = domain;
+  if (triggerLabel) triggerLabel.textContent = domain;
+
+  // Re-render checkmark and active highlighting in options
+  populateDomainSelects();
+
+  // Close dropdown menu smoothly after selection
+  const menu = document.getElementById('custom-domain-dropdown-menu');
+  const chevron = document.getElementById('custom-domain-chevron');
+  if (menu) menu.style.display = 'none';
+  if (chevron) chevron.style.transform = 'rotate(0deg)';
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('link-domain-selector-wrap');
+  const menu = document.getElementById('custom-domain-dropdown-menu');
+  const chevron = document.getElementById('custom-domain-chevron');
+  if (menu && menu.style.display === 'block' && wrap && !wrap.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  }
+});
+
+const addDomainForm = document.getElementById('add-domain-form');
 if (addDomainForm) {
   addDomainForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const domainInput = document.getElementById('new-domain-input');
-    const domain = domainInput.value.trim();
+    let domain = (domainInput ? domainInput.value : '').trim().toLowerCase();
+    domain = domain.replace(/^https?:\/\//, '').split('/')[0].replace(/:\d+$/, '').trim();
     if (!domain) return;
     const btn = addDomainForm.querySelector('button[type="submit"]');
     if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Adding...</span>'; }
@@ -4966,7 +5378,7 @@ if (addDomainForm) {
       const data = await res.json();
       if (res.ok) {
         showAlert(`✅ ${domain} added! Installing SSL Certificate...`);
-        domainInput.value = '';
+        if (domainInput) domainInput.value = '';
         loadDomains();
         startDomainPoll();
       } else {
@@ -4979,6 +5391,22 @@ if (addDomainForm) {
     }
   });
 }
+
+window.forceActivateDomain = async function(id, domain) {
+  if (!confirm(`Kya aap "${domain}" ko Active mark karna chahte hain?`)) return;
+  try {
+    const res = await fetch(`/api/admin/domains/${id}/activate`, { method: 'POST' });
+    if (res.ok) {
+      showAlert(`✅ ${domain} is now Active!`);
+      loadDomains();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showAlert(data.error || 'Failed to activate domain', true);
+    }
+  } catch (err) {
+    showAlert('Network error activating domain', true);
+  }
+};
 
 window.deleteDomain = async function(id) {
   if (!confirm('Are you sure you want to delete this domain? Links using it will stop working.')) return;
@@ -5002,14 +5430,9 @@ if (isSuperAdminUser()) {
 }
 
 
-// ── Password Change Form Handler ──
-const passwordChangeForm = document.getElementById('password-change-form');
-if (passwordChangeForm) {
-  passwordChangeForm.addEventListener('submit', (e) => {
-    if (window.submitAdminPasswordChange) {
-      window.submitAdminPasswordChange(e);
-    }
-  });
-}
+
+// ── Initialize Domain Selector Immediately ──
+if (typeof populateDomainSelects === 'function') populateDomainSelects();
+if (typeof loadDomains === 'function') loadDomains();
 
 });

@@ -26,25 +26,122 @@
 .publytics-tab-wrapper {
   background: #020b1e !important;
   color: #ffffff !important;
-  min-height: calc(100vh - 120px);
-  padding: 0.5rem 0.25rem 90px !important;
+  min-height: auto !important;
+  padding: 0.5rem 0.25rem 0.25rem !important;
   box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PUBLYTICS TAB: UNIFIED SEAMLESS MIDNIGHT DARK THEME
+   Header, Body, and Bottom Nav all share the exact body color (#020b1e)
+══════════════════════════════════════════════════════════════ */
+html.is-publytics-tab,
+body.is-publytics-tab {
+  background: #020b1e !important;
+  background-color: #020b1e !important;
+  color: #ffffff !important;
+}
+
+body.is-publytics-tab header.site-header {
+  background: #020b1e !important;
+  border-bottom: 1px solid rgba(0, 144, 255, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.is-publytics-tab .hamburger-menu-btn {
+  background: #041538 !important;
+  border: 1px solid rgba(0, 144, 255, 0.35) !important;
+}
+
+body.is-publytics-tab .hamburger-menu-btn span {
+  background: #ffffff !important;
+}
+
+body.is-publytics-tab .theme-toggle-btn,
+body.is-publytics-tab .top-pill-btn,
+body.is-publytics-tab #logout-btn,
+body.is-publytics-tab .user-badge-pill {
+  background: #041538 !important;
+  border: 1px solid rgba(0, 144, 255, 0.35) !important;
+  color: #f1f5f9 !important;
+}
+
+body.is-publytics-tab .logo-text h1 {
+  color: #00e5ff !important;
+  -webkit-text-fill-color: #00e5ff !important;
+}
+
+body.is-publytics-tab .logo-text p {
+  color: #93c5fd !important;
+}
+
+/* Desktop & Drawer Tabs in Publytics tab */
+body.is-publytics-tab .tabs {
+  background: #020b1e !important;
+  border-bottom: 1px solid rgba(0, 144, 255, 0.25) !important;
+  border-right-color: rgba(0, 144, 255, 0.25) !important;
+}
+
+body.is-publytics-tab .tabs .tab-btn {
+  color: #94a3b8 !important;
+}
+
+body.is-publytics-tab .tabs .tab-btn.active {
+  color: #00e5ff !important;
+  border-bottom-color: #00e5ff !important;
+}
+
+/* Mobile Bottom Navigation Bar: Exact body color match (#020b1e) */
+body.is-publytics-tab .mobile-bottom-nav {
+  background: #020b1e !important;
+  border-top: 1px solid rgba(0, 144, 255, 0.25) !important;
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.7) !important;
+}
+
+body.is-publytics-tab .mobile-bottom-nav .mobile-nav-item {
+  color: #94a3b8 !important;
+}
+
+body.is-publytics-tab .mobile-bottom-nav .mobile-nav-item span {
+  color: #94a3b8 !important;
+}
+
+body.is-publytics-tab .mobile-bottom-nav .mobile-nav-item.active {
+  color: #00e5ff !important;
+}
+
+body.is-publytics-tab .mobile-bottom-nav .mobile-nav-item.active span {
+  color: #00e5ff !important;
+  font-weight: 800 !important;
+}
+
+body.is-publytics-tab .mobile-bottom-nav .mobile-nav-item.active .publytics-nav-logo {
+  box-shadow: 0 0 12px #00e5ff, 0 0 20px rgba(0, 144, 255, 0.8) !important;
+  transform: scale(1.15) !important;
 }
 
 .publytics-tab-wrapper .main-container {
   max-width: 680px;
   width: 100%;
   margin: 0 auto;
-  padding: 0.5rem 0.75rem 2rem;
+  padding: 0.5rem 0.75rem 0.4rem !important;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
   box-sizing: border-box;
 }
 
+#users-empty-container,
+#dd-empty-container {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 @media (max-width: 600px) {
   .publytics-tab-wrapper .main-container {
-    padding: 0.4rem 0.4rem 85px !important;
+    padding: 0.4rem 0.4rem 0.4rem !important;
     gap: 0.65rem !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -52,6 +149,7 @@
   .publytics-tab-wrapper .p-card {
     padding: 0.85rem 0.9rem !important;
     border-radius: 14px !important;
+    margin-bottom: 0.45rem !important;
   }
   .publytics-tab-wrapper #website-selector-card,
   .publytics-tab-wrapper #time-filter-card {
@@ -1241,30 +1339,46 @@
 
 /* Empty State Box */
 .p-empty-state {
-  text-align: center;
-  padding: 2.5rem 1.5rem;
-  background: rgba(3, 17, 44, 0.6);
-  border: 1px dashed rgba(0, 144, 255, 0.3);
-  border-radius: 14px;
-  margin: 0.5rem 0;
+  text-align: center !important;
+  padding: 2.2rem 1.25rem !important;
+  background: rgba(3, 17, 44, 0.6) !important;
+  border: 1px dashed rgba(0, 144, 255, 0.35) !important;
+  border-radius: 14px !important;
+  margin: 0.5rem 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  display: block !important;
 }
 .p-empty-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.65rem;
-  opacity: 0.85;
+  font-size: 2.5rem !important;
+  margin-bottom: 0.65rem !important;
+  opacity: 0.85 !important;
 }
 .p-empty-title {
-  color: #ffffff;
-  font-size: 1.05rem;
-  font-weight: 800;
-  margin-bottom: 0.35rem;
+  color: #ffffff !important;
+  font-size: 1.12rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 0.45rem !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+  line-height: 1.4 !important;
+  text-align: center !important;
 }
 .p-empty-sub {
-  color: #7f9bc2;
-  font-size: 0.82rem;
-  max-width: 420px;
-  margin: 0 auto;
-  line-height: 1.5;
+  color: #7f9bc2 !important;
+  font-size: 0.88rem !important;
+  max-width: 520px !important;
+  margin: 0 auto !important;
+  line-height: 1.55 !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+  text-align: center !important;
 }
 
 /* Interactive Clickable Rows */
@@ -1409,10 +1523,32 @@
   .publytics-tab-wrapper table,
   .dd-table-card table,
   .screenshot-table,
+  #users-table,
   #tab-publytics table {
     width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    display: block !important;
     background: transparent !important;
     border: none !important;
+    box-sizing: border-box !important;
+  }
+  .publytics-tab-wrapper tbody,
+  #tab-publytics tbody,
+  #users-table tbody,
+  .screenshot-table tbody {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+  .publytics-tab-wrapper .table-scroll,
+  #users-table-scroll,
+  #dd-table-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* When rendered as mobile cards */
@@ -1433,6 +1569,7 @@
     transition: all 0.18s ease !important;
     display: block !important;
     width: 100% !important;
+    min-width: 100% !important;
     box-sizing: border-box !important;
   }
 
@@ -1440,12 +1577,17 @@
   .publytics-tab-wrapper tr:has(td[colspan]),
   #tab-publytics tr:has(td[colspan]),
   .dd-table-card tr:has(td[colspan]),
-  .screenshot-table tr:has(td[colspan]) {
+  .screenshot-table tr:has(td[colspan]),
+  tr.empty-row,
+  .p-empty-row {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     box-shadow: none !important;
     margin: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    display: block !important;
   }
 
   .publytics-tab-wrapper tr:hover,
@@ -1468,13 +1610,14 @@
     transform: translateY(-1px) !important;
   }
 
-  /* Inner cells */
-  .publytics-tab-wrapper td,
-  #tab-publytics td,
-  .dd-table-card td,
-  .screenshot-table td,
-  #dd-table-body-rows td,
-  #users-table-body td {
+  /* Inner cells (only for regular rows, exclude colspan cells) */
+  .publytics-tab-wrapper td:not([colspan]),
+  #tab-publytics td:not([colspan]),
+  .dd-table-card td:not([colspan]),
+  .screenshot-table td:not([colspan]),
+  #dd-table-body-rows td:not([colspan]),
+  #users-table-body td:not([colspan]),
+  #users-table td:not([colspan]) {
     background: transparent !important;
     border: none !important;
     border-bottom: 1px dashed rgba(0, 144, 255, 0.2) !important;
@@ -1489,22 +1632,42 @@
     box-sizing: border-box !important;
   }
 
+  /* Full-width empty state and message cells */
   .publytics-tab-wrapper td[colspan],
   #tab-publytics td[colspan],
   .dd-table-card td[colspan],
-  .screenshot-table td[colspan] {
+  .screenshot-table td[colspan],
+  #dd-table-body-rows td[colspan],
+  #users-table-body td[colspan],
+  #users-table td[colspan] {
     display: block !important;
     border: none !important;
     padding: 0.5rem 0 !important;
     width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
     min-height: auto !important;
+    box-sizing: border-box !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    text-align: center !important;
   }
   .publytics-tab-wrapper td[colspan]::before,
   #tab-publytics td[colspan]::before,
   .dd-table-card td[colspan]::before,
-  .screenshot-table td[colspan]::before {
+  .screenshot-table td[colspan]::before,
+  #dd-table-body-rows td[colspan]::before,
+  #users-table-body td[colspan]::before,
+  #users-table td[colspan]::before {
     display: none !important;
     content: none !important;
+  }
+
+  .dd-table-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.35rem !important;
+    width: 100% !important;
   }
 
   /* Brand cell & data values overflow protection */
@@ -1572,3 +1735,77 @@
     padding: 0.75rem 0.65rem !important;
   }
 }
+
+/* ==========================================================================
+   OFFICIAL PUBLYTICS LOGIN CREDENTIALS CARD (Pixel-perfect match to screenshot)
+   ========================================================================== */
+.official-publytics-card {
+  background: #02081d !important;
+  border: 2px solid #0066ff !important;
+  border-radius: 20px !important;
+  padding: 1.35rem 1.45rem !important;
+  box-shadow: 0 0 30px rgba(0, 102, 255, 0.4), inset 0 0 15px rgba(0, 102, 255, 0.15) !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.pub-cred-row {
+  background: #030e28 !important;
+  border: 1.5px solid rgba(0, 110, 255, 0.5) !important;
+  border-radius: 14px !important;
+  padding: 0.7rem 0.85rem 0.7rem 0.95rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+  transition: all 0.18s ease !important;
+}
+.pub-cred-row:hover {
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25), inset 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+}
+
+.pub-cred-copy-btn {
+  background: linear-gradient(135deg, #0070f3, #00b4ff) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 0.92rem !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.45rem !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  box-shadow: 0 4px 16px rgba(0, 112, 243, 0.5) !important;
+  flex-shrink: 0 !important;
+  transition: all 0.18s ease !important;
+}
+.pub-cred-copy-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(0, 180, 255, 0.65) !important;
+}
+.pub-cred-copy-btn:active {
+  transform: translateY(1px) !important;
+}
+
+@media (max-width: 600px) {
+  .official-publytics-card {
+    padding: 1.1rem 0.95rem !important;
+    border-radius: 16px !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .pub-cred-row {
+    padding: 0.6rem 0.65rem 0.6rem 0.8rem !important;
+  }
+  .pub-cred-copy-btn {
+    padding: 0.55rem 1rem !important;
+    font-size: 0.85rem !important;
+    border-radius: 10px !important;
+  }
+}
+

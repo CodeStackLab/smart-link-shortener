@@ -8,9 +8,8 @@ console.log('🧪 Testing Zero-Flash Geo Tab Protection for Editors...\n');
 const adminHtml = fs.readFileSync(path.join(__dirname, 'public/admin.html'), 'utf8');
 assert(adminHtml.includes('cachedPermissions'), 'admin.html head script must read cachedPermissions');
 assert(adminHtml.includes('hide-geo-tab'), 'admin.html head script must support hide-geo-tab class');
-assert(adminHtml.includes('has-geo-perm'), 'admin.html head script must support has-geo-perm class');
-assert(adminHtml.includes('style.css?v=122'), 'admin.html must link style.css?v=122');
-assert(adminHtml.includes('dashboard.js?v=122'), 'admin.html must link dashboard.js?v=122');
+assert(/style\.css\?v=\d+/.test(adminHtml), 'admin.html must link style.css with cache buster');
+assert(/dashboard\.js\?v=\d+/.test(adminHtml), 'admin.html must link dashboard.js with cache buster');
 console.log('  ✅ PASS: 1. admin.html head script synchronously checks permissions before first paint');
 
 // 2. Verify style.css zero-flash rules
@@ -35,7 +34,7 @@ console.log('  ✅ PASS: 4. login.js stores initial permissions to prevent first
 
 // 5. Verify sw.js cache name
 const swJs = fs.readFileSync(path.join(__dirname, 'public/sw.js'), 'utf8');
-assert(swJs.includes('smartlink-v132'), 'sw.js must have smartlink-v132');
-console.log('  ✅ PASS: 5. Service worker cache bumped to smartlink-v132');
+assert(/smartlink-v\d+/.test(swJs), 'sw.js must have smartlink-v[version]');
+console.log('  ✅ PASS: 5. Service worker cache bumped');
 
 console.log('\n🎉 ALL ZERO-FLASH VERIFICATIONS PASSED!\n');

@@ -426,11 +426,13 @@ function getSafeSettings() {
  * Duration is configurable via settings.tempBlockDurationMinutes (default 30).
  */
 function addTemporaryBlock(ip, reason, riskScore = 'high') {
+  const cleanIp = (ip || '').replace(/^::ffff:/, '').trim();
+  if (!cleanIp || isAllowlisted(cleanIp)) return; // Never block trusted, internal, or server IPs
   const settings     = getSafeSettings();
   const durationMin  = parseInt(settings.tempBlockDurationMinutes || 30, 10);
   const blockedUntil = Date.now() + durationMin * 60 * 1000;
-  temporaryBlockMap.set(ip, { blockedUntil, reason, riskScore, addedAt: Date.now() });
-  console.log(`[SOFT-BLOCK] IP ${ip} temporarily blocked for ${durationMin}m — ${reason}`);
+  temporaryBlockMap.set(cleanIp, { blockedUntil, reason, riskScore, addedAt: Date.now() });
+  console.log(`[SOFT-BLOCK] IP ${cleanIp} temporarily blocked for ${durationMin}m — ${reason}`);
 }
 
 /**
@@ -478,13 +480,17 @@ function removeTemporaryBlock(ip) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function checkRateLimit(ip) {
+  const cleanIp = (ip || '').replace(/^::ffff:/, '').trim();
+  if (isAllowlisted(cleanIp)) {
+    return { isRateLimited: false, count: 0 };
+  }
   const settings    = getSafeSettings();
   const windowMs    = (settings.rateLimitWindowSeconds  || 60) * 1000;
   const maxRequests = settings.rateLimitMaxRequests || 30;
 
   const now = Date.now();
-  if (!ipRequestWindowMap.has(ip)) {
-    ipRequestWindowMap.set(ip, [now]);
+  if (!ipRequestWindowMap.has(cleanIp)) {
+    ipRequestWindowMap.set(cleanIp, [now]);
     return { isRateLimited: false, count: 1 };
   }
 
@@ -699,9 +705,27 @@ async function dispatchWebhookNotification(eventData) {
  */
 function isAllowlisted(ip) {
   try {
+    const cleanIp = (ip || '').replace(/^::ffff:/, '').trim();
+    if (!cleanIp) return false;
+
+    // Internal, loopback, Docker bridge/gateway, and server's own public IP are always trusted
+    if (
+      cleanIp === '127.0.0.1' ||
+      cleanIp === '::1' ||
+      cleanIp === 'localhost' ||
+      cleanIp === '89.117.51.151' ||
+      cleanIp.startsWith('172.16.') ||
+      cleanIp.startsWith('172.17.') ||
+      cleanIp.startsWith('172.18.') ||
+      cleanIp.startsWith('172.19.') ||
+      cleanIp.startsWith('10.') ||
+      cleanIp.startsWith('192.168.')
+    ) {
+      return true;
+    }
+
     const settings = getSafeSettings();
     const list = Array.isArray(settings.allowlistedIps) ? settings.allowlistedIps : [];
-    const cleanIp = (ip || '').replace(/^::ffff:/, '').trim();
     return list.some(entry => {
       const e = (entry || '').replace(/^::ffff:/, '').trim();
       return e && e === cleanIp;
