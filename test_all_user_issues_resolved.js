@@ -32,35 +32,29 @@ console.log('  ✅ Issue 1 Verified: Fallback Redirect card strictly visible onl
 
 
 // -------------------------------------------------------------
-// Issue 2: Publytics Site Deletion
+// Issue 2: Admin Alert Broadcast & Publytics Cleanup
 // -------------------------------------------------------------
-console.log('\n--- Checking Issue 2: Publytics Site Deletion ---');
+console.log('\n--- Checking Issue 2: Admin Alert & Publytics Cleanup ---');
 const publyticsService = require('./services/publyticsService');
 const publyticsJs = fs.readFileSync(path.join(__dirname, 'public/js/publytics.js'), 'utf8');
 
-// 1. Check deleteSite in publyticsService
-assert(typeof publyticsService.deleteSite === 'function', 'publyticsService.deleteSite must be a function');
+// 1. Verify Publytics events call is completely removed from redirect handler in server.js
+assert(!serverJs.includes("api.publytics.net/events"), 'server.js must NOT call api.publytics.net/events in redirects');
 
-// 2. Test deleteSite in service
-publyticsService.updateConfig({
-  sitesList: [{ id: 'test-site-to-delete.com', name: 'test-site-to-delete.com' }, { id: 'keep-this-site.com', name: 'keep-this-site.com' }],
-  siteId: 'test-site-to-delete.com'
-});
+// 2. Verify Admin Alert endpoints exist in server.js
+assert(serverJs.includes("app.get('/api/admin-alert'"), 'server.js must have GET /api/admin-alert route');
+assert(serverJs.includes("app.post('/api/admin-alert'"), 'server.js must have POST /api/admin-alert route');
 
-const delResult = publyticsService.deleteSite('test-site-to-delete.com');
-assert.strictEqual(delResult.success, true, 'deleteSite must return success: true');
-assert(!delResult.sitesList.some(s => (s.id || s) === 'test-site-to-delete.com'), 'Deleted site must not be in sitesList');
-assert.strictEqual(delResult.currentSiteId, 'keep-this-site.com', 'Current site must switch to remaining site');
+// 3. Verify Admin Alert Card and Official Credentials Card exist in admin.html
+assert(adminHtml.includes('id="admin-alert-display-card"'), 'admin.html must contain admin-alert-display-card');
+assert(adminHtml.includes('id="official-publytics-login-card"'), 'admin.html must contain official-publytics-login-card');
+assert(adminHtml.includes('id="admin-alert-settings-card"'), 'admin.html must contain admin-alert-settings-card');
 
-// 3. Check server.js delete endpoints
-assert(serverJs.includes("app.post('/api/publytics/delete-site'"), 'server.js must have POST /api/publytics/delete-site route');
-assert(serverJs.includes("app.delete('/api/publytics/sites/:siteId'"), 'server.js must have DELETE /api/publytics/sites/:siteId route');
+// 4. Verify publytics.js is lightweight and loads admin alert
+assert(publyticsJs.includes("fetch('/api/admin-alert')"), 'publytics.js must fetch /api/admin-alert');
+assert(publyticsJs.includes("copyPubCredential"), 'publytics.js must provide copyPubCredential');
 
-// 4. Check publytics.js delete logic
-assert(publyticsJs.includes("fetch('/api/publytics/delete-site'"), 'publytics.js must call delete-site endpoint');
-assert(publyticsJs.includes("isCurrentUserSuperAdmin"), 'publytics.js must track isCurrentUserSuperAdmin properly');
-
-console.log('  ✅ Issue 2 Verified: Publytics site deletion works on backend and frontend.');
+console.log('  ✅ Issue 2 Verified: Admin Alert Broadcast active and Publytics remote API removed.');
 
 
 // -------------------------------------------------------------

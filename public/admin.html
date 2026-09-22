@@ -3083,76 +3083,35 @@
         </form>
       </div>
 
-      <!-- Publytics API Token Card (Settings Section - Admin & Super Admin) -->
-      <div class="card" style="padding:1.5rem; height:fit-content; margin-bottom:1.35rem; border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.05);" id="publytics-api-card">
+      <!-- Admin Alert Broadcast Card (Settings Section - Normal Admin & Master Admin) -->
+      <div class="card" style="padding:1.5rem; height:fit-content; margin-bottom:1.35rem; border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.05);" id="admin-alert-settings-card">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.35rem;">
           <div style="display:flex; align-items:center; gap:0.65rem; font-size:1.25rem; font-weight:800; color:var(--text-primary, #0f172a);">
-            <img src="/publytics-icon.png?v=150" alt="Publytics" style="width:26px; height:26px; border-radius:6px; object-fit:cover; display:inline-block; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-            <span style="font-size:1.25rem; font-weight:800; color:var(--text-primary, #0f172a); letter-spacing:-0.02em;">Publytics API Token</span>
+            <span style="font-size:1.35rem;">📢</span>
+            <span style="letter-spacing:-0.02em;">Admin Alert Broadcast</span>
           </div>
-          <!-- Token Status Pill (Pixel-perfect match to screenshot) -->
-          <span id="publytics-settings-status-pill" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; font-weight:700; padding:0.25rem 0.85rem; border-radius:9999px; background:#fce8e6; color:#c5221f;">
-            <span style="color:#d93025; font-size:0.85rem;">🔴</span> Inactive <span style="opacity:0.35; margin:0 0.15rem;">|</span> <span style="color:#d93025; font-size:0.85rem;">🔴</span> Not Configured
+          <span style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.82rem; font-weight:700; padding:0.25rem 0.85rem; border-radius:9999px; background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd;">
+            <span>🔔</span> Live Broadcast
           </span>
         </div>
-        
-        <!-- Subtitle matching user screenshot -->
-        <p id="publytics-settings-subtext" style="font-size:0.95rem; color:var(--text-muted, #5f6368); margin:0.35rem 0 1.25rem 0; line-height:1.45;">
-          Publytics API token is not active. Please add your API token to enable analytics.
+
+        <p style="font-size:0.92rem; color:var(--text-muted, #5f6368); margin:0.35rem 0 1.15rem 0; line-height:1.45;">
+          Ye alert message <b>Publytics Tab</b> par sabhi Admins aur Editors ko display hoga. Normal Admin aur Master Admin yahan se message write aur submit kar sakte hain.
         </p>
 
-        <!-- Informational Status Banner inside Settings Card -->
-        <div id="publytics-settings-token-status" style="display:none; padding:0.65rem 0.9rem; border-radius:10px; font-size:0.84rem; font-weight:700; margin-bottom:1rem; align-items:center; gap:0.55rem;"></div>
-
-        <form id="publytics-api-form" onsubmit="event.preventDefault(); window.savePublyticsApiTokenSettings(event); return false;" style="width:100%; box-sizing:border-box;">
+        <form id="admin-alert-form" onsubmit="event.preventDefault(); window.saveAdminAlertMessage(event); return false;" style="width:100%; box-sizing:border-box;">
           <div class="form-group" style="margin-bottom:1.15rem; width:100%; box-sizing:border-box;">
-            <label for="publytics-settings-api-token" class="publytics-token-label">
-              <span class="publytics-token-key-icon">🔑</span>
-              <span class="publytics-token-title-dark">PUBLYTICS</span>
-              <span class="publytics-token-title-blue">BEARER API TOKEN:</span>
+            <label for="admin-alert-input" style="font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted,#475569); display:flex; align-items:center; gap:0.45rem; margin-bottom:0.55rem;">
+              <span>✍️</span> ALERT MESSAGE TEXT:
             </label>
-            <div class="publytics-token-pill-wrap">
-              <input type="password" id="publytics-settings-api-token" class="publytics-token-input" placeholder="Current:" autocomplete="off">
-              <div class="publytics-token-divider"></div>
-              <button type="button" id="btn-publytics-toggle-token" class="publytics-token-toggle-btn" onclick="window.togglePublyticsTokenVisibility();" title="Toggle Token Visibility" aria-label="Toggle Token Visibility">
-                <!-- Eye Slash SVG (shown when password is hidden) -->
-                <svg id="publytics-token-eye-slash-icon" class="publytics-token-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-                <!-- Eye Open SVG (shown when password is visible) -->
-                <svg id="publytics-token-eye-icon" class="publytics-token-svg" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </button>
-            </div>
+            <textarea id="admin-alert-input" class="form-control" rows="8" placeholder="Type announcement or alert message here..." style="width:100% !important; box-sizing:border-box !important; font-size:0.95rem; font-weight:500; border-radius:12px; padding:0.85rem 1rem; border:1.5px solid var(--border,#cbd5e1); background:#ffffff; line-height:1.55; resize:vertical;"></textarea>
           </div>
 
-          <!-- Direct Visible Site ID / Domain Input (Exact match to screenshot) -->
-          <div class="form-group" style="margin-bottom:1.25rem; width:100%; box-sizing:border-box;">
-            <label for="publytics-settings-site-id" style="font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted,#475569); display:flex; align-items:center; gap:0.45rem; margin-bottom:0.55rem;">
-              <span>🌐</span> PUBLYTICS SITE ID / DOMAIN:
-            </label>
-            <input type="text" id="publytics-settings-site-id" class="form-control" placeholder="example.com" autocomplete="off" style="width:100% !important; box-sizing:border-box !important; height:50px; font-size:0.98rem; font-weight:500; border-radius:12px; padding:0.75rem 1.15rem; border:1.5px solid var(--border,#cbd5e1); background:#ffffff;">
-          </div>
+          <div id="admin-alert-settings-feedback" style="display:none; padding:0.75rem 1rem; border-radius:10px; font-size:0.88rem; font-weight:700; margin-bottom:0.85rem; word-break:break-word; width:100%; box-sizing:border-box;"></div>
 
-          <!-- Saved Websites Chips / List (hidden helper) -->
-          <div id="publytics-saved-sites-box" style="display:none; width:100%; box-sizing:border-box;">
-            <div id="publytics-sites-list-ui" style="display:none;"></div>
-          </div>
-
-          <div id="publytics-settings-token-feedback" style="display:none; padding:0.75rem 1rem; border-radius:10px; font-size:0.88rem; font-weight:700; margin-bottom:0.85rem; word-break:break-word; width:100%; box-sizing:border-box;"></div>
-
-          <!-- Full Width Action Buttons (Vertical Stack - 100% Mobile Responsive) -->
-          <div style="display:flex; flex-direction:column; gap:0.65rem; width:100%; box-sizing:border-box; margin-top:0.6rem;">
-            <button type="submit" id="btn-save-publytics-settings-token" class="btn btn-primary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:#2563eb; border:none; box-shadow:0 4px 12px rgba(37,99,235,0.25); color:#fff; cursor:pointer; box-sizing:border-box;">
-              💾 Save Settings
-            </button>
-            <button type="button" id="btn-test-publytics-settings-token" onclick="window.testPublyticsApiTokenSettings(event);" class="btn btn-secondary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#38bdf8; cursor:pointer; box-sizing:border-box;">
-              🧪 Test Connection
-            </button>
-          </div>
+          <button type="submit" id="btn-save-admin-alert" class="btn btn-primary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border:none; box-shadow:0 4px 14px rgba(2,132,199,0.3); color:#fff; cursor:pointer; box-sizing:border-box;">
+            <span>💾 Save & Broadcast Alert</span>
+          </button>
         </form>
       </div>
 
@@ -3219,576 +3178,27 @@
 </div>
 
 <!-- ══════════════════════════════
-     TAB 6 — PUBLYTICS ANALYTICS DASHBOARD
+     TAB 6 — PUBLYTICS & ADMIN ALERT (Cyber Midnight Dark Theme)
 ══════════════════════════════ -->
       <div id="tab-publytics" class="tab-content publytics-tab-wrapper" style="display:none;">
-  <div class="main-container" id="main-dashboard-view">
+  <div class="main-container publytics-portal-container" style="max-width:540px; margin:0 auto; padding:0.85rem 0.85rem 2rem; box-sizing:border-box;">
 
-    <!-- TOP TWO COLUMNS WRAPPER (desktop: 2-col, mobile: stacked) -->
-    <div class="top-two-col">
-
-      <!-- 1. SELECT WEBSITE PILL SELECTOR CARD -->
-      <div class="p-card website-card-exact" id="website-selector-card">
-        <!-- Exact Top Pill: Globe Icon Circle, Stacked Text, Downward Arrow Box -->
-        <div class="ws-selector-trigger" id="website-selector-trigger" onclick="toggleWebsiteDropdown();" role="button" aria-expanded="false">
-          <div class="ws-left-group">
-            <div class="ws-globe-circle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>
-            </div>
-            <div class="ws-text-stack">
-              <span class="ws-subtitle">Select Website</span>
-              <span class="ws-site-title" id="website-selector-label">Choose your website</span>
-            </div>
-          </div>
-          <div class="ws-arrow-box" id="site-chevron-arrow">
-            <svg width="12" height="9" viewBox="0 0 12 9">
-              <polygon points="1,1.5 11,1.5 6,7.5" fill="#00e5ff"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Dropdown list (hidden until clicked) -->
-        <div class="website-dropdown" id="website-list-container">
-          <!-- Rendered by JS -->
-        </div>
+    <!-- 1. ((🔔)) Admin Alert 📢 CARD (Exact Reference Design) -->
+    <div class="p-card admin-alert-card" id="admin-alert-display-card">
+      <!-- Header with Bell, Title, Megaphone -->
+      <div class="admin-alert-header">
+        <span class="admin-alert-bell">((🔔))</span>
+        <span class="admin-alert-title"><span class="admin-alert-title-blue">Admin</span> <span class="admin-alert-title-white">Alert</span></span>
+        <span class="admin-alert-speaker">📢</span>
       </div>
 
-      <!-- 2. TIME & DATE FILTER BUTTONS (Exact Symmetrical 2-Column Grid) -->
-      <div class="p-card time-filter-card-exact" id="time-filter-card">
-        <div class="f-two-col-grid">
-          <!-- Left Column -->
-          <div class="f-col">
-            <!-- Row 1: Today -->
-            <div class="f-row">
-              <button class="f-btn active" data-period="today">
-                <span class="f-bolt">⚡</span>
-                <span class="f-btn-label">Today</span>
-              </button>
-            </div>
-            <div class="f-row-divider"></div>
-
-            <!-- Row 2: Last 7 Days -->
-            <div class="f-row">
-              <button class="f-btn f-btn-has-chevron" data-period="7d">
-                <div class="f-btn-left">
-                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <span class="f-btn-label">Last 7 Days</span>
-                </div>
-                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
-                </svg>
-              </button>
-            </div>
-            <div class="f-row-divider"></div>
-
-            <!-- Row 3: This Month -->
-            <div class="f-row">
-              <button class="f-btn f-btn-has-chevron" data-period="month">
-                <div class="f-btn-left">
-                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <span class="f-btn-label">This Month</span>
-                </div>
-                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
-                </svg>
-              </button>
-            </div>
-            <div class="f-row-divider"></div>
-
-            <!-- Row 4: Auto-refresh -->
-            <div class="f-row">
-              <div class="f-refresh-ctrl" onclick="toggleAutoRefreshCheckbox();">
-                <div class="custom-checkbox checked" id="custom-auto-refresh-box">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <input type="checkbox" id="auto-refresh-check" checked style="display:none;">
-                <div class="f-ctrl-text">
-                  <span class="f-ctrl-title">Auto-refresh</span>
-                  <span class="f-ctrl-sub">(15s)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Vertical Divider -->
-          <div class="f-vertical-divider"></div>
-
-          <!-- Right Column -->
-          <div class="f-col">
-            <!-- Row 1: Yesterday -->
-            <div class="f-row">
-              <button class="f-btn" data-period="yesterday">
-                <div class="f-btn-left">
-                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <span class="f-btn-label">Yesterday</span>
-                </div>
-              </button>
-            </div>
-            <div class="f-row-divider"></div>
-
-            <!-- Row 2: Last 30 Days -->
-            <div class="f-row">
-              <button class="f-btn f-btn-has-chevron" data-period="30d">
-                <div class="f-btn-left">
-                  <div class="f-icon-30-wrap">
-                    <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                      <line x1="16" y1="2" x2="16" y2="6"></line>
-                      <line x1="8" y1="2" x2="8" y2="6"></line>
-                    </svg>
-                    <span class="f-icon-30-num">30</span>
-                  </div>
-                  <span class="f-btn-label">Last 30 Days</span>
-                </div>
-                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
-                </svg>
-              </button>
-            </div>
-            <div class="f-row-divider"></div>
-
-            <!-- Row 3: Custom -->
-            <div class="f-row">
-              <button class="f-btn f-btn-has-chevron" data-period="custom" id="btn-custom-date" onclick="openCustomDateModal();">
-                <div class="f-btn-left">
-                  <svg class="f-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                  </svg>
-                  <span class="f-btn-label">Custom</span>
-                </div>
-                <svg class="f-chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="#4878a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="1.5 1.5 6.5 6.5 1.5 11.5"></polyline>
-                </svg>
-              </button>
-            </div>
-            <div class="f-row-divider"></div>
-
-            <!-- Row 4: Updated Clock -->
-            <div class="f-row">
-              <div class="f-clock-ctrl" onclick="loadAllAnalytics();" title="Click to refresh now">
-                <svg class="refresh-spin-svg f-clock-icon" id="refresh-spin-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                </svg>
-                <div class="f-ctrl-text">
-                  <span class="f-clock-sub">UPDATED:</span>
-                  <span class="f-clock-time" id="last-updated-clock-time">10:30:17&nbsp;PM</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div><!-- end top-two-col -->
-
-    <!-- 1. REAL-TIME HERO CARD (Section 1) -->
-    <div class="p-card realtime-card" id="realtime-hero-card" onclick="openDrilldownPage('page', 'Real-Time Visitors');" style="cursor:pointer;" title="Click to view detailed real-time analytics">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-        <div class="realtime-badge-pill">
-          <span class="pulse-dot"></span>
-          <span>ACTIVE VISITORS RIGHT NOW</span>
-        </div>
-        <span style="font-size:0.75rem; color:#00e5ff; font-weight:700;">View Details ›</span>
-      </div>
-
-      <div class="realtime-number-row">
-        <div class="realtime-number" id="rt-active-visitors">0</div>
-        <span class="realtime-users-icon">👥</span>
-      </div>
-
-      <div class="realtime-subtitle" id="rt-site-subtitle">
-        Live traffic directly from Publytics API
-      </div>
-
-      <div class="time-pills-row">
-        <div class="time-stat-pill">
-          <span>🕐</span> 1m: <strong id="rt-1m-val">0</strong>
-        </div>
-        <div class="time-stat-pill">
-          <span>🕐</span> 5m: <strong id="rt-5m-val">0</strong>
-        </div>
-        <div class="time-stat-pill">
-          <span>🕐</span> 30m: <strong id="rt-30m-val">0</strong>
-        </div>
-      </div>
-
-      <div class="realtime-pages-box">
-        <div class="pages-box-title">
-          <span style="color:var(--p-green);">((•))</span>
-          <span>ACTIVE REAL-TIME PAGES</span>
-        </div>
-        <div class="pages-box-body" id="rt-pages-content">
-          Listening for real-time visitors...
-        </div>
+      <!-- Inner Glowing Message Box with Dashed Border -->
+      <div class="admin-alert-inner" id="admin-alert-display-content">
+        <div class="admin-alert-body" id="admin-alert-text">Loading alert message...</div>
       </div>
     </div>
 
-    <!-- 4. MAIN ANALYTICS KPI CARDS (Section 4) -->
-    <div class="kpi-five-col" id="kpi-cards-wrapper">
-      <!-- KPI Card 0: USERS -->
-      <div class="kpi-standalone-card" onclick="scrollToUsersSection();" title="Click to view User List">
-        <div class="kpi-left">
-          <div class="kpi-icon-box" style="background:linear-gradient(135deg, #0284c7, #00e5ff);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
-          </div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">USERS</div>
-            <div class="kpi-val" id="kpi-users-val">0</div>
-            <div class="kpi-sub">Total unique visitors</div>
-          </div>
-        </div>
-        <div class="kpi-right-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        </div>
-      </div>
-
-      <!-- KPI Card 1: PAGE VIEWS -->
-      <div class="kpi-standalone-card" onclick="openDrilldownPage('page', 'Page Views');" title="Click to view Page Views breakdown">
-        <div class="kpi-left">
-          <div class="kpi-icon-box views">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          </div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">PAGE VIEWS</div>
-            <div class="kpi-val" id="kpi-views-val">0</div>
-            <div class="kpi-sub">Total pages viewed</div>
-          </div>
-        </div>
-        <div class="kpi-right-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        </div>
-      </div>
-
-      <!-- KPI Card 2: SESSIONS -->
-      <div class="kpi-standalone-card" onclick="openDrilldownPage('source', 'Sessions');" title="Click to view Sessions breakdown">
-        <div class="kpi-left">
-          <div class="kpi-icon-box sessions">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">SESSIONS</div>
-            <div class="kpi-val" id="kpi-sessions-val">0</div>
-            <div class="kpi-sub">Browsing sessions</div>
-          </div>
-        </div>
-        <div class="kpi-right-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 5h18"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 19H3"></path></svg>
-        </div>
-      </div>
-
-      <!-- KPI Card 3: AVERAGE DURATION -->
-      <div class="kpi-standalone-card" onclick="openDrilldownPage('device', 'Average Duration');" title="Click to view Duration breakdown">
-        <div class="kpi-left">
-          <div class="kpi-icon-box duration">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          </div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">AVERAGE DURATION</div>
-            <div class="kpi-val" id="kpi-duration-val">0s</div>
-            <div class="kpi-sub">Time spent per session</div>
-          </div>
-        </div>
-        <div class="kpi-right-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
-        </div>
-      </div>
-
-      <!-- KPI Card 4: BOUNCE RATE -->
-      <div class="kpi-standalone-card" onclick="openDrilldownPage('device', 'Bounce Rate');" title="Click to view Bounce Rate breakdown">
-        <div class="kpi-left">
-          <div class="kpi-icon-box bounce">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-          </div>
-          <div class="kpi-text-col">
-            <div class="kpi-title">BOUNCE RATE</div>
-            <div class="kpi-val" id="kpi-bounce-val">0%</div>
-            <div class="kpi-sub">Single-page exits</div>
-          </div>
-        </div>
-        <div class="kpi-right-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-        </div>
-      </div>
-    </div><!-- end kpi-five-col -->
-
-    <!-- 2. ACQUISITION SECTION CARD (Section 2) -->
-    <div class="p-card" id="utm-source-section-card">
-      <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:1.1rem;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-          <rect x="2" y="14" width="4" height="8" rx="1" fill="#00e5ff"/>
-          <rect x="9" y="9" width="4" height="13" rx="1" fill="#00e5ff" opacity="0.75"/>
-          <rect x="16" y="4" width="4" height="18" rx="1" fill="#00e5ff" opacity="0.5"/>
-        </svg>
-        <div>
-          <div style="color:#ffffff; font-size:1.18rem; font-weight:900; letter-spacing:-0.01em;">Acquisition</div>
-          <div style="color:#7f9bc2; font-size:0.8rem; font-weight:500; margin-top:0.15rem;">UTM parameters, referring channels, and traffic sources</div>
-        </div>
-      </div>
-
-      <div class="accordion-list">
-        <!-- 1. UTM Source -->
-        <div class="accordion-item" onclick="openDrilldownPage('utm_source', 'UTM Source');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="21.17" y1="8" x2="12" y2="8"></line><line x1="3.95" y1="6.06" x2="8.54" y2="14"></line><line x1="10.88" y1="21.94" x2="15.46" y2="14"></line></svg>
-            </div>
-            <div>
-              <div class="acc-name">UTM Source</div>
-              <div class="acc-desc">View traffic by UTM source identifier</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 2. UTM Medium -->
-        <div class="accordion-item" onclick="openDrilldownPage('utm_medium', 'UTM Medium');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            </div>
-            <div>
-              <div class="acc-name">UTM Medium</div>
-              <div class="acc-desc">View traffic by marketing medium (cpc, organic, email)</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 3. UTM Campaign -->
-        <div class="accordion-item" onclick="openDrilldownPage('utm_campaign', 'UTM Campaign');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12"></path><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-            </div>
-            <div>
-              <div class="acc-name">UTM Campaign</div>
-              <div class="acc-desc">View traffic by marketing campaign name</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 4. UTM Term -->
-        <div class="accordion-item" onclick="openDrilldownPage('utm_term', 'UTM Term');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            </div>
-            <div>
-              <div class="acc-name">UTM Term</div>
-              <div class="acc-desc">View traffic by paid search keywords</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 5. UTM Content -->
-        <div class="accordion-item" onclick="openDrilldownPage('utm_content', 'UTM Content');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-            </div>
-            <div>
-              <div class="acc-name">UTM Content</div>
-              <div class="acc-desc">View traffic by specific ad variation / banner link</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 6. Referrer + Source -->
-        <div class="accordion-item" onclick="openDrilldownPage('referrer', 'Referrer + Source');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            </div>
-            <div>
-              <div class="acc-name">Referrer + Source</div>
-              <div class="acc-desc">Combined external referrers and direct sources</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 7. Referrer -->
-        <div class="accordion-item" onclick="openDrilldownPage('referrer', 'Referrer');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </div>
-            <div>
-              <div class="acc-name">Referrer</div>
-              <div class="acc-desc">External websites sending visitors to your links</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 8. Source / Medium -->
-        <div class="accordion-item" onclick="openDrilldownPage('source_medium', 'Source / Medium');">
-          <div class="acc-left">
-            <div class="acc-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-            </div>
-            <div>
-              <div class="acc-name">Source / Medium</div>
-              <div class="acc-desc">Combined attribution breakdown (e.g. google / organic)</div>
-            </div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. AUDIENCE SECTION CARD (Section 3) -->
-    <div class="p-card" id="audience-section-card">
-      <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:1.1rem;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <div>
-          <div style="color:#ffffff; font-size:1.18rem; font-weight:900; letter-spacing:-0.01em;">Audience</div>
-          <div style="color:#7f9bc2; font-size:0.8rem; font-weight:500; margin-top:0.15rem;">Visitor demographics, devices, browsers, and platforms</div>
-        </div>
-      </div>
-
-      <div class="accordion-list">
-        <!-- 1. Overview -->
-        <div class="accordion-item" onclick="openDrilldownPage('country', 'Audience Overview');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg></div>
-            <div><div class="acc-name">Overview</div><div class="acc-desc">Comprehensive audience summary and high-level distribution</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 2. Device -->
-        <div class="accordion-item" onclick="openDrilldownPage('device', 'Device');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></div>
-            <div><div class="acc-name">Device</div><div class="acc-desc">Mobile, Desktop, and Tablet device split</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 3. Country -->
-        <div class="accordion-item" onclick="openDrilldownPage('country', 'Country');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
-            <div><div class="acc-name">Country</div><div class="acc-desc">Geographic distribution of your incoming visitors</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 4. Operating System -->
-        <div class="accordion-item" onclick="openDrilldownPage('os', 'Operating System');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
-            <div><div class="acc-name">Operating System</div><div class="acc-desc">Windows, macOS, Android, iOS, and Linux platforms</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 5. Browser -->
-        <div class="accordion-item" onclick="openDrilldownPage('browser', 'Browser');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="21.17" y1="8" x2="12" y2="8"></line><line x1="3.95" y1="6.06" x2="8.54" y2="14"></line><line x1="10.88" y1="21.94" x2="15.46" y2="14"></line></svg></div>
-            <div><div class="acc-name">Browser</div><div class="acc-desc">Chrome, Safari, Firefox, Edge, and mobile in-app browsers</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 6. Hostname -->
-        <div class="accordion-item" onclick="openDrilldownPage('hostname', 'Hostname');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></div>
-            <div><div class="acc-name">Hostname</div><div class="acc-desc">Domains, subdomains, and host headers routing traffic</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-
-        <!-- 7. Content -->
-        <div class="accordion-item" onclick="openDrilldownPage('page', 'Content');">
-          <div class="acc-left">
-            <div class="acc-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
-            <div><div class="acc-name">Content</div><div class="acc-desc">Top visited URLs, articles, and shortlink landing pages</div></div>
-          </div>
-          <div class="acc-chevron-btn">›</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. USER LIST CARD (Section 5) -->
-    <div class="p-card" id="user-list-section-card">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.1rem; flex-wrap:wrap; gap:0.65rem;">
-        <div style="display:flex; align-items:center; gap:0.65rem;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <line x1="19" y1="8" x2="19" y2="14"></line>
-            <line x1="22" y1="11" x2="16" y2="11"></line>
-          </svg>
-          <div>
-            <div style="color:#ffffff; font-size:1.18rem; font-weight:900; letter-spacing:-0.01em;">User List</div>
-            <div style="color:#7f9bc2; font-size:0.8rem; font-weight:500; margin-top:0.15rem;">Click any user row to view complete available session analytics &amp; timeline</div>
-          </div>
-        </div>
-        <button type="button" onclick="fetchUsersList();" class="btn btn-sm" style="background:rgba(0,144,255,0.15); border:1px solid rgba(0,144,255,0.4); color:#93c5fd; font-weight:700; font-size:0.75rem; border-radius:8px; padding:0.35rem 0.75rem; cursor:pointer;">
-          🔄 Refresh Users
-        </button>
-      </div>
-
-      <div class="table-scroll" id="users-table-scroll">
-        <table class="screenshot-table" id="users-table">
-          <thead>
-            <tr>
-              <th style="width:36px;">#</th>
-              <th>User Identifier</th>
-              <th>Location</th>
-              <th>Device / Platform</th>
-              <th>Sessions</th>
-              <th>Last Active</th>
-              <th style="width:40px;"></th>
-            </tr>
-          </thead>
-          <tbody id="users-table-body">
-            <tr>
-              <td colspan="7" style="text-align:center; padding:1.5rem; color:#7f9bc2;">
-                Loading live user identifiers from Publytics API...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="users-empty-container" style="display:none; width:100% !important; box-sizing:border-box !important;"></div>
-    </div>
-
-    <!-- 5B. OFFICIAL PUBLYTICS LOGIN CARD (Exact Reference Design) -->
+    <!-- 2. OFFICIAL PUBLYTICS LOGIN CARD (Exact Reference Design) -->
     <div class="p-card official-publytics-card" id="official-publytics-login-card">
       <!-- Header with Glowing Shield Icon -->
       <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.15rem;">
@@ -3817,7 +3227,7 @@
               </svg>
             </div>
             <span style="font-weight:800; color:#ffffff; font-size:0.95rem; white-space:nowrap;">Email :</span>
-            <span id="official-pub-email-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">E@gmail.com</span>
+            <span id="official-pub-email-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">kamibhai3033@gmail.com</span>
           </div>
           <button type="button" class="pub-cred-copy-btn" onclick="copyPubCredential('email', this);" title="Copy Email">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -3835,7 +3245,7 @@
               </svg>
             </div>
             <span style="font-weight:800; color:#ffffff; font-size:0.95rem; white-space:nowrap;">Paswrd :</span>
-            <span id="official-pub-pass-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">12@abc</span>
+            <span id="official-pub-pass-val" style="color:#e0f2fe; font-size:0.95rem; font-weight:600; font-family:monospace, sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0.25rem;">Khan@7527</span>
           </div>
           <button type="button" class="pub-cred-copy-btn" onclick="copyPubCredential('password', this);" title="Copy Password">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -3853,200 +3263,7 @@
       </div>
     </div>
 
-    <!-- 6. THE COMPLETE DRILLDOWN / DETAIL ANALYTICS VIEW (Section 6) -->
-    <div class="p-card" id="drilldown-page-view" style="padding:1rem 1.15rem; margin-bottom:0.35rem; display:none;">
-
-      <!-- NAV HEADER: ← Back + Title + Date Pill -->
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(0,144,255,0.2); flex-wrap:wrap; gap:0.5rem;">
-        <!-- Left: Back button + icon + page title -->
-        <div style="display:flex; align-items:center; gap:0.65rem;">
-          <button onclick="closeDrilldownView();" title="Go back to dashboard" style="width:38px; height:38px; border-radius:12px; background:#03112c; border:1px solid rgba(0,144,255,0.4); color:#ffffff; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.18s ease;" onmouseover="this.style.borderColor='#00e5ff'; this.style.color='#00e5ff';" onmouseout="this.style.borderColor='rgba(0,144,255,0.4)'; this.style.color='#ffffff';">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          </button>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <rect x="2" y="14" width="4" height="8" rx="1" fill="#00e5ff"/>
-            <rect x="9" y="9" width="4" height="13" rx="1" fill="#00e5ff" opacity="0.75"/>
-            <rect x="16" y="4" width="4" height="18" rx="1" fill="#00e5ff" opacity="0.5"/>
-          </svg>
-          <span id="dd-page-title-text" style="font-size:1.1rem; font-weight:900; color:#ffffff; letter-spacing:-0.01em;">UTM Source</span>
-        </div>
-
-        <!-- Right: Date pill dropdown -->
-        <div class="dd-date-pill-wrapper">
-          <div onclick="toggleDrilldownDateDropdown(event);" style="background:#03112c; border:1px solid rgba(0,144,255,0.35); border-radius:9999px; padding:0.4rem 0.85rem; color:#93c5fd; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; flex-shrink:0;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span id="dd-period-pill-text">Last 7 Days</span>
-            <span style="font-size:0.7rem;">▼</span>
-          </div>
-          <div class="dd-date-dropdown" id="dd-date-dropdown-menu">
-            <div class="dd-date-item" onclick="selectDrilldownPeriod('realtime', 'Real-Time', event);">⚡ Real-Time</div>
-            <div class="dd-date-item" onclick="selectDrilldownPeriod('today', 'Today', event);">Today</div>
-            <div class="dd-date-item" onclick="selectDrilldownPeriod('yesterday', 'Yesterday', event);">Yesterday</div>
-            <div class="dd-date-item active" onclick="selectDrilldownPeriod('7d', 'Last 7 Days', event);">Last 7 Days</div>
-            <div class="dd-date-item" onclick="selectDrilldownPeriod('30d', 'Last 30 Days', event);">Last 30 Days</div>
-            <div class="dd-date-item" onclick="selectDrilldownPeriod('month', 'This Month', event);">This Month</div>
-            <div class="dd-date-item" onclick="openCustomDateModal();">📅 Custom Date...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- HERO BANNER CARD -->
-      <div class="dd-hero-card" style="margin-bottom:0.85rem;">
-        <div class="dd-hero-icon-box">
-          <span id="dd-hero-icon" style="font-size:1.45rem;">🎯</span>
-        </div>
-        <div>
-          <div class="dd-hero-title" id="dd-hero-title-text">UTM Source Analytics</div>
-          <div class="dd-hero-sub" id="dd-hero-sub-text">Traffic breakdown by UTM source</div>
-        </div>
-      </div>
-
-      <!-- 4 Mini Cards Grid -->
-      <div class="dd-quad-grid" style="margin-bottom:0.85rem;">
-        <div class="dd-metric-card">
-          <div class="dd-metric-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span>Total Visitors</span>
-          </div>
-          <div class="dd-metric-val" id="dd-stat-visitors">0</div>
-        </div>
-
-        <div class="dd-metric-card">
-          <div class="dd-metric-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span>Avg. Duration</span>
-          </div>
-          <div class="dd-metric-val" id="dd-stat-duration">0s</div>
-        </div>
-
-        <div class="dd-metric-card">
-          <div class="dd-metric-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 5h18"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 19H3"></path></svg>
-            <span>Bounce Rate</span>
-          </div>
-          <div class="dd-metric-val" id="dd-stat-bounce">0%</div>
-        </div>
-
-        <div class="dd-metric-card">
-          <div class="dd-metric-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f9bc2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>Page Views</span>
-          </div>
-          <div class="dd-metric-val" id="dd-stat-views">0</div>
-        </div>
-      </div>
-
-      <!-- Donut Chart & Legend Section -->
-      <div class="dd-chart-card" style="margin-bottom:0.85rem;" id="dd-chart-section">
-        <div class="donut-container">
-          <svg viewBox="0 0 100 100" width="100%" height="100%" id="donut-svg-element">
-            <!-- Rendered dynamically by JS -->
-          </svg>
-          <div class="donut-center-info">
-            <div class="donut-center-big" id="donut-center-num-text">0</div>
-            <div class="donut-center-subtext">Total Visitors</div>
-          </div>
-        </div>
-
-        <div class="dd-legend-column">
-          <div class="dd-legend-title" id="dd-legend-title-text">Traffic Breakdown</div>
-          <div id="dd-legend-items-container">
-            <!-- Rendered dynamically by JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Details Table Section (Every Row Clickable!) -->
-      <div class="dd-table-card">
-        <div class="dd-table-header" style="justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:0.45rem;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span id="dd-table-header-title">Details</span>
-          </div>
-          <span style="font-size:0.72rem; color:#7f9bc2;">💡 Click any row to view complete API breakdown</span>
-        </div>
-
-        <div class="table-scroll" id="dd-table-scroll">
-          <table class="screenshot-table">
-            <thead>
-              <tr>
-                <th style="width:36px;">#</th>
-                <th id="th-dim-label">Dimension Item</th>
-                <th>Visitors</th>
-                <th>% Share</th>
-                <th>Avg. Duration</th>
-                <th style="width:40px;"></th>
-              </tr>
-            </thead>
-            <tbody id="dd-table-body-rows">
-              <!-- Rendered dynamically by JS -->
-            </tbody>
-          </table>
-        </div>
-        <div id="dd-empty-container" style="display:none; width:100% !important; box-sizing:border-box !important;"></div>
-      </div>
-    </div><!-- end drilldown-page-view -->
-
-  </div><!-- end main-container -->
-
-  <!-- ── MODAL 1: USER DEEP-DIVE MODAL (Section 5) ── -->
-  <div class="p-modal-overlay" id="user-deepdive-modal" role="dialog" aria-modal="true">
-    <div class="p-modal-card">
-      <div class="p-modal-header">
-        <div class="p-modal-title">
-          <span>👤</span>
-          <span id="user-modal-title-text">User Details</span>
-        </div>
-        <button type="button" class="p-modal-close-btn" onclick="closeUserDeepdiveModal();">✕</button>
-      </div>
-      <div class="p-modal-body" id="user-modal-content">
-        <!-- Rendered dynamically by JS -->
-      </div>
-    </div>
   </div>
-
-  <!-- ── MODAL 2: ITEM DEEP-DIVE MODAL (Section 6) ── -->
-  <div class="p-modal-overlay" id="item-deepdive-modal" role="dialog" aria-modal="true">
-    <div class="p-modal-card">
-      <div class="p-modal-header">
-        <div class="p-modal-title">
-          <span id="item-modal-icon">📊</span>
-          <span id="item-modal-title-text">Item Analytics</span>
-        </div>
-        <button type="button" class="p-modal-close-btn" onclick="closeItemDeepdiveModal();">✕</button>
-      </div>
-      <div class="p-modal-body" id="item-modal-content">
-        <!-- Rendered dynamically by JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MODAL 3: CUSTOM DATE RANGE MODAL ── -->
-  <div class="p-modal-overlay" id="custom-date-modal" role="dialog" aria-modal="true">
-    <div class="p-modal-card" style="max-width:420px;">
-      <div class="p-modal-header">
-        <div class="p-modal-title">
-          <span>📅</span>
-          <span>Select Date Range</span>
-        </div>
-        <button type="button" class="p-modal-close-btn" onclick="closeCustomDateModal();">✕</button>
-      </div>
-      <div class="p-modal-body">
-        <div>
-          <label style="font-size:0.75rem; color:#7f9bc2; font-weight:700; display:block; margin-bottom:0.35rem;">START DATE:</label>
-          <input type="date" id="custom-start-date" class="form-control" style="background:#03112c; border:1px solid rgba(0,144,255,0.35); color:#ffffff; border-radius:10px; padding:0.6rem 0.85rem; width:100%; box-sizing:border-box;">
-        </div>
-        <div>
-          <label style="font-size:0.75rem; color:#7f9bc2; font-weight:700; display:block; margin-bottom:0.35rem;">END DATE:</label>
-          <input type="date" id="custom-end-date" class="form-control" style="background:#03112c; border:1px solid rgba(0,144,255,0.35); color:#ffffff; border-radius:10px; padding:0.6rem 0.85rem; width:100%; box-sizing:border-box;">
-        </div>
-        <button type="button" onclick="applyCustomDateFilter();" class="btn btn-primary" style="background:linear-gradient(135deg, #0088ff, #00e5ff); color:#020b1e; font-weight:800; border:none; border-radius:10px; padding:0.75rem; width:100%; cursor:pointer; margin-top:0.5rem;">
-          Apply Date Filter
-        </button>
-      </div>
-    </div>
-  </div>
-
 </div><!-- end tab-publytics -->
 
 
@@ -4965,133 +4182,52 @@ window.savePublyticsLoginCredentials = async function(e) {
   return false;
 };
 
-window.savePublyticsApiTokenSettings = async function(e) {
-  if (e && e.preventDefault) e.preventDefault();
-  if (e && e.stopPropagation) e.stopPropagation();
-
-  const tokenInput = document.getElementById('publytics-settings-api-token');
-  const siteIdInput = document.getElementById('publytics-settings-site-id');
-  const btn = document.getElementById('btn-save-publytics-settings-token');
-  const feedback = document.getElementById('publytics-settings-token-feedback');
-
-  const tokenVal = tokenInput ? tokenInput.value.trim() : '';
-  const siteIdVal = siteIdInput ? siteIdInput.value.trim() : '';
-
-  const hasExistingToken = tokenInput && tokenInput.placeholder && tokenInput.placeholder.includes('Current:') && !tokenInput.placeholder.endsWith('Current:');
-
-  if (!tokenVal && !hasExistingToken) {
-    if (feedback) {
-      feedback.style.display = 'block';
-      feedback.style.background = '#fee2e2';
-      feedback.style.color = '#dc2626';
-      feedback.style.border = '1.5px solid #ef4444';
-      feedback.innerText = '❌ Please enter your Publytics Bearer API token.';
-    }
-    return false;
-  }
-
-  if (!siteIdVal) {
-    if (feedback) {
-      feedback.style.display = 'block';
-      feedback.style.background = '#fee2e2';
-      feedback.style.color = '#dc2626';
-      feedback.style.border = '1.5px solid #ef4444';
-      feedback.innerText = '❌ Please enter your Publytics Site ID (e.g. goo33.online or tracking code ID).';
-    }
-    return false;
-  }
-
-  const origBtnText = btn ? btn.innerHTML : '💾 Save Settings';
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Verifying with Publytics API...';
-  }
-
+window.loadAdminAlertSettings = async function() {
   try {
-    let currentList = Array.isArray(window._publyticsSitesList) ? [...window._publyticsSitesList] : [];
-    if (siteIdVal && !currentList.includes(siteIdVal)) {
-      currentList.unshift(siteIdVal);
-    }
-    const payload = {
-      siteId: siteIdVal,
-      sitesList: currentList.map(id => ({ id, name: id }))
-    };
-    if (tokenVal) payload.apiToken = tokenVal;
-
-    const res = await fetch('/api/publytics/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const result = await res.json();
-
-    if (res.ok && result.success) {
-      if (feedback) {
-        feedback.style.display = 'block';
-        feedback.style.background = '#dcfce7';
-        feedback.style.color = '#15803d';
-        feedback.style.border = '1.5px solid #22c55e';
-        feedback.innerText = '✅ ' + (result.message || 'Publytics API credentials verified and saved successfully!');
+    const res = await fetch('/api/admin-alert');
+    if (res.ok) {
+      const data = await res.json();
+      const input = document.getElementById('admin-alert-input');
+      if (input && data.message !== undefined) {
+        input.value = data.message;
       }
-      if (tokenInput && tokenVal) {
-        tokenInput.value = '';
-      }
-      await window.loadPublyticsApiTokenSettings();
-    } else {
-      await window.loadPublyticsApiTokenSettings();
-      throw new Error(result.error || 'Connection failed with Publytics API');
     }
   } catch (err) {
-    if (feedback) {
-      feedback.style.display = 'block';
-      feedback.style.background = '#fee2e2';
-      feedback.style.color = '#dc2626';
-      feedback.style.border = '1.5px solid #ef4444';
-      feedback.innerText = `❌ ${err.message}`;
-    }
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = origBtnText;
-    }
+    console.warn('Error loading admin alert settings:', err);
   }
 };
 
-window.testPublyticsApiTokenSettings = async function(e) {
+window.saveAdminAlertMessage = async function(e) {
   if (e && e.preventDefault) e.preventDefault();
-  const tokenInput = document.getElementById('publytics-settings-api-token');
-  const siteIdInput = document.getElementById('publytics-settings-site-id');
-  const btn = document.getElementById('btn-test-publytics-settings-token');
-  const feedback = document.getElementById('publytics-settings-token-feedback');
+  if (e && e.stopPropagation) e.stopPropagation();
 
-  const tokenVal = tokenInput ? tokenInput.value.trim() : '';
-  const siteIdVal = siteIdInput ? siteIdInput.value.trim() : '';
+  const input = document.getElementById('admin-alert-input');
+  const btn = document.getElementById('btn-save-admin-alert');
+  const feedback = document.getElementById('admin-alert-settings-feedback');
 
-  if (!siteIdVal) {
+  const message = input ? input.value.trim() : '';
+  if (!message) {
     if (feedback) {
       feedback.style.display = 'block';
       feedback.style.background = '#fee2e2';
       feedback.style.color = '#dc2626';
       feedback.style.border = '1.5px solid #ef4444';
-      feedback.innerText = '❌ Please enter your Publytics Site ID to test connection.';
+      feedback.innerText = '❌ Please enter an alert message before saving.';
     }
-    return;
+    return false;
   }
 
-  const origBtnText = btn ? btn.innerHTML : '🧪 Test Connection';
+  const origBtnText = btn ? btn.innerHTML : '💾 Save & Broadcast Alert';
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '⏳ Testing connection...';
+    btn.innerHTML = '⏳ Saving & Broadcasting...';
   }
 
   try {
-    const payload = { siteId: siteIdVal };
-    if (tokenVal) payload.apiToken = tokenVal;
-
-    const res = await fetch('/api/publytics/test-connection', {
+    const res = await fetch('/api/admin-alert', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ message })
     });
     const result = await res.json();
 
@@ -5101,12 +4237,18 @@ window.testPublyticsApiTokenSettings = async function(e) {
         feedback.style.background = '#dcfce7';
         feedback.style.color = '#15803d';
         feedback.style.border = '1.5px solid #22c55e';
-        feedback.innerText = '✅ ' + (result.message || 'Successfully connected to Publytics API!');
+        feedback.innerText = '✅ ' + (result.message || 'Alert message saved and broadcasted successfully!');
       }
-      await window.loadPublyticsApiTokenSettings();
+
+      // Update the display on Publytics tab immediately
+      const alertTextEl = document.getElementById('admin-alert-text');
+      if (alertTextEl) alertTextEl.textContent = result.adminAlertMessage || message;
+
+      setTimeout(() => {
+        if (feedback) feedback.style.display = 'none';
+      }, 5000);
     } else {
-      await window.loadPublyticsApiTokenSettings();
-      throw new Error(result.error || 'Connection failed');
+      throw new Error(result.error || 'Failed to save alert message');
     }
   } catch (err) {
     if (feedback) {
@@ -5122,6 +4264,14 @@ window.testPublyticsApiTokenSettings = async function(e) {
       btn.innerHTML = origBtnText;
     }
   }
+  return false;
+};
+
+// Compatibility stubs
+window.savePublyticsApiTokenSettings = function() {};
+window.testPublyticsApiTokenSettings = function() {};
+window.loadPublyticsApiTokenSettings = function() {
+  window.loadAdminAlertSettings();
 };
 
 function activateTabFromUrlHash() {
@@ -5140,10 +4290,10 @@ function activateTabFromUrlHash() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  window.loadPublyticsApiTokenSettings();
+  window.loadAdminAlertSettings();
   document.querySelectorAll('[data-tab="tab-settings"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      window.loadPublyticsApiTokenSettings();
+      window.loadAdminAlertSettings();
     });
   });
   setTimeout(activateTabFromUrlHash, 150);

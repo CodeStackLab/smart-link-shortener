@@ -762,14 +762,14 @@ document.addEventListener('DOMContentLoaded', () => {
       installingSec.style.setProperty('display', 'none', 'important');
     }
 
-    // 3. Publytics API Token Card — Accessible to Super Admin, Master Admin, and Admin
-    const publyticsApiCard = document.getElementById('publytics-api-card');
-    if (publyticsApiCard) {
-      if (isFullAdmin || isSuperAdminUser() || userPerms.includes('publytics') || userPerms.includes('settings')) {
-        publyticsApiCard.style.removeProperty('display');
-        publyticsApiCard.style.display = 'block';
+    // 3. Admin Alert Broadcast Card — Accessible to Master Admin & Normal Admin, Hidden from Editor
+    const adminAlertSettingsCard = document.getElementById('admin-alert-settings-card');
+    if (adminAlertSettingsCard) {
+      if (isFullAdmin || isSuperAdminUser()) {
+        adminAlertSettingsCard.style.removeProperty('display');
+        adminAlertSettingsCard.style.display = 'block';
       } else {
-        publyticsApiCard.style.setProperty('display', 'none', 'important');
+        adminAlertSettingsCard.style.setProperty('display', 'none', 'important');
       }
     }
 
@@ -1192,6 +1192,9 @@ document.addEventListener('DOMContentLoaded', () => {
           loadDetectedDomains();
         }
         load2FAStatus();
+        if (window.loadAdminAlertSettings) {
+          window.loadAdminAlertSettings();
+        }
         if (window.loadPublyticsApiTokenSettings) {
           window.loadPublyticsApiTokenSettings();
         }
