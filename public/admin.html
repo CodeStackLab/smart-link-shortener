@@ -3083,34 +3083,30 @@
         </form>
       </div>
 
-      <!-- Admin Alert Broadcast Card (Settings Section - Normal Admin & Master Admin) -->
-      <div class="card" style="padding:1.5rem; height:fit-content; margin-bottom:1.35rem; border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.05);" id="admin-alert-settings-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.35rem;">
-          <div style="display:flex; align-items:center; gap:0.65rem; font-size:1.25rem; font-weight:800; color:var(--text-primary, #0f172a);">
-            <span style="font-size:1.35rem;">📢</span>
-            <span style="letter-spacing:-0.02em;">Admin Alert Broadcast</span>
-          </div>
-          <span style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.82rem; font-weight:700; padding:0.25rem 0.85rem; border-radius:9999px; background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd;">
-            <span>🔔</span> Live Broadcast
-          </span>
+      <!-- Admin Alert Broadcast Card (Exact User Reference Design) -->
+      <div class="card admin-alert-broadcast-settings-card" id="admin-alert-settings-card" style="max-width:540px; margin:0 auto 1.5rem; padding:1.15rem; border-radius:24px; background:#ffffff; border:2px solid #60a5fa; box-shadow:0 0 28px rgba(96, 165, 250, 0.28), 0 8px 30px rgba(0, 0, 0, 0.05); box-sizing:border-box;">
+        
+        <!-- 1. Top Header Banner: Admin Alert Broadcast with Megaphone -->
+        <div class="admin-alert-broadcast-header-banner" style="position:relative; overflow:hidden; border-radius:16px; margin-bottom:0.75rem; box-shadow:0 4px 18px rgba(0, 82, 212, 0.35);">
+          <img src="/uploads/admin_alert_header_banner.png" alt="Admin Alert Broadcast" style="width:100%; height:auto; display:block; border-radius:16px;" />
         </div>
 
-        <p style="font-size:0.92rem; color:var(--text-muted, #5f6368); margin:0.35rem 0 1.15rem 0; line-height:1.45;">
-          Ye alert message <b>Publytics Tab</b> par sabhi Admins aur Editors ko display hoga. Normal Admin aur Master Admin yahan se message write aur submit kar sakte hain.
-        </p>
+        <!-- 2. Sub-Header Notice Banner: Info Badge + Description + Users Icon -->
+        <div class="admin-alert-broadcast-info-banner" style="position:relative; overflow:hidden; border-radius:14px; margin-bottom:0.85rem; box-shadow:0 2px 10px rgba(0, 102, 255, 0.08);">
+          <img src="/uploads/admin_alert_info_banner.png" alt="Ye Alert Message Publytics Tab Par Tamam Users Aur Admins Ko Display Hoga." style="width:100%; height:auto; display:block; border-radius:14px;" />
+        </div>
 
+        <!-- 3. Form with Styled Textarea and Button -->
         <form id="admin-alert-form" onsubmit="event.preventDefault(); window.saveAdminAlertMessage(event); return false;" style="width:100%; box-sizing:border-box;">
-          <div class="form-group" style="margin-bottom:1.15rem; width:100%; box-sizing:border-box;">
-            <label for="admin-alert-input" style="font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted,#475569); display:flex; align-items:center; gap:0.45rem; margin-bottom:0.55rem;">
-              <span>✍️</span> ALERT MESSAGE TEXT:
-            </label>
-            <textarea id="admin-alert-input" class="form-control" rows="8" placeholder="Type announcement or alert message here..." style="width:100% !important; box-sizing:border-box !important; font-size:0.95rem; font-weight:500; border-radius:12px; padding:0.85rem 1rem; border:1.5px solid var(--border,#cbd5e1); background:#ffffff; line-height:1.55; resize:vertical;"></textarea>
+          
+          <div style="margin-bottom:0.85rem; width:100%; box-sizing:border-box;">
+            <textarea id="admin-alert-input" class="admin-alert-broadcast-textarea" rows="8" placeholder="Type announcement or alert message here..." style="width:100% !important; min-height:190px; box-sizing:border-box !important; font-size:1rem; font-weight:500; font-family:inherit; border-radius:18px; padding:1rem 1.15rem; border:2px solid #8ec5fc; background:#ffffff; color:#0f172a; line-height:1.6; resize:vertical; box-shadow:0 4px 16px rgba(0, 114, 255, 0.06), inset 0 2px 4px rgba(0,0,0,0.02); outline:none; transition:border-color 0.2s, box-shadow 0.2s;" onfocus="this.style.borderColor='#2563eb'; this.style.boxShadow='0 0 0 3px rgba(37, 99, 235, 0.25)';" onblur="this.style.borderColor='#8ec5fc'; this.style.boxShadow='0 4px 16px rgba(0, 114, 255, 0.06), inset 0 2px 4px rgba(0,0,0,0.02)';"></textarea>
           </div>
 
-          <div id="admin-alert-settings-feedback" style="display:none; padding:0.75rem 1rem; border-radius:10px; font-size:0.88rem; font-weight:700; margin-bottom:0.85rem; word-break:break-word; width:100%; box-sizing:border-box;"></div>
+          <div id="admin-alert-settings-feedback" style="display:none; padding:0.75rem 1rem; border-radius:12px; font-size:0.9rem; font-weight:700; margin-bottom:0.85rem; word-break:break-word; width:100%; box-sizing:border-box; text-align:center;"></div>
 
-          <button type="submit" id="btn-save-admin-alert" class="btn btn-primary btn-block" style="width:100% !important; height:48px; font-weight:800; border-radius:12px; font-size:0.98rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border:none; box-shadow:0 4px 14px rgba(2,132,199,0.3); color:#fff; cursor:pointer; box-sizing:border-box;">
-            <span>💾 Save & Broadcast Alert</span>
+          <button type="submit" id="btn-save-admin-alert" class="admin-alert-broadcast-submit-btn" style="width:100% !important; height:54px; font-weight:800; border-radius:16px; font-size:1.18rem; letter-spacing:-0.01em; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:linear-gradient(180deg, #0075ff 0%, #0054e3 100%); border:1px solid rgba(255,255,255,0.3); box-shadow:0 8px 24px rgba(0, 102, 255, 0.42), 0 2px 6px rgba(0,0,0,0.12); color:#ffffff; cursor:pointer; box-sizing:border-box; transition:all 0.18s ease;" onmouseover="this.style.background='linear-gradient(180deg, #0a7dff 0%, #0060f0 100%)'; this.style.transform='translateY(-1.5px)'; this.style.boxShadow='0 10px 28px rgba(0, 102, 255, 0.5)';" onmouseout="this.style.background='linear-gradient(180deg, #0075ff 0%, #0054e3 100%)'; this.style.transform='none'; this.style.boxShadow='0 8px 24px rgba(0, 102, 255, 0.42), 0 2px 6px rgba(0,0,0,0.12)';" onmousedown="this.style.transform='translateY(1px)';" onmouseup="this.style.transform='none';">
+            <span>Save & Broadcast Alert</span>
           </button>
         </form>
       </div>
