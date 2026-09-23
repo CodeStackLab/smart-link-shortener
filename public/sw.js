@@ -1,13 +1,15 @@
-const CACHE_NAME = 'smartlink-v221';
+const CACHE_NAME = 'smartlink-v222';
 const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/publytics-icon.png',
   '/manifest.json',
-  '/css/style.css?v=221',
-  '/css/publytics.css?v=221',
-  '/js/dashboard.js?v=221',
-  '/js/publytics.js?v=221'
+  '/css/style.css?v=222',
+  '/css/publytics.css?v=222',
+  '/js/dashboard.js?v=222',
+  '/js/publytics.js?v=222',
+  '/uploads/admin_alert_header_banner.png',
+  '/uploads/admin_alert_info_banner.png'
 ];
 
 // Install: pre-cache static assets
