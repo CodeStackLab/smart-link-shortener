@@ -18,8 +18,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=222">
-  <link rel="stylesheet" href="/css/publytics.css?v=222">
+  <link rel="stylesheet" href="/css/style.css?v=223">
+  <link rel="stylesheet" href="/css/publytics.css?v=223">
   <script>
     (function() {
       try {
@@ -997,6 +997,30 @@
       background: linear-gradient(90deg, #f59e0b, #d97706) !important;
     }
 
+    .fb-subsource-row.theme-event {
+      border: 1.5px solid #c084fc !important;
+      background: rgba(245, 243, 255, 0.35) !important;
+    }
+    .fb-subsource-row.theme-event .fb-subsource-left span,
+    .fb-subsource-row.theme-event .fb-subsource-num {
+      color: #7c3aed !important;
+    }
+    .theme-event .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #a855f7, #7c3aed) !important;
+    }
+
+    .fb-subsource-row.theme-comment {
+      border: 1.5px solid #67e8f9 !important;
+      background: rgba(236, 254, 255, 0.35) !important;
+    }
+    .fb-subsource-row.theme-comment .fb-subsource-left span,
+    .fb-subsource-row.theme-comment .fb-subsource-num {
+      color: #0891b2 !important;
+    }
+    .theme-comment .fb-subsource-bar-fill {
+      background: linear-gradient(90deg, #06b6d4, #0891b2) !important;
+    }
+
     .fb-subsource-row.theme-fake {
       border: 1.5px solid #f87171 !important;
       background: rgba(254, 242, 242, 0.35) !important;
@@ -1916,6 +1940,38 @@
           </div>
         </div>
 
+        <!-- Events -->
+        <div class="fb-subsource-row theme-event">
+          <div class="fb-subsource-left">
+            <svg class="fb-subsource-icon" width="18" height="18" viewBox="0 0 24 24" fill="#7c3aed">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+            </svg>
+            <span>FB Events</span>
+          </div>
+          <div class="fb-subsource-center">
+            <span id="stat-fb-events" class="fb-subsource-num">0</span>
+          </div>
+          <div class="fb-subsource-right">
+            <span id="stat-fb-events-pct">0% of FB</span>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="fb-subsource-row theme-comment">
+          <div class="fb-subsource-left">
+            <svg class="fb-subsource-icon" width="18" height="18" viewBox="0 0 24 24" fill="#0891b2">
+              <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+            </svg>
+            <span>FB Comments</span>
+          </div>
+          <div class="fb-subsource-center">
+            <span id="stat-fb-comments" class="fb-subsource-num">0</span>
+          </div>
+          <div class="fb-subsource-right">
+            <span id="stat-fb-comments-pct">0% of FB</span>
+          </div>
+        </div>
+
         <!-- Automated / Fake -->
         <div class="fb-subsource-row theme-fake">
           <div class="fb-subsource-left">
@@ -2070,7 +2126,33 @@
           </div>
         </button>
 
-        <!-- 7. Suspicious -->
+        <!-- 7. FB Events -->
+        <button type="button" class="traffic-filter-btn" data-filter="fb-event" data-active-color="#7c3aed" style="display:flex !important; align-items:center !important; gap:0.5rem !important; padding:0.45rem 0.65rem !important; border-radius:14px !important; background:#f5f3ff; border:1.5px solid transparent; cursor:pointer !important; text-align:left !important; min-height:48px !important; box-sizing:border-box !important;">
+          <div style="width:34px !important; height:34px !important; min-width:34px !important; border-radius:50% !important; background:#ede9fe; display:flex !important; align-items:center !important; justify-content:center !important; flex-shrink:0 !important;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#7c3aed">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+            </svg>
+          </div>
+          <div style="display:flex !important; flex-direction:column !important; min-width:0 !important; justify-content:center !important;">
+            <span style="font-weight:800 !important; font-size:0.8rem !important; color:#7c3aed; letter-spacing:-0.015em !important; line-height:1.15 !important; white-space:nowrap !important;">FB Events</span>
+            <span style="font-size:0.72rem !important; font-weight:600 !important; color:#7c3aed; margin-top:1px !important; line-height:1.15 !important;">( <span id="filter-count-fb-event">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 8. FB Comments -->
+        <button type="button" class="traffic-filter-btn" data-filter="fb-comment" data-active-color="#0891b2" style="display:flex !important; align-items:center !important; gap:0.5rem !important; padding:0.45rem 0.65rem !important; border-radius:14px !important; background:#ecfeff; border:1.5px solid transparent; cursor:pointer !important; text-align:left !important; min-height:48px !important; box-sizing:border-box !important;">
+          <div style="width:34px !important; height:34px !important; min-width:34px !important; border-radius:50% !important; background:#cffafe; display:flex !important; align-items:center !important; justify-content:center !important; flex-shrink:0 !important;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#0891b2">
+              <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+            </svg>
+          </div>
+          <div style="display:flex !important; flex-direction:column !important; min-width:0 !important; justify-content:center !important;">
+            <span style="font-weight:800 !important; font-size:0.8rem !important; color:#0891b2; letter-spacing:-0.015em !important; line-height:1.15 !important; white-space:nowrap !important;">FB Comments</span>
+            <span style="font-size:0.72rem !important; font-weight:600 !important; color:#0891b2; margin-top:1px !important; line-height:1.15 !important;">( <span id="filter-count-fb-comment">0</span> )</span>
+          </div>
+        </button>
+
+        <!-- 9. Suspicious -->
         <button type="button" class="traffic-filter-btn" data-filter="suspicious" data-active-color="#b45309" style="display:flex !important; align-items:center !important; gap:0.5rem !important; padding:0.45rem 0.65rem !important; border-radius:14px !important; background:#fef9e7; border:1.5px solid transparent; cursor:pointer !important; text-align:left !important; min-height:48px !important; box-sizing:border-box !important;">
           <div style="width:34px !important; height:34px !important; min-width:34px !important; border-radius:50% !important; background:#fef0b3; display:flex !important; align-items:center !important; justify-content:center !important; flex-shrink:0 !important;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
@@ -2383,19 +2465,37 @@
             <input type="checkbox" id="glob-fb-allow-stories" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
           </div>
 
-          <!-- 6. Unknown / Automated Traffic -->
+          <!-- 6. Facebook Events -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:var(--text-primary);">📅 6. FB Events Traffic</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Traffic originating from Facebook events &amp; event shares. Uncheck to redirect events to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-allow-events" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <!-- 7. Facebook Comments -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:10px; margin-bottom:0.45rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.82rem; color:var(--text-primary);">💬 7. FB Comments Traffic</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">Traffic originating from Facebook comments &amp; replies. Uncheck to redirect comments to Fallback.</div>
+            </div>
+            <input type="checkbox" id="glob-fb-allow-comments" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+          </div>
+
+          <!-- 8. Unknown / Automated Traffic -->
           <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:10px; margin-bottom:0.45rem;">
             <div>
-              <div style="font-weight:700; font-size:0.82rem; color:#dc2626;">🤖 6. Block Unknown / Automated Traffic</div>
+              <div style="font-weight:700; font-size:0.82rem; color:#dc2626;">🤖 8. Block Unknown / Automated Traffic</div>
               <div style="font-size:0.68rem; color:var(--text-muted);">Instantly blocks fake FB referrers, datacenter IPs, and headless scrapers to Fallback.</div>
             </div>
             <input type="checkbox" id="glob-fb-block-automated" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
           </div>
 
-          <!-- 7. Bot Protection -->
+          <!-- 9. Bot Protection -->
           <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0.75rem; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); border-radius:10px; margin-bottom:0.85rem;">
             <div>
-              <div style="font-weight:700; font-size:0.82rem; color:#059669;">🛡️ 7. Multi-Signal Bot Protection</div>
+              <div style="font-weight:700; font-size:0.82rem; color:#059669;">🛡️ 9. Multi-Signal Bot Protection</div>
               <div style="font-size:0.68rem; color:var(--text-muted);">VPN detection, browser header integrity, rate limiting, and risk scoring.</div>
             </div>
             <input type="checkbox" id="glob-fb-bot-protection" checked style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
@@ -2726,11 +2826,19 @@
                 <input type="checkbox" id="new-user-fb-stories" checked style="width:18px; height:18px; accent-color:#d97706; cursor:pointer;">
               </label>
               <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
-                <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🛡️ 6. Block Unknown &amp; Automated Traffic</div>
+                <div style="font-weight:800; font-size:0.78rem; color:#7c3aed;">📅 6. Events Traffic (Allow/Block)</div>
+                <input type="checkbox" id="new-user-fb-events" checked style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#0891b2;">💬 7. Comments Traffic (Allow/Block)</div>
+                <input type="checkbox" id="new-user-fb-comments" checked style="width:18px; height:18px; accent-color:#0891b2; cursor:pointer;">
+              </label>
+              <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+                <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🛡️ 8. Block Unknown &amp; Automated Traffic</div>
                 <input type="checkbox" id="new-user-fb-automated" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
               </label>
               <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
-                <div style="font-weight:800; font-size:0.78rem; color:#4338ca;">🤖 7. Bot Protection Shield (ON/OFF)</div>
+                <div style="font-weight:800; font-size:0.78rem; color:#4338ca;">🤖 9. Bot Protection Shield (ON/OFF)</div>
                 <input type="checkbox" id="new-user-fb-bot" checked style="width:18px; height:18px; accent-color:#4338ca; cursor:pointer;">
               </label>
             </div>
@@ -3415,10 +3523,32 @@
         <input type="checkbox" id="modal-rule-fb-stories" style="width:22px; height:22px; accent-color:#d97706; cursor:pointer; flex-shrink:0;">
       </label>
 
-      <!-- 6. Unknown / Automated Traffic -->
+      <!-- 6. Events Traffic -->
       <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
         <div>
-          <div style="font-weight:800; font-size:0.88rem; color:#dc2626;">🛡️ 6. Block Unknown &amp; Automated Traffic</div>
+          <div style="font-weight:800; font-size:0.88rem; color:#7c3aed;">📅 6. Facebook Events Traffic</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Allow or block traffic from Facebook Events (event shares &amp; IDs).
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-events" style="width:22px; height:22px; accent-color:#7c3aed; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 7. Comments Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#0891b2;">💬 7. Facebook Comments Traffic</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
+            Allow or block traffic from Facebook Comments &amp; Replies (comment_id).
+          </div>
+        </div>
+        <input type="checkbox" id="modal-rule-fb-comments" style="width:22px; height:22px; accent-color:#0891b2; cursor:pointer; flex-shrink:0;">
+      </label>
+
+      <!-- 8. Unknown / Automated Traffic -->
+      <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
+        <div>
+          <div style="font-weight:800; font-size:0.88rem; color:#dc2626;">🛡️ 8. Block Unknown &amp; Automated Traffic</div>
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
             Auto-block fake FB referrers, datacenter IPs, and headless scrapers to Fallback.
           </div>
@@ -3426,10 +3556,10 @@
         <input type="checkbox" id="modal-rule-fb-automated" style="width:22px; height:22px; accent-color:#dc2626; cursor:pointer; flex-shrink:0;">
       </label>
 
-      <!-- 7. Bot Protection -->
+      <!-- 9. Bot Protection -->
       <label style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.65rem; background:var(--input-bg,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:0.75rem 0.85rem; cursor:pointer;">
         <div>
-          <div style="font-weight:800; font-size:0.88rem; color:#4338ca;">🤖 7. Multi-Signal Bot Protection</div>
+          <div style="font-weight:800; font-size:0.88rem; color:#4338ca;">🤖 9. Multi-Signal Bot Protection</div>
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.2rem;">
             Strict ASN screening, behavioral analysis, and rate-limiting shield.
           </div>
@@ -3476,7 +3606,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=222"></script>
+<script src="/js/dashboard.js?v=223"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -3696,11 +3826,19 @@ if ('serviceWorker' in navigator) {
             <input type="checkbox" id="edit-user-fb-stories" checked style="width:18px; height:18px; accent-color:#d97706; cursor:pointer;">
           </label>
           <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
-            <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🛡️ 6. Block Unknown &amp; Automated Traffic</div>
+            <div style="font-weight:800; font-size:0.78rem; color:#7c3aed;">📅 6. Events Traffic (Allow/Block)</div>
+            <input type="checkbox" id="edit-user-fb-events" checked style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#0891b2;">💬 7. Comments Traffic (Allow/Block)</div>
+            <input type="checkbox" id="edit-user-fb-comments" checked style="width:18px; height:18px; accent-color:#0891b2; cursor:pointer;">
+          </label>
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
+            <div style="font-weight:800; font-size:0.78rem; color:#dc2626;">🛡️ 8. Block Unknown &amp; Automated Traffic</div>
             <input type="checkbox" id="edit-user-fb-automated" checked style="width:18px; height:18px; accent-color:#dc2626; cursor:pointer;">
           </label>
           <label style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg,#fff); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:0.45rem 0.65rem; cursor:pointer;">
-            <div style="font-weight:800; font-size:0.78rem; color:#4338ca;">🤖 7. Bot Protection Shield (ON/OFF)</div>
+            <div style="font-weight:800; font-size:0.78rem; color:#4338ca;">🤖 9. Bot Protection Shield (ON/OFF)</div>
             <input type="checkbox" id="edit-user-fb-bot" checked style="width:18px; height:18px; accent-color:#4338ca; cursor:pointer;">
           </label>
         </div>
@@ -4296,6 +4434,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('hashchange', activateTabFromUrlHash);
 </script>
-<script src="/js/publytics.js?v=222"></script>
+<script src="/js/publytics.js?v=223"></script>
 </body>
 </html>

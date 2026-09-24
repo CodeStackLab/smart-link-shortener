@@ -1074,7 +1074,58 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 4. DETECT FACEBOOK GROUPS
+  // 4. DETECT FACEBOOK EVENTS (NEW)
+  // ─────────────────────────────────────────────────────────────
+  const hasEventParam = queryKeys.includes('event') || queryKeys.includes('events') ||
+    queryKeys.includes('event_id') || queryKeys.includes('eid') || queryKeys.includes('fbe') ||
+    queryKeys.includes('fb_event') || queryKeys.includes('event_permalink') || queryKeys.includes('e_id');
+
+  const hasEventMibextid = mibextidVal.toLowerCase().includes('event');
+  const hasEventSrc = srcVal.includes('event') || srcVal.includes('events') || srcVal === 'fbe' || srcVal === 'fb_event';
+  const hasEventRef = ref.includes('/events/') || ref.includes('/event/') || ref.includes('event.php') ||
+    decodedRef.includes('/events/') || decodedRef.includes('/event/') || decodedRef.includes('event.php') ||
+    refQueryVal.includes('event') || refQueryVal.includes('events');
+  const hasEventFbSource = fbSourceVal.includes('event') || fbSourceVal.includes('events');
+
+  if (hasEventParam || hasEventMibextid || hasEventSrc || hasEventRef || hasEventFbSource) {
+    signals.push('fb_event_signal');
+    return {
+      isFacebook: true,
+      subCategory: 'event',
+      label: 'Facebook Event',
+      signals
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 5. DETECT FACEBOOK COMMENTS (NEW)
+  // ─────────────────────────────────────────────────────────────
+  const hasCommentParam = queryKeys.includes('comment_id') || queryKeys.includes('reply_comment_id') ||
+    queryKeys.includes('comment') || queryKeys.includes('comments') || queryKeys.includes('cid') ||
+    queryKeys.includes('reply_id') || queryKeys.includes('fb_comment') || queryKeys.includes('fbc') ||
+    queryKeys.includes('comment_tracking');
+
+  const hasCommentMibextid = mibextidVal.toLowerCase().includes('comment') || mibextidVal.toLowerCase().includes('reply');
+  const hasCommentSrc = srcVal.includes('comment') || srcVal.includes('comments') || srcVal.includes('reply') ||
+    srcVal === 'fbc' || srcVal === 'fb_comment' || srcVal === 'comm';
+  const hasCommentRef = ref.includes('comment_id') || ref.includes('reply_comment_id') ||
+    ref.includes('/comments/') || ref.includes('comment.php') ||
+    decodedRef.includes('comment_id') || decodedRef.includes('reply_comment_id') || decodedRef.includes('/comments/') ||
+    refQueryVal.includes('comment') || refQueryVal.includes('reply');
+  const hasCommentFbSource = fbSourceVal.includes('comment') || fbSourceVal.includes('reply');
+
+  if (hasCommentParam || hasCommentMibextid || hasCommentSrc || hasCommentRef || hasCommentFbSource) {
+    signals.push('fb_comment_signal');
+    return {
+      isFacebook: true,
+      subCategory: 'comment',
+      label: 'Facebook Comment',
+      signals
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 6. DETECT FACEBOOK GROUPS
   // ─────────────────────────────────────────────────────────────
   const hasGroupParam = queryKeys.includes('group') || queryKeys.includes('groups') ||
     queryKeys.includes('group_id') || queryKeys.includes('gid') || queryKeys.includes('g_id') ||
@@ -1082,7 +1133,7 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     queryKeys.includes('multi_permalinks') || queryKeys.includes('grp') || queryKeys.includes('fbg');
 
   const hasGroupMibextid = /^(K35XfP|6aamW6|W9rl1R|c7yyfP|f85l97|f85l)/i.test(mibextidVal) || mibextidVal.toLowerCase().includes('group');
-  const hasGroupSrc = srcVal.includes('group') || srcVal.includes('groups') || srcVal === 'grp' || srcVal === 'fbg';
+  const hasGroupSrc = srcVal.includes('group') || srcVal.includes('groups') || srcVal === 'grp' || srcVal === 'fbg' || srcVal === 'fb_group';
   const hasGroupRef = ref.includes('/groups/') || ref.includes('/g/') ||
     decodedRef.includes('/groups/') || decodedRef.includes('/g/') ||
     refQueryVal.includes('group') || refQueryVal.includes('share') || refQueryVal.includes('mall');
@@ -1099,7 +1150,7 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 5. DETECT FACEBOOK PAGES
+  // 7. DETECT FACEBOOK PAGES
   // ─────────────────────────────────────────────────────────────
   // paipv (Page Access Identity Public View) is Facebook's signature Page indicator
   const hasPaipv = queryKeys.includes('paipv') || Boolean(queryParams.paipv) || queryParams.paipv === '0' || queryParams.paipv === '1';
@@ -1109,7 +1160,7 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     queryKeys.includes('page_permalink') || queryKeys.includes('pg') || queryKeys.includes('fbp');
 
   const hasPageMibextid = /^(oFDknk|ZbWKwL|S66gvF|w0j83f|zXp24b|a888h7)/i.test(mibextidVal) || mibextidVal.toLowerCase().includes('page');
-  const hasPageSrc = srcVal.includes('page') || srcVal.includes('pages') || srcVal === 'pg' || srcVal === 'fbp';
+  const hasPageSrc = srcVal.includes('page') || srcVal.includes('pages') || srcVal === 'pg' || srcVal === 'fbp' || srcVal === 'fb_page';
   const hasPageRef = ref.includes('/pages/') || ref.includes('/pages_reaction_units/') || ref.includes('/p/') ||
     decodedRef.includes('/pages/') || decodedRef.includes('/pages_reaction_units/') || decodedRef.includes('/p/') ||
     refQueryVal.includes('page') || refQueryVal.includes('pages_manager') || refQueryVal.includes('bookmarks');
@@ -1128,16 +1179,23 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 6. DETECT EXPLICIT FACEBOOK PROFILE / TIMELINE
+  // 8. DETECT EXPLICIT FACEBOOK PROFILE / TIMELINE
   // ─────────────────────────────────────────────────────────────
   const hasProfileParam = queryKeys.includes('profile') || queryKeys.includes('timeline') ||
-    queryKeys.includes('feed') || queryKeys.includes('profile_id') || queryKeys.includes('user_id');
-  const hasProfileSrc = srcVal.includes('profile') || srcVal.includes('timeline') || srcVal.includes('feed') || srcVal === 'prof';
-  const hasProfileRef = ref.includes('profile.php') || decodedRef.includes('profile.php') ||
-    refQueryVal.includes('profile') || refQueryVal.includes('timeline');
-  const hasProfileFbSource = fbSourceVal.includes('profile') || fbSourceVal.includes('timeline') || fbSourceVal.includes('feed');
+    queryKeys.includes('feed') || queryKeys.includes('home_feed') || queryKeys.includes('profile_id') ||
+    queryKeys.includes('user_id') || queryKeys.includes('prof') || queryKeys.includes('fb_profile') ||
+    queryKeys.includes('fbp_profile');
+  const hasProfileMibextid = mibextidVal.toLowerCase().includes('profile') ||
+    mibextidVal.toLowerCase().includes('timeline') || /^(AwKD5V|J7K90b|p40984)/i.test(mibextidVal);
+  const hasProfileSrc = srcVal.includes('profile') || srcVal.includes('timeline') || srcVal.includes('feed') ||
+    srcVal === 'prof' || srcVal === 'fb_profile';
+  const hasProfileRef = ref.includes('profile.php') || ref.includes('/profile/') ||
+    decodedRef.includes('profile.php') || decodedRef.includes('/profile/') ||
+    refQueryVal.includes('profile') || refQueryVal.includes('timeline') || refQueryVal.includes('feed') || refQueryVal.includes('home');
+  const hasProfileFbSource = fbSourceVal.includes('profile') || fbSourceVal.includes('timeline') ||
+    fbSourceVal.includes('feed') || fbSourceVal.includes('home_feed') || fbSourceVal.includes('user');
 
-  if (hasProfileParam || hasProfileSrc || hasProfileRef || hasProfileFbSource) {
+  if (hasProfileParam || hasProfileMibextid || hasProfileSrc || hasProfileRef || hasProfileFbSource) {
     signals.push('fb_profile_origin');
     return {
       isFacebook: true,
@@ -1148,82 +1206,16 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 7. INTELLIGENT POLICY / INTENT-AWARE FALLBACK
+  // 9. UNKNOWN / UNVERIFIED FACEBOOK TRAFFIC (CORE RULE 9 & 10)
   // ─────────────────────────────────────────────────────────────
-  // When traffic arrives from Facebook (FB in-app browser UA or fbclid) but Facebook's linkshim
-  // stripped the surface parameters, consult the link's configured rules so that target-specific
-  // campaigns are not falsely misclassified as 'profile' and blocked.
-  if (linkRules && typeof linkRules === 'object') {
-    const { allowFbProfiles, allowFbGroups, allowFbPages, allowFbStories } = linkRules;
-
-    // A) Link has ONLY Stories enabled
-    if (allowFbStories && !allowFbProfiles && !allowFbGroups && !allowFbPages) {
-      signals.push('link_intent_story');
-      return {
-        isFacebook: true,
-        subCategory: 'story',
-        label: 'Facebook Story',
-        signals
-      };
-    }
-
-    // B) Link has ONLY Groups enabled
-    if (allowFbGroups && !allowFbProfiles && !allowFbPages && !allowFbStories) {
-      signals.push('link_intent_group');
-      return {
-        isFacebook: true,
-        subCategory: 'group',
-        label: 'Facebook Group',
-        signals
-      };
-    }
-
-    // C) Link has ONLY Pages enabled
-    if (allowFbPages && !allowFbProfiles && !allowFbGroups && !allowFbStories) {
-      signals.push('link_intent_page');
-      return {
-        isFacebook: true,
-        subCategory: 'page',
-        label: 'Facebook Page',
-        signals
-      };
-    }
-
-    // D) Profile is disabled, but one or more other categories ARE allowed:
-    // Route to the active allowed category rather than falsely blocking the visitor under 'profile'!
-    if (allowFbProfiles === false) {
-      if (allowFbStories) {
-        signals.push('link_rule_story');
-        return { isFacebook: true, subCategory: 'story', label: 'Facebook Story', signals };
-      }
-      if (allowFbGroups) {
-        signals.push('link_rule_group');
-        return { isFacebook: true, subCategory: 'group', label: 'Facebook Group', signals };
-      }
-      if (allowFbPages) {
-        signals.push('link_rule_page');
-        return { isFacebook: true, subCategory: 'page', label: 'Facebook Page', signals };
-      }
-    }
-  }
-
-  // Default organic Facebook traffic (standard click from personal feed / timeline)
-  if (hasFbUa || hasFbclid || hasFbReferer) {
-    signals.push('fb_profile_origin');
-    return {
-      isFacebook: true,
-      subCategory: 'profile',
-      label: 'Facebook Profile',
-      signals
-    };
-  }
-
-  // Fallback for unclassified FB traffic
-  signals.push('fb_unclassified');
+  // If traffic arrives from Facebook but lacks verified signals for any of the 6 sources
+  // (Profile, Pages, Groups, Stories, Events, Comments), NEVER guess or assign to a selected category.
+  // Flag as 'unknown' so it reliably routes to FALLBACK URL.
+  signals.push('fb_unverified_source');
   return {
     isFacebook: true,
     subCategory: 'unknown',
-    label: 'Facebook Unknown',
+    label: 'Facebook Unknown / Unverified',
     signals
   };
 }

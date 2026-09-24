@@ -122,6 +122,8 @@ function initDb() {
     allowFbGroups: true,
     allowFbPages: true,
     allowFbStories: true,
+    allowFbEvents: true,
+    allowFbComments: true,
     blockAutomatedUnknown: true,
     // Editor Accounts Country Block System (Admin Only - Hidden from Editors)
     editorCountryBlockEnabled: true,
@@ -171,6 +173,8 @@ function initDb() {
               allowFbGroups: activeSettings.allowFbGroups !== false,
               allowFbPages: activeSettings.allowFbPages !== false,
               allowFbStories: activeSettings.allowFbStories !== false,
+              allowFbEvents: activeSettings.allowFbEvents !== false,
+              allowFbComments: activeSettings.allowFbComments !== false,
               blockAutomatedUnknown: activeSettings.blockAutomatedUnknown !== false,
               botProtection: activeSettings.botProtectionEnabled !== false
             };
@@ -273,6 +277,8 @@ module.exports = {
       allowFbGroups: true,
       allowFbPages: true,
       allowFbStories: true,
+      allowFbEvents: true,
+      allowFbComments: true,
       blockAutomatedUnknown: true,
       editorCountryBlockEnabled: true,
       editorBlockedCountries: ['US', 'PK', 'IN', 'BD', 'EG', 'NG', 'PH', 'TW'],
@@ -412,6 +418,8 @@ module.exports = {
           allowFbGroups: true,
           allowFbPages: true,
           allowFbStories: true,
+          allowFbEvents: true,
+          allowFbComments: true,
           blockAutomatedUnknown: true,
           botProtection: true
         },
@@ -465,6 +473,8 @@ module.exports = {
         allowFbGroups: user.fbTrafficSettings.allowFbGroups !== false,
         allowFbPages: user.fbTrafficSettings.allowFbPages !== false,
         allowFbStories: user.fbTrafficSettings.allowFbStories !== false,
+        allowFbEvents: user.fbTrafficSettings.allowFbEvents !== false,
+        allowFbComments: user.fbTrafficSettings.allowFbComments !== false,
         blockAutomatedUnknown: user.fbTrafficSettings.blockAutomatedUnknown !== false,
         botProtection: user.fbTrafficSettings.botProtection !== false
       };
@@ -476,6 +486,8 @@ module.exports = {
         allowFbGroups: activeSettings.allowFbGroups !== false,
         allowFbPages: activeSettings.allowFbPages !== false,
         allowFbStories: activeSettings.allowFbStories !== false,
+        allowFbEvents: activeSettings.allowFbEvents !== false,
+        allowFbComments: activeSettings.allowFbComments !== false,
         blockAutomatedUnknown: activeSettings.blockAutomatedUnknown !== false,
         botProtection: activeSettings.botProtectionEnabled !== false
       };
@@ -523,6 +535,8 @@ module.exports = {
           allowFbGroups: fbTrafficSettings.allowFbGroups !== false,
           allowFbPages: fbTrafficSettings.allowFbPages !== false,
           allowFbStories: fbTrafficSettings.allowFbStories !== false,
+          allowFbEvents: fbTrafficSettings.allowFbEvents !== false,
+          allowFbComments: fbTrafficSettings.allowFbComments !== false,
           blockAutomatedUnknown: fbTrafficSettings.blockAutomatedUnknown !== false,
           botProtection: fbTrafficSettings.botProtection !== false
         };
@@ -558,6 +572,8 @@ module.exports = {
         link.allowFbGroups = fbTrafficSettings.allowFbGroups !== false;
         link.allowFbPages = fbTrafficSettings.allowFbPages !== false;
         link.allowFbStories = fbTrafficSettings.allowFbStories !== false;
+        link.allowFbEvents = fbTrafficSettings.allowFbEvents !== false;
+        link.allowFbComments = fbTrafficSettings.allowFbComments !== false;
         link.blockAutomatedUnknown = fbTrafficSettings.blockAutomatedUnknown !== false;
         link.botProtection = (fbTrafficSettings.botProtection !== undefined ? fbTrafficSettings.botProtection !== false : (fbTrafficSettings.botProtectionEnabled !== false));
         modified = true;
@@ -580,6 +596,8 @@ module.exports = {
           allowFbGroups: fbSettings.allowFbGroups !== false,
           allowFbPages: fbSettings.allowFbPages !== false,
           allowFbStories: fbSettings.allowFbStories !== false,
+          allowFbEvents: fbSettings.allowFbEvents !== false,
+          allowFbComments: fbSettings.allowFbComments !== false,
           blockAutomatedUnknown: fbSettings.blockAutomatedUnknown !== false,
           botProtection: (fbSettings.botProtection !== undefined ? fbSettings.botProtection !== false : (fbSettings.botProtectionEnabled !== false))
         };
@@ -612,6 +630,8 @@ module.exports = {
         link.allowFbGroups = fbSettings.allowFbGroups !== false;
         link.allowFbPages = fbSettings.allowFbPages !== false;
         link.allowFbStories = fbSettings.allowFbStories !== false;
+        link.allowFbEvents = fbSettings.allowFbEvents !== false;
+        link.allowFbComments = fbSettings.allowFbComments !== false;
         link.blockAutomatedUnknown = fbSettings.blockAutomatedUnknown !== false;
         link.botProtection = (fbSettings.botProtection !== undefined ? fbSettings.botProtection !== false : (fbSettings.botProtectionEnabled !== false));
         modified = true;

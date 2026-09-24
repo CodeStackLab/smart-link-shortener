@@ -702,6 +702,8 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     allowFbGroups,
     allowFbPages,
     allowFbStories,
+    allowFbEvents,
+    allowFbComments,
     blockAutomatedUnknown,
     botProtection
   } = req.body;
@@ -802,6 +804,14 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     ? Boolean(allowFbStories)
     : (defaultFbSource.allowFbStories !== false);
 
+  let linkAllowFbEvents = (allowFbEvents !== undefined)
+    ? Boolean(allowFbEvents)
+    : (defaultFbSource.allowFbEvents !== false);
+
+  let linkAllowFbComments = (allowFbComments !== undefined)
+    ? Boolean(allowFbComments)
+    : (defaultFbSource.allowFbComments !== false);
+
   let linkBlockAutomatedUnknown = (blockAutomatedUnknown !== undefined)
     ? Boolean(blockAutomatedUnknown)
     : (defaultFbSource.blockAutomatedUnknown !== false);
@@ -818,6 +828,8 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     if (userFb.allowFbGroups === false) linkAllowFbGroups = false;
     if (userFb.allowFbPages === false) linkAllowFbPages = false;
     if (userFb.allowFbStories === false) linkAllowFbStories = false;
+    if (userFb.allowFbEvents === false) linkAllowFbEvents = false;
+    if (userFb.allowFbComments === false) linkAllowFbComments = false;
     if (userFb.blockAutomatedUnknown === false) linkBlockAutomatedUnknown = false;
     if (userFb.botProtection === false) linkBotProtection = false;
   }
@@ -849,6 +861,8 @@ app.post('/api/admin/links', requireAuth, requirePermission('links'), (req, res)
     allowFbGroups: linkAllowFbGroups,
     allowFbPages: linkAllowFbPages,
     allowFbStories: linkAllowFbStories,
+    allowFbEvents: linkAllowFbEvents,
+    allowFbComments: linkAllowFbComments,
     blockAutomatedUnknown: linkBlockAutomatedUnknown,
     botProtection: linkBotProtection
   };
@@ -898,6 +912,8 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     allowFbGroups,
     allowFbPages,
     allowFbStories,
+    allowFbEvents,
+    allowFbComments,
     blockAutomatedUnknown,
     botProtection
   } = req.body;
@@ -974,6 +990,14 @@ app.put('/api/admin/links/:id', requireAuth, (req, res) => {
     if (allowFbStories !== undefined) {
       updateFields.allowFbStories = Boolean(allowFbStories);
       if (isEditor && userFb && userFb.allowFbStories === false) updateFields.allowFbStories = false;
+    }
+    if (allowFbEvents !== undefined) {
+      updateFields.allowFbEvents = Boolean(allowFbEvents);
+      if (isEditor && userFb && userFb.allowFbEvents === false) updateFields.allowFbEvents = false;
+    }
+    if (allowFbComments !== undefined) {
+      updateFields.allowFbComments = Boolean(allowFbComments);
+      if (isEditor && userFb && userFb.allowFbComments === false) updateFields.allowFbComments = false;
     }
     if (blockAutomatedUnknown !== undefined) {
       updateFields.blockAutomatedUnknown = Boolean(blockAutomatedUnknown);
@@ -1240,6 +1264,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     allowFbGroups,
     allowFbPages,
     allowFbStories,
+    allowFbEvents,
+    allowFbComments,
     blockAutomatedUnknown,
     editorCountryBlockEnabled,
     editorBlockedCountries,
@@ -1331,6 +1357,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     allowFbGroups: allowFbGroups !== undefined ? !!allowFbGroups : undefined,
     allowFbPages: allowFbPages !== undefined ? !!allowFbPages : undefined,
     allowFbStories: allowFbStories !== undefined ? !!allowFbStories : undefined,
+    allowFbEvents: allowFbEvents !== undefined ? !!allowFbEvents : undefined,
+    allowFbComments: allowFbComments !== undefined ? !!allowFbComments : undefined,
     blockAutomatedUnknown: blockAutomatedUnknown !== undefined ? !!blockAutomatedUnknown : undefined,
     editorCountryBlockEnabled: editorCountryBlockEnabled !== undefined ? !!editorCountryBlockEnabled : undefined,
     editorBlockedCountries: processedEditorBlockedCountries
@@ -1343,8 +1371,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
 
   // When Global Facebook Rules or applyFirewallGlobally are updated, apply globally to all Editor accounts and links
   const hasFbUpdates = fbTrafficEnabled !== undefined || allowFbProfiles !== undefined || allowFbGroups !== undefined ||
-    allowFbPages !== undefined || allowFbStories !== undefined || blockAutomatedUnknown !== undefined ||
-    botProtectionEnabled !== undefined;
+    allowFbPages !== undefined || allowFbStories !== undefined || allowFbEvents !== undefined || allowFbComments !== undefined ||
+    blockAutomatedUnknown !== undefined || botProtectionEnabled !== undefined;
 
   if (updated.applyFirewallGlobally !== false || hasFbUpdates) {
     const globalFbRules = {
@@ -1353,6 +1381,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
       allowFbGroups: updated.allowFbGroups !== false,
       allowFbPages: updated.allowFbPages !== false,
       allowFbStories: updated.allowFbStories !== false,
+      allowFbEvents: updated.allowFbEvents !== false,
+      allowFbComments: updated.allowFbComments !== false,
       blockAutomatedUnknown: updated.blockAutomatedUnknown !== false,
       botProtection: updated.botProtectionEnabled !== false
     };
@@ -1832,6 +1862,8 @@ app.post('/api/admin/users/invite', requireAuth, (req, res) => {
       allowFbGroups: true,
       allowFbPages: true,
       allowFbStories: true,
+      allowFbEvents: true,
+      allowFbComments: true,
       blockAutomatedUnknown: true,
       botProtection: true
     },
@@ -2707,6 +2739,8 @@ async function handleShortlinkRedirect(req, res) {
   const allowFbGroups = resolveEditorRule('allowFbGroups', link.allowFbGroups, settings.allowFbGroups);
   const allowFbPages = resolveEditorRule('allowFbPages', link.allowFbPages, settings.allowFbPages);
   const allowFbStories = resolveEditorRule('allowFbStories', link.allowFbStories, settings.allowFbStories);
+  const allowFbEvents = resolveEditorRule('allowFbEvents', link.allowFbEvents, settings.allowFbEvents);
+  const allowFbComments = resolveEditorRule('allowFbComments', link.allowFbComments, settings.allowFbComments);
   const blockAutomatedUnknown = resolveEditorRule('blockAutomatedUnknown', link.blockAutomatedUnknown, settings.blockAutomatedUnknown);
 
   const linkRules = {
@@ -2715,6 +2749,8 @@ async function handleShortlinkRedirect(req, res) {
     allowFbGroups,
     allowFbPages,
     allowFbStories,
+    allowFbEvents,
+    allowFbComments,
     blockAutomatedUnknown
   };
 
@@ -2741,32 +2777,43 @@ async function handleShortlinkRedirect(req, res) {
       // 1. Facebook Traffic: Master OFF
       clickStatus = 'FB_TRAFFIC_DISABLED';
       actionTakenText = 'Facebook Traffic Master OFF → Fallback Redirect';
-    } else if (blockAutomatedUnknown && (fbTraffic.subCategory === 'automated' || fbTraffic.subCategory === 'unknown' || (isBotProtectionOn && (finalRisk.level === 'high' || isDatacenter)))) {
-      // 6. Unknown / Automated Traffic: Blocked
-      clickStatus = fbTraffic.subCategory === 'automated' ? 'FB_AUTOMATED_BLOCKED' : (isDatacenter ? 'DATACENTER_FB_BLOCKED' : 'FB_UNKNOWN_BLOCKED');
-      actionTakenText = 'Blocked Unknown/Automated FB Traffic → Fallback';
+    } else if (fbTraffic.subCategory === 'automated' || isDatacenter || (isBotProtectionOn && finalRisk.level === 'high')) {
+      // Automated / Datacenter / Bot Traffic: Blocked
+      clickStatus = fbTraffic.subCategory === 'automated' ? 'FB_AUTOMATED_BLOCKED' : (isDatacenter ? 'DATACENTER_FB_BLOCKED' : 'BOT_TRAFFIC_BLOCKED');
+      actionTakenText = 'Blocked Automated/Fake FB Traffic → Fallback';
+    } else if (fbTraffic.subCategory === 'unknown') {
+      // Core Rule 10: Unknown / Unverified source cannot be reliably identified -> FALLBACK URL
+      clickStatus = 'FB_UNKNOWN_BLOCKED';
+      actionTakenText = 'Blocked Unknown/Unverified FB Traffic → Fallback';
+    } else if (fbTraffic.subCategory === 'profile' && !allowFbProfiles) {
+      // Profile: Blocked
+      clickStatus = 'FB_PROFILE_BLOCKED';
+      actionTakenText = 'FB Profile Traffic Blocked → Fallback';
     } else if (fbTraffic.subCategory === 'group' && !allowFbGroups) {
-      // 3. Groups: Blocked
+      // Groups: Blocked
       clickStatus = 'FB_GROUP_BLOCKED';
       actionTakenText = 'FB Group Traffic Blocked → Fallback';
     } else if (fbTraffic.subCategory === 'page' && !allowFbPages) {
-      // 4. Pages: Blocked
+      // Pages: Blocked
       clickStatus = 'FB_PAGE_BLOCKED';
       actionTakenText = 'FB Page Traffic Blocked → Fallback';
     } else if (fbTraffic.subCategory === 'story' && !allowFbStories) {
-      // 5. Stories: Blocked
+      // Stories: Blocked
       clickStatus = 'FB_STORY_BLOCKED';
       actionTakenText = 'FB Story Traffic Blocked → Fallback';
-    } else if (fbTraffic.subCategory === 'profile' && !allowFbProfiles) {
-      // 2. Profiles: Blocked
-      clickStatus = 'FB_PROFILE_BLOCKED';
-      actionTakenText = 'FB Profile Traffic Blocked → Fallback';
-    } else if (isBotProtectionOn && (geoInfo.isVpn || isDatacenter || finalRisk.level === 'high')) {
-      // 7. Bot Protection: Detected Bot
+    } else if (fbTraffic.subCategory === 'event' && !allowFbEvents) {
+      // Events: Blocked
+      clickStatus = 'FB_EVENT_BLOCKED';
+      actionTakenText = 'FB Event Traffic Blocked → Fallback';
+    } else if (fbTraffic.subCategory === 'comment' && !allowFbComments) {
+      // Comments: Blocked
+      clickStatus = 'FB_COMMENT_BLOCKED';
+      actionTakenText = 'FB Comment Traffic Blocked → Fallback';
+    } else if (isBotProtectionOn && geoInfo.isVpn) {
       clickStatus = 'BOT_TRAFFIC_BLOCKED';
       actionTakenText = 'Bot Protection Blocked FB Visitor → Fallback';
     } else {
-      // All Facebook filters passed! Organic visitor allowed through to AdX Target URL!
+      // All Facebook filters passed! Selected organic visitor allowed through to Target URL!
       isGenuineOrganic = true;
       clickStatus = 'ORGANIC_CLICK';
       destinationUrl = link.targetUrl;

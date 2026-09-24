@@ -3406,6 +3406,30 @@ td[data-label].col-hidden-perm > * {
   background: linear-gradient(90deg, #f59e0b, #d97706) !important;
 }
 
+.fb-subsource-row.theme-event {
+  border: 1.5px solid #c084fc !important;
+  background: rgba(245, 243, 255, 0.35) !important;
+}
+.fb-subsource-row.theme-event .fb-subsource-left span,
+.fb-subsource-row.theme-event .fb-subsource-num {
+  color: #7c3aed !important;
+}
+.theme-event .fb-subsource-bar-fill {
+  background: linear-gradient(90deg, #a855f7, #7c3aed) !important;
+}
+
+.fb-subsource-row.theme-comment {
+  border: 1.5px solid #67e8f9 !important;
+  background: rgba(236, 254, 255, 0.35) !important;
+}
+.fb-subsource-row.theme-comment .fb-subsource-left span,
+.fb-subsource-row.theme-comment .fb-subsource-num {
+  color: #0891b2 !important;
+}
+.theme-comment .fb-subsource-bar-fill {
+  background: linear-gradient(90deg, #06b6d4, #0891b2) !important;
+}
+
 .fb-subsource-row.theme-fake {
   border: 1.5px solid #f87171 !important;
   background: rgba(254, 242, 242, 0.35) !important;

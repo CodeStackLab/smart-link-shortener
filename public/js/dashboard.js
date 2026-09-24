@@ -1926,6 +1926,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setRuleCheckbox('modal-rule-fb-groups', 'allowFbGroups', resolveRule('allowFbGroups', link.allowFbGroups, sysSettings.allowFbGroups));
     setRuleCheckbox('modal-rule-fb-pages', 'allowFbPages', resolveRule('allowFbPages', link.allowFbPages, sysSettings.allowFbPages));
     setRuleCheckbox('modal-rule-fb-stories', 'allowFbStories', resolveRule('allowFbStories', link.allowFbStories, sysSettings.allowFbStories));
+    setRuleCheckbox('modal-rule-fb-events', 'allowFbEvents', resolveRule('allowFbEvents', link.allowFbEvents, sysSettings.allowFbEvents));
+    setRuleCheckbox('modal-rule-fb-comments', 'allowFbComments', resolveRule('allowFbComments', link.allowFbComments, sysSettings.allowFbComments));
     setRuleCheckbox('modal-rule-fb-automated', 'blockAutomatedUnknown', resolveRule('blockAutomatedUnknown', link.blockAutomatedUnknown, sysSettings.blockAutomatedUnknown));
     setRuleCheckbox('modal-rule-bot-protection', 'botProtection', resolveRule('botProtection', link.botProtection, sysSettings.botProtectionEnabled));
 
@@ -1973,6 +1975,8 @@ document.addEventListener('DOMContentLoaded', () => {
       allowFbGroups: !!document.getElementById('modal-rule-fb-groups')?.checked,
       allowFbPages: !!document.getElementById('modal-rule-fb-pages')?.checked,
       allowFbStories: !!document.getElementById('modal-rule-fb-stories')?.checked,
+      allowFbEvents: !!document.getElementById('modal-rule-fb-events')?.checked,
+      allowFbComments: !!document.getElementById('modal-rule-fb-comments')?.checked,
       blockAutomatedUnknown: !!document.getElementById('modal-rule-fb-automated')?.checked,
       botProtection: !!document.getElementById('modal-rule-bot-protection')?.checked
     };
@@ -2212,6 +2216,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const fbAllowGroupsCb = document.getElementById('fb-allow-groups');
       const fbAllowPagesCb = document.getElementById('fb-allow-pages');
       const fbAllowStoriesCb = document.getElementById('fb-allow-stories');
+      const fbAllowEventsCb = document.getElementById('fb-allow-events');
+      const fbAllowCommentsCb = document.getElementById('fb-allow-comments');
       const fbBlockAutomatedCb = document.getElementById('fb-block-automated');
       const fbBotProtectionCb = document.getElementById('fb-bot-protection');
 
@@ -2220,6 +2226,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fbAllowGroupsCb) linkPayload.allowFbGroups = fbAllowGroupsCb.checked;
       if (fbAllowPagesCb) linkPayload.allowFbPages = fbAllowPagesCb.checked;
       if (fbAllowStoriesCb) linkPayload.allowFbStories = fbAllowStoriesCb.checked;
+      if (fbAllowEventsCb) linkPayload.allowFbEvents = fbAllowEventsCb.checked;
+      if (fbAllowCommentsCb) linkPayload.allowFbComments = fbAllowCommentsCb.checked;
       if (fbBlockAutomatedCb) linkPayload.blockAutomatedUnknown = fbBlockAutomatedCb.checked;
       if (fbBotProtectionCb) linkPayload.botProtection = fbBotProtectionCb.checked;
 
@@ -2587,6 +2595,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentTrafficFilter === 'fb-story') {
         return sub === 'story' || st === 'FB_STORY_BLOCKED';
       }
+      if (currentTrafficFilter === 'fb-event') {
+        return sub === 'event' || st === 'FB_EVENT_BLOCKED';
+      }
+      if (currentTrafficFilter === 'fb-comment') {
+        return sub === 'comment' || st === 'FB_COMMENT_BLOCKED';
+      }
       if (currentTrafficFilter === 'suspicious') {
         return st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT';
       }
@@ -2628,6 +2642,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (sub === 'group') subText = ' (Group)';
         else if (sub === 'page') subText = ' (Page)';
         else if (sub === 'story') subText = ' (Story)';
+        else if (sub === 'event') subText = ' (Event)';
+        else if (sub === 'comment') subText = ' (Comment)';
         statusBadge = `<span class="badge badge-success">✅ Organic${subText}</span>`;
       } else if (st === 'EDITOR_COUNTRY_BLOCKED') {
         statusBadge = `<span class="badge badge-danger" style="background:rgba(239,68,68,0.15); color:#dc2626; border:1px solid rgba(239,68,68,0.35); font-weight:800; font-size:0.75rem; padding:0.22rem 0.52rem;" title="Country Block (${log.countryCode || ''})">🌍 Block (${log.countryCode || ''})</span>`;
@@ -2641,6 +2657,10 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge = `<span class="badge badge-danger">📱 Story Blocked</span>`;
       } else if (st === 'FB_PROFILE_BLOCKED') {
         statusBadge = `<span class="badge badge-danger">👤 Profile Blocked</span>`;
+      } else if (st === 'FB_EVENT_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">📅 Event Blocked</span>`;
+      } else if (st === 'FB_COMMENT_BLOCKED') {
+        statusBadge = `<span class="badge badge-danger">💬 Comment Blocked</span>`;
       } else if (st === 'FB_AUTOMATED_BLOCKED' || st === 'FB_UNKNOWN_BLOCKED' || st === 'DATACENTER_FB_BLOCKED') {
         statusBadge = `<span class="badge badge-danger">🤖 Fake FB Blocked</span>`;
       } else if (st === 'SUSPICIOUS_TRAFFIC' || st === 'FALLBACK_REDIRECT' || st === 'SUSPICIOUS_UA_REDIRECT') {
@@ -2727,16 +2747,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fbPgEl) fbPgEl.textContent = '0';
         const fbStEl = document.getElementById('stat-fb-stories');
         if (fbStEl) fbStEl.textContent = '0';
+        const fbEvEl = document.getElementById('stat-fb-events');
+        if (fbEvEl) fbEvEl.textContent = '0';
+        const fbCmEl = document.getElementById('stat-fb-comments');
+        if (fbCmEl) fbCmEl.textContent = '0';
         const fbAutoEl = document.getElementById('stat-fb-automated');
         if (fbAutoEl) fbAutoEl.textContent = '0';
 
-        ['profiles', 'groups', 'pages', 'stories', 'automated'].forEach(sub => {
+        ['profiles', 'groups', 'pages', 'stories', 'events', 'comments', 'automated'].forEach(sub => {
           const bar = document.getElementById(`stat-fb-${sub}-bar`);
           if (bar) bar.style.width = '0%';
         });
 
         // Reset filter counters
-        ['all', 'organic', 'fb-profile', 'fb-group', 'fb-page', 'fb-story', 'suspicious', 'bot', 'country-block'].forEach(f => {
+        ['all', 'organic', 'fb-profile', 'fb-group', 'fb-page', 'fb-story', 'fb-event', 'fb-comment', 'suspicious', 'bot', 'country-block'].forEach(f => {
           const el = document.getElementById(`filter-count-${f}`);
           if (el) el.textContent = '0';
         });
@@ -2755,6 +2779,8 @@ document.addEventListener('DOMContentLoaded', () => {
       let fbGroupsCount = 0;
       let fbPagesCount = 0;
       let fbStoriesCount = 0;
+      let fbEventsCount = 0;
+      let fbCommentsCount = 0;
       let fbAutomatedCount = 0;
       let fbTotalCount = 0;
 
@@ -2785,6 +2811,10 @@ document.addEventListener('DOMContentLoaded', () => {
             fbPagesCount++;
           } else if (sub === 'story' || st === 'FB_STORY_BLOCKED') {
             fbStoriesCount++;
+          } else if (sub === 'event' || st === 'FB_EVENT_BLOCKED') {
+            fbEventsCount++;
+          } else if (sub === 'comment' || st === 'FB_COMMENT_BLOCKED') {
+            fbCommentsCount++;
           } else if (sub === 'automated' || sub === 'unknown' || st === 'FB_AUTOMATED_BLOCKED' || st === 'FB_UNKNOWN_BLOCKED' || st === 'FB_TRAFFIC_DISABLED' || st === 'DATACENTER_FB_BLOCKED') {
             fbAutomatedCount++;
           }
@@ -2810,6 +2840,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const grpPct = fbTotalCount > 0 ? Math.round((fbGroupsCount / fbTotalCount) * 100) : 0;
       const pgPct = fbTotalCount > 0 ? Math.round((fbPagesCount / fbTotalCount) * 100) : 0;
       const stPct = fbTotalCount > 0 ? Math.round((fbStoriesCount / fbTotalCount) * 100) : 0;
+      const evPct = fbTotalCount > 0 ? Math.round((fbEventsCount / fbTotalCount) * 100) : 0;
+      const cmPct = fbTotalCount > 0 ? Math.round((fbCommentsCount / fbTotalCount) * 100) : 0;
       const autoPct = fbTotalCount > 0 ? Math.round((fbAutomatedCount / fbTotalCount) * 100) : 0;
 
       const fbProfEl = document.getElementById('stat-fb-profiles');
@@ -2840,6 +2872,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const fbStBar = document.getElementById('stat-fb-stories-bar');
       if (fbStBar) fbStBar.style.width = `${stPct}%`;
 
+      const fbEvEl = document.getElementById('stat-fb-events');
+      if (fbEvEl) fbEvEl.textContent = fbEventsCount;
+      const fbEvPctEl = document.getElementById('stat-fb-events-pct');
+      if (fbEvPctEl) fbEvPctEl.textContent = `${evPct}% of FB`;
+      const fbEvBar = document.getElementById('stat-fb-events-bar');
+      if (fbEvBar) fbEvBar.style.width = `${evPct}%`;
+
+      const fbCmEl = document.getElementById('stat-fb-comments');
+      if (fbCmEl) fbCmEl.textContent = fbCommentsCount;
+      const fbCmPctEl = document.getElementById('stat-fb-comments-pct');
+      if (fbCmPctEl) fbCmPctEl.textContent = `${cmPct}% of FB`;
+      const fbCmBar = document.getElementById('stat-fb-comments-bar');
+      if (fbCmBar) fbCmBar.style.width = `${cmPct}%`;
+
       const fbAutoEl = document.getElementById('stat-fb-automated');
       if (fbAutoEl) fbAutoEl.textContent = fbAutomatedCount;
       const fbAutoPctEl = document.getElementById('stat-fb-automated-pct');
@@ -2865,6 +2911,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cntFbPg) cntFbPg.textContent = fbPagesCount;
       const cntFbSt = document.getElementById('filter-count-fb-story');
       if (cntFbSt) cntFbSt.textContent = fbStoriesCount;
+      const cntFbEv = document.getElementById('filter-count-fb-event');
+      if (cntFbEv) cntFbEv.textContent = fbEventsCount;
+      const cntFbCm = document.getElementById('filter-count-fb-comment');
+      if (cntFbCm) cntFbCm.textContent = fbCommentsCount;
       const cntCtry = document.getElementById('filter-count-country-block');
       if (cntCtry) cntCtry.textContent = countryBlockedCount;
 
@@ -3083,6 +3133,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const globFbGroups = document.getElementById('glob-fb-allow-groups');
       const globFbPages = document.getElementById('glob-fb-allow-pages');
       const globFbStories = document.getElementById('glob-fb-allow-stories');
+      const globFbEvents = document.getElementById('glob-fb-allow-events');
+      const globFbComments = document.getElementById('glob-fb-allow-comments');
       const globFbBlockAuto = document.getElementById('glob-fb-block-automated');
       const globBotProt = document.getElementById('glob-fb-bot-protection');
 
@@ -3091,6 +3143,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (globFbGroups) globFbGroups.checked = settings.allowFbGroups !== false;
       if (globFbPages) globFbPages.checked = settings.allowFbPages !== false;
       if (globFbStories) globFbStories.checked = settings.allowFbStories !== false;
+      if (globFbEvents) globFbEvents.checked = settings.allowFbEvents !== false;
+      if (globFbComments) globFbComments.checked = settings.allowFbComments !== false;
       if (globFbBlockAuto) globFbBlockAuto.checked = settings.blockAutomatedUnknown !== false;
       if (globBotProt) globBotProt.checked = settings.botProtectionEnabled !== false;
 
@@ -3315,6 +3369,8 @@ document.addEventListener('DOMContentLoaded', () => {
         allowFbGroups: document.getElementById('glob-fb-allow-groups')?.checked ?? true,
         allowFbPages: document.getElementById('glob-fb-allow-pages')?.checked ?? true,
         allowFbStories: document.getElementById('glob-fb-allow-stories')?.checked ?? true,
+        allowFbEvents: document.getElementById('glob-fb-allow-events')?.checked ?? true,
+        allowFbComments: document.getElementById('glob-fb-allow-comments')?.checked ?? true,
         blockAutomatedUnknown: document.getElementById('glob-fb-block-automated')?.checked ?? true,
         botProtectionEnabled: document.getElementById('glob-fb-bot-protection')?.checked ?? true
       };
@@ -4078,6 +4134,8 @@ document.addEventListener('DOMContentLoaded', () => {
       allowFbGroups: true,
       allowFbPages: true,
       allowFbStories: true,
+      allowFbEvents: true,
+      allowFbComments: true,
       blockAutomatedUnknown: true,
       botProtection: true
     };
@@ -4086,6 +4144,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('edit-user-fb-groups')) document.getElementById('edit-user-fb-groups').checked = userFb.allowFbGroups !== false;
     if (document.getElementById('edit-user-fb-pages')) document.getElementById('edit-user-fb-pages').checked = userFb.allowFbPages !== false;
     if (document.getElementById('edit-user-fb-stories')) document.getElementById('edit-user-fb-stories').checked = userFb.allowFbStories !== false;
+    if (document.getElementById('edit-user-fb-events')) document.getElementById('edit-user-fb-events').checked = userFb.allowFbEvents !== false;
+    if (document.getElementById('edit-user-fb-comments')) document.getElementById('edit-user-fb-comments').checked = userFb.allowFbComments !== false;
     if (document.getElementById('edit-user-fb-automated')) document.getElementById('edit-user-fb-automated').checked = userFb.blockAutomatedUnknown !== false;
     if (document.getElementById('edit-user-fb-bot')) document.getElementById('edit-user-fb-bot').checked = userFb.botProtection !== false;
 
@@ -4263,6 +4323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         allowFbGroups: document.getElementById('edit-user-fb-groups') ? document.getElementById('edit-user-fb-groups').checked : true,
         allowFbPages: document.getElementById('edit-user-fb-pages') ? document.getElementById('edit-user-fb-pages').checked : true,
         allowFbStories: document.getElementById('edit-user-fb-stories') ? document.getElementById('edit-user-fb-stories').checked : true,
+        allowFbEvents: document.getElementById('edit-user-fb-events') ? document.getElementById('edit-user-fb-events').checked : true,
+        allowFbComments: document.getElementById('edit-user-fb-comments') ? document.getElementById('edit-user-fb-comments').checked : true,
         blockAutomatedUnknown: document.getElementById('edit-user-fb-automated') ? document.getElementById('edit-user-fb-automated').checked : true,
         botProtection: document.getElementById('edit-user-fb-bot') ? document.getElementById('edit-user-fb-bot').checked : true
       };
@@ -4532,6 +4594,8 @@ document.addEventListener('DOMContentLoaded', () => {
         allowFbGroups: document.getElementById('new-user-fb-groups') ? document.getElementById('new-user-fb-groups').checked : true,
         allowFbPages: document.getElementById('new-user-fb-pages') ? document.getElementById('new-user-fb-pages').checked : true,
         allowFbStories: document.getElementById('new-user-fb-stories') ? document.getElementById('new-user-fb-stories').checked : true,
+        allowFbEvents: document.getElementById('new-user-fb-events') ? document.getElementById('new-user-fb-events').checked : true,
+        allowFbComments: document.getElementById('new-user-fb-comments') ? document.getElementById('new-user-fb-comments').checked : true,
         blockAutomatedUnknown: document.getElementById('new-user-fb-automated') ? document.getElementById('new-user-fb-automated').checked : true,
         botProtection: document.getElementById('new-user-fb-bot') ? document.getElementById('new-user-fb-bot').checked : true
       };
@@ -4591,7 +4655,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (document.getElementById('new-user-country-block-enabled')) {
             document.getElementById('new-user-country-block-enabled').value = 'true';
           }
-          ['new-user-fb-master', 'new-user-fb-profiles', 'new-user-fb-groups', 'new-user-fb-pages', 'new-user-fb-stories', 'new-user-fb-automated', 'new-user-fb-bot'].forEach(id => {
+          ['new-user-fb-master', 'new-user-fb-profiles', 'new-user-fb-groups', 'new-user-fb-pages', 'new-user-fb-stories', 'new-user-fb-events', 'new-user-fb-comments', 'new-user-fb-automated', 'new-user-fb-bot'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.checked = true;
           });
