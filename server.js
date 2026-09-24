@@ -2850,6 +2850,10 @@ async function handleShortlinkRedirect(req, res) {
     }
   }
 
+  if (destinationUrl && !/^https?:\/\//i.test(destinationUrl)) {
+    destinationUrl = 'https://' + destinationUrl;
+  }
+
   // Deduplicate rapid repeat clicks from same visitor
   if (isDuplicateTrafficClick(link.code, clientIp)) {
     return res.redirect(destinationUrl);

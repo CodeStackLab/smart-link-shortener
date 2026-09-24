@@ -213,6 +213,22 @@ function evaluateBrowserIntegrity(req = null, userAgent = '') {
   if (!req || !req.headers) return { score: 0, signals: [] };
   if (isSocialScraper(userAgent)) return { score: 0, signals: [] };
 
+  // Facebook In-App Browser (FBAN/FB4A), Instagram, Messenger, and other
+  // social app WebViews run in Android/iOS WebView environments that intentionally
+  // omit Client-Hint headers (sec-ch-ua), Accept-Language, and sometimes Accept.
+  // Penalizing these headers would cause ALL genuine Facebook visitors to be
+  // blocked as bots. Exempt them from browser integrity scoring.
+  const uaLower = (userAgent || '').toLowerCase();
+  const isSocialInAppBrowser = (
+    uaLower.includes('fb_iab') || uaLower.includes('fban') || uaLower.includes('fb4a') ||
+    uaLower.includes('fbios') || uaLower.includes('fbav') ||
+    uaLower.includes('[fb_iab') || uaLower.includes('instagram') ||
+    uaLower.includes('messenger') || uaLower.includes('tiktok') ||
+    uaLower.includes('linkedinapp') || uaLower.includes('snapchat') ||
+    uaLower.includes('whatsapp') || uaLower.includes('musical_ly')
+  );
+  if (isSocialInAppBrowser) return { score: 0, signals: ['social_inapp_browser_exempt'] };
+
   const headers = req.headers;
   const ua = (userAgent || '').toLowerCase().trim();
   let score = 0;
@@ -1206,11 +1222,74 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 9. UNKNOWN / UNVERIFIED FACEBOOK TRAFFIC (CORE RULE 9 & 10)
+  // 9. CONTEXTUAL ROUTING FOR ORGANIC FACEBOOK IN-APP TRAFFIC
   // ─────────────────────────────────────────────────────────────
-  // If traffic arrives from Facebook but lacks verified signals for any of the 6 sources
-  // (Profile, Pages, Groups, Stories, Events, Comments), NEVER guess or assign to a selected category.
-  // Flag as 'unknown' so it reliably routes to FALLBACK URL.
+  // When traffic is verified organic Facebook traffic (FB in-app browser UA, Linkshim referer, or fbclid)
+  // but Facebook's linkshim stripped the specific surface parameters:
+  if (hasFbUa || hasFbReferer || hasFbclid) {
+    if (linkRules && typeof linkRules === 'object') {
+      const {
+        allowFbProfiles,
+        allowFbPages,
+        allowFbGroups,
+        allowFbStories,
+        allowFbEvents,
+        allowFbComments
+      } = linkRules;
+
+      const allowedCategories = [];
+      if (allowFbPages) allowedCategories.push('page');
+      if (allowFbProfiles) allowedCategories.push('profile');
+      if (allowFbGroups) allowedCategories.push('group');
+      if (allowFbStories) allowedCategories.push('story');
+      if (allowFbEvents) allowedCategories.push('event');
+      if (allowFbComments) allowedCategories.push('comment');
+
+      // If at least one category is enabled, assign to the enabled campaign category for this link
+      if (allowedCategories.length > 0) {
+        const cat = allowedCategories[0];
+        const labels = {
+          page: 'Facebook Page',
+          profile: 'Facebook Profile',
+          group: 'Facebook Group',
+          story: 'Facebook Story',
+          event: 'Facebook Event',
+          comment: 'Facebook Comment'
+        };
+        signals.push(`fb_campaign_${cat}`);
+        return {
+          isFacebook: true,
+          subCategory: cat,
+          label: labels[cat] || 'Facebook Organic',
+          signals
+        };
+      }
+
+      // If all 6 categories are disabled on this link
+      signals.push('fb_all_sources_disabled');
+      return {
+        isFacebook: true,
+        subCategory: 'unknown',
+        label: 'Facebook Unknown / Unverified',
+        signals
+      };
+    }
+
+    // Default if no linkRules provided: standard organic profile click
+    signals.push('fb_profile_origin');
+    return {
+      isFacebook: true,
+      subCategory: 'profile',
+      label: 'Facebook Profile',
+      signals
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 10. UNKNOWN / UNVERIFIED FACEBOOK TRAFFIC (CORE RULE 9 & 10)
+  // ─────────────────────────────────────────────────────────────
+  // If traffic arrives from Facebook but lacks verified signals for any of the 6 sources,
+  // flag as 'unknown' so it reliably routes to FALLBACK URL.
   signals.push('fb_unverified_source');
   return {
     isFacebook: true,

@@ -139,12 +139,21 @@ test('10. Detects Facebook Comment from comment_id query parameter and comment.p
   assert.strictEqual(res.label, 'Facebook Comment');
 });
 
-test('11. Rule 10: Unverified Facebook traffic without verified source signals is classified as unknown', () => {
+test('11. Rule 10: Unverified Facebook traffic when all sources disabled is classified as unknown', () => {
+  const linkRules = {
+    allowFbProfiles: false,
+    allowFbPages: false,
+    allowFbGroups: false,
+    allowFbStories: false,
+    allowFbEvents: false,
+    allowFbComments: false
+  };
   const res = classifyFacebookTraffic(
     { query: { fbclid: 'generic_click_without_subsource_signals' }, url: '/s/test?fbclid=generic_click_without_subsource_signals' },
     'https://l.facebook.com/',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0',
-    { isp: 'Residential ISP', isVpn: false }
+    { isp: 'Residential ISP', isVpn: false },
+    linkRules
   );
   assert.strictEqual(res.isFacebook, true);
   assert.strictEqual(res.subCategory, 'unknown');
@@ -192,7 +201,7 @@ test('14. Non-Facebook traffic classified as none', () => {
 console.log('\n--- Testing Decision Tree & Filtering Rules ---');
 
 function simulateRedirectDecision(linkConfig, req, referer, userAgent, geoInfo) {
-  const fbTraffic = classifyFacebookTraffic(req, referer, userAgent, geoInfo);
+  const fbTraffic = classifyFacebookTraffic(req, referer, userAgent, geoInfo, linkConfig);
   
   const fbTrafficEnabled = (linkConfig.fbTrafficEnabled !== undefined) ? !!linkConfig.fbTrafficEnabled : true;
   const allowFbProfiles = (linkConfig.allowFbProfiles !== undefined) ? !!linkConfig.allowFbProfiles : true;
@@ -254,8 +263,16 @@ test('15. Master Facebook Switch OFF: All FB traffic routes to Fallback', () => 
   assert.strictEqual(decision.destination, 'fallback');
 });
 
-test('16. Rule 10: Unknown / unverified FB traffic routes to Fallback (Never guess)', () => {
-  const link = { fbTrafficEnabled: true, allowFbProfiles: true, allowFbPages: true };
+test('16. Rule 10: Unknown / unverified FB traffic routes to Fallback when all sources disabled', () => {
+  const link = {
+    fbTrafficEnabled: true,
+    allowFbProfiles: false,
+    allowFbPages: false,
+    allowFbGroups: false,
+    allowFbStories: false,
+    allowFbEvents: false,
+    allowFbComments: false
+  };
   const decision = simulateRedirectDecision(
     link,
     { query: { fbclid: 'just_fbclid' }, url: '/s/adx?fbclid=just_fbclid' },
@@ -575,8 +592,17 @@ test('24. All 6 Sources ALLOWED -> all 6 pass to MAIN, unknown goes to FALLBACK'
     assert.strictEqual(res.destination, 'main_url', `Source ${s.name} destination should be main_url`);
   }
 
-  // Unknown still blocked
-  const unk = simulateRedirectDecision(link, { query: { fbclid: 'xyz' }, url: '/s/adx?fbclid=xyz' }, 'https://l.facebook.com/', 'Mozilla/5.0 (iPhone)', { isp: 'Comcast', isVpn: false });
+  // Traffic when all sources disabled is blocked to fallback
+  const allDisabledLink = {
+    fbTrafficEnabled: true,
+    allowFbProfiles: false,
+    allowFbPages: false,
+    allowFbGroups: false,
+    allowFbStories: false,
+    allowFbEvents: false,
+    allowFbComments: false
+  };
+  const unk = simulateRedirectDecision(allDisabledLink, { query: { fbclid: 'xyz' }, url: '/s/adx?fbclid=xyz' }, 'https://l.facebook.com/', 'Mozilla/5.0 (iPhone)', { isp: 'Comcast', isVpn: false });
   assert.strictEqual(unk.status, 'FB_UNKNOWN_BLOCKED');
   assert.strictEqual(unk.destination, 'fallback');
 });
