@@ -1,13 +1,13 @@
-const CACHE_NAME = 'smartlink-v226';
+const CACHE_NAME = 'smartlink-v227';
 const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/publytics-icon.png',
   '/manifest.json',
-  '/css/style.css?v=226',
-  '/css/publytics.css?v=226',
-  '/js/dashboard.js?v=226',
-  '/js/publytics.js?v=226',
+  '/css/style.css?v=227',
+  '/css/publytics.css?v=227',
+  '/js/dashboard.js?v=227',
+  '/js/publytics.js?v=227',
   '/uploads/admin_alert_header_banner.png',
   '/uploads/admin_alert_info_banner.png'
 ];

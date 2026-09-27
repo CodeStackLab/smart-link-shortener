@@ -1552,8 +1552,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="action-btn-group">
           ${trafficRulesBtn}
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
-          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Post / Timeline Link">👤 Post</button>
-          <button class="btn btn-sm" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.35); font-weight:700;" onclick="copyToClipboard('${commentShortUrl}', this)" title="Copy Comment Link">💬 Comment</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}', this)">📋 Copy</button>
           ${toggleBtnHtml}
           <button class="btn btn-danger btn-sm btn-action-full" onclick="deleteLink('${linkKey}')">🗑️ Delete</button>
         </div>
@@ -1561,8 +1560,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="action-btn-group">
           ${trafficRulesBtn}
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
-          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Post / Timeline Link">👤 Post</button>
-          <button class="btn btn-sm" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.35); font-weight:700;" onclick="copyToClipboard('${commentShortUrl}', this)" title="Copy Comment Link">💬 Comment</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}', this)">📋 Copy</button>
           <span class="badge badge-info" style="font-size:0.7rem; padding:0.35rem 0.65rem; font-weight:700;">👁️ View Only</span>
         </div>
       `;
