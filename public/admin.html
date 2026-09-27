@@ -18,8 +18,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=228">
-  <link rel="stylesheet" href="/css/publytics.css?v=228">
+  <link rel="stylesheet" href="/css/style.css?v=230">
+  <link rel="stylesheet" href="/css/publytics.css?v=230">
   <script>
     (function() {
       try {
@@ -3619,12 +3619,17 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=228"></script>
+<script src="/js/dashboard.js?v=230"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js?v=230').then(reg => {
+      reg.update();
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+    }).catch(() => {});
   });
 }
 

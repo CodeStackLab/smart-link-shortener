@@ -399,12 +399,21 @@ try {
   // Compression handled upstream by Caddy reverse proxy (encode zstd gzip)
 }
 
-// Serve static files from 'public' folder (never cache HTML files, cache versioned assets)
+// Service Worker MUST never be cached so browsers immediately install updates
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  return res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+
+// Serve static files from 'public' folder (never cache HTML files or service workers, cache versioned assets)
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    if (filePath.endsWith('.html') || filePath.endsWith('sw.js')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     } else if (/\.(js|css|svg|png|jpg|jpeg|webp|ico|woff2?)$/i.test(filePath)) {

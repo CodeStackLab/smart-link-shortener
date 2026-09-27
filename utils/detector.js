@@ -1271,16 +1271,6 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
       // If the link has Profile traffic DISABLED (allowFbProfiles === false),
       // we check which specific surface category the user has ALLOWED for this link campaign:
       if (allowFbProfiles === false) {
-        if (allowFbComments) {
-          signals.push('fb_campaign_comment');
-          signals.push('link_intent_comment');
-          return {
-            isFacebook: true,
-            subCategory: 'comment',
-            label: 'Facebook Comment',
-            signals
-          };
-        }
         if (allowFbPages) {
           signals.push('fb_campaign_page');
           signals.push('link_intent_page');
@@ -1298,6 +1288,16 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
             isFacebook: true,
             subCategory: 'group',
             label: 'Facebook Group',
+            signals
+          };
+        }
+        if (allowFbComments) {
+          signals.push('fb_campaign_comment');
+          signals.push('link_intent_comment');
+          return {
+            isFacebook: true,
+            subCategory: 'comment',
+            label: 'Facebook Comment',
             signals
           };
         }
