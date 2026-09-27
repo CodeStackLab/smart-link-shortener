@@ -1580,16 +1580,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${link.createdBy && link.createdBy.toLowerCase() !== 'admin' ? `<span class="badge badge-custom" style="font-size:0.65rem;">By: ${link.createdBy}</span>` : ''}
                 </div>
               </div>
-              <div class="shortlink-action-box" style="margin-bottom:0.35rem;">
-                <input type="text" class="shortlink-url-display" value="${shortUrl}" readonly onclick="this.select(); copyToClipboard('${shortUrl}')" title="Timeline Post Link">
-                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Post / Timeline Link">
-                  👤 Post Link
-                </button>
-              </div>
-              <div class="shortlink-action-box" style="background:rgba(16,185,129,0.06); border-color:rgba(16,185,129,0.25);">
-                <input type="text" class="shortlink-url-display" value="${commentShortUrl}" readonly onclick="this.select(); copyToClipboard('${commentShortUrl}')" title="Comment Link (Routes to Target)" style="color:#10b981; font-weight:600;">
-                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${commentShortUrl}', this)" title="Copy Comment Link" style="background:#10b981; color:#fff; border-color:#10b981;">
-                  💬 Comment
+              <div class="shortlink-action-box">
+                <input type="text" class="shortlink-url-display" value="${shortUrl}" readonly onclick="this.select(); copyToClipboard('${shortUrl}')" title="Click to copy link">
+                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Shortlink">
+                  📋 Copy
                 </button>
               </div>
             </div>
