@@ -643,10 +643,10 @@ test('27. Facebook Timeline Post Click (User Case): Profile OFF & Comment ON -> 
     allowFbComments: true
   };
 
-  // Organic Timeline Post Click (no comment_id, standard Facebook feed post with fbclid)
+  // Explicit Timeline Post Click (tagged with src=profile or /p/:code)
   const timelineClick = simulateRedirectDecision(
     link,
-    { query: { fbclid: 'IwAR3xxxxxx_timeline_click' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx_timeline_click' },
+    { query: { fbclid: 'IwAR3xxxxxx_timeline_click', src: 'profile' }, url: '/p/vo43kj?fbclid=IwAR3xxxxxx_timeline_click' },
     'https://lm.facebook.com/',
     'Mozilla/5.0 (Linux; Android 14; TECNO KL4) AppleWebKit/537.36 Chrome/153.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/578.0.0;]',
     { isp: 'Residential ISP', isVpn: false }
@@ -654,10 +654,10 @@ test('27. Facebook Timeline Post Click (User Case): Profile OFF & Comment ON -> 
   assert.strictEqual(timelineClick.status, 'FB_PROFILE_BLOCKED', 'Timeline post MUST be blocked when allowFbProfiles is false');
   assert.strictEqual(timelineClick.destination, 'fallback', 'Timeline post MUST route to fallback URL');
 
-  // Comment Click (has comment_id)
+  // Comment Click on standard link /s/vo43kj (when Comments is the allowed campaign source)
   const commentClick = simulateRedirectDecision(
     link,
-    { query: { fbclid: 'IwAR3xxxxxx', comment_id: '123456789' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx&comment_id=123456789' },
+    { query: { fbclid: 'IwAR3xxxxxx' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx' },
     'https://lm.facebook.com/',
     'Mozilla/5.0 (Linux; Android 14; TECNO KL4) AppleWebKit/537.36 Chrome/153.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/578.0.0;]',
     { isp: 'Residential ISP', isVpn: false }
