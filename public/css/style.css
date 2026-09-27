@@ -2508,6 +2508,16 @@ table td[colspan] {
   td[data-label="Actions"] > div:has(> button:only-child) {
     grid-template-columns: 1fr !important;
   }
+  table td .action-btn-group > :last-child:nth-child(odd),
+  td[data-label="Actions"] .action-btn-group > :last-child:nth-child(odd),
+  td[data-label="Actions"] > div > :last-child:nth-child(odd),
+  table td .action-btn-group .btn-danger,
+  td[data-label="Actions"] .action-btn-group .btn-danger,
+  td[data-label="Actions"] > div > .btn-danger,
+  .btn-action-full {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
   table td .action-btn-group .btn,
   td[data-label="Actions"] .action-btn-group .btn,
   td[data-label="Actions"] > div > .btn,

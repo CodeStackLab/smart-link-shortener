@@ -1500,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', () => {
           toggleBtnHtml = `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.6; cursor:not-allowed;" title="Auto-paused due to fake traffic detection. Only Primary Admin can review and resume this link.">🔒 Admin Locked</button>`;
         }
       } else {
-        toggleBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${linkKey}', ${!link.active})">${link.active ? 'Pause' : 'Enable'}</button>`;
+        toggleBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="toggleLinkStatus('${linkKey}', ${!link.active})">${link.active ? '⏸️ Pause' : '▶️ Enable'}</button>`;
       }
 
       const trafficRulesBtn = isFullAdminUser()
@@ -1534,7 +1534,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
           <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
           ${toggleBtnHtml}
-          <button class="btn btn-danger btn-sm" onclick="deleteLink('${linkKey}')">🗑️ Delete</button>
+          <button class="btn btn-danger btn-sm btn-action-full" onclick="deleteLink('${linkKey}')">🗑️ Delete</button>
         </div>
       ` : `
         <div class="action-btn-group">

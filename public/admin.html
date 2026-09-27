@@ -18,8 +18,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=223">
-  <link rel="stylesheet" href="/css/publytics.css?v=223">
+  <link rel="stylesheet" href="/css/style.css?v=224">
+  <link rel="stylesheet" href="/css/publytics.css?v=224">
   <script>
     (function() {
       try {
@@ -537,6 +537,16 @@
       td[data-label="Actions"] > div:has(> :only-child),
       td[data-label="Actions"] > div:has(> button:only-child) {
         grid-template-columns: 1fr !important;
+      }
+      table td .action-btn-group > :last-child:nth-child(odd),
+      td[data-label="Actions"] .action-btn-group > :last-child:nth-child(odd),
+      td[data-label="Actions"] > div > :last-child:nth-child(odd),
+      table td .action-btn-group .btn-danger,
+      td[data-label="Actions"] .action-btn-group .btn-danger,
+      td[data-label="Actions"] > div > .btn-danger,
+      .btn-action-full {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
       }
       table td .action-btn-group .btn,
       td[data-label="Actions"] .action-btn-group .btn,
@@ -3606,7 +3616,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=223"></script>
+<script src="/js/dashboard.js?v=224"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
