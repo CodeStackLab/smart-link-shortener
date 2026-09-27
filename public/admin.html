@@ -18,8 +18,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=224">
-  <link rel="stylesheet" href="/css/publytics.css?v=224">
+  <link rel="stylesheet" href="/css/style.css?v=226">
+  <link rel="stylesheet" href="/css/publytics.css?v=226">
   <script>
     (function() {
       try {
@@ -3420,7 +3420,10 @@
           <span>🎯 Tagged Links (Optional)</span>
           <span style="font-size:0.65rem; font-weight:normal; text-transform:none; opacity:0.8;">Click to copy:</span>
         </div>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.35rem;">
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.35rem;">
+          <button type="button" id="qr-copy-comment-btn" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.2rem; border:1px solid rgba(16,185,129,0.3); background:rgba(16,185,129,0.08); color:#10b981; border-radius:6px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.2rem;" title="Copy link tagged specifically for FB Comments (/c/code)">
+            💬 Comment
+          </button>
           <button type="button" id="qr-copy-group-btn" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.2rem; border:1px solid rgba(24,119,242,0.25); background:rgba(24,119,242,0.05); color:#1877f2; border-radius:6px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.2rem;" title="Copy link tagged specifically for FB Groups (?src=group)">
             👥 Group
           </button>
@@ -3616,7 +3619,7 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=224"></script>
+<script src="/js/dashboard.js?v=226"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

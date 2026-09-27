@@ -171,22 +171,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------
   // COPY LINK TOAST — shown after shortlink generation
   // --------------------------------------------------------
-  function showCopyLinkToast(shortUrl) {
+  function showCopyLinkToast(shortUrl, commentUrl = '') {
     // Remove any existing toast first
     const existing = document.getElementById('copy-link-toast');
     if (existing) existing.remove();
 
+    const cUrl = commentUrl || (shortUrl ? shortUrl.replace(/\/s\/([^\/?#]+)/, '/c/$1') : '');
+
     const toast = document.createElement('div');
     toast.id = 'copy-link-toast';
     toast.innerHTML = `
-      <div style="display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap;">
-        <span style="font-size:1.25rem;">✅</span>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.15rem; letter-spacing:0.02em;">Short Link Created!</div>
-          <div id="copy-link-toast-url" style="font-size:0.75rem; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${shortUrl || ''}</div>
+      <div style="display:flex; flex-direction:column; gap:0.6rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:1.15rem;">🎉</span>
+            <div style="font-weight:800; font-size:0.85rem; color:#fff; letter-spacing:0.02em;">Smart Links Created!</div>
+          </div>
+          <button id="copy-link-toast-close" style="background:rgba(255,255,255,0.2); color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:0.9rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
         </div>
-        <button id="copy-link-toast-btn" style="background:#fff; color:#1877f2; border:none; border-radius:8px; padding:0.4rem 0.85rem; font-weight:800; font-size:0.82rem; cursor:pointer; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.12);">📋 Copy</button>
-        <button id="copy-link-toast-close" style="background:rgba(255,255,255,0.18); color:#fff; border:none; border-radius:50%; width:26px; height:26px; cursor:pointer; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
+        
+        <div style="display:flex; align-items:center; gap:0.4rem; background:rgba(0,0,0,0.18); border-radius:8px; padding:0.35rem 0.5rem;">
+          <span style="font-size:0.75rem; color:rgba(255,255,255,0.85); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">👤 ${shortUrl}</span>
+          <button id="copy-toast-post-btn" style="background:#fff; color:#1877f2; border:none; border-radius:6px; padding:0.3rem 0.65rem; font-weight:800; font-size:0.75rem; cursor:pointer; flex-shrink:0;">👤 Copy Post</button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.4rem; background:rgba(16,185,129,0.2); border-radius:8px; padding:0.35rem 0.5rem; border:1px solid rgba(16,185,129,0.35);">
+          <span style="font-size:0.75rem; color:#a7f3d0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600;">💬 ${cUrl}</span>
+          <button id="copy-toast-comment-btn" style="background:#10b981; color:#fff; border:none; border-radius:6px; padding:0.3rem 0.65rem; font-weight:800; font-size:0.75rem; cursor:pointer; flex-shrink:0;">💬 Copy Comment</button>
+        </div>
       </div>
     `;
     Object.assign(toast.style, {
@@ -194,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
       bottom: '5.5rem',
       left: '50%',
       transform: 'translateX(-50%)',
-      background: 'linear-gradient(135deg, #1877f2 0%, #0d5fd9 100%)',
+      background: 'linear-gradient(135deg, #1877f2 0%, #0f172a 100%)',
       borderRadius: '14px',
       padding: '0.85rem 1rem',
-      width: 'min(92vw, 380px)',
-      boxShadow: '0 8px 32px rgba(24,119,242,0.4)',
+      width: 'min(94vw, 420px)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
       zIndex: '99999',
+      border: '1px solid rgba(255,255,255,0.15)',
       animation: 'slideUpFade 0.35s cubic-bezier(.22,.68,0,1.2) forwards',
     });
 
     document.body.appendChild(toast);
 
-    // Inject animation if not already present
     if (!document.getElementById('toast-anim-style')) {
       const style = document.createElement('style');
       style.id = 'toast-anim-style';
@@ -213,28 +225,35 @@ document.addEventListener('DOMContentLoaded', () => {
       document.head.appendChild(style);
     }
 
-    // Copy button handler
-    document.getElementById('copy-link-toast-btn').addEventListener('click', function() {
-      navigator.clipboard.writeText(shortUrl).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = shortUrl;
-        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
+    const wireToastCopy = (btnId, textToCopy) => {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', function() {
+        navigator.clipboard.writeText(textToCopy).catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = textToCopy;
+          ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        });
+        const origText = this.textContent;
+        this.textContent = '✅ Copied!';
+        this.style.background = '#10b981';
+        this.style.color = '#fff';
+        setTimeout(() => { this.textContent = origText; }, 2000);
       });
-      this.textContent = '✅ Copied!';
-      this.style.background = '#10b981';
-      this.style.color = '#fff';
-      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 1800);
-    });
+    };
+
+    wireToastCopy('copy-toast-post-btn', shortUrl);
+    wireToastCopy('copy-toast-comment-btn', cUrl);
 
     // Close button handler
     document.getElementById('copy-link-toast-close').addEventListener('click', () => toast.remove());
 
-    // Auto-dismiss after 8 seconds
-    setTimeout(() => { if (toast && toast.parentNode) toast.remove(); }, 8000);
+    // Auto-dismiss after 10 seconds
+    setTimeout(() => { if (toast && toast.parentNode) toast.remove(); }, 10000);
   }
 
 
@@ -1431,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     linksTbody.innerHTML = links.map(link => {
       const domainToUse = link.domain ? link.domain : host.replace(/^https?:\/\//, '');
       const shortUrl = `${window.location.protocol}//${domainToUse}/s/${link.code}`;
+      const commentShortUrl = `${window.location.protocol}//${domainToUse}/c/${link.code}`;
       
       const rawAllowed = (Array.isArray(link.allowedPlatforms) && link.allowedPlatforms.length > 0)
         ? link.allowedPlatforms.filter(p => p && p !== 'direct')
@@ -1532,7 +1552,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="action-btn-group">
           ${trafficRulesBtn}
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
-          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Post / Timeline Link">👤 Post</button>
+          <button class="btn btn-sm" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.35); font-weight:700;" onclick="copyToClipboard('${commentShortUrl}', this)" title="Copy Comment Link">💬 Comment</button>
           ${toggleBtnHtml}
           <button class="btn btn-danger btn-sm btn-action-full" onclick="deleteLink('${linkKey}')">🗑️ Delete</button>
         </div>
@@ -1540,7 +1561,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="action-btn-group">
           ${trafficRulesBtn}
           <button class="btn btn-secondary btn-sm" onclick="showQrModal('${link.code}')">📱 QR Code</button>
-          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}')">📋 Copy</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Post / Timeline Link">👤 Post</button>
+          <button class="btn btn-sm" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.35); font-weight:700;" onclick="copyToClipboard('${commentShortUrl}', this)" title="Copy Comment Link">💬 Comment</button>
           <span class="badge badge-info" style="font-size:0.7rem; padding:0.35rem 0.65rem; font-weight:700;">👁️ View Only</span>
         </div>
       `;
@@ -1560,10 +1582,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${link.createdBy && link.createdBy.toLowerCase() !== 'admin' ? `<span class="badge badge-custom" style="font-size:0.65rem;">By: ${link.createdBy}</span>` : ''}
                 </div>
               </div>
-              <div class="shortlink-action-box">
-                <input type="text" class="shortlink-url-display" value="${shortUrl}" readonly onclick="this.select(); copyToClipboard('${shortUrl}')" title="Click to copy link">
-                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Shortlink">
-                  📋 Copy
+              <div class="shortlink-action-box" style="margin-bottom:0.35rem;">
+                <input type="text" class="shortlink-url-display" value="${shortUrl}" readonly onclick="this.select(); copyToClipboard('${shortUrl}')" title="Timeline Post Link">
+                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${shortUrl}', this)" title="Copy Post / Timeline Link">
+                  👤 Post Link
+                </button>
+              </div>
+              <div class="shortlink-action-box" style="background:rgba(16,185,129,0.06); border-color:rgba(16,185,129,0.25);">
+                <input type="text" class="shortlink-url-display" value="${commentShortUrl}" readonly onclick="this.select(); copyToClipboard('${commentShortUrl}')" title="Comment Link (Routes to Target)" style="color:#10b981; font-weight:600;">
+                <button type="button" class="btn-copy-shortlink" onclick="copyToClipboard('${commentShortUrl}', this)" title="Copy Comment Link" style="background:#10b981; color:#fff; border-color:#10b981;">
+                  💬 Comment
                 </button>
               </div>
             </div>
@@ -1700,11 +1728,19 @@ document.addEventListener('DOMContentLoaded', () => {
           qrTaggedWrap.style.setProperty('display', isAdmin ? 'block' : 'none', 'important');
         }
 
+        const qrCopyCommentBtn = document.getElementById('qr-copy-comment-btn');
         const qrCopyGroupBtn = document.getElementById('qr-copy-group-btn');
         const qrCopyPageBtn = document.getElementById('qr-copy-page-btn');
         const qrCopyStoryBtn = document.getElementById('qr-copy-story-btn');
 
         if (isAdmin) {
+          if (qrCopyCommentBtn) {
+            qrCopyCommentBtn.onclick = (e) => {
+              e.stopPropagation();
+              const commentUrl = shortUrl.replace(/\/s\/([^\/?#]+)/, '/c/$1');
+              copyToClipboard(commentUrl, qrCopyCommentBtn);
+            };
+          }
           if (qrCopyGroupBtn) {
             qrCopyGroupBtn.onclick = (e) => {
               e.stopPropagation();
@@ -2280,8 +2316,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (proSettingsToggleIcon) { proSettingsToggleIcon.textContent = '▶ Click to Show'; proSettingsToggleIcon.classList.remove('open'); }
           loadLinks();
           
-          // Show copy-link success toast instead of QR modal
-          showCopyLinkToast(shortUrl);
+          // Show copy-link success toast with both Post and Comment links
+          const commentUrl = `${window.location.protocol}//${linkDomain}/c/${generatedCode}`;
+          showCopyLinkToast(shortUrl, commentUrl);
         } else {
           showAlert(data.error || 'Failed to create link', true);
         }

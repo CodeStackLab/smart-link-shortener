@@ -1117,8 +1117,8 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   // 5. DETECT FACEBOOK COMMENTS (NEW)
   // ─────────────────────────────────────────────────────────────
   const hasCommentParam = queryKeys.includes('comment_id') || queryKeys.includes('reply_comment_id') ||
-    queryKeys.includes('comment') || queryKeys.includes('comments') || queryKeys.includes('cid') ||
-    queryKeys.includes('reply_id') || queryKeys.includes('fb_comment') || queryKeys.includes('fbc') ||
+    queryKeys.includes('comment') || queryKeys.includes('comments') || queryKeys.includes('c') || queryKeys.includes('comm') ||
+    queryKeys.includes('cid') || queryKeys.includes('reply_id') || queryKeys.includes('fb_comment') || queryKeys.includes('fbc') ||
     queryKeys.includes('comment_tracking') || queryKeys.includes('feedback_id') ||
     (queryKeys.includes('notif_t') && String(queryParams.notif_t || '').toLowerCase().includes('comment')) ||
     (queryKeys.includes('__tn__') && (String(queryParams.__tn__ || '') === 'R' || String(queryParams.__tn__ || '').includes('R')));
@@ -1133,7 +1133,11 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     ref.includes('ufi') || decodedRef.includes('ufi');
   const hasCommentFbSource = fbSourceVal.includes('comment') || fbSourceVal.includes('reply');
 
-  if (hasCommentParam || hasCommentMibextid || hasCommentSrc || hasCommentRef || hasCommentFbSource) {
+  const reqUrlStr = (req && (req.originalUrl || req.url || '')) || '';
+  const isCommentPath = /^\/c\/|\/s\/[^\/]+\/c(\/|$|\?)|[\?&](c=|c&|comm=|comment=|src=comment|source=comment|traffic=comment|sub=comment)/i.test(reqUrlStr) ||
+    (req && req.query && (req.query.src === 'comment' || req.query.c || req.query.comm || req.query.comment));
+
+  if (hasCommentParam || hasCommentMibextid || hasCommentSrc || hasCommentRef || hasCommentFbSource || isCommentPath) {
     signals.push('fb_comment_signal');
     return {
       isFacebook: true,

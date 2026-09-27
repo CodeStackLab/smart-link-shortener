@@ -2157,6 +2157,10 @@ async function handleShortlinkRedirect(req, res) {
     return res.status(404).send('Not Found');
   }
 
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   const clientIp = getClientIp(req);
   const userAgent = req.headers['user-agent'] || '';
   const rawReferer = req.headers['referer'] || req.headers['referrer'] || '';
@@ -3018,6 +3022,37 @@ async function handleShortlinkRedirect(req, res) {
 }
 
 app.get('/s/:code', handleShortlinkRedirect);
+
+// Dedicated Comment Link Routes (e.g. goo33.online/c/vo43kj or /s/vo43kj/c)
+app.get('/c/:code', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'comment';
+  return handleShortlinkRedirect(req, res, next);
+});
+app.get('/s/:code/c', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'comment';
+  return handleShortlinkRedirect(req, res, next);
+});
+app.get('/s/:code/comment', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'comment';
+  return handleShortlinkRedirect(req, res, next);
+});
+
+// Dedicated Post / Timeline Link Route (e.g. goo33.online/p/vo43kj)
+app.get('/p/:code', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'profile';
+  return handleShortlinkRedirect(req, res, next);
+});
+
+// Dedicated Group Link Route (e.g. goo33.online/g/vo43kj)
+app.get('/g/:code', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'group';
+  return handleShortlinkRedirect(req, res, next);
+});
 
 // Serve Admin UI directly at /admin
 app.get('/admin', (req, res) => {
