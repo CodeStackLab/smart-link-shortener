@@ -677,10 +677,10 @@ test('28. Facebook Timeline Post Click: Profile OFF & Pages ON -> Timeline post 
     allowFbComments: false
   };
 
-  // Timeline Post Click (no paipv / page params)
+  // Explicit Timeline Post Click (tagged with src=profile or /p/:code)
   const timelineClick = simulateRedirectDecision(
     link,
-    { query: { fbclid: 'IwAR3xxxxxx' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx' },
+    { query: { fbclid: 'IwAR3xxxxxx', src: 'profile' }, url: '/p/vo43kj?fbclid=IwAR3xxxxxx' },
     'https://lm.facebook.com/',
     'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 [FB_IAB/FB4A;]',
     { isp: 'Residential ISP', isVpn: false }
@@ -688,10 +688,10 @@ test('28. Facebook Timeline Post Click: Profile OFF & Pages ON -> Timeline post 
   assert.strictEqual(timelineClick.status, 'FB_PROFILE_BLOCKED');
   assert.strictEqual(timelineClick.destination, 'fallback');
 
-  // Page Post Click (has paipv=1)
+  // Page Post Click on standard link /s/vo43kj (when Pages is the allowed campaign source)
   const pageClick = simulateRedirectDecision(
     link,
-    { query: { fbclid: 'IwAR3xxxxxx', paipv: '1' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx&paipv=1' },
+    { query: { fbclid: 'IwAR3xxxxxx' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx' },
     'https://lm.facebook.com/',
     'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 [FB_IAB/FB4A;]',
     { isp: 'Residential ISP', isVpn: false }

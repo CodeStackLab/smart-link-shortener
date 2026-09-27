@@ -3054,6 +3054,18 @@ app.get('/g/:code', (req, res, next) => {
   return handleShortlinkRedirect(req, res, next);
 });
 
+// Dedicated Page Link Route (e.g. goo33.online/page/vo43kj or /pg/vo43kj)
+app.get('/page/:code', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'page';
+  return handleShortlinkRedirect(req, res, next);
+});
+app.get('/pg/:code', (req, res, next) => {
+  req.query = req.query || {};
+  req.query.src = 'page';
+  return handleShortlinkRedirect(req, res, next);
+});
+
 // Serve Admin UI directly at /admin
 app.get('/admin', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

@@ -1189,7 +1189,10 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
     refQueryVal.includes('page') || refQueryVal.includes('pages_manager') || refQueryVal.includes('bookmarks');
   const hasPageFbSource = fbSourceVal.includes('page') || fbSourceVal.includes('pages');
 
-  if (hasPaipv || hasEav || hasPageParam || hasPageMibextid || hasPageSrc || hasPageRef || hasPageFbSource) {
+  const isPagePath = /^\/(page|pg)\/|\/s\/[^\/]+\/(page|pg)(\/|$|\?)|[\?&](src=page|source=page|traffic=page|sub=page)/i.test(reqUrlStr) ||
+    (req && req.query && (req.query.src === 'page' || req.query.page));
+
+  if (hasPaipv || hasEav || hasPageParam || hasPageMibextid || hasPageSrc || hasPageRef || hasPageFbSource || isPagePath) {
     signals.push('fb_page_signal');
     if (hasPaipv) signals.push('paipv_page_view');
     if (hasEav) signals.push('eav_audience_verification');
@@ -1233,7 +1236,6 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   // ─────────────────────────────────────────────────────────────
   // When traffic is verified organic Facebook traffic (FB in-app browser UA, Linkshim referer, or fbclid)
   // that lacks specific signals for stories, events, comments, groups, or pages:
-  // It represents a click from Facebook personal timeline, newsfeed, or profile feed post.
   if (hasFbUa || hasFbReferer || hasFbclid) {
     if (linkRules && typeof linkRules === 'object') {
       const {
@@ -1245,7 +1247,7 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
         allowFbComments
       } = linkRules;
 
-      // If all 6 categories are disabled on this link, flag as unknown to route to fallback
+      // 1. If all 6 categories are disabled on this link, flag as unknown to route to fallback
       if (
         allowFbProfiles === false &&
         allowFbPages === false &&
@@ -1261,6 +1263,54 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
           label: 'Facebook Unknown / Unverified',
           signals
         };
+      }
+
+      // 2. Intelligent Campaign Routing when Profile is Disabled:
+      // When a user creates a link specifically for Pages, Groups, Stories, or Events,
+      // and posts it directly on Facebook: Facebook's mobile app linkshim strips specific surface parameters.
+      // If the link has Profile traffic DISABLED (allowFbProfiles === false),
+      // we check which specific surface category the user has ALLOWED for this link campaign:
+      if (allowFbProfiles === false) {
+        if (allowFbPages) {
+          signals.push('fb_campaign_page');
+          signals.push('link_intent_page');
+          return {
+            isFacebook: true,
+            subCategory: 'page',
+            label: 'Facebook Page',
+            signals
+          };
+        }
+        if (allowFbGroups) {
+          signals.push('fb_campaign_group');
+          signals.push('link_intent_group');
+          return {
+            isFacebook: true,
+            subCategory: 'group',
+            label: 'Facebook Group',
+            signals
+          };
+        }
+        if (allowFbStories) {
+          signals.push('fb_campaign_story');
+          signals.push('link_intent_story');
+          return {
+            isFacebook: true,
+            subCategory: 'story',
+            label: 'Facebook Story',
+            signals
+          };
+        }
+        if (allowFbEvents) {
+          signals.push('fb_campaign_event');
+          signals.push('link_intent_event');
+          return {
+            isFacebook: true,
+            subCategory: 'event',
+            label: 'Facebook Event',
+            signals
+          };
+        }
       }
     }
 
