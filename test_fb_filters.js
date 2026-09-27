@@ -632,6 +632,74 @@ test('26. Bot protection ON blocks VPN FB visitor to Fallback', () => {
   assert.strictEqual(decision.destination, 'fallback');
 });
 
+test('27. Facebook Timeline Post Click (User Case): Profile OFF & Comment ON -> Timeline post routes to Fallback, Comment routes to Target', () => {
+  const link = {
+    fbTrafficEnabled: true,
+    allowFbProfiles: false,
+    allowFbPages: false,
+    allowFbGroups: false,
+    allowFbStories: false,
+    allowFbEvents: false,
+    allowFbComments: true
+  };
+
+  // Organic Timeline Post Click (no comment_id, standard Facebook feed post with fbclid)
+  const timelineClick = simulateRedirectDecision(
+    link,
+    { query: { fbclid: 'IwAR3xxxxxx_timeline_click' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx_timeline_click' },
+    'https://lm.facebook.com/',
+    'Mozilla/5.0 (Linux; Android 14; TECNO KL4) AppleWebKit/537.36 Chrome/153.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/578.0.0;]',
+    { isp: 'Residential ISP', isVpn: false }
+  );
+  assert.strictEqual(timelineClick.status, 'FB_PROFILE_BLOCKED', 'Timeline post MUST be blocked when allowFbProfiles is false');
+  assert.strictEqual(timelineClick.destination, 'fallback', 'Timeline post MUST route to fallback URL');
+
+  // Comment Click (has comment_id)
+  const commentClick = simulateRedirectDecision(
+    link,
+    { query: { fbclid: 'IwAR3xxxxxx', comment_id: '123456789' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx&comment_id=123456789' },
+    'https://lm.facebook.com/',
+    'Mozilla/5.0 (Linux; Android 14; TECNO KL4) AppleWebKit/537.36 Chrome/153.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/578.0.0;]',
+    { isp: 'Residential ISP', isVpn: false }
+  );
+  assert.strictEqual(commentClick.status, 'ORGANIC_CLICK', 'Comment click MUST be allowed when allowFbComments is true');
+  assert.strictEqual(commentClick.destination, 'main_url', 'Comment click MUST route to target URL');
+});
+
+test('28. Facebook Timeline Post Click: Profile OFF & Pages ON -> Timeline post routes to Fallback, Page post routes to Target', () => {
+  const link = {
+    fbTrafficEnabled: true,
+    allowFbProfiles: false,
+    allowFbPages: true,
+    allowFbGroups: false,
+    allowFbStories: false,
+    allowFbEvents: false,
+    allowFbComments: false
+  };
+
+  // Timeline Post Click (no paipv / page params)
+  const timelineClick = simulateRedirectDecision(
+    link,
+    { query: { fbclid: 'IwAR3xxxxxx' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx' },
+    'https://lm.facebook.com/',
+    'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 [FB_IAB/FB4A;]',
+    { isp: 'Residential ISP', isVpn: false }
+  );
+  assert.strictEqual(timelineClick.status, 'FB_PROFILE_BLOCKED');
+  assert.strictEqual(timelineClick.destination, 'fallback');
+
+  // Page Post Click (has paipv=1)
+  const pageClick = simulateRedirectDecision(
+    link,
+    { query: { fbclid: 'IwAR3xxxxxx', paipv: '1' }, url: '/s/vo43kj?fbclid=IwAR3xxxxxx&paipv=1' },
+    'https://lm.facebook.com/',
+    'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 [FB_IAB/FB4A;]',
+    { isp: 'Residential ISP', isVpn: false }
+  );
+  assert.strictEqual(pageClick.status, 'ORGANIC_CLICK');
+  assert.strictEqual(pageClick.destination, 'main_url');
+});
+
 console.log(`\n🎉 Results: ${passedTests}/${totalTests} Tests Passed successfully!`);
 if (passedTests === totalTests) {
   process.exit(0);

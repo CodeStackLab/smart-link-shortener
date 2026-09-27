@@ -1119,7 +1119,9 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   const hasCommentParam = queryKeys.includes('comment_id') || queryKeys.includes('reply_comment_id') ||
     queryKeys.includes('comment') || queryKeys.includes('comments') || queryKeys.includes('cid') ||
     queryKeys.includes('reply_id') || queryKeys.includes('fb_comment') || queryKeys.includes('fbc') ||
-    queryKeys.includes('comment_tracking');
+    queryKeys.includes('comment_tracking') || queryKeys.includes('feedback_id') ||
+    (queryKeys.includes('notif_t') && String(queryParams.notif_t || '').toLowerCase().includes('comment')) ||
+    (queryKeys.includes('__tn__') && (String(queryParams.__tn__ || '') === 'R' || String(queryParams.__tn__ || '').includes('R')));
 
   const hasCommentMibextid = mibextidVal.toLowerCase().includes('comment') || mibextidVal.toLowerCase().includes('reply');
   const hasCommentSrc = srcVal.includes('comment') || srcVal.includes('comments') || srcVal.includes('reply') ||
@@ -1127,7 +1129,8 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   const hasCommentRef = ref.includes('comment_id') || ref.includes('reply_comment_id') ||
     ref.includes('/comments/') || ref.includes('comment.php') ||
     decodedRef.includes('comment_id') || decodedRef.includes('reply_comment_id') || decodedRef.includes('/comments/') ||
-    refQueryVal.includes('comment') || refQueryVal.includes('reply');
+    refQueryVal.includes('comment') || refQueryVal.includes('reply') ||
+    ref.includes('ufi') || decodedRef.includes('ufi');
   const hasCommentFbSource = fbSourceVal.includes('comment') || fbSourceVal.includes('reply');
 
   if (hasCommentParam || hasCommentMibextid || hasCommentSrc || hasCommentRef || hasCommentFbSource) {
@@ -1222,10 +1225,11 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 9. CONTEXTUAL ROUTING FOR ORGANIC FACEBOOK IN-APP TRAFFIC
+  // 9. ORGANIC FACEBOOK IN-APP / TIMELINE FEED TRAFFIC
   // ─────────────────────────────────────────────────────────────
   // When traffic is verified organic Facebook traffic (FB in-app browser UA, Linkshim referer, or fbclid)
-  // but Facebook's linkshim stripped the specific surface parameters:
+  // that lacks specific signals for stories, events, comments, groups, or pages:
+  // It represents a click from Facebook personal timeline, newsfeed, or profile feed post.
   if (hasFbUa || hasFbReferer || hasFbclid) {
     if (linkRules && typeof linkRules === 'object') {
       const {
@@ -1237,45 +1241,26 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
         allowFbComments
       } = linkRules;
 
-      const allowedCategories = [];
-      if (allowFbPages) allowedCategories.push('page');
-      if (allowFbProfiles) allowedCategories.push('profile');
-      if (allowFbGroups) allowedCategories.push('group');
-      if (allowFbStories) allowedCategories.push('story');
-      if (allowFbEvents) allowedCategories.push('event');
-      if (allowFbComments) allowedCategories.push('comment');
-
-      // If at least one category is enabled, assign to the enabled campaign category for this link
-      if (allowedCategories.length > 0) {
-        const cat = allowedCategories[0];
-        const labels = {
-          page: 'Facebook Page',
-          profile: 'Facebook Profile',
-          group: 'Facebook Group',
-          story: 'Facebook Story',
-          event: 'Facebook Event',
-          comment: 'Facebook Comment'
-        };
-        signals.push(`fb_campaign_${cat}`);
+      // If all 6 categories are disabled on this link, flag as unknown to route to fallback
+      if (
+        allowFbProfiles === false &&
+        allowFbPages === false &&
+        allowFbGroups === false &&
+        allowFbStories === false &&
+        allowFbEvents === false &&
+        allowFbComments === false
+      ) {
+        signals.push('fb_all_sources_disabled');
         return {
           isFacebook: true,
-          subCategory: cat,
-          label: labels[cat] || 'Facebook Organic',
+          subCategory: 'unknown',
+          label: 'Facebook Unknown / Unverified',
           signals
         };
       }
-
-      // If all 6 categories are disabled on this link
-      signals.push('fb_all_sources_disabled');
-      return {
-        isFacebook: true,
-        subCategory: 'unknown',
-        label: 'Facebook Unknown / Unverified',
-        signals
-      };
     }
 
-    // Default if no linkRules provided: standard organic profile click
+    // Standard organic Facebook timeline post / profile feed click
     signals.push('fb_profile_origin');
     return {
       isFacebook: true,
