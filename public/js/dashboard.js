@@ -171,33 +171,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------
   // COPY LINK TOAST — shown after shortlink generation
   // --------------------------------------------------------
-  function showCopyLinkToast(shortUrl, commentUrl = '') {
+  function showCopyLinkToast(shortUrl) {
     // Remove any existing toast first
     const existing = document.getElementById('copy-link-toast');
     if (existing) existing.remove();
 
-    const cUrl = commentUrl || (shortUrl ? shortUrl.replace(/\/s\/([^\/?#]+)/, '/c/$1') : '');
-
     const toast = document.createElement('div');
     toast.id = 'copy-link-toast';
     toast.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:0.6rem;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
-          <div style="display:flex; align-items:center; gap:0.5rem;">
-            <span style="font-size:1.15rem;">🎉</span>
-            <div style="font-weight:800; font-size:0.85rem; color:#fff; letter-spacing:0.02em;">Smart Links Created!</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:0.6rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; overflow:hidden; flex:1;">
+          <span style="font-size:1.15rem; background:#10b981; color:#fff; border-radius:6px; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; font-size:0.85rem;">✓</span>
+          <div style="display:flex; flex-direction:column; overflow:hidden;">
+            <div style="font-weight:800; font-size:0.82rem; color:#fff; white-space:nowrap;">Short Link Created!</div>
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${shortUrl}</div>
           </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
+          <button id="copy-toast-post-btn" style="background:#fff; color:#1877f2; border:none; border-radius:8px; padding:0.35rem 0.75rem; font-weight:800; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; gap:0.3rem;">📋 Copy</button>
           <button id="copy-link-toast-close" style="background:rgba(255,255,255,0.2); color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:0.9rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
-        </div>
-        
-        <div style="display:flex; align-items:center; gap:0.4rem; background:rgba(0,0,0,0.18); border-radius:8px; padding:0.35rem 0.5rem;">
-          <span style="font-size:0.75rem; color:rgba(255,255,255,0.85); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">👤 ${shortUrl}</span>
-          <button id="copy-toast-post-btn" style="background:#fff; color:#1877f2; border:none; border-radius:6px; padding:0.3rem 0.65rem; font-weight:800; font-size:0.75rem; cursor:pointer; flex-shrink:0;">👤 Copy Post</button>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:0.4rem; background:rgba(16,185,129,0.2); border-radius:8px; padding:0.35rem 0.5rem; border:1px solid rgba(16,185,129,0.35);">
-          <span style="font-size:0.75rem; color:#a7f3d0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600;">💬 ${cUrl}</span>
-          <button id="copy-toast-comment-btn" style="background:#10b981; color:#fff; border:none; border-radius:6px; padding:0.3rem 0.65rem; font-weight:800; font-size:0.75rem; cursor:pointer; flex-shrink:0;">💬 Copy Comment</button>
         </div>
       </div>
     `;
@@ -225,13 +217,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.head.appendChild(style);
     }
 
-    const wireToastCopy = (btnId, textToCopy) => {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
+    const btn = document.getElementById('copy-toast-post-btn');
+    if (btn) {
       btn.addEventListener('click', function() {
-        navigator.clipboard.writeText(textToCopy).catch(() => {
+        navigator.clipboard.writeText(shortUrl).catch(() => {
           const ta = document.createElement('textarea');
-          ta.value = textToCopy;
+          ta.value = shortUrl;
           ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;';
           document.body.appendChild(ta);
           ta.select();
@@ -242,12 +233,13 @@ document.addEventListener('DOMContentLoaded', () => {
         this.textContent = '✅ Copied!';
         this.style.background = '#10b981';
         this.style.color = '#fff';
-        setTimeout(() => { this.textContent = origText; }, 2000);
+        setTimeout(() => {
+          this.textContent = origText;
+          this.style.background = '#fff';
+          this.style.color = '#1877f2';
+        }, 2000);
       });
-    };
-
-    wireToastCopy('copy-toast-post-btn', shortUrl);
-    wireToastCopy('copy-toast-comment-btn', cUrl);
+    }
 
     // Close button handler
     document.getElementById('copy-link-toast-close').addEventListener('click', () => toast.remove());
@@ -2308,9 +2300,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (proSettingsToggleIcon) { proSettingsToggleIcon.textContent = '▶ Click to Show'; proSettingsToggleIcon.classList.remove('open'); }
           loadLinks();
           
-          // Show copy-link success toast with both Post and Comment links
-          const commentUrl = `${window.location.protocol}//${linkDomain}/c/${generatedCode}`;
-          showCopyLinkToast(shortUrl, commentUrl);
+          // Show copy-link success toast
+          showCopyLinkToast(shortUrl);
         } else {
           showAlert(data.error || 'Failed to create link', true);
         }

@@ -1264,64 +1264,6 @@ function classifyFacebookTraffic(req = null, rawReferer = '', userAgent = '', ge
           signals
         };
       }
-
-      // 2. Intelligent Campaign Routing when Profile is Disabled:
-      // When a user creates a link specifically for Pages, Groups, Stories, or Events,
-      // and posts it directly on Facebook: Facebook's mobile app linkshim strips specific surface parameters.
-      // If the link has Profile traffic DISABLED (allowFbProfiles === false),
-      // we check which specific surface category the user has ALLOWED for this link campaign:
-      if (allowFbProfiles === false) {
-        if (allowFbPages) {
-          signals.push('fb_campaign_page');
-          signals.push('link_intent_page');
-          return {
-            isFacebook: true,
-            subCategory: 'page',
-            label: 'Facebook Page',
-            signals
-          };
-        }
-        if (allowFbGroups) {
-          signals.push('fb_campaign_group');
-          signals.push('link_intent_group');
-          return {
-            isFacebook: true,
-            subCategory: 'group',
-            label: 'Facebook Group',
-            signals
-          };
-        }
-        if (allowFbComments) {
-          signals.push('fb_campaign_comment');
-          signals.push('link_intent_comment');
-          return {
-            isFacebook: true,
-            subCategory: 'comment',
-            label: 'Facebook Comment',
-            signals
-          };
-        }
-        if (allowFbStories) {
-          signals.push('fb_campaign_story');
-          signals.push('link_intent_story');
-          return {
-            isFacebook: true,
-            subCategory: 'story',
-            label: 'Facebook Story',
-            signals
-          };
-        }
-        if (allowFbEvents) {
-          signals.push('fb_campaign_event');
-          signals.push('link_intent_event');
-          return {
-            isFacebook: true,
-            subCategory: 'event',
-            label: 'Facebook Event',
-            signals
-          };
-        }
-      }
     }
 
     // Standard organic Facebook timeline post / profile feed click
