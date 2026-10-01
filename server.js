@@ -289,17 +289,14 @@ function getClientIp(req) {
 
 function isSocialRelayRequest(geoInfo, referer = '', userAgent = '') {
   const network = String(geoInfo && geoInfo.isp || '').toLowerCase();
-  const source = String(referer || '').toLowerCase();
   const ua = String(userAgent || '').toLowerCase();
-  const fromFacebook = /(^https?:\/\/)?([a-z0-9-]+\.)?(facebook\.com|fb\.com|fb\.me|messenger\.com)/.test(source);
   const isFacebookApp = /fb_iab|fb4a|fban|fbios|messenger/.test(ua);
   
   // Datacenter / Cloud / Hosting ASNs that run crawlers, preview bots, and relays
-  const isCloudDatacenter = Boolean(geoInfo && geoInfo.isVpn) || /amazon|aws|meta platforms|facebook|google|microsoft|azure|oracle|digitalocean|hetzner|ovh|linode|vultr|leaseweb|reliablesite|servers tech|m247|choopa|hostinger|contabo|akamai|cloudflare|fastly/.test(network);
+  const isCloudDatacenter = /amazon|aws|meta platforms|facebook|google|microsoft|azure|oracle|digitalocean|hetzner|ovh|linode|vultr|leaseweb|reliablesite|servers tech|m247|choopa|hostinger|contabo|akamai|cloudflare|fastly/i.test(network);
   
-  // Any hit from a cloud/datacenter IP that is NOT a genuine mobile in-app browser is a social relay or crawler
+  // Any hit from a cloud/datacenter IP or Meta inspection range that is NOT a genuine mobile in-app browser is a social relay or crawler
   if (isCloudDatacenter && !isFacebookApp) return true;
-  if (fromFacebook && isCloudDatacenter) return true;
   return false;
 }
 

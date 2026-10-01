@@ -39,6 +39,12 @@ function isSocialScraper(userAgent = '') {
   return (
     ua.includes('facebookexternalhit') ||
     ua.includes('facebot')             ||
+    ua.includes('facebookcatalog')     ||
+    ua.includes('facebookplatform')    ||
+    ua.includes('meta-externalagent')  ||
+    ua.includes('meta-externalfetcher')||
+    ua.includes('meta-webfetcher')     ||
+    ua.includes('meta-pico-fetcher')   ||
     ua.includes('whatsapp')            ||
     ua.includes('telegrambot')         ||
     ua.includes('twitterbot')          ||
