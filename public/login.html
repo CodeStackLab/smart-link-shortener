@@ -6,11 +6,11 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#030914">
+  <meta name="theme-color" content="#020817">
   <title>Strong Link 64 Shotner — Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/images/stronglink64_logo.png" type="image/png">
   <link rel="apple-touch-icon" href="/images/stronglink64_logo.png">
@@ -18,14 +18,13 @@
 
   <style>
     :root {
-      --bg-dark: #020713;
+      --bg-dark: #020817;
       --cyan-bright: #00d2ff;
-      --cyan-glow: rgba(0, 210, 255, 0.6);
-      --blue-primary: #0077ff;
-      --neon-green: #00ff88;
-      --border-blue: #0094ff;
-      --card-bg: rgba(4, 18, 42, 0.72);
-      --text-muted: #8aa4c2;
+      --cyan-electric: #00f0ff;
+      --blue-border: #0077e6;
+      --blue-input-border: #0090ff;
+      --neon-green: #00e676;
+      --text-muted: #8ea8c9;
     }
 
     * {
@@ -37,7 +36,7 @@
 
     body {
       background-color: var(--bg-dark);
-      font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
       color: #ffffff;
       min-height: 100vh;
       display: flex;
@@ -46,40 +45,16 @@
       overflow-x: hidden;
       position: relative;
       background-image: 
-        radial-gradient(circle at 50% 12%, rgba(0, 190, 255, 0.28) 0%, transparent 48%),
-        radial-gradient(circle at 10% 28%, rgba(0, 110, 255, 0.25) 0%, transparent 42%),
-        radial-gradient(circle at 90% 40%, rgba(0, 210, 255, 0.22) 0%, transparent 40%),
-        radial-gradient(circle at 50% 95%, rgba(0, 140, 255, 0.3) 0%, transparent 50%),
-        linear-gradient(180deg, #020612 0%, #041026 50%, #020612 100%);
+        radial-gradient(circle at 50% 14%, rgba(0, 190, 255, 0.32) 0%, transparent 48%),
+        radial-gradient(circle at 10% 28%, rgba(0, 120, 255, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 90% 42%, rgba(0, 210, 255, 0.25) 0%, transparent 42%),
+        radial-gradient(circle at 50% 92%, rgba(0, 150, 255, 0.32) 0%, transparent 50%),
+        linear-gradient(180deg, #020612 0%, #030e26 50%, #020612 100%);
       background-attachment: fixed;
     }
 
-    /* Ambient background wave ribbons matching design */
-    .bg-wave-ribbon {
-      position: absolute;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .ribbon-1 {
-      top: -50px;
-      left: -120px;
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(ellipse at center, rgba(0, 140, 255, 0.35) 0%, transparent 70%);
-      filter: blur(55px);
-    }
-
-    .ribbon-2 {
-      bottom: -80px;
-      right: -100px;
-      width: 480px;
-      height: 480px;
-      background: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.28) 0%, transparent 70%);
-      filter: blur(55px);
-    }
-
-    .ambient-curves {
+    /* Ambient Silk Energy Waves matching screenshot */
+    .ambient-waves-wrap {
       position: fixed;
       top: 0;
       left: 0;
@@ -87,21 +62,26 @@
       height: 100%;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.75;
+      overflow: hidden;
+    }
+
+    .ambient-waves {
+      width: 100%;
+      height: 100%;
     }
 
     .login-container {
       position: relative;
       z-index: 1;
-      width: 100%;
-      max-width: 400px;
-      padding: 16px 20px 28px 20px;
+      width: 90%;
+      max-width: 490px;
+      padding: 20px 16px 36px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    /* Top Bar */
+    /* Top Navigation */
     .top-nav {
       width: 100%;
       display: flex;
@@ -128,61 +108,63 @@
       opacity: 1;
     }
 
-    /* Logo Area */
+    /* Center Glowing Logo */
     .logo-wrapper {
       position: relative;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
     .logo-img {
-      width: 140px;
+      width: 155px;
       height: auto;
       object-fit: contain;
-      
-      filter: drop-shadow(0 0 24px rgba(0, 210, 255, 0.95));
-      animation: pulse-glow 3.5s ease-in-out infinite alternate;
+      mix-blend-mode: screen;
+      filter: drop-shadow(0 0 25px rgba(0, 210, 255, 0.95)) drop-shadow(0 0 10px rgba(0, 150, 255, 0.8));
+      animation: logo-glow-pulse 3.5s ease-in-out infinite alternate;
     }
 
-    @keyframes pulse-glow {
+    @keyframes logo-glow-pulse {
       0% {
-        filter: drop-shadow(0 0 20px rgba(0, 200, 255, 0.8)) drop-shadow(0 0 8px rgba(0, 130, 255, 0.5));
+        transform: scale(1);
+        filter: drop-shadow(0 0 20px rgba(0, 200, 255, 0.85)) drop-shadow(0 0 8px rgba(0, 130, 255, 0.6));
       }
       100% {
-        filter: drop-shadow(0 0 34px rgba(0, 235, 255, 1)) drop-shadow(0 0 16px rgba(0, 160, 255, 0.7));
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 35px rgba(0, 235, 255, 1)) drop-shadow(0 0 16px rgba(0, 170, 255, 0.9));
       }
     }
 
-    /* Branding Typography */
+    /* Typography Branding */
     .brand-title {
-      font-size: 2.25rem;
+      font-size: 2.35rem;
       font-weight: 800;
       letter-spacing: -0.5px;
       text-align: center;
       color: #ffffff;
       line-height: 1.15;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .brand-title .num-accent {
       color: var(--cyan-bright);
-      text-shadow: 0 0 20px rgba(0, 210, 255, 0.85);
+      text-shadow: 0 0 22px rgba(0, 210, 255, 0.9);
     }
 
     .brand-subtitle-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 4px;
+      gap: 14px;
+      margin-bottom: 5px;
       width: 100%;
     }
 
     .subtitle-line {
       height: 2.2px;
-      width: 48px;
+      width: 50px;
       background: linear-gradient(90deg, transparent, var(--cyan-bright));
       border-radius: 2px;
       box-shadow: 0 0 10px var(--cyan-bright);
@@ -193,7 +175,7 @@
     }
 
     .brand-subtitle {
-      font-size: 1.75rem;
+      font-size: 1.85rem;
       font-weight: 800;
       letter-spacing: -0.2px;
       color: #ffffff;
@@ -201,20 +183,20 @@
     }
 
     .brand-tagline {
-      font-size: 0.86rem;
+      font-size: 0.92rem;
       font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.6px;
+      color: #94a3b8;
+      letter-spacing: 0.8px;
       text-align: center;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .brand-tagline .dot {
-      color: var(--cyan-bright);
-      margin: 0 5px;
+      color: #94a3b8;
+      margin: 0 6px;
     }
 
-    /* Alert Banner */
+    /* Error Alert Banner */
     #login-alert {
       display: none;
       width: 100%;
@@ -231,31 +213,62 @@
       backdrop-filter: blur(10px);
     }
 
-    /* Form Container Box */
-    .form-box {
+    /* Inputs Double-Framed Card */
+    .inputs-outer-card {
+      position: relative;
       width: 100%;
-      background: var(--card-bg);
-      border: 2px solid var(--border-blue);
+      background: rgba(3, 14, 38, 0.65);
+      border: 2px solid var(--blue-border);
       border-radius: 20px;
       box-shadow: 
-        0 0 24px rgba(0, 144, 255, 0.42),
-        inset 0 0 16px rgba(0, 144, 255, 0.12);
+        0 0 22px rgba(0, 119, 230, 0.38),
+        inset 0 0 14px rgba(0, 119, 230, 0.12);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      overflow: hidden;
-      margin-bottom: 18px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
-    .input-row {
+    /* Glowing Side Pins on Outer Frame */
+    .neon-edge-pin {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3.5px;
+      height: 46px;
+      background: var(--cyan-electric);
+      box-shadow: 0 0 14px 3px var(--cyan-electric), 0 0 24px 6px rgba(0, 240, 255, 0.8);
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    .neon-edge-pin.pin-left {
+      left: -2.5px;
+    }
+
+    .neon-edge-pin.pin-right {
+      right: -2.5px;
+    }
+
+    /* Inner Input Boxes */
+    .input-box {
       display: flex;
       align-items: center;
-      padding: 14px 18px;
+      background: rgba(2, 12, 30, 0.85);
+      border: 1.8px solid var(--blue-input-border);
+      border-radius: 14px;
+      box-shadow: 0 0 12px rgba(0, 144, 255, 0.3);
+      padding: 12px 16px;
       gap: 14px;
-      position: relative;
+      transition: all 0.2s ease;
     }
 
-    .input-row:not(:last-child) {
-      border-bottom: 1.5px solid rgba(0, 144, 255, 0.35);
+    .input-box:focus-within {
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.65), inset 0 0 8px rgba(0, 210, 255, 0.2);
     }
 
     .input-icon {
@@ -263,8 +276,14 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: var(--cyan-bright);
-      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.6));
+    }
+
+    .user-icon {
+      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.8));
+    }
+
+    .lock-icon {
+      filter: drop-shadow(0 0 8px rgba(0, 180, 255, 0.85));
     }
 
     .input-field {
@@ -273,14 +292,14 @@
       border: none;
       outline: none;
       font-family: inherit;
-      font-size: 1.02rem;
+      font-size: 1.15rem;
       font-weight: 600;
       color: #ffffff;
       letter-spacing: 0.2px;
     }
 
     .input-field::placeholder {
-      color: #8da9cb;
+      color: #8da6c7;
       font-weight: 500;
       opacity: 0.95;
     }
@@ -301,30 +320,31 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #8da9cb;
-      transition: color 0.2s ease, filter 0.2s ease;
+      color: #7f9bbd;
+      transition: all 0.2s ease;
       flex-shrink: 0;
     }
 
     .password-toggle-btn:hover,
     .password-toggle-btn.active {
       color: var(--cyan-bright);
-      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.8));
+      filter: drop-shadow(0 0 8px var(--cyan-bright));
     }
 
     /* Big Glowing Login Button */
     .login-btn {
       width: 100%;
-      height: 54px;
-      border-radius: 27px;
+      height: 56px;
+      border-radius: 9999px;
       border: none;
-      background: linear-gradient(180deg, #00d2ff 0%, #006aff 100%);
+      background: linear-gradient(180deg, #00d2ff 0%, #0088ff 55%, #0066ee 100%);
       box-shadow: 
-        0 0 30px rgba(0, 195, 255, 0.8),
-        0 4px 18px rgba(0, 106, 255, 0.5);
+        0 0 32px rgba(0, 200, 255, 0.9),
+        0 4px 20px rgba(0, 100, 255, 0.55),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
       color: #ffffff;
       font-family: inherit;
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       font-weight: 800;
       letter-spacing: 0.4px;
       cursor: pointer;
@@ -332,23 +352,20 @@
       align-items: center;
       justify-content: center;
       transition: all 0.22s ease;
-      margin-bottom: 20px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      margin-bottom: 16px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
     }
 
     .login-btn:hover {
-      background: linear-gradient(180deg, #24ddff 0%, #007aff 100%);
+      background: linear-gradient(180deg, #2ae0ff 0%, #0099ff 55%, #0077ff 100%);
       box-shadow: 
-        0 0 38px rgba(0, 220, 255, 1),
-        0 4px 22px rgba(0, 120, 255, 0.65);
+        0 0 42px rgba(0, 230, 255, 1),
+        0 4px 24px rgba(0, 120, 255, 0.75);
       transform: translateY(-1px);
     }
 
     .login-btn:active {
       transform: translateY(1px) scale(0.99);
-      box-shadow: 
-        0 0 20px rgba(0, 180, 255, 0.7),
-        0 2px 10px rgba(0, 80, 255, 0.4);
     }
 
     .login-btn.loading {
@@ -357,8 +374,8 @@
     }
 
     .spinner {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border: 3px solid rgba(255, 255, 255, 0.3);
       border-top-color: #ffffff;
       border-radius: 50%;
@@ -370,40 +387,39 @@
       to { transform: rotate(360deg); }
     }
 
-    /* WhatsApp Action Card */
-    .contact-card {
+    /* Pill Action Cards (WhatsApp & JazzCash) */
+    .pill-card {
       width: 100%;
-      background: var(--card-bg);
-      border: 2px solid var(--border-blue);
-      border-radius: 28px;
+      background: rgba(2, 14, 38, 0.7);
+      border: 2px solid #00aaff;
+      border-radius: 9999px;
       box-shadow: 
-        0 0 22px rgba(0, 144, 255, 0.38),
-        inset 0 0 12px rgba(0, 144, 255, 0.1);
+        0 0 24px rgba(0, 170, 255, 0.45),
+        inset 0 0 12px rgba(0, 170, 255, 0.15);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      padding: 9px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 8px 18px;
+      display: block;
       text-decoration: none;
       color: inherit;
       cursor: pointer;
       transition: all 0.22s ease;
-      margin-bottom: 16px;
+      user-select: none;
     }
 
-    .contact-card:hover {
-      border-color: #00b4ff;
+    .pill-card:hover {
+      border-color: #00d2ff;
       box-shadow: 
-        0 0 30px rgba(0, 180, 255, 0.6),
-        inset 0 0 16px rgba(0, 180, 255, 0.18);
+        0 0 34px rgba(0, 210, 255, 0.7),
+        inset 0 0 16px rgba(0, 210, 255, 0.22);
       transform: translateY(-1px);
     }
 
-    .card-left {
+    .pill-card-inner {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      width: 100%;
     }
 
     .whatsapp-badge {
@@ -414,7 +430,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 16px rgba(37, 211, 102, 0.7);
+      box-shadow: 0 0 16px rgba(37, 211, 102, 0.8);
       flex-shrink: 0;
     }
 
@@ -424,45 +440,57 @@
       fill: #ffffff;
     }
 
-    .card-divider {
+    .pill-divider {
       width: 1.5px;
-      height: 36px;
-      background: rgba(0, 144, 255, 0.45);
+      height: 38px;
+      background: #0077cc;
       border-radius: 2px;
-      margin: 0 10px;
+      margin: 0 12px;
       flex-shrink: 0;
+      opacity: 0.85;
     }
 
-    .card-info {
+    .pill-text-col {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
       line-height: 1.25;
-      white-space: nowrap;
+      padding-left: 4px;
     }
 
-    .card-info .label {
+    .pill-text-col.center-align {
+      text-align: center;
+      padding-left: 0;
+    }
+
+    .pill-label {
       font-size: 0.95rem;
       font-weight: 700;
       color: #ffffff;
       letter-spacing: -0.2px;
     }
 
-    .card-info .number {
-      font-size: 1.15rem;
+    .pill-text-col.center-align .pill-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .pill-number {
+      font-size: 1.28rem;
       font-weight: 800;
       color: var(--neon-green);
       letter-spacing: 0.4px;
-      text-shadow: 0 0 14px rgba(0, 255, 136, 0.55);
+      text-shadow: 0 0 16px rgba(0, 230, 118, 0.6);
     }
 
-    .card-right-icon {
+    .pill-arrow {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--cyan-bright);
-      filter: drop-shadow(0 0 8px var(--cyan-bright));
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 8px #00d2ff);
     }
 
     /* OR Divider */
@@ -472,7 +500,7 @@
       justify-content: center;
       width: 100%;
       gap: 14px;
-      margin: 2px 0 16px 0;
+      margin: 14px 0;
     }
 
     .or-line {
@@ -482,72 +510,19 @@
     }
 
     .or-text {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: 800;
       color: #7b9abf;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
     }
 
     /* JazzCash Card */
-    .jazzcash-card {
-      width: 100%;
-      background: var(--card-bg);
-      border: 2px solid var(--border-blue);
-      border-radius: 28px;
-      box-shadow: 
-        0 0 22px rgba(0, 144, 255, 0.38),
-        inset 0 0 12px rgba(0, 144, 255, 0.1);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      padding: 8px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: all 0.22s ease;
-      margin-bottom: 24px;
-      position: relative;
-    }
-
-    .jazzcash-card:hover {
-      border-color: #00b4ff;
-      box-shadow: 
-        0 0 30px rgba(0, 180, 255, 0.6),
-        inset 0 0 16px rgba(0, 180, 255, 0.18);
-      transform: translateY(-1px);
-    }
-
-    .jazzcash-logo-img {
+    .jc-logo {
       height: 38px;
       width: auto;
       object-fit: contain;
-      
-      filter: drop-shadow(0 0 10px rgba(255, 50, 0, 0.5));
-    }
-
-    .jazzcash-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      text-align: center;
-      line-height: 1.25;
-      white-space: nowrap;
-    }
-
-    .jazzcash-info .label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.2px;
-    }
-
-    .jazzcash-info .number {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--neon-green);
-      letter-spacing: 0.4px;
-      text-shadow: 0 0 14px rgba(0, 255, 136, 0.55);
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 8px rgba(255, 60, 0, 0.5));
     }
 
     /* Footer */
@@ -557,10 +532,11 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      margin-top: 22px;
     }
 
     .footer-label {
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: #6a8cb0;
       font-weight: 500;
       letter-spacing: 0.5px;
@@ -571,13 +547,31 @@
       align-items: center;
       gap: 8px;
       color: #ffffff;
-      font-size: 0.98rem;
+      font-size: 1rem;
       font-weight: 700;
       letter-spacing: 0.3px;
     }
 
     .footer-brand svg {
       filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.8));
+    }
+
+    /* Register Subtle Link */
+    .register-subtle {
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .register-subtle a {
+      color: #64748b;
+      font-size: 0.84rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .register-subtle a:hover {
+      color: var(--cyan-bright);
     }
 
     /* Copy Toast Notification */
@@ -609,42 +603,43 @@
       visibility: visible;
       transform: translateX(-50%) translateY(0);
     }
-
-    @media (max-width: 360px) {
-      .login-container {
-        padding: 14px 12px;
-      }
-      .brand-title {
-        font-size: 1.9rem;
-      }
-      .brand-subtitle {
-        font-size: 1.45rem;
-      }
-      .card-info .number,
-      .jazzcash-info .number {
-        font-size: 1.02rem;
-      }
-    }
   </style>
 </head>
 <body>
 
-  <!-- Ambient background glow elements -->
-  <div class="bg-wave-ribbon ribbon-1"></div>
-  <div class="bg-wave-ribbon ribbon-2"></div>
-
-  <svg class="ambient-curves" viewBox="0 0 1440 900" fill="none" preserveAspectRatio="xMidYMid slice">
-    <path d="M-100,180 C300,40 600,420 1200,90 C1400,-10 1600,300 1700,520" stroke="rgba(0, 170, 255, 0.35)" stroke-width="2.5" filter="blur(4px)"/>
-    <path d="M-50,620 C400,820 800,430 1300,870 C1500,970 1700,740 1800,820" stroke="rgba(0, 220, 255, 0.32)" stroke-width="2" filter="blur(3px)"/>
-    <path d="M200,-60 C500,320 900,80 1500,360" stroke="rgba(0, 130, 255, 0.28)" stroke-width="2"/>
-  </svg>
+  <!-- Ambient background curves -->
+  <div class="ambient-waves-wrap">
+    <svg class="ambient-waves" viewBox="0 0 1440 900" fill="none" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="cyanRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0066ff" stop-opacity="0.1"/>
+          <stop offset="20%" stop-color="#00aaff" stop-opacity="0.8"/>
+          <stop offset="50%" stop-color="#00f0ff" stop-opacity="1"/>
+          <stop offset="80%" stop-color="#0099ff" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#0055ff" stop-opacity="0.1"/>
+        </linearGradient>
+        <filter id="ribbonGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="6" result="blur1"/>
+          <feGaussianBlur stdDeviation="18" result="blur2"/>
+          <feMerge>
+            <feMergeNode in="blur2"/>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <path d="M -80 320 C 120 280, 260 160, 360 40 C 420 -30, 520 -80, 600 -120" stroke="url(#cyanRibbon)" stroke-width="4" filter="url(#ribbonGlow)"/>
+      <path d="M 1520 80 C 1280 220, 1140 400, 1260 580 C 1340 700, 1480 820, 1560 920" stroke="url(#cyanRibbon)" stroke-width="4" filter="url(#ribbonGlow)"/>
+      <path d="M -120 620 C 80 720, 220 840, 380 960" stroke="url(#cyanRibbon)" stroke-width="4.5" filter="url(#ribbonGlow)"/>
+      <path d="M 1540 680 C 1360 740, 1180 840, 1020 960" stroke="url(#cyanRibbon)" stroke-width="5" filter="url(#ribbonGlow)"/>
+    </svg>
+  </div>
 
   <div class="login-container">
-    
-    <!-- Top Navigation Bar -->
+    <!-- Top Nav -->
     <div class="top-nav">
       <button type="button" class="back-btn" onclick="if(history.length > 1){history.back();}else{window.location.href='/';}" aria-label="Go back">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
       </button>
@@ -655,7 +650,7 @@
       <img src="/images/stronglink64_logo.png" alt="Strong Link 64 Logo" class="logo-img">
     </div>
 
-    <!-- Typography Branding -->
+    <!-- Brand Header -->
     <h1 class="brand-title">Strong Link <span class="num-accent">64</span></h1>
     <div class="brand-subtitle-row">
       <div class="subtitle-line"></div>
@@ -669,12 +664,14 @@
 
     <!-- Form Container -->
     <form id="login-form" style="width:100%;" autocomplete="on">
-      <div class="form-box">
-        
-        <!-- User name Input Row -->
-        <div class="input-row">
-          <div class="input-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Double-Framed Inputs Stack -->
+      <div class="inputs-outer-card">
+        <div class="neon-edge-pin pin-left"></div>
+        <div class="neon-edge-pin pin-right"></div>
+
+        <div class="input-box">
+          <div class="input-icon user-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -691,12 +688,12 @@
           >
         </div>
 
-        <!-- Password Input Row -->
-        <div class="input-row">
-          <div class="input-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        <div class="input-box">
+          <div class="input-icon lock-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="10" width="16" height="12" rx="3" fill="#0088ff" stroke="#00e5ff" stroke-width="2"/>
+              <path d="M7 10V6.5a5 5 0 0 1 10 0V10" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M12 14v4M12 14l-1.5 1.5M12 14l1.5 1.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <input 
@@ -709,13 +706,11 @@
             required
           >
           <button type="button" id="password-toggle-btn" class="password-toggle-btn" aria-label="Toggle password visibility">
-            <svg id="eye-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
+            <svg id="eye-icon" width="22" height="22" viewBox="0 0 24 24" fill="#7f9bbd">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
           </button>
         </div>
-
       </div>
 
       <!-- Login Button -->
@@ -723,32 +718,27 @@
         <span id="btn-text">Login</span>
         <div class="spinner" id="btn-spinner"></div>
       </button>
-
-      <!-- Register Account Link -->
-      <div class="register-account-row" style="text-align:center; margin-top:-6px; margin-bottom:20px; font-size:0.95rem; font-weight:500; color:#94a3b8;">
-        Don't have an account? <a href="/register" style="color:var(--cyan-bright); font-weight:700; text-decoration:none; margin-left:4px; transition:text-shadow 0.2s ease;">Create Account</a>
-      </div>
     </form>
 
     <!-- WhatsApp Me Card -->
-    <a href="https://wa.me/923071234567?text=Hello%20Strong%20Link%2064%20Support" target="_blank" rel="noopener noreferrer" class="contact-card" id="whatsapp-card">
-      <div class="card-left">
+    <a href="https://wa.me/923071234567?text=Hello%20Strong%20Link%2064%20Support" target="_blank" rel="noopener noreferrer" class="pill-card" id="whatsapp-card">
+      <div class="pill-card-inner">
         <div class="whatsapp-badge">
           <svg viewBox="0 0 24 24">
-            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.79 14.12c-.24.67-1.39 1.29-1.93 1.37-.5.08-1.15.11-3.32-.78-2.77-1.15-4.54-3.97-4.68-4.16-.14-.18-1.12-1.49-1.12-2.84 0-1.35.71-2.02.96-2.29.25-.27.55-.34.73-.34.18 0 .37 0 .53.01.17.01.4.06.61.56.22.53.75 1.83.82 1.96.07.14.12.3.02.49-.09.19-.14.3-.28.46-.14.16-.3.35-.43.47-.14.14-.29.29-.12.58.17.29.75 1.24 1.61 2.01 1.11.99 2.05 1.3 2.34 1.44.29.14.46.12.63-.07.17-.19.73-.85.92-1.15.19-.29.39-.24.65-.15.26.1 1.66.78 1.95.92.29.14.49.22.56.34.07.12.07.72-.17 1.39z"/>
+            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.16C10.56 20.16 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.04 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.04 20.16ZM16.56 14.39C16.31 14.27 15.09 13.67 14.86 13.58C14.64 13.5 14.47 13.46 14.31 13.71C14.14 13.96 13.66 14.52 13.52 14.69C13.37 14.86 13.23 14.88 12.98 14.76C12.73 14.63 11.93 14.37 10.98 13.52C10.24 12.86 9.74 12.04 9.6 11.79C9.45 11.54 9.58 11.41 9.71 11.28C9.82 11.17 9.96 10.99 10.08 10.84C10.21 10.7 10.25 10.59 10.33 10.43C10.41 10.26 10.37 10.12 10.31 9.99C10.25 9.87 9.76 8.66 9.55 8.16C9.35 7.67 9.15 7.74 8.99 7.73C8.84 7.72 8.67 7.72 8.51 7.72C8.34 7.72 8.07 7.78 7.84 8.03C7.62 8.28 6.98 8.87 6.98 10.08C6.98 11.29 7.86 12.46 7.99 12.63C8.11 12.8 9.73 15.29 12.2 16.35C12.79 16.61 13.25 16.76 13.61 16.87C14.2 17.06 14.74 17.03 15.17 16.97C15.65 16.9 16.64 16.37 16.85 15.79C17.05 15.2 17.05 14.71 16.99 14.6C16.93 14.49 16.8 14.51 16.56 14.39Z"/>
           </svg>
         </div>
-      </div>
-      <div class="card-divider"></div>
-      <div class="card-info">
-        <span class="label">WhatsApp Me</span>
-        <span class="number" id="whatsapp-num">0307 1234567</span>
-      </div>
-      <div class="card-divider"></div>
-      <div class="card-right-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
+        <div class="pill-divider"></div>
+        <div class="pill-text-col">
+          <div class="pill-label">WhatsApp Me</div>
+          <div class="pill-number" id="whatsapp-num">0307 1234567</div>
+        </div>
+        <div class="pill-divider"></div>
+        <div class="pill-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </div>
     </a>
 
@@ -760,37 +750,39 @@
     </div>
 
     <!-- JazzCash Card -->
-    <div class="jazzcash-card" id="jazzcash-btn" role="button" tabindex="0" title="Click to copy JazzCash number">
-      <img src="/images/jazzcash_logo.png" alt="JazzCash" class="jazzcash-logo-img">
-      <div class="card-divider"></div>
-      <div class="jazzcash-info">
-        <span class="label">JazzCash Number</span>
-        <span class="number" id="jazzcash-num">0307 1234567</span>
+    <div class="pill-card" id="jazzcash-btn" role="button" tabindex="0">
+      <div class="pill-card-inner">
+        <img src="/images/jazzcash_logo.png" alt="JazzCash" class="jc-logo">
+        <div class="pill-divider"></div>
+        <div class="pill-text-col center-align">
+          <div class="pill-label">JazzCash Number</div>
+          <div class="pill-number" id="jazzcash-num">0307 1234567</div>
+        </div>
+        <img src="/images/jazzcash_logo.png" alt="JazzCash" class="jc-logo">
       </div>
-      <div class="card-divider"></div>
-      <img src="/images/jazzcash_logo.png" alt="JazzCash" class="jazzcash-logo-img">
     </div>
 
-    <!-- Powered by Footer -->
+    <!-- Footer -->
     <div class="footer">
-      <span class="footer-label">Powered by</span>
+      <div class="footer-label">Powered by</div>
       <div class="footer-brand">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        <svg width="28" height="16" viewBox="0 0 32 18" fill="none">
+          <path d="M10 3C6.13 3 3 6.13 3 10C3 13.87 6.13 17 10 17C12.8 17 15.22 15.35 16.32 12.98C15.5 11.8 14.88 10.5 14.48 9.13C13.67 6.64 12 3 10 3ZM22 3C20 3 18.33 6.64 17.52 9.13C17.12 10.5 16.5 11.8 15.68 12.98C16.78 15.35 19.2 17 22 17C25.87 17 29 13.87 29 10C29 6.13 25.87 3 22 3Z" stroke="#00d2ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span>Strong Link 64</span>
       </div>
     </div>
 
+    <!-- Register Subtle Link -->
+    <div class="register-subtle">
+      <a href="/register">New user? <span style="color:#00d2ff; font-weight:600;">Create Account</span></a>
+    </div>
   </div>
 
-  <!-- Toast for copying number -->
+  <!-- Toast Notification -->
   <div id="copy-toast">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-    <span>JazzCash Number Copied!</span>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span>Number Copied!</span>
   </div>
 
   <script>
@@ -817,7 +809,7 @@
           if (showPassword) {
             eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
           } else {
-            eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            eyeIcon.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
           }
         });
       }
@@ -963,7 +955,7 @@
                 ? data.isSuperAdmin
                 : (uName.toLowerCase() === 'admin' || uName.toLowerCase() === 'master admin' || uRole.toLowerCase() === 'super admin');
               const icon = (isMaster || uRole === 'Admin') ? '🛡️' : '👤';
-              const formattedName = uName ? uName.replace(/\b\w/g, c => c.toUpperCase()) : '';
+              const formattedName = uName ? uName.replace(/\w/g, c => c.toUpperCase()) : '';
               const badgeText = isMaster ? '🛡️ Master Admin' : (icon + ' ' + formattedName);
               localStorage.setItem('cachedIsSuperAdmin', isMaster ? 'true' : 'false');
               localStorage.setItem('cachedUserBadge', badgeText);
