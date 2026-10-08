@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { key: 'links', tabId: 'tab-links', adminOnly: false },
       { key: 'domains', tabId: 'tab-domains', adminOnly: false },
       { key: 'geo', tabId: 'tab-geo', adminOnly: false },
-      { key: 'analytics', tabId: 'tab-analytics', adminOnly: true },
+      { key: 'analytics', tabId: 'tab-analytics', adminOnly: false },
       { key: 'publytics', tabId: 'tab-publytics', adminOnly: false },
       { key: 'firewall', tabId: 'tab-firewall', adminOnly: false },
       { key: 'settings', tabId: 'tab-settings', adminOnly: false }
@@ -653,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     navMap.forEach(item => {
       // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
       // Publytics requires Super Admin OR Normal Admin OR explicit 'publytics' permission granted by Super Admin
-      const hasAccess = item.key === 'firewall'
+      const hasAccess = (item.key === 'firewall' || item.key === 'analytics')
         ? true
         : item.key === 'publytics'
           ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
@@ -1051,6 +1051,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    if (!isAdminUser) {
+      const rawLogsWrap = document.getElementById('logs-realtime-wrap');
+      if (rawLogsWrap) {
+        rawLogsWrap.style.setProperty('display', 'none', 'important');
+        rawLogsWrap.classList.add('col-hidden-perm');
+      }
+      const topStats = document.querySelector('.top-stats-stack');
+      if (topStats) {
+        topStats.style.setProperty('display', 'none', 'important');
+        topStats.classList.add('col-hidden-perm');
+      }
+    }
     // ─────────────────────────────────────────────────────────────
 
     // If no tab is currently visible/active, activate the first visible tab

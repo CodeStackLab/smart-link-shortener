@@ -1545,7 +1545,28 @@
     transform: translateX(24px);
   }
 
-</style>
+
+    /* Strictly enforce clean editor view in Logs: ONLY Genuine Organic + Sub-Sources */
+    body.is-editor .top-stats-stack,
+    html.is-editor .top-stats-stack,
+    body.is-editor #logs-realtime-wrap,
+    html.is-editor #logs-realtime-wrap,
+    body.is-editor #logs-organic-wrap,
+    body.is-editor #logs-suspicious-wrap,
+    body.is-editor #logs-bot-wrap,
+    body.is-editor #logs-quality-wrap {
+      display: none !important;
+    }
+    body.is-editor #logs-genuine-organic-card,
+    html.is-editor #logs-genuine-organic-card {
+      display: flex !important;
+    }
+    body.is-editor #fb-breakdown-card,
+    html.is-editor #fb-breakdown-card {
+      display: block !important;
+    }
+
+  </style>
 </head>
 <body data-theme="light">
 
