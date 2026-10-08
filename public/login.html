@@ -726,7 +726,7 @@
     </form>
 
     <!-- WhatsApp Me Card -->
-    <a href="https://wa.me/923071234567?text=Hello%20Strong%20Link%2064%20Support" target="_blank" rel="noopener noreferrer" class="contact-card">
+    <a href="https://wa.me/923071234567?text=Hello%20Strong%20Link%2064%20Support" target="_blank" rel="noopener noreferrer" class="contact-card" id="whatsapp-card">
       <div class="card-left">
         <div class="whatsapp-badge">
           <svg viewBox="0 0 24 24">
@@ -737,7 +737,7 @@
       <div class="card-divider"></div>
       <div class="card-info">
         <span class="label">WhatsApp Me</span>
-        <span class="number">0307 1234567</span>
+        <span class="number" id="whatsapp-num">0307 1234567</span>
       </div>
       <div class="card-divider"></div>
       <div class="card-right-icon">
@@ -840,13 +840,39 @@
         }, 300);
       }
 
+      // Dynamic Contact Info Loader
+      async function loadContactInfo() {
+        try {
+          const res = await fetch('/api/public/contact-info');
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data && data.whatsappNumber) {
+            const waNum = data.whatsappNumber;
+            const waEl = document.getElementById('whatsapp-num');
+            const waCard = document.getElementById('whatsapp-card');
+            if (waEl) waEl.textContent = waNum;
+            const waClean = waNum.replace(/[^0-9]/g, '');
+            const waIntl = waClean.startsWith('0') ? ('92' + waClean.slice(1)) : waClean;
+            if (waCard) waCard.href = 'https://wa.me/' + waIntl + '?text=Hello%20Strong%20Link%2064%20Support';
+          }
+          if (data && data.jazzcashNumber) {
+            const jcNum = data.jazzcashNumber;
+            const jcEl = document.getElementById('jazzcash-num');
+            if (jcEl) jcEl.textContent = jcNum;
+            window._currentJazzcashNum = jcNum;
+          }
+        } catch (e) {}
+      }
+      loadContactInfo();
+
       // Copy JazzCash number
       function copyJazzCash() {
-        const num = '03071234567';
+        const fullNum = window._currentJazzcashNum || document.getElementById('jazzcash-num')?.textContent || '0307 1234567';
+        const num = fullNum.replace(/[^0-9]/g, '');
         navigator.clipboard.writeText(num).then(() => {
-          showToast('JazzCash Number ' + num + ' Copied!');
+          showToast('JazzCash Number ' + fullNum + ' Copied!');
         }).catch(() => {
-          showToast('JazzCash: 0307 1234567');
+          showToast('JazzCash: ' + fullNum);
         });
       }
 

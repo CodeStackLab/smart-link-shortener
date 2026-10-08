@@ -2120,7 +2120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
       const getNum = (id) => { const el = document.getElementById(id); return el ? parseInt(el.value || 0, 10) : 0; };
 
-      const domain = getVal('link-domain') || 'goo33.online';
+      const domain = getVal('link-domain') || 'link64.online';
 
       // 1. Auto-generate random slug if code is empty/hidden
       let code = getVal('link-code');
@@ -3130,6 +3130,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // Populate Login Page Contact & Payment Numbers
+      const waSettingInput = document.getElementById('setting-whatsapp-number');
+      const jcSettingInput = document.getElementById('setting-jazzcash-number');
+      if (waSettingInput) {
+        waSettingInput.value = settings.contactWhatsappNumber || '0307 1234567';
+      }
+      if (jcSettingInput) {
+        jcSettingInput.value = settings.contactJazzcashNumber || '0307 1234567';
+      }
+
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
       if (fallbackSettingInput) {
@@ -3327,6 +3337,66 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSaveDefaultFallback) {
     btnSaveDefaultFallback.addEventListener('click', window.saveDefaultFallbackUrl);
   }
+
+  // ── Login Page Contact & Payment Numbers Management ──
+  window.saveLoginContactNumbers = async function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    const waInput = document.getElementById('setting-whatsapp-number');
+    const jcInput = document.getElementById('setting-jazzcash-number');
+    const btnSave = document.getElementById('btn-save-contact-settings');
+    const statusEl = document.getElementById('contact-settings-status');
+
+    const whatsappVal = waInput ? waInput.value.trim() : '';
+    const jazzcashVal = jcInput ? jcInput.value.trim() : '';
+
+    if (!whatsappVal || !jazzcashVal) {
+      showAlert('⚠️ Please enter both WhatsApp and JazzCash numbers.', true);
+      return false;
+    }
+
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.textContent = '⏳ Saving...';
+    }
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactWhatsappNumber: whatsappVal,
+          contactJazzcashNumber: jazzcashVal
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Login page contact & payment numbers updated successfully!');
+        if (statusEl) {
+          statusEl.textContent = '✅ Saved!';
+          statusEl.style.color = '#10b981';
+          statusEl.style.display = 'inline';
+          setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+        }
+      } else {
+        showAlert(data.error || 'Failed to update contact numbers', true);
+      }
+    } catch (err) {
+      showAlert('Failed to update contact numbers: ' + (err.message || err), true);
+    } finally {
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.textContent = '💾 Save Contact Numbers';
+      }
+    }
+    return false;
+  };
+
+  const contactForm = document.getElementById('login-contact-settings-form');
+  const btnSaveContact = document.getElementById('btn-save-contact-settings');
+  if (contactForm) contactForm.addEventListener('submit', window.saveLoginContactNumbers);
+  if (btnSaveContact) btnSaveContact.addEventListener('click', window.saveLoginContactNumbers);
 
   // ── Publytics Tracking Code Management (Master Admin Only) ──
 
@@ -5325,7 +5395,7 @@ window.ignoreDetectedDomain = async function(id, domain) {
 const _detectedHost = (window.location.hostname || '').toLowerCase().trim();
 let currentSelectedDomain = (_detectedHost && _detectedHost !== 'localhost' && _detectedHost !== '127.0.0.1' && !/^\d+\.\d+\.\d+\.\d+$/.test(_detectedHost))
   ? _detectedHost
-  : 'goo33.online';
+  : 'link64.online';
 
 function isDomainSubdomain(domain) {
   if (!domain) return false;
@@ -5343,7 +5413,7 @@ function getBadgeStyle(domain, idx, isDefault) {
   const siteHost = (window.location.hostname || '').toLowerCase().trim();
   
   // Default Site Domain gets special Default Domain badge
-  if (isDefault || domLower === siteHost || (domLower === 'goo33.online' && (siteHost === 'goo33.online' || siteHost === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(siteHost)))) {
+  if (isDefault || domLower === siteHost || (domLower === 'link64.online' && (siteHost === 'link64.online' || siteHost === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(siteHost)))) {
     return {
       text: 'Default',
       bg: '#dcfce7',
@@ -5384,7 +5454,7 @@ function populateDomainSelects(customDomains) {
   const siteHost = (window.location.hostname || '').toLowerCase().trim();
   const defaultSiteDomain = (siteHost && siteHost !== 'localhost' && siteHost !== '127.0.0.1' && !/^\d+\.\d+\.\d+\.\d+$/.test(siteHost))
     ? siteHost
-    : 'goo33.online';
+    : 'link64.online';
 
   // 1. Default Domain always placed first at top
   const defaultList = [

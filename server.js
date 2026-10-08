@@ -425,7 +425,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // registered — logs it for admin to review & approve
 // ----------------------------------------------------
 const dns = require('dns');
-const _knownHosts = new Set(['goo33.online', '33gb.online', 'localhost', '127.0.0.1', '89.117.51.151']);
+const _knownHosts = new Set(['link64.online', 'www.link64.online', 'localhost', '127.0.0.1', '89.117.51.151']);
 const _serverIps = new Set(['89.117.51.151']);
 
 function verifyAndAddDetectedDomain(rawHost) {
@@ -1276,7 +1276,9 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     editorCountryBlockEnabled,
     editorBlockedCountries,
     publyticsDashboardUrl,
-    publyticsTrackingScript
+    publyticsTrackingScript,
+    contactWhatsappNumber,
+    contactJazzcashNumber
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -1339,6 +1341,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     defaultFallbackUrl: cleanFallback,
     publyticsDashboardUrl: cleanPublyticsUrl,
     publyticsTrackingScript: cleanPublyticsScript,
+    contactWhatsappNumber: contactWhatsappNumber !== undefined ? String(contactWhatsappNumber).trim() : undefined,
+    contactJazzcashNumber: contactJazzcashNumber !== undefined ? String(contactJazzcashNumber).trim() : undefined,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -2306,7 +2310,7 @@ async function handleShortlinkRedirect(req, res) {
   // Allow links to resolve across all authorized domains and hosts
   const reqHost = req.hostname.toLowerCase();
   const allowedCustom = db.getCustomDomains().map(d => (d.domain || '').toLowerCase());
-  const isAllowedHost = (reqHost === 'goo33.online' || reqHost === '33gb.online' || reqHost === 'localhost' || reqHost === '127.0.0.1' || reqHost === '89.117.51.151' || allowedCustom.includes(reqHost) || (link.domain && link.domain.toLowerCase() === reqHost));
+  const isAllowedHost = (reqHost === 'link64.online' || reqHost === 'www.link64.online' || reqHost === 'goo33.online' || reqHost === '33gb.online' || reqHost === 'localhost' || reqHost === '127.0.0.1' || reqHost === '89.117.51.151' || allowedCustom.includes(reqHost) || (link.domain && link.domain.toLowerCase() === reqHost));
   if (!isAllowedHost) {
     return res.status(404).send(`
       <!DOCTYPE html>
@@ -2540,7 +2544,7 @@ async function handleShortlinkRedirect(req, res) {
     const ogDesc = (ogMeta && ogMeta.description) ? ogMeta.description : 'Click to view full content';
     
     // Resolve public HTTPS host and short URL
-    const host = link.domain ? link.domain : (req.headers['x-forwarded-host'] || req.get('host') || 'goo33.online');
+    const host = link.domain ? link.domain : (req.headers['x-forwarded-host'] || req.get('host') || 'link64.online');
     const shortUrl = `https://${host}/s/${link.code}`;
 
     // Priority: custom uploaded image > scraped target OG image
@@ -3081,6 +3085,16 @@ app.get('/admin', (req, res) => {
     return res.sendFile(path.join(__dirname, 'public', 'admin.html'));
   }
   return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Public endpoint for login page contact/payment numbers
+app.get('/api/public/contact-info', (req, res) => {
+  const s = db.getSettings();
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.json({
+    whatsappNumber: s.contactWhatsappNumber || '0307 1234567',
+    jazzcashNumber: s.contactJazzcashNumber || '0307 1234567'
+  });
 });
 
 app.get('/login', (req, res) => {

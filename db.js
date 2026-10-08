@@ -314,6 +314,12 @@ module.exports = {
     if (typeof s.publyticsLoginPassword !== 'string') {
       s.publyticsLoginPassword = '12@abc';
     }
+    if (typeof s.contactWhatsappNumber !== 'string') {
+      s.contactWhatsappNumber = '0307 1234567';
+    }
+    if (typeof s.contactJazzcashNumber !== 'string') {
+      s.contactJazzcashNumber = '0307 1234567';
+    }
     return s;
   },
   updateSettings: (newFields) => {
@@ -738,7 +744,7 @@ module.exports = {
     const domains = readJson(FILES.customDomains, []);
     const cleanDomain = (domain || '').trim().toLowerCase();
     // Allow main domain, localhost and internal IPs by default
-    if (cleanDomain === 'goo33.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1' || cleanDomain.endsWith('.goo33.online')) {
+    if (cleanDomain === 'link64.online' || cleanDomain === 'www.link64.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1' || cleanDomain.endsWith('.link64.online')) {
       return true;
     }
     return domains.some(d => d.domain === cleanDomain || cleanDomain.endsWith('.' + d.domain) || d.domain.endsWith('.' + cleanDomain));
@@ -764,7 +770,7 @@ module.exports = {
     // Don't add if already in custom domains or already detected
     if (detected.some(d => d.domain === cleanDomain)) return null;
     if (custom.some(d => d.domain === cleanDomain)) return null;
-    if (cleanDomain === 'goo33.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1') return null;
+    if (cleanDomain === 'link64.online' || cleanDomain === 'www.link64.online' || cleanDomain === 'localhost' || cleanDomain === '127.0.0.1') return null;
     const entry = { id: 'det_' + Date.now(), domain: cleanDomain, detectedAt: new Date().toISOString() };
     detected.push(entry);
     writeJson(FILES.detectedDomains, detected);
