@@ -1724,7 +1724,7 @@ app.post('/api/admin/2fa/disable', requireAuth, (req, res) => {
 // ADMIN ANALYTICS & LOGS APIs (Protected)
 // ----------------------------------------------------
 
-app.get('/api/admin/logs', requireAuth, requirePermission('analytics'), (req, res) => {
+app.get('/api/admin/logs', requireAuth, (req, res) => {
   const logs = db.getLogs();
   const cleanLogs = logs.filter(l => l.status !== 'SOCIAL_CRAWLER');
   if (isAdminRole(req.session.role)) {

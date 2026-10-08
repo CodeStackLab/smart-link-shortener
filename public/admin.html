@@ -1835,6 +1835,24 @@
 <div id="tab-analytics" class="tab-content" style="display:none;">
   <div class="container">
 
+    <!-- Genuine Organic Card (Matches reference screenshot) -->
+    <div class="card" id="logs-genuine-organic-card" style="padding:1.2rem 1.35rem; border-radius:18px; margin-bottom:1.15rem; background:var(--surface,#ffffff); border:1px solid var(--border,#e2e8f0); box-shadow:0 4px 18px rgba(0,0,0,0.04); display:flex; align-items:center; gap:1.15rem;">
+      <div style="width:58px; height:58px; border-radius:16px; background:rgba(16, 185, 129, 0.12); border:1px solid rgba(16, 185, 129, 0.3); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <span style="font-size:2rem;">🌱</span>
+      </div>
+      <div>
+        <div style="font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-primary,#0f172a); margin-bottom:0.15rem;">
+          GENUINE ORGANIC
+        </div>
+        <div id="stat-logs-genuine" style="font-size:2.2rem; font-weight:900; color:#059669; line-height:1; margin-bottom:0.25rem;">
+          0
+        </div>
+        <div style="font-size:0.82rem; font-weight:600; color:var(--text-muted,#64748b);">
+          Verified residential clicks
+        </div>
+      </div>
+    </div>
+
     <!-- Top Overview Stats Cards (Matching User Favorite Mockup) -->
     <div class="top-stats-stack">
       <!-- 1. Legitimate Traffic -->
@@ -1993,7 +2011,7 @@
           </div>
         </div>
 
-        <!-- Comments -->
+        <!-- FB Comments -->
         <div class="fb-subsource-row theme-comment">
           <div class="fb-subsource-left">
             <svg class="fb-subsource-icon" width="18" height="18" viewBox="0 0 24 24" fill="#0891b2">
@@ -2006,6 +2024,56 @@
           </div>
           <div class="fb-subsource-right">
             <span id="stat-fb-comments-pct">0% of FB</span>
+          </div>
+        </div>
+
+        <!-- FB Reels (Matching User Reference Image) -->
+        <div class="fb-subsource-row theme-reel" style="border:1px solid rgba(239, 68, 68, 0.25); background:rgba(239, 68, 68, 0.04);">
+          <div class="fb-subsource-left">
+            <svg class="fb-subsource-icon" width="18" height="18" viewBox="0 0 24 24" fill="#ef4444">
+              <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+            </svg>
+            <span style="color:#ef4444; font-weight:700;">FB Reels</span>
+          </div>
+          <div class="fb-subsource-center">
+            <span id="stat-fb-reels" class="fb-subsource-num" style="color:#ef4444; font-weight:800;">0</span>
+          </div>
+          <div class="fb-subsource-right">
+            <span id="stat-fb-reels-pct">0% of FB</span>
+          </div>
+        </div>
+
+        <!-- Instagram (Added per user request) -->
+        <div class="fb-subsource-row theme-instagram" style="border:1px solid rgba(225, 48, 108, 0.25); background:rgba(225, 48, 108, 0.04);">
+          <div class="fb-subsource-left">
+            <svg class="fb-subsource-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="#e1306c" stroke-width="2"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" stroke="#e1306c" stroke-width="2"/>
+              <circle cx="17.5" cy="6.5" r="1.2" fill="#e1306c"/>
+            </svg>
+            <span style="color:#e1306c; font-weight:700;">Instagram</span>
+          </div>
+          <div class="fb-subsource-center">
+            <span id="stat-instagram" class="fb-subsource-num" style="color:#e1306c; font-weight:800;">0</span>
+          </div>
+          <div class="fb-subsource-right">
+            <span id="stat-instagram-pct">0% of Social</span>
+          </div>
+        </div>
+
+        <!-- TikTok (Added per user request) -->
+        <div class="fb-subsource-row theme-tiktok" style="border:1px solid rgba(0, 242, 234, 0.25); background:rgba(0, 242, 234, 0.04);">
+          <div class="fb-subsource-left">
+            <svg class="fb-subsource-icon" width="18" height="18" viewBox="0 0 24 24" fill="#00f2ea">
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.85.12V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.47 6.3 6.3 0 0 0 1.86-4.47V8.78a8.18 8.18 0 0 0 4.91 1.63V6.96a4.85 4.85 0 0 1-1-.27z"/>
+            </svg>
+            <span style="color:#00f2ea; font-weight:700;">TikTok</span>
+          </div>
+          <div class="fb-subsource-center">
+            <span id="stat-tiktok" class="fb-subsource-num" style="color:#00f2ea; font-weight:800;">0</span>
+          </div>
+          <div class="fb-subsource-right">
+            <span id="stat-tiktok-pct">0% of Social</span>
           </div>
         </div>
 
@@ -3908,9 +3976,7 @@ if ('serviceWorker' in navigator) {
   mobileNavItems.forEach(item => {
     item.addEventListener('click', () => {
       const targetTabId = item.dataset.tab;
-      if (targetTabId === 'tab-analytics' && !document.body.classList.contains('is-admin')) {
-        return;
-      }
+      // Logs tab is now available to all users (shows Genuine Organic & Sub-source analytics)
       const matchingTabBtn = document.querySelector(`.tab-btn[data-tab="${targetTabId}"]`);
       if (matchingTabBtn) {
         matchingTabBtn.click();

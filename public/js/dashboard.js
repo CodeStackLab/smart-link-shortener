@@ -843,27 +843,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
       if (fwMobileBtn) fwMobileBtn.style.removeProperty('display');
 
-      // Hide Traffic Logs & Facebook Analytics tab & widgets from Editors (Admin Only)
+      // Show Logs tab for Editors, but ONLY show Genuine Organic card + Traffic Sub-source card (hide raw IP logs & top stats)
       const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="tab-analytics"]');
-      if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'none', 'important');
+      if (analyticsTabBtn) analyticsTabBtn.style.removeProperty('display');
       const analyticsMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-analytics"]');
-      if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'none', 'important');
+      if (analyticsMobileBtn) analyticsMobileBtn.style.removeProperty('display');
       const tabAnalytics = document.getElementById('tab-analytics');
-      if (tabAnalytics) tabAnalytics.style.setProperty('display', 'none', 'important');
+      if (tabAnalytics) tabAnalytics.style.removeProperty('display');
+
+      const genuineOrganicCard = document.getElementById('logs-genuine-organic-card');
+      if (genuineOrganicCard) genuineOrganicCard.style.removeProperty('display');
       const fbBreakdown = document.getElementById('fb-breakdown-card');
-      if (fbBreakdown) fbBreakdown.style.setProperty('display', 'none', 'important');
+      if (fbBreakdown) fbBreakdown.style.removeProperty('display');
+
+      // Hide raw IP logs table and detailed admin cards for Editors
+      const rawLogsWrap = document.getElementById('logs-realtime-wrap');
+      if (rawLogsWrap) rawLogsWrap.style.setProperty('display', 'none', 'important');
       const topStats = document.querySelector('.top-stats-stack');
       if (topStats) topStats.style.setProperty('display', 'none', 'important');
-
-      // If Editor is currently on Analytics tab, switch back to Links
-      const activeAnalyticsTab = document.querySelector('.tab-btn.active[data-tab="tab-analytics"]');
-      const activeMobileAnalytics = document.querySelector('.mobile-nav-item.active[data-tab="tab-analytics"]');
-      if (activeAnalyticsTab || activeMobileAnalytics) {
-        if (activeAnalyticsTab) activeAnalyticsTab.classList.remove('active');
-        if (activeMobileAnalytics) activeMobileAnalytics.classList.remove('active');
-        const defaultLinksTab = document.querySelector('.tab-btn[data-tab="tab-links"]');
-        if (defaultLinksTab) defaultLinksTab.click();
-      }
     } else {
       document.body.classList.add('is-admin');
       document.body.classList.remove('is-editor');
@@ -1128,9 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fwContent) fwContent.removeAttribute('data-active');
       }
 
-      if (targetTab === 'tab-analytics' && !isFullAdminUser()) {
-        return;
-      }
+      // Logs tab allowed for all authenticated users
 
       if (targetTab === 'tab-settings' && !(isFullAdminUser() || userCurrentPermissions.includes('settings'))) {
         return;
@@ -1187,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (targetTab === 'tab-geo') loadCountryAnalytics();
       if (targetTab === 'tab-analytics') {
-        if (isFullAdminUser()) loadAnalytics();
+        loadAnalytics();
       }
       if (targetTab === 'tab-firewall') {
         if (isFullAdminUser()) {
@@ -2801,7 +2796,10 @@ document.addEventListener('DOMContentLoaded', () => {
       let fbStoriesCount = 0;
       let fbEventsCount = 0;
       let fbCommentsCount = 0;
+      let fbReelsCount = 0;
       let fbAutomatedCount = 0;
+      let instagramCount = 0;
+      let tiktokCount = 0;
       let fbTotalCount = 0;
 
       logs.forEach(log => {
@@ -2817,12 +2815,22 @@ document.addEventListener('DOMContentLoaded', () => {
           countryBlockedCount++;
         }
 
-        const isFb = (log.platform === 'facebook') ||
-                     (log.fbSubCategory && log.fbSubCategory !== 'none') ||
-                     st.startsWith('FB_');
-        if (isFb) {
+        const ref = (log.referer || '').toLowerCase();
+        const ua = (log.userAgent || '').toLowerCase();
+        const plat = (log.platform || '').toLowerCase();
+        const sub = (log.fbSubCategory || '').toLowerCase();
+
+        // 1. Instagram Detection
+        if (plat === 'instagram' || ref.includes('instagram.com') || ua.includes('instagram')) {
+          instagramCount++;
+        }
+        // 2. TikTok Detection
+        else if (plat === 'tiktok' || ref.includes('tiktok.com') || ua.includes('tiktok') || ua.includes('musical_ly')) {
+          tiktokCount++;
+        }
+        // 3. Facebook Sub-sources Detection
+        else if (plat === 'facebook' || (log.fbSubCategory && log.fbSubCategory !== 'none') || st.startsWith('FB_') || ref.includes('facebook.com') || ref.includes('fb.com') || ua.includes('fb_iab') || ua.includes('fban') || ua.includes('fbios') || ua.includes('fb4a')) {
           fbTotalCount++;
-          const sub = (log.fbSubCategory || '').toLowerCase();
           if (sub === 'profile' || st === 'FB_PROFILE_BLOCKED') {
             fbProfilesCount++;
           } else if (sub === 'group' || st === 'FB_GROUP_BLOCKED') {
@@ -2835,8 +2843,12 @@ document.addEventListener('DOMContentLoaded', () => {
             fbEventsCount++;
           } else if (sub === 'comment' || st === 'FB_COMMENT_BLOCKED') {
             fbCommentsCount++;
+          } else if (sub === 'reels' || sub === 'reel' || ref.includes('/reel') || st === 'FB_REELS_BLOCKED') {
+            fbReelsCount++;
           } else if (sub === 'automated' || sub === 'unknown' || st === 'FB_AUTOMATED_BLOCKED' || st === 'FB_UNKNOWN_BLOCKED' || st === 'FB_TRAFFIC_DISABLED' || st === 'DATACENTER_FB_BLOCKED') {
             fbAutomatedCount++;
+          } else {
+            fbProfilesCount++;
           }
         }
       });
@@ -2913,6 +2925,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const fbAutoBar = document.getElementById('stat-fb-automated-bar');
       if (fbAutoBar) fbAutoBar.style.width = `${autoPct}%`;
 
+      // Update Genuine Organic Verified Residential Clicks Card
+      const genuineOrganicCount = logs.filter(l => (l.status || '').toUpperCase() === 'ORGANIC_CLICK' && !l.isVpn).length;
+      const genuineCardVal = document.getElementById('stat-logs-genuine');
+      if (genuineCardVal) genuineCardVal.textContent = genuineOrganicCount;
+
+      // Update Reels, Instagram & TikTok
+      const reelsPct = fbTotalCount > 0 ? Math.round((fbReelsCount / fbTotalCount) * 100) : 0;
+      const reelsEl = document.getElementById('stat-fb-reels');
+      if (reelsEl) reelsEl.textContent = fbReelsCount;
+      const reelsPctEl = document.getElementById('stat-fb-reels-pct');
+      if (reelsPctEl) reelsPctEl.textContent = `${reelsPct}% of FB`;
+
+      const totalSocial = fbTotalCount + instagramCount + tiktokCount;
+      const igPct = totalSocial > 0 ? Math.round((instagramCount / totalSocial) * 100) : 0;
+      const igEl = document.getElementById('stat-instagram');
+      if (igEl) igEl.textContent = instagramCount;
+      const igPctEl = document.getElementById('stat-instagram-pct');
+      if (igPctEl) igPctEl.textContent = `${igPct}% of Social`;
+
+      const ttPct = totalSocial > 0 ? Math.round((tiktokCount / totalSocial) * 100) : 0;
+      const ttEl = document.getElementById('stat-tiktok');
+      if (ttEl) ttEl.textContent = tiktokCount;
+      const ttPctEl = document.getElementById('stat-tiktok-pct');
+      if (ttPctEl) ttPctEl.textContent = `${ttPct}% of Social`;
+
       // Filter counters
       const cntAll = document.getElementById('filter-count-all');
       if (cntAll) cntAll.textContent = totalClicks;
@@ -2958,7 +2995,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     const activeTab = document.querySelector('.tab-btn.active');
     if (activeTab && activeTab.getAttribute('data-tab') === 'tab-analytics') {
-      if (isFullAdminUser()) loadAnalytics();
+      loadAnalytics();
     }
     if (activeTab && activeTab.getAttribute('data-tab') === 'tab-firewall') {
       if (isFullAdminUser()) loadTempBlocks();
