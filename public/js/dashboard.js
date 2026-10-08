@@ -3139,6 +3139,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (jcSettingInput) {
         jcSettingInput.value = settings.contactJazzcashNumber || '0307 1234567';
       }
+      const waUrlSettingInput = document.getElementById('setting-whatsapp-url');
+      if (waUrlSettingInput) {
+        waUrlSettingInput.value = settings.contactWhatsappUrl || '';
+      }
 
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
@@ -3345,11 +3349,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const waInput = document.getElementById('setting-whatsapp-number');
     const jcInput = document.getElementById('setting-jazzcash-number');
+    const waUrlInput = document.getElementById('setting-whatsapp-url');
     const btnSave = document.getElementById('btn-save-contact-settings');
     const statusEl = document.getElementById('contact-settings-status');
 
     const whatsappVal = waInput ? waInput.value.trim() : '';
     const jazzcashVal = jcInput ? jcInput.value.trim() : '';
+    const whatsappUrlVal = waUrlInput ? waUrlInput.value.trim() : '';
 
     if (!whatsappVal || !jazzcashVal) {
       showAlert('⚠️ Please enter both WhatsApp and JazzCash numbers.', true);
@@ -3367,12 +3373,13 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contactWhatsappNumber: whatsappVal,
-          contactJazzcashNumber: jazzcashVal
+          contactJazzcashNumber: jazzcashVal,
+          contactWhatsappUrl: whatsappUrlVal
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showAlert('✅ Login page contact & payment numbers updated successfully!');
+        showAlert('✅ Login page contact info & WhatsApp link updated successfully!');
         if (statusEl) {
           statusEl.textContent = '✅ Saved!';
           statusEl.style.color = '#10b981';
@@ -3380,14 +3387,14 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
         }
       } else {
-        showAlert(data.error || 'Failed to update contact numbers', true);
+        showAlert(data.error || 'Failed to update contact settings', true);
       }
     } catch (err) {
-      showAlert('Failed to update contact numbers: ' + (err.message || err), true);
+      showAlert('Failed to update contact settings: ' + (err.message || err), true);
     } finally {
       if (btnSave) {
         btnSave.disabled = false;
-        btnSave.textContent = '💾 Save Contact Numbers';
+        btnSave.textContent = '💾 Save Contact & WhatsApp Link';
       }
     }
     return false;

@@ -846,15 +846,25 @@
           const res = await fetch('/api/public/contact-info');
           if (!res.ok) return;
           const data = await res.json();
+          const waCard = document.getElementById('whatsapp-card');
+          const waEl = document.getElementById('whatsapp-num');
+
           if (data && data.whatsappNumber) {
             const waNum = data.whatsappNumber;
-            const waEl = document.getElementById('whatsapp-num');
-            const waCard = document.getElementById('whatsapp-card');
             if (waEl) waEl.textContent = waNum;
             const waClean = waNum.replace(/[^0-9]/g, '');
             const waIntl = waClean.startsWith('0') ? ('92' + waClean.slice(1)) : waClean;
-            if (waCard) waCard.href = 'https://wa.me/' + waIntl + '?text=Hello%20Strong%20Link%2064%20Support';
+            if (waCard) {
+              if (data.whatsappUrl && data.whatsappUrl.trim()) {
+                waCard.href = data.whatsappUrl.trim();
+              } else {
+                waCard.href = 'https://wa.me/' + waIntl + '?text=Hello%20Strong%20Link%2064%20Support';
+              }
+            }
+          } else if (data && data.whatsappUrl && data.whatsappUrl.trim()) {
+            if (waCard) waCard.href = data.whatsappUrl.trim();
           }
+
           if (data && data.jazzcashNumber) {
             const jcNum = data.jazzcashNumber;
             const jcEl = document.getElementById('jazzcash-num');

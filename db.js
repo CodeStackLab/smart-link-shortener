@@ -320,6 +320,9 @@ module.exports = {
     if (typeof s.contactJazzcashNumber !== 'string') {
       s.contactJazzcashNumber = '0307 1234567';
     }
+    if (typeof s.contactWhatsappUrl !== 'string') {
+      s.contactWhatsappUrl = 'https://wa.me/923071234567';
+    }
     return s;
   },
   updateSettings: (newFields) => {

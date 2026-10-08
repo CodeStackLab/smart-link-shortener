@@ -1,7 +1,7 @@
 {
-  "name": "Smart Link Shortener",
+  "name": "Link64 Shortner",
   "short_name": "SmartLink",
-  "description": "Admin dashboard for Smart Link Shortener — manage shortlinks, analytics, and IP firewall.",
+  "description": "Admin dashboard for Link64 Shortner — manage shortlinks, analytics, and IP firewall.",
   "start_url": "/admin",
   "scope": "/",
   "display": "standalone",

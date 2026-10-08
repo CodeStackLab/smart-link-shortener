@@ -1278,7 +1278,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     publyticsDashboardUrl,
     publyticsTrackingScript,
     contactWhatsappNumber,
-    contactJazzcashNumber
+    contactJazzcashNumber,
+    contactWhatsappUrl
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -1343,6 +1344,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     publyticsTrackingScript: cleanPublyticsScript,
     contactWhatsappNumber: contactWhatsappNumber !== undefined ? String(contactWhatsappNumber).trim() : undefined,
     contactJazzcashNumber: contactJazzcashNumber !== undefined ? String(contactJazzcashNumber).trim() : undefined,
+    contactWhatsappUrl: contactWhatsappUrl !== undefined ? String(contactWhatsappUrl).trim() : undefined,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -3093,7 +3095,8 @@ app.get('/api/public/contact-info', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.json({
     whatsappNumber: s.contactWhatsappNumber || '0307 1234567',
-    jazzcashNumber: s.contactJazzcashNumber || '0307 1234567'
+    jazzcashNumber: s.contactJazzcashNumber || '0307 1234567',
+    whatsappUrl: s.contactWhatsappUrl || ''
   });
 });
 
