@@ -3170,6 +3170,77 @@ app.post('/api/messages/mark-read', requireAuth, (req, res) => {
   }
 });
 
+
+// ── Public User Registration System ──
+app.get('/register', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  if (req.session && (req.session.authenticated || req.session.isAdmin)) {
+    return res.redirect('/admin');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+app.post('/api/register', (req, res) => {
+  try {
+    const { username, password, confirmPassword } = req.body || {};
+    const rawUser = (username || '').trim();
+    if (!rawUser) {
+      return res.status(400).json({ error: 'Username is required.' });
+    }
+    const cleanUser = formatDisplayName ? formatDisplayName(rawUser) : rawUser;
+    if (cleanUser.length < 3) {
+      return res.status(400).json({ error: 'Username must be at least 3 characters long.' });
+    }
+    if (!password || !password.trim()) {
+      return res.status(400).json({ error: 'Password is required.' });
+    }
+    if (password.trim() !== (confirmPassword || '').trim()) {
+      return res.status(400).json({ error: 'Passwords do not match. Please re-enter confirm password.' });
+    }
+    if (password.trim().length < 5) {
+      return res.status(400).json({ error: 'Password must be at least 5 characters long.' });
+    }
+
+    // Check if user already exists
+    const existing = db.getUserByUsername(cleanUser);
+    if (existing) {
+      return res.status(400).json({ error: 'Username already registered. Please choose another username or login.' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password.trim(), salt);
+
+    const newUser = db.addUser({
+      username: cleanUser,
+      passwordHash: passwordHash,
+      rawPassword: password.trim(),
+      role: 'Editor',
+      permissions: ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image'],
+      allowedTargetDomains: [],
+      createdAt: new Date().toISOString()
+    });
+
+    // Auto-login session for registered user
+    req.session.authenticated = true;
+    req.session.username = newUser.username;
+    req.session.role = 'Editor';
+    req.session.isAdmin = false;
+    req.session.permissions = newUser.permissions;
+
+    return res.json({
+      success: true,
+      message: 'Account created successfully! Welcome to Strong Link 64.',
+      username: newUser.username,
+      redirect: '/admin'
+    });
+  } catch (err) {
+    console.error('Registration error:', err);
+    return res.status(500).json({ error: 'Registration failed. Please try again.' });
+  }
+});
+
 app.get('/login', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
