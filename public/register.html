@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#030914">
+  <meta name="theme-color" content="#020817">
   <title>Strong Link 64 Shotner — Create Account</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/images/stronglink64_logo.png" type="image/png">
   <link rel="apple-touch-icon" href="/images/stronglink64_logo.png">
@@ -18,14 +18,13 @@
 
   <style>
     :root {
-      --bg-dark: #020713;
+      --bg-dark: #020817;
       --cyan-bright: #00d2ff;
-      --cyan-glow: rgba(0, 210, 255, 0.6);
-      --blue-primary: #0077ff;
-      --neon-green: #00ff88;
-      --border-blue: #0094ff;
-      --card-bg: rgba(4, 18, 42, 0.72);
-      --text-muted: #8aa4c2;
+      --cyan-electric: #00f0ff;
+      --blue-border: #0077e6;
+      --blue-input-border: #0090ff;
+      --neon-green: #00e676;
+      --text-muted: #8ea8c9;
     }
 
     * {
@@ -35,141 +34,80 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      background-color: var(--bg-dark);
-      font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    html {
+      width: 100%;
+      height: 100%;
       overflow-x: hidden;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      background-color: var(--bg-dark);
+      font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       position: relative;
       background-image: 
-        radial-gradient(circle at 50% 12%, rgba(0, 190, 255, 0.28) 0%, transparent 48%),
-        radial-gradient(circle at 10% 28%, rgba(0, 110, 255, 0.25) 0%, transparent 42%),
-        radial-gradient(circle at 90% 40%, rgba(0, 210, 255, 0.22) 0%, transparent 40%),
-        radial-gradient(circle at 50% 95%, rgba(0, 140, 255, 0.3) 0%, transparent 50%),
-        linear-gradient(180deg, #020612 0%, #041026 50%, #020612 100%);
+        radial-gradient(circle at 50% 14%, rgba(0, 190, 255, 0.32) 0%, transparent 48%),
+        radial-gradient(circle at 10% 28%, rgba(0, 120, 255, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 90% 42%, rgba(0, 210, 255, 0.25) 0%, transparent 42%),
+        radial-gradient(circle at 50% 92%, rgba(0, 150, 255, 0.32) 0%, transparent 50%),
+        linear-gradient(180deg, #020612 0%, #030e26 50%, #020612 100%);
       background-attachment: fixed;
     }
 
-    /* Ambient background wave ribbons matching design */
-    .bg-wave-ribbon {
-      position: absolute;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .ribbon-1 {
-      top: -50px;
-      left: -120px;
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(ellipse at center, rgba(0, 140, 255, 0.35) 0%, transparent 70%);
-      filter: blur(55px);
-    }
-
-    .ribbon-2 {
-      bottom: -80px;
-      right: -100px;
-      width: 480px;
-      height: 480px;
-      background: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.28) 0%, transparent 70%);
-      filter: blur(55px);
-    }
-
-    .ambient-curves {
+    /* Ambient Silk Energy Waves (Contained 100% inside screen, NO horizontal overflow) */
+    .ambient-waves-wrap {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.75;
+      overflow: hidden;
+    }
+
+    .ambient-waves {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     .register-container {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 400px;
-      padding: 16px 20px 32px 20px;
+      max-width: 410px;
+      margin: auto;
+      padding: 24px 16px 28px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    /* Top Navigation with Back Arrow */
-    .top-nav {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      margin-bottom: 2px;
-    }
-
-    .back-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      text-decoration: none;
-      transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
-      opacity: 0.95;
-    }
-
-    .back-btn:hover {
-      transform: translateX(-4px);
-      color: var(--cyan-bright);
-      opacity: 1;
-    }
-
-    /* Logo Area */
-    .logo-wrapper {
-      position: relative;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .logo-img {
-      width: 135px;
-      height: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 0 24px rgba(0, 210, 255, 0.95));
-      animation: pulse-glow 3.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes pulse-glow {
-      0% {
-        filter: drop-shadow(0 0 20px rgba(0, 200, 255, 0.8)) drop-shadow(0 0 8px rgba(0, 130, 255, 0.5));
-      }
-      100% {
-        filter: drop-shadow(0 0 34px rgba(0, 235, 255, 1)) drop-shadow(0 0 16px rgba(0, 160, 255, 0.7));
-      }
+      box-sizing: border-box;
     }
 
     /* Branding Typography */
     .brand-title {
-      font-size: 2.2rem;
+      font-size: clamp(1.8rem, 6.2vw, 2.3rem);
       font-weight: 800;
       letter-spacing: -0.5px;
       text-align: center;
       color: #ffffff;
       line-height: 1.15;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
+      width: 100%;
     }
 
     .brand-title .num-accent {
       color: var(--cyan-bright);
-      text-shadow: 0 0 20px rgba(0, 210, 255, 0.85);
+      text-shadow: 0 0 22px rgba(0, 210, 255, 0.9);
     }
 
     .brand-subtitle-row {
@@ -177,13 +115,13 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 12px;
       width: 100%;
     }
 
     .subtitle-line {
       height: 2.2px;
-      width: 48px;
+      width: clamp(28px, 9vw, 44px);
       background: linear-gradient(90deg, transparent, var(--cyan-bright));
       border-radius: 2px;
       box-shadow: 0 0 10px var(--cyan-bright);
@@ -194,37 +132,41 @@
     }
 
     .brand-subtitle {
-      font-size: 1.7rem;
+      font-size: clamp(1.35rem, 4.8vw, 1.75rem);
       font-weight: 800;
       letter-spacing: -0.2px;
       color: #ffffff;
       text-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
     }
 
-    /* Screen Headings */
+    /* Create Account Headings */
     .create-account-title {
-      font-size: 2.15rem;
+      font-size: clamp(1.6rem, 5.5vw, 2.1rem);
       font-weight: 800;
-      color: #ffffff;
+      letter-spacing: -0.4px;
       text-align: center;
+      color: #ffffff;
+      line-height: 1.2;
       margin-bottom: 3px;
-      letter-spacing: -0.5px;
+      width: 100%;
     }
 
-    .account-accent {
+    .create-account-title .account-accent {
       color: var(--cyan-bright);
       text-shadow: 0 0 22px rgba(0, 210, 255, 0.9);
     }
 
     .create-account-sub {
-      font-size: 0.95rem;
+      font-size: clamp(0.85rem, 2.8vw, 0.94rem);
       font-weight: 500;
       color: #94a3b8;
+      letter-spacing: 0.4px;
       text-align: center;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
+      width: 100%;
     }
 
-    /* Alert Banner */
+    /* Error / Success Alert Banner */
     #register-alert {
       display: none;
       width: 100%;
@@ -237,8 +179,9 @@
       font-weight: 700;
       color: #fca5a5;
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       backdrop-filter: blur(10px);
+      box-sizing: border-box;
     }
 
     #register-alert.success {
@@ -248,31 +191,68 @@
       color: #6ee7b7;
     }
 
-    /* Form Container Box */
-    .form-box {
+    /* Double-Framed Inputs Stack (Exact Match to Login Page) */
+    .inputs-outer-card {
+      position: relative;
       width: 100%;
-      background: var(--card-bg);
-      border: 2px solid var(--border-blue);
+      max-width: 100%;
+      background: rgba(3, 14, 38, 0.65);
+      border: 2px solid var(--blue-border);
       border-radius: 20px;
       box-shadow: 
-        0 0 24px rgba(0, 144, 255, 0.42),
-        inset 0 0 16px rgba(0, 144, 255, 0.12);
+        0 0 22px rgba(0, 119, 230, 0.38),
+        inset 0 0 14px rgba(0, 119, 230, 0.12);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      overflow: hidden;
-      margin-bottom: 20px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+      box-sizing: border-box;
     }
 
-    .input-row {
+    /* Glowing Side Pins on Outer Frame */
+    .neon-edge-pin {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3.5px;
+      height: 48px;
+      background: var(--cyan-electric);
+      box-shadow: 0 0 14px 3px var(--cyan-electric), 0 0 24px 6px rgba(0, 240, 255, 0.8);
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    .neon-edge-pin.pin-left {
+      left: -2px;
+    }
+
+    .neon-edge-pin.pin-right {
+      right: -2px;
+    }
+
+    /* Inner Input Boxes */
+    .input-box {
       display: flex;
       align-items: center;
-      padding: 14px 18px;
-      gap: 14px;
+      background: rgba(2, 12, 30, 0.85);
+      border: 1.8px solid var(--blue-input-border);
+      border-radius: 14px;
+      box-shadow: 0 0 12px rgba(0, 144, 255, 0.3);
+      padding: 10px 12px;
+      gap: 10px;
+      transition: all 0.2s ease;
       position: relative;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
     }
 
-    .input-row:not(:last-child) {
-      border-bottom: 1.5px solid rgba(0, 144, 255, 0.35);
+    .input-box:focus-within {
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.65), inset 0 0 8px rgba(0, 210, 255, 0.2);
     }
 
     .input-icon {
@@ -280,24 +260,32 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: var(--cyan-bright);
-      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.6));
+    }
+
+    .user-icon {
+      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.8));
+    }
+
+    .lock-icon {
+      filter: drop-shadow(0 0 8px rgba(0, 180, 255, 0.85));
     }
 
     .input-field {
       flex: 1;
+      width: 100%;
+      min-width: 0;
       background: transparent;
       border: none;
       outline: none;
       font-family: inherit;
-      font-size: 1.02rem;
+      font-size: 1.05rem;
       font-weight: 600;
       color: #ffffff;
       letter-spacing: 0.2px;
     }
 
     .input-field::placeholder {
-      color: #8da9cb;
+      color: #8da6c7;
       font-weight: 500;
       opacity: 0.95;
     }
@@ -318,27 +306,28 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #8da9cb;
-      transition: color 0.2s ease, filter 0.2s ease;
+      color: #7f9bbd;
+      transition: all 0.2s ease;
       flex-shrink: 0;
     }
 
     .password-toggle-btn:hover,
     .password-toggle-btn.active {
       color: var(--cyan-bright);
-      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.8));
+      filter: drop-shadow(0 0 8px var(--cyan-bright));
     }
 
     /* Big Glowing Register Button */
     .register-btn {
       width: 100%;
-      height: 54px;
-      border-radius: 27px;
+      height: 52px;
+      border-radius: 9999px;
       border: none;
-      background: linear-gradient(180deg, #00d2ff 0%, #006aff 100%);
+      background: linear-gradient(180deg, #00d2ff 0%, #0088ff 55%, #0066ee 100%);
       box-shadow: 
-        0 0 30px rgba(0, 195, 255, 0.8),
-        0 4px 18px rgba(0, 106, 255, 0.5);
+        0 0 32px rgba(0, 200, 255, 0.9),
+        0 4px 20px rgba(0, 100, 255, 0.55),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
       color: #ffffff;
       font-family: inherit;
       font-size: 1.25rem;
@@ -349,23 +338,21 @@
       align-items: center;
       justify-content: center;
       transition: all 0.22s ease;
-      margin-bottom: 22px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      margin-bottom: 18px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      box-sizing: border-box;
     }
 
     .register-btn:hover {
-      background: linear-gradient(180deg, #24ddff 0%, #007aff 100%);
+      background: linear-gradient(180deg, #2ae0ff 0%, #0099ff 55%, #0077ff 100%);
       box-shadow: 
-        0 0 38px rgba(0, 220, 255, 1),
-        0 4px 22px rgba(0, 120, 255, 0.65);
+        0 0 42px rgba(0, 230, 255, 1),
+        0 4px 24px rgba(0, 120, 255, 0.75);
       transform: translateY(-1px);
     }
 
     .register-btn:active {
       transform: translateY(1px) scale(0.99);
-      box-shadow: 
-        0 0 20px rgba(0, 180, 255, 0.7),
-        0 2px 10px rgba(0, 80, 255, 0.4);
     }
 
     .register-btn.loading {
@@ -393,14 +380,16 @@
       font-weight: 500;
       color: #94a3b8;
       text-align: center;
-      letter-spacing: 0.1px;
+      letter-spacing: 0.2px;
+      margin-bottom: 18px;
+      width: 100%;
     }
 
     .login-link {
       color: var(--cyan-bright);
       font-weight: 700;
       text-decoration: none;
-      margin-left: 4px;
+      margin-left: 6px;
       transition: all 0.2s ease;
     }
 
@@ -408,56 +397,71 @@
       text-shadow: 0 0 12px var(--cyan-bright);
       text-decoration: underline;
     }
+
+    /* Powered by Footer */
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .footer-label {
+      font-size: 0.82rem;
+      color: #6a8cb0;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .footer-brand svg {
+      filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.8));
+    }
   </style>
 </head>
 <body>
 
-  <!-- Ambient Light Orbs -->
-  <div class="bg-wave-ribbon ribbon-1"></div>
-  <div class="bg-wave-ribbon ribbon-2"></div>
-
-  <!-- SVG Laser Curves -->
-  <svg class="ambient-curves" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M-100 200 C 300 120, 600 480, 1540 100" stroke="url(#cyan-grad-1)" stroke-width="2.5" opacity="0.38"/>
-    <path d="M-100 280 C 400 320, 800 100, 1540 380" stroke="url(#cyan-grad-2)" stroke-width="2" opacity="0.25"/>
-    <path d="M-100 780 C 500 500, 900 850, 1540 600" stroke="url(#blue-grad-1)" stroke-width="2.8" opacity="0.3"/>
-    <defs>
-      <linearGradient id="cyan-grad-1" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#00d2ff" stop-opacity="0"/>
-        <stop offset="50%" stop-color="#00d2ff" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="#006aff" stop-opacity="0"/>
-      </linearGradient>
-      <linearGradient id="cyan-grad-2" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#0088ff" stop-opacity="0"/>
-        <stop offset="50%" stop-color="#00d2ff" stop-opacity="0.6"/>
-        <stop offset="100%" stop-color="#0044ff" stop-opacity="0"/>
-      </linearGradient>
-      <linearGradient id="blue-grad-1" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#006aff" stop-opacity="0"/>
-        <stop offset="50%" stop-color="#00aaff" stop-opacity="0.7"/>
-        <stop offset="100%" stop-color="#00d2ff" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-  </svg>
+  <!-- Ambient background curves (Contained 100% inside viewport) -->
+  <div class="ambient-waves-wrap">
+    <svg class="ambient-waves" viewBox="0 0 1440 900" fill="none" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="cyanRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0066ff" stop-opacity="0.1"/>
+          <stop offset="20%" stop-color="#00aaff" stop-opacity="0.8"/>
+          <stop offset="50%" stop-color="#00f0ff" stop-opacity="1"/>
+          <stop offset="80%" stop-color="#0099ff" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#0055ff" stop-opacity="0.1"/>
+        </linearGradient>
+        <filter id="ribbonGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="6" result="blur1"/>
+          <feGaussianBlur stdDeviation="18" result="blur2"/>
+          <feMerge>
+            <feMergeNode in="blur2"/>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <path d="M 0 320 C 140 280, 260 160, 360 40 C 420 0, 520 -40, 600 -80" stroke="url(#cyanRibbon)" stroke-width="4" filter="url(#ribbonGlow)"/>
+      <path d="M 1440 80 C 1280 220, 1140 400, 1260 580 C 1340 700, 1440 820, 1440 900" stroke="url(#cyanRibbon)" stroke-width="4" filter="url(#ribbonGlow)"/>
+      <path d="M 0 620 C 100 720, 220 840, 380 900" stroke="url(#cyanRibbon)" stroke-width="4.5" filter="url(#ribbonGlow)"/>
+      <path d="M 1440 680 C 1360 740, 1180 840, 1020 900" stroke="url(#cyanRibbon)" stroke-width="5" filter="url(#ribbonGlow)"/>
+    </svg>
+  </div>
 
   <div class="register-container">
-
-    <!-- Top Bar with Back Arrow -->
-    <div class="top-nav">
-      <a href="/login" class="back-btn" aria-label="Back to Login">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-      </a>
-    </div>
-
-    <!-- Center Glowing Logo -->
-    <div class="logo-wrapper">
-      <img src="/images/stronglink64_logo.png" alt="Strong Link 64 Logo" class="logo-img">
-    </div>
-
-    <!-- Typography Branding -->
+    <!-- Brand Header -->
     <h1 class="brand-title">Strong Link <span class="num-accent">64</span></h1>
     <div class="brand-subtitle-row">
       <div class="subtitle-line"></div>
@@ -465,7 +469,7 @@
       <div class="subtitle-line right"></div>
     </div>
 
-    <!-- Screen Headings -->
+    <!-- Create Account Headings -->
     <h2 class="create-account-title">Create <span class="account-accent">Account</span></h2>
     <p class="create-account-sub">Register to get started</p>
 
@@ -474,12 +478,15 @@
 
     <!-- Registration Form -->
     <form id="register-form" style="width:100%;" autocomplete="on">
-      <div class="form-box">
-        
-        <!-- User name Input Row -->
-        <div class="input-row">
-          <div class="input-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Double-Framed Inputs Stack -->
+      <div class="inputs-outer-card">
+        <div class="neon-edge-pin pin-left"></div>
+        <div class="neon-edge-pin pin-right"></div>
+
+        <!-- Username Box -->
+        <div class="input-box">
+          <div class="input-icon user-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -497,12 +504,13 @@
           >
         </div>
 
-        <!-- Password Input Row -->
-        <div class="input-row">
-          <div class="input-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        <!-- Password Box -->
+        <div class="input-box">
+          <div class="input-icon lock-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="10" width="16" height="12" rx="3" fill="#0088ff" stroke="#00e5ff" stroke-width="2"/>
+              <path d="M7 10V6.5a5 5 0 0 1 10 0V10" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M12 14v4M12 14l-1.5 1.5M12 14l1.5 1.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <input 
@@ -516,19 +524,19 @@
             minlength="5"
           >
           <button type="button" id="password-toggle-btn" class="password-toggle-btn" aria-label="Toggle password visibility">
-            <svg id="eye-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
+            <svg id="eye-icon" width="22" height="22" viewBox="0 0 24 24" fill="#7f9bbd">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
           </button>
         </div>
 
-        <!-- Confirm Password Input Row -->
-        <div class="input-row">
-          <div class="input-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        <!-- Confirm Password Box -->
+        <div class="input-box">
+          <div class="input-icon lock-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="10" width="16" height="12" rx="3" fill="#0088ff" stroke="#00e5ff" stroke-width="2"/>
+              <path d="M7 10V6.5a5 5 0 0 1 10 0V10" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M12 14v4M12 14l-1.5 1.5M12 14l1.5 1.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <input 
@@ -542,13 +550,11 @@
             minlength="5"
           >
           <button type="button" id="confirm-password-toggle-btn" class="password-toggle-btn" aria-label="Toggle confirm password visibility">
-            <svg id="confirm-eye-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
+            <svg id="confirm-eye-icon" width="22" height="22" viewBox="0 0 24 24" fill="#7f9bbd">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
           </button>
         </div>
-
       </div>
 
       <!-- Register Button -->
@@ -563,108 +569,118 @@
       Already have an account? <a href="/login" class="login-link">Login</a>
     </div>
 
+    <!-- Powered by Footer -->
+    <div class="footer">
+      <div class="footer-label">Powered by</div>
+      <div class="footer-brand">
+        <svg width="28" height="16" viewBox="0 0 32 18" fill="none">
+          <path d="M10 3C6.13 3 3 6.13 3 10C3 13.87 6.13 17 10 17C12.8 17 15.22 15.35 16.32 12.98C15.5 11.8 14.88 10.5 14.48 9.13C13.67 6.64 12 3 10 3ZM22 3C20 3 18.33 6.64 17.52 9.13C17.12 10.5 16.5 11.8 15.68 12.98C16.78 15.35 19.2 17 22 17C25.87 17 29 13.87 29 10C29 6.13 25.87 3 22 3Z" stroke="#00d2ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Strong Link 64</span>
+      </div>
+    </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('register-form');
-      const usernameInput = document.getElementById('username');
-      const passwordInput = document.getElementById('password');
-      const confirmPasswordInput = document.getElementById('confirm-password');
-      const passToggleBtn = document.getElementById('password-toggle-btn');
-      const confirmPassToggleBtn = document.getElementById('confirm-password-toggle-btn');
-      const eyeIcon = document.getElementById('eye-icon');
-      const confirmEyeIcon = document.getElementById('confirm-eye-icon');
-      const registerBtn = document.getElementById('register-btn');
-      const btnText = document.getElementById('btn-text');
-      const btnSpinner = document.getElementById('btn-spinner');
-      const alertBox = document.getElementById('register-alert');
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("register-form");
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const confirmPasswordInput = document.getElementById("confirm-password");
+      const passToggleBtn = document.getElementById("password-toggle-btn");
+      const confirmPassToggleBtn = document.getElementById("confirm-password-toggle-btn");
+      const eyeIcon = document.getElementById("eye-icon");
+      const confirmEyeIcon = document.getElementById("confirm-eye-icon");
+      const registerBtn = document.getElementById("register-btn");
+      const btnText = document.getElementById("btn-text");
+      const btnSpinner = document.getElementById("btn-spinner");
+      const alertBox = document.getElementById("register-alert");
 
       // SVG Icon helper for Eye Open / Closed
-      const eyeOpenSvg = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
-      const eyeClosedSvg = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+      const eyeOpenSvg = "<path d=\"M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z\"/>";
+      const eyeClosedSvg = "<path d=\"M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z\"/>";
 
       // Password Toggle Logic
       if (passToggleBtn && passwordInput && eyeIcon) {
-        passToggleBtn.addEventListener('click', (e) => {
+        passToggleBtn.addEventListener("click", (e) => {
           e.preventDefault();
-          const isPass = passwordInput.getAttribute('type') === 'password';
-          passwordInput.setAttribute('type', isPass ? 'text' : 'password');
+          const isPass = passwordInput.getAttribute("type") === "password";
+          passwordInput.setAttribute("type", isPass ? "text" : "password");
           eyeIcon.innerHTML = isPass ? eyeClosedSvg : eyeOpenSvg;
-          passToggleBtn.classList.toggle('active', isPass);
+          passToggleBtn.classList.toggle("active", isPass);
         });
       }
 
       // Confirm Password Toggle Logic
       if (confirmPassToggleBtn && confirmPasswordInput && confirmEyeIcon) {
-        confirmPassToggleBtn.addEventListener('click', (e) => {
+        confirmPassToggleBtn.addEventListener("click", (e) => {
           e.preventDefault();
-          const isPass = confirmPasswordInput.getAttribute('type') === 'password';
-          confirmPasswordInput.setAttribute('type', isPass ? 'text' : 'password');
+          const isPass = confirmPasswordInput.getAttribute("type") === "password";
+          confirmPasswordInput.setAttribute("type", isPass ? "text" : "password");
           confirmEyeIcon.innerHTML = isPass ? eyeClosedSvg : eyeOpenSvg;
-          confirmPassToggleBtn.classList.toggle('active', isPass);
+          confirmPassToggleBtn.classList.toggle("active", isPass);
         });
       }
 
       function showAlert(msg, isSuccess = false) {
         if (!alertBox) return;
         alertBox.textContent = msg;
-        alertBox.className = isSuccess ? 'success' : '';
-        alertBox.style.display = 'block';
+        alertBox.className = isSuccess ? "success" : "";
+        alertBox.style.display = "block";
       }
 
       function hideAlert() {
         if (!alertBox) return;
-        alertBox.style.display = 'none';
+        alertBox.style.display = "none";
       }
 
       function setLoading(loading) {
         if (loading) {
-          registerBtn.classList.add('loading');
-          btnText.style.display = 'none';
-          btnSpinner.style.display = 'block';
+          registerBtn.classList.add("loading");
+          btnText.style.display = "none";
+          btnSpinner.style.display = "block";
         } else {
-          registerBtn.classList.remove('loading');
-          btnText.style.display = 'block';
-          btnSpinner.style.display = 'none';
+          registerBtn.classList.remove("loading");
+          btnText.style.display = "block";
+          btnSpinner.style.display = "none";
         }
       }
 
       // Handle Form Submit
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         hideAlert();
 
-        const username = (usernameInput.value || '').trim();
-        const password = (passwordInput.value || '').trim();
-        const confirmPassword = (confirmPasswordInput.value || '').trim();
+        const username = (usernameInput.value || "").trim();
+        const password = (passwordInput.value || "").trim();
+        const confirmPassword = (confirmPasswordInput.value || "").trim();
 
         if (!username) {
-          showAlert('Please enter a username.');
+          showAlert("Please enter a username.");
           usernameInput.focus();
           return;
         }
 
         if (username.length < 3) {
-          showAlert('Username must be at least 3 characters long.');
+          showAlert("Username must be at least 3 characters long.");
           usernameInput.focus();
           return;
         }
 
         if (!password) {
-          showAlert('Please enter a password.');
+          showAlert("Please enter a password.");
           passwordInput.focus();
           return;
         }
 
         if (password.length < 5) {
-          showAlert('Password must be at least 5 characters long.');
+          showAlert("Password must be at least 5 characters long.");
           passwordInput.focus();
           return;
         }
 
         if (password !== confirmPassword) {
-          showAlert('Passwords do not match. Please re-enter confirm password.');
+          showAlert("Passwords do not match. Please re-enter confirm password.");
           confirmPasswordInput.focus();
           return;
         }
@@ -672,25 +688,25 @@
         setLoading(true);
 
         try {
-          const res = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const res = await fetch("/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password, confirmPassword })
           });
 
           const data = await res.json();
 
           if (res.ok && data.success) {
-            showAlert('🎉 Account created successfully! Redirecting...', true);
+            showAlert("🎉 Account created successfully! Redirecting...", true);
             setTimeout(() => {
-              window.location.href = data.redirect || '/admin';
+              window.location.href = data.redirect || "/admin";
             }, 800);
           } else {
-            showAlert(data.error || 'Registration failed. Please try again.');
+            showAlert(data.error || "Registration failed. Please try again.");
             setLoading(false);
           }
         } catch (err) {
-          showAlert('Connection error. Please check internet connection.');
+          showAlert("Connection error. Please check internet connection.");
           setLoading(false);
         }
       });
