@@ -3181,6 +3181,11 @@ document.addEventListener('DOMContentLoaded', () => {
         waUrlSettingInput.value = settings.contactWhatsappUrl || '';
       }
 
+      const showJcCheckbox = document.getElementById('setting-show-jazzcash');
+      if (showJcCheckbox) {
+        showJcCheckbox.checked = (settings.showJazzcashOnLogin === true);
+      }
+
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
       if (fallbackSettingInput) {
@@ -3387,15 +3392,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const waInput = document.getElementById('setting-whatsapp-number');
     const jcInput = document.getElementById('setting-jazzcash-number');
     const waUrlInput = document.getElementById('setting-whatsapp-url');
+    const showJcCheckbox = document.getElementById('setting-show-jazzcash');
     const btnSave = document.getElementById('btn-save-contact-settings');
     const statusEl = document.getElementById('contact-settings-status');
 
     const whatsappVal = waInput ? waInput.value.trim() : '';
     const jazzcashVal = jcInput ? jcInput.value.trim() : '';
     const whatsappUrlVal = waUrlInput ? waUrlInput.value.trim() : '';
+    const showJazzcashVal = showJcCheckbox ? showJcCheckbox.checked : false;
 
-    if (!whatsappVal || !jazzcashVal) {
-      showAlert('⚠️ Please enter both WhatsApp and JazzCash numbers.', true);
+    if (!whatsappVal) {
+      showAlert('⚠️ Please enter a WhatsApp number.', true);
       return false;
     }
 
@@ -3410,8 +3417,9 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contactWhatsappNumber: whatsappVal,
-          contactJazzcashNumber: jazzcashVal,
-          contactWhatsappUrl: whatsappUrlVal
+          contactJazzcashNumber: jazzcashVal || '0307 1234567',
+          contactWhatsappUrl: whatsappUrlVal,
+          showJazzcashOnLogin: showJazzcashVal
         })
       });
       const data = await res.json();

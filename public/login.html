@@ -743,14 +743,14 @@
     </a>
 
     <!-- OR Divider -->
-    <div class="or-divider">
+    <div class="or-divider" id="or-divider" style="display:none;">
       <div class="or-line"></div>
       <span class="or-text">OR</span>
       <div class="or-line"></div>
     </div>
 
     <!-- JazzCash Card -->
-    <div class="pill-card" id="jazzcash-btn" role="button" tabindex="0">
+    <div class="pill-card" id="jazzcash-btn" role="button" tabindex="0" style="display:none;">
       <div class="pill-card-inner">
         <img src="/images/jazzcash_logo.png" alt="JazzCash" class="jc-logo">
         <div class="pill-divider"></div>
@@ -867,6 +867,17 @@
             const jcEl = document.getElementById('jazzcash-num');
             if (jcEl) jcEl.textContent = jcNum;
             window._currentJazzcashNum = jcNum;
+          }
+
+          // Show / Hide JazzCash card and OR divider based on Admin Settings control
+          const orDivider = document.getElementById('or-divider');
+          const jcCard = document.getElementById('jazzcash-btn');
+          if (data && data.showJazzcash === true) {
+            if (orDivider) orDivider.style.display = 'flex';
+            if (jcCard) jcCard.style.display = 'block';
+          } else {
+            if (orDivider) orDivider.style.display = 'none';
+            if (jcCard) jcCard.style.display = 'none';
           }
         } catch (e) {}
       }

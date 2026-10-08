@@ -324,6 +324,9 @@ module.exports = {
     if (typeof s.contactWhatsappUrl !== 'string') {
       s.contactWhatsappUrl = 'https://wa.me/923071234567';
     }
+    if (typeof s.showJazzcashOnLogin !== 'boolean') {
+      s.showJazzcashOnLogin = false;
+    }
     return s;
   },
   updateSettings: (newFields) => {

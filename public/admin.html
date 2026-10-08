@@ -1516,6 +1516,35 @@
       color: #f1f5f9 !important;
     }
 
+
+  .custom-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #94a3b8;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 30px;
+  }
+  .custom-toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+  }
+  #setting-show-jazzcash:checked + .custom-toggle-slider {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
+  }
+  #setting-show-jazzcash:checked + .custom-toggle-slider::before {
+    transform: translateX(24px);
+  }
+
 </style>
 </head>
 <body data-theme="light">
@@ -2820,6 +2849,22 @@
               <small style="color:var(--text-muted); font-size:0.75rem; margin-top:0.3rem; display:block;">
                 Jab buyer login page par WhatsApp card par click karega toh is link par redirect hoga. Aap yahan apna pre-filled WhatsApp link (jaise <code>https://wa.me/...</code> ya <code>https://wa.link/...</code>) daal sakte hain.
               </small>
+            </div>
+
+            <!-- Toggle Switch: Show / Hide JazzCash on Login Page -->
+            <div style="grid-column: 1 / -1; margin-top:0.35rem; padding:1.1rem 1.25rem; background:rgba(245, 158, 11, 0.08); border:1.5px solid rgba(245, 158, 11, 0.4); border-radius:14px; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:800; font-size:0.95rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-size:1.25rem;">💳</span> Display JazzCash on Login Page
+                </div>
+                <small style="color:var(--text-muted); font-size:0.78rem; display:block; margin-top:0.25rem; line-height:1.4;">
+                  Agar yeh <strong>OFF</strong> hoga toh login page par JazzCash card aur "OR" divider dono <strong>hide</strong> rahenge. Jab aap <strong>ON</strong> karenge tabhi buyer ko show hoga.
+                </small>
+              </div>
+              <label style="position:relative; display:inline-block; width:52px; height:28px; cursor:pointer; margin:0; flex-shrink:0;">
+                <input type="checkbox" id="setting-show-jazzcash" style="opacity:0; width:0; height:0; position:absolute;">
+                <span class="custom-toggle-slider"></span>
+              </label>
             </div>
 
           </div>
