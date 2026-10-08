@@ -5654,3 +5654,264 @@ if (typeof populateDomainSelects === 'function') populateDomainSelects();
 if (typeof loadDomains === 'function') loadDomains();
 
 });
+
+
+// ── Personal Messaging System Client Logic ──
+(function() {
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  window.applyMsgTemplate = function(tpl) {
+    const titleInput = document.getElementById('admin-msg-title');
+    const contentInput = document.getElementById('admin-msg-content');
+    if (!contentInput) return;
+
+    if (tpl === '30days') {
+      if (titleInput) titleInput.value = '⏳ 30-Day Expiry Notice';
+      contentInput.value = '⚠️ Notice: Your shortener subscription will expire after 30 days. Please contact Admin on WhatsApp to renew your service and avoid interruption.';
+    } else if (tpl === '7days') {
+      if (titleInput) titleInput.value = '🚨 Urgent: 7 Days Remaining';
+      contentInput.value = '🚨 Urgent: Only 7 days remaining before your shortener expires. Please renew immediately to prevent link downtime.';
+    } else if (tpl === 'renewed') {
+      if (titleInput) titleInput.value = '🎉 Subscription Renewed';
+      contentInput.value = '🎉 Great news! Your shortener service has been successfully renewed for another 30 days. Thank you for your support!';
+    } else if (tpl === 'welcome') {
+      if (titleInput) titleInput.value = '👋 Welcome to Strong Link 64';
+      contentInput.value = "Hello everyone! We're working hard to make this platform better, faster and more useful for you. If you face any issues, please let us know — we're here to help. Thank you for your support!";
+    }
+    const previewBox = document.getElementById('admin-preview-dashed-box');
+    if (previewBox) {
+      previewBox.textContent = contentInput.value;
+    }
+  };
+
+  window.loadPersonalMessages = async function() {
+    try {
+      const res = await fetch('/api/messages');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.success) return;
+
+      const isAdmin = !!data.isAdmin;
+      const messages = Array.isArray(data.messages) ? data.messages : [];
+      const unreadCount = data.unreadCount || 0;
+      const editors = Array.isArray(data.editors) ? data.editors : [];
+
+      // Update unread badge dots
+      const badgeDesktop = document.getElementById('msg-badge-desktop');
+      const badgeMobile = document.getElementById('msg-badge-mobile');
+      if (badgeDesktop) badgeDesktop.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+      if (badgeMobile) badgeMobile.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+
+      const editorView = document.getElementById('editor-messages-wrapper');
+      const adminView = document.getElementById('admin-messages-wrapper');
+
+      if (isAdmin) {
+        if (adminView) adminView.style.display = 'flex';
+        if (editorView) editorView.style.display = 'none';
+
+        // Populate Editors select dropdown
+        const select = document.getElementById('admin-msg-recipient');
+        if (select) {
+          const currentVal = select.value;
+          select.innerHTML = '<option value="">-- Select an Editor --</option><option value="__all__">📢 All Editors (Public Broadcast)</option>';
+          editors.forEach(ed => {
+            const opt = document.createElement('option');
+            opt.value = ed.username;
+            opt.textContent = `👤 ${ed.username} (${ed.role || 'Editor'})`;
+            select.appendChild(opt);
+          });
+          if (currentVal) select.value = currentVal;
+        }
+
+        // Render Sent Messages Table
+        const tbody = document.getElementById('admin-sent-messages-tbody');
+        if (tbody) {
+          if (messages.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No messages sent yet.</td></tr>';
+          } else {
+            tbody.innerHTML = messages.map(m => {
+              const isBroadcast = m.toUser === '__all__';
+              const recipientBadge = isBroadcast
+                ? '<span style="background:#818cf8; color:#fff; font-weight:800; font-size:0.72rem; padding:0.2rem 0.55rem; border-radius:12px;">📢 All Editors</span>'
+                : `<span style="background:#0284c7; color:#fff; font-weight:800; font-size:0.72rem; padding:0.2rem 0.55rem; border-radius:12px;">👤 @${escapeHtml(m.toUser)}</span>`;
+              const dateStr = m.createdAt ? new Date(m.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'Recently';
+              const readCount = Array.isArray(m.readBy) ? m.readBy.length : 0;
+              const statusPill = isBroadcast
+                ? `<span style="color:#6366f1; font-weight:700; font-size:0.75rem;">👁️ ${readCount} read</span>`
+                : (readCount > 0 ? '<span style="color:#10b981; font-weight:700; font-size:0.75rem;">✅ Read</span>' : '<span style="color:#f59e0b; font-weight:700; font-size:0.75rem;">⏳ Unread</span>');
+              return `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:0.75rem 0.75rem;">${recipientBadge}</td>
+                  <td style="padding:0.75rem 0.75rem; max-width:280px;">
+                    <div style="font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">${escapeHtml(m.title || 'Notice')}</div>
+                    <div style="color:var(--text-muted); font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.content)}</div>
+                  </td>
+                  <td style="padding:0.75rem 0.75rem; color:var(--text-muted); font-size:0.78rem;">${dateStr}</td>
+                  <td style="padding:0.75rem 0.75rem;">${statusPill}</td>
+                  <td style="padding:0.75rem 0.75rem; text-align:right;">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="window.deleteAdminPersonalMessage('${m.id}')" style="padding:0.25rem 0.55rem; font-size:0.75rem; border-radius:8px; cursor:pointer; background:#ef4444; color:#fff; border:none;">
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          }
+        }
+
+        // Live Preview Box sync
+        const previewBox = document.getElementById('admin-preview-dashed-box');
+        const contentInput = document.getElementById('admin-msg-content');
+        if (previewBox && contentInput && contentInput.value.trim()) {
+          previewBox.textContent = contentInput.value.trim();
+        } else if (previewBox && messages.length > 0) {
+          previewBox.textContent = messages[0].content;
+        }
+
+      } else {
+        // EDITOR VIEW
+        if (editorView) editorView.style.display = 'block';
+        if (adminView) adminView.style.display = 'none';
+
+        const listContainer = document.getElementById('editor-messages-list');
+        if (listContainer) {
+          if (messages.length === 0) {
+            listContainer.innerHTML = `
+              <div class="message-dashed-box" style="font-size:1.02rem; font-weight:500; line-height:1.65;">
+                Hello everyone! We're working hard to make this platform better, faster and more useful for you. If you face any issues, please let us know — we're here to help. Thank you for your support!
+              </div>
+            `;
+          } else {
+            listContainer.innerHTML = messages.map(m => {
+              const isPersonal = m.toUser !== '__all__';
+              const dateStr = m.createdAt ? new Date(m.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '';
+              return `
+                <div class="message-dashed-box" style="${isPersonal ? 'border-color:#0084ff !important; background:rgba(239,246,255,0.92) !important; box-shadow:0 4px 16px rgba(0,132,255,0.12);' : ''}">
+                  ${isPersonal ? '<div style="display:inline-block; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#0070ff; background:rgba(0,112,255,0.12); padding:0.2rem 0.65rem; border-radius:20px; margin-bottom:0.75rem;">🔒 Private Message For You</div>' : ''}
+                  ${m.title ? `<div style="font-size:1.15rem; font-weight:800; color:var(--text-primary,#0f172a); margin-bottom:0.6rem;">${escapeHtml(m.title)}</div>` : ''}
+                  <div style="font-size:1.05rem; font-weight:500; line-height:1.65; color:var(--text-primary,#1e293b); word-break:break-word;">
+                    ${escapeHtml(m.content)}
+                  </div>
+                  ${dateStr ? `<div style="font-size:0.75rem; color:var(--text-muted,#64748b); margin-top:0.85rem; font-weight:600;">🕒 Sent: ${dateStr}</div>` : ''}
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      }
+
+    } catch (e) {
+      console.error('Error loading messages:', e);
+    }
+  };
+
+  window.sendAdminPersonalMessage = async function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const recipientSelect = document.getElementById('admin-msg-recipient');
+    const titleInput = document.getElementById('admin-msg-title');
+    const contentInput = document.getElementById('admin-msg-content');
+    const btnSend = document.getElementById('btn-send-admin-msg');
+    const statusEl = document.getElementById('admin-msg-status');
+
+    const toUser = recipientSelect ? recipientSelect.value.trim() : '';
+    const title = titleInput ? titleInput.value.trim() : '';
+    const content = contentInput ? contentInput.value.trim() : '';
+
+    if (!toUser) {
+      showAlert('⚠️ Please select a recipient editor.', true);
+      return false;
+    }
+    if (!content) {
+      showAlert('⚠️ Please write a message.', true);
+      return false;
+    }
+
+    if (btnSend) {
+      btnSend.disabled = true;
+      btnSend.textContent = '⏳ Sending...';
+    }
+
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toUser, title, content })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Message sent successfully to ' + (toUser === '__all__' ? 'all editors' : '@' + toUser) + '!');
+        if (contentInput) contentInput.value = '';
+        if (titleInput) titleInput.value = '';
+        if (statusEl) {
+          statusEl.textContent = '✅ Sent!';
+          statusEl.style.color = '#10b981';
+          statusEl.style.display = 'inline';
+          setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+        }
+        window.loadPersonalMessages();
+      } else {
+        showAlert(data.error || 'Failed to send message', true);
+      }
+    } catch (err) {
+      showAlert('Failed to send message: ' + (err.message || err), true);
+    } finally {
+      if (btnSend) {
+        btnSend.disabled = false;
+        btnSend.textContent = '🚀 Send Message';
+      }
+    }
+    return false;
+  };
+
+  window.deleteAdminPersonalMessage = async function(id) {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    try {
+      const res = await fetch('/api/messages/' + encodeURIComponent(id), {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Message deleted successfully.');
+        window.loadPersonalMessages();
+      } else {
+        showAlert('Failed to delete message', true);
+      }
+    } catch (err) {
+      showAlert('Error deleting message: ' + err.message, true);
+    }
+  };
+
+  window.markPersonalMessagesRead = async function() {
+    try {
+      await fetch('/api/messages/mark-read', { method: 'POST' });
+      const badgeDesktop = document.getElementById('msg-badge-desktop');
+      const badgeMobile = document.getElementById('msg-badge-mobile');
+      if (badgeDesktop) badgeDesktop.style.display = 'none';
+      if (badgeMobile) badgeMobile.style.display = 'none';
+    } catch (e) {}
+  };
+
+  // Preview real-time typing
+  document.addEventListener('input', (e) => {
+    if (e.target && e.target.id === 'admin-msg-content') {
+      const previewBox = document.getElementById('admin-preview-dashed-box');
+      if (previewBox) {
+        previewBox.textContent = e.target.value.trim() || 'Select an editor or type a message to see live preview.';
+      }
+    }
+  });
+
+  // Load messages initially and set up polling every 30 seconds
+  document.addEventListener('DOMContentLoaded', () => {
+    window.loadPersonalMessages();
+    setInterval(window.loadPersonalMessages, 30000);
+  });
+})();

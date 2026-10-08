@@ -17,7 +17,8 @@ const FILES = {
   blockedIps: path.join(DATA_DIR, 'blocked_ips.json'),
   customDomains: path.join(DATA_DIR, 'custom_domains.json'),
   detectedDomains: path.join(DATA_DIR, 'detected_domains.json'),
-  ignoredDomains: path.join(DATA_DIR, 'ignored_domains.json')
+  ignoredDomains: path.join(DATA_DIR, 'ignored_domains.json'),
+  messages: path.join(DATA_DIR, 'messages.json')
 };
 
 function readJson(file, defaultValue = []) {
@@ -819,5 +820,82 @@ module.exports = {
     domains.push(newEntry);
     writeJson(FILES.customDomains, domains);
     return newEntry;
-  }
+  },
+  // ── Personal Messaging System ──
+  getMessages: (username, isAdmin) => {
+    const messages = readJson(FILES.messages, []);
+    if (isAdmin) {
+      return [...messages].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    const cleanUser = (username || '').trim().toLowerCase();
+    return messages
+      .filter(m => m && (m.toUser === '__all__' || (m.toUser || '').trim().toLowerCase() === cleanUser))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  addMessage: ({ toUser, fromUser, title, content }) => {
+    const messages = readJson(FILES.messages, []);
+    const cleanTo = (toUser || '').trim();
+    const cleanContent = (content || '').trim();
+    if (!cleanTo || !cleanContent) return null;
+
+    const newMsg = {
+      id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      toUser: cleanTo,
+      fromUser: fromUser || 'Admin',
+      title: (title || '').trim() || 'Notice from Admin',
+      content: cleanContent,
+      createdAt: new Date().toISOString(),
+      readBy: []
+    };
+    messages.push(newMsg);
+    writeJson(FILES.messages, messages);
+    return newMsg;
+  },
+
+  deleteMessage: (id) => {
+    let messages = readJson(FILES.messages, []);
+    const initialLen = messages.length;
+    messages = messages.filter(m => m.id !== id);
+    if (messages.length !== initialLen) {
+      writeJson(FILES.messages, messages);
+      return true;
+    }
+    return false;
+  },
+
+  markMessagesRead: (username) => {
+    const cleanUser = (username || '').trim().toLowerCase();
+    if (!cleanUser) return 0;
+    const messages = readJson(FILES.messages, []);
+    let modified = false;
+    let count = 0;
+    messages.forEach(m => {
+      if (m && (m.toUser === '__all__' || (m.toUser || '').trim().toLowerCase() === cleanUser)) {
+        if (!Array.isArray(m.readBy)) m.readBy = [];
+        if (!m.readBy.some(u => (u || '').toLowerCase() === cleanUser)) {
+          m.readBy.push(cleanUser);
+          modified = true;
+          count++;
+        }
+      }
+    });
+    if (modified) {
+      writeJson(FILES.messages, messages);
+    }
+    return count;
+  },
+
+  getUnreadMessageCount: (username) => {
+    const cleanUser = (username || '').trim().toLowerCase();
+    if (!cleanUser) return 0;
+    const messages = readJson(FILES.messages, []);
+    return messages.filter(m => {
+      if (!m) return false;
+      const isForUser = m.toUser === '__all__' || (m.toUser || '').trim().toLowerCase() === cleanUser;
+      if (!isForUser) return false;
+      const readList = Array.isArray(m.readBy) ? m.readBy.map(u => (u || '').toLowerCase()) : [];
+      return !readList.includes(cleanUser);
+    }).length;
+  },
 };

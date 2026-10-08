@@ -1492,7 +1492,31 @@
         white-space: nowrap !important;
       }
     }
-  </style>
+  
+    /* ── PERSONAL MESSAGING SYSTEM STYLES ── */
+    .message-main-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .message-dashed-box {
+      border: 2px dashed #60a5fa !important;
+      border-radius: 18px !important;
+      padding: 1.5rem 1.6rem !important;
+      background: rgba(239, 246, 255, 0.75) !important;
+      color: #1e293b !important;
+      transition: all 0.2s ease;
+    }
+    [data-theme="dark"] .message-main-card {
+      background: #0f172a !important;
+      border-color: rgba(0, 148, 255, 0.35) !important;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5) !important;
+    }
+    [data-theme="dark"] .message-dashed-box {
+      border-color: #3b82f6 !important;
+      background: rgba(30, 58, 138, 0.25) !important;
+      color: #f1f5f9 !important;
+    }
+
+</style>
 </head>
 <body data-theme="light">
 
@@ -1546,7 +1570,10 @@
   <button class="tab-btn active" data-tab="tab-links">🔗 Link Manager</button>
   <button class="tab-btn" data-tab="tab-geo" style="display:none;">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
-  <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics">
+  <button class="tab-btn" data-tab="tab-messages" id="tab-btn-messages">
+    💬 Message <span id="msg-badge-desktop" style="display:none; width:8px; height:8px; background:#ef4444; border-radius:50%; margin-left:6px; display:inline-block; vertical-align:middle; box-shadow:0 0 8px rgba(239,68,68,0.9);"></span>
+  </button>
+  <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics" style="display:none;">
     <img src="/publytics-icon.png?v=157" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
   </button>
   <button class="tab-btn" data-tab="tab-firewall">🛡️ IP Firewall</button>
@@ -3354,7 +3381,173 @@
 <!-- ══════════════════════════════
      TAB 6 — PUBLYTICS & ADMIN ALERT (Cyber Midnight Dark Theme)
 ══════════════════════════════ -->
-      <div id="tab-publytics" class="tab-content publytics-tab-wrapper" style="display:none;">
+      
+<!-- ══════════════════════════════
+     TAB — PERSONAL MESSAGING SYSTEM
+══════════════════════════════ -->
+<div id="tab-messages" class="tab-content" style="display:none; padding-bottom:5rem;">
+  <div class="container messages-container" style="max-width:720px; margin:0 auto; padding:1.25rem 0.85rem; box-sizing:border-box;">
+
+    <!-- ── EDITOR VIEW (Matches reference screenshot 100%) ── -->
+    <div id="editor-messages-wrapper" style="display:none;">
+      <div class="card message-main-card" style="padding:2.2rem 1.35rem; border-radius:24px; border:1.5px solid #0094ff33; box-shadow:0 12px 35px rgba(0, 148, 255, 0.08); background:var(--surface,#ffffff); text-align:center;">
+        
+        <!-- Header: Blue icon + Big bold "Message" -->
+        <div style="display:flex; justify-content:center; align-items:center; gap:0.65rem; margin-bottom:1.5rem;">
+          <div style="width:48px; height:48px; border-radius:50%; background:#0084ff; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,132,255,0.35); color:#fff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+            </svg>
+          </div>
+          <h1 style="font-size:2.2rem; font-weight:800; color:#0084ff; margin:0; letter-spacing:-0.02em; line-height:1;">Message</h1>
+        </div>
+
+        <!-- Dynamic Container for Messages (Rendered by JS) -->
+        <div id="editor-messages-list" style="display:flex; flex-direction:column; gap:1.25rem;">
+          <div class="message-dashed-box">
+            Loading your messages...
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── ADMIN VIEW (Personal Messaging Management Control Center) ── -->
+    <div id="admin-messages-wrapper" style="display:none; flex-direction:column; gap:1.25rem;">
+      
+      <!-- Card 1: Send Private Message to Editor -->
+      <div class="card" style="padding:1.4rem; border-radius:18px; border:1.8px solid #0094ff; box-shadow:0 6px 20px rgba(0,148,255,0.12); background:var(--surface,#ffffff);">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; font-size:1.1rem; color:var(--text-primary);">
+            <span class="accent">✉️</span> Send Private Message to Editor
+          </div>
+          <span style="font-size:0.72rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#0080ff,#00d4ff); padding:0.25rem 0.75rem; border-radius:20px; box-shadow:0 2px 8px rgba(0,180,255,0.35);">
+            🔒 Private &amp; Secure
+          </span>
+        </div>
+        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:1.15rem; line-height:1.45;">
+          Aap kisi bhi specific Editor ko private notice ya expiration alert bhej sakte hain (jaise: <em>"Aapka shortener 30 din baad expire ho jayega"</em>). Ye message sirf usi Editor ko unke <strong>Message tab</strong> me dikhega.
+        </p>
+
+        <form id="admin-send-message-form" onsubmit="event.preventDefault(); window.sendAdminPersonalMessage(event); return false;">
+          <!-- Select Recipient Editor -->
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label for="admin-msg-recipient" style="font-weight:800; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.4rem;">
+              <span>👤</span> Select Recipient Editor
+            </label>
+            <select id="admin-msg-recipient" class="form-control" style="font-weight:700; font-size:0.95rem; height:46px; border-radius:12px; border:1.5px solid #0094ff; background:var(--bg,#ffffff); color:var(--text-primary);" required>
+              <option value="">-- Select an Editor --</option>
+              <option value="__all__">📢 All Editors (Public Broadcast)</option>
+            </select>
+          </div>
+
+          <!-- Message Title (Optional) -->
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label for="admin-msg-title" style="font-weight:800; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.4rem;">
+              <span>📌</span> Notice Title / Subject <span style="font-weight:400; font-size:0.72rem; color:var(--text-muted);">(Optional)</span>
+            </label>
+            <input type="text" id="admin-msg-title" class="form-control" placeholder="e.g. Account Expiry Alert / Renewal Notice" style="font-weight:600; font-size:0.92rem; height:44px; border-radius:12px;">
+          </div>
+
+          <!-- Quick Templates -->
+          <div style="margin-bottom:0.85rem;">
+            <div style="font-size:0.74rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.4rem;">
+              ⚡ Quick 1-Click Templates:
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+              <button type="button" class="btn btn-sm" onclick="window.applyMsgTemplate('30days');" style="font-size:0.75rem; font-weight:700; border-radius:20px; padding:0.25rem 0.65rem; background:rgba(0,148,255,0.1); border:1px solid #0094ff; color:#0070ff; cursor:pointer;">
+                ⏳ 30-Day Expiry
+              </button>
+              <button type="button" class="btn btn-sm" onclick="window.applyMsgTemplate('7days');" style="font-size:0.75rem; font-weight:700; border-radius:20px; padding:0.25rem 0.65rem; background:rgba(239,68,68,0.1); border:1px solid #ef4444; color:#dc2626; cursor:pointer;">
+                🚨 7-Day Urgent
+              </button>
+              <button type="button" class="btn btn-sm" onclick="window.applyMsgTemplate('renewed');" style="font-size:0.75rem; font-weight:700; border-radius:20px; padding:0.25rem 0.65rem; background:rgba(16,185,129,0.1); border:1px solid #10b981; color:#059669; cursor:pointer;">
+                🎉 Plan Renewed
+              </button>
+              <button type="button" class="btn btn-sm" onclick="window.applyMsgTemplate('welcome');" style="font-size:0.75rem; font-weight:700; border-radius:20px; padding:0.25rem 0.65rem; background:rgba(124,58,237,0.1); border:1px solid #7c3aed; color:#7c3aed; cursor:pointer;">
+                👋 Welcome Message
+              </button>
+            </div>
+          </div>
+
+          <!-- Message Content Textarea -->
+          <div class="form-group" style="margin-bottom:1.15rem;">
+            <label for="admin-msg-content" style="font-weight:800; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.4rem;">
+              <span>💬</span> Message Content
+            </label>
+            <textarea id="admin-msg-content" class="form-control" rows="4" placeholder="Write private message here (e.g. Your shortener will expire after 30 days. Please renew your subscription)..." style="font-weight:500; font-size:0.95rem; border-radius:14px; padding:0.85rem 1rem; line-height:1.5; resize:vertical; min-height:110px;" required></textarea>
+          </div>
+
+          <!-- Submit Button & Feedback -->
+          <div style="display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+            <button type="submit" id="btn-send-admin-msg" class="btn btn-primary" style="font-weight:800; min-height:44px; padding:0 1.5rem; display:inline-flex; align-items:center; gap:0.5rem; background:linear-gradient(135deg, #0084ff 0%, #0050ff 100%); border:none; box-shadow:0 4px 16px rgba(0,100,255,0.35); border-radius:12px; color:#fff; cursor:pointer;">
+              🚀 Send Message
+            </button>
+            <span id="admin-msg-status" style="font-size:0.85rem; font-weight:700; display:none;"></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Card 2: Sent Messages History & Management -->
+      <div class="card" style="padding:1.4rem; border-radius:18px; border:1px solid var(--border); background:var(--surface,#ffffff);">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; font-size:1.05rem; color:var(--text-primary);">
+            <span>📋</span> Sent Messages History
+          </div>
+          <button type="button" onclick="window.loadPersonalMessages();" class="btn btn-sm" style="font-size:0.75rem; font-weight:700; border-radius:10px; padding:0.3rem 0.75rem; background:rgba(0,148,255,0.08); border:1px solid #0094ff; color:#0070ff; cursor:pointer;">
+            🔄 Refresh
+          </button>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
+          Yahan aapke bheje hue tamam private messages ki list hai. Kisi bhi message ko delete ya revoke karne ke liye <strong>Delete</strong> button dabayein.
+        </p>
+
+        <div style="overflow-x:auto;">
+          <table class="table" style="width:100%; border-collapse:collapse; font-size:0.86rem;">
+            <thead>
+              <tr style="border-bottom:1.5px solid var(--border); text-align:left; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">
+                <th style="padding:0.6rem 0.75rem;">Recipient</th>
+                <th style="padding:0.6rem 0.75rem;">Title / Content</th>
+                <th style="padding:0.6rem 0.75rem;">Date Sent</th>
+                <th style="padding:0.6rem 0.75rem;">Status</th>
+                <th style="padding:0.6rem 0.75rem; text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-sent-messages-tbody">
+              <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading sent messages...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Card 3: Live Preview -->
+      <div class="card" style="padding:1.4rem; border-radius:18px; border:1px solid var(--border); background:var(--surface,#ffffff);">
+        <div class="section-title" style="display:flex; align-items:center; gap:0.5rem; font-weight:800; font-size:1.05rem; color:var(--text-primary); margin-bottom:0.75rem;">
+          <span>👁️</span> Editor View Live Preview
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
+          Editor jab apna <strong>Message tab</strong> kholega toh use ye card aisa dikhega:
+        </p>
+        
+        <div style="padding:1.5rem; border-radius:20px; border:1.5px solid #0094ff33; box-shadow:0 8px 24px rgba(0, 148, 255, 0.08); background:var(--surface,#ffffff); text-align:center; max-width:540px; margin:0 auto;">
+          <div style="display:flex; justify-content:center; align-items:center; gap:0.65rem; margin-bottom:1.25rem;">
+            <div style="width:42px; height:42px; border-radius:50%; background:#0084ff; display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 4px 12px rgba(0,132,255,0.35);">
+              💬
+            </div>
+            <h2 style="font-size:1.85rem; font-weight:800; color:#0084ff; margin:0;">Message</h2>
+          </div>
+          <div id="admin-preview-dashed-box" class="message-dashed-box" style="font-size:0.95rem; font-weight:500; line-height:1.6;">
+            Select an editor or type a message to see live preview.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div id="tab-publytics" class="tab-content publytics-tab-wrapper" style="display:none;">
   <div class="main-container publytics-portal-container" style="max-width:540px; margin:0 auto; padding:0.85rem 0.85rem 2rem; box-sizing:border-box;">
 
     <!-- 1. ((🔔)) Admin Alert 📢 CARD (Exact Reference Design) -->
@@ -3663,11 +3856,15 @@
     <span class="nav-icon">📊</span>
     <span>Logs</span>
   </button>
-  <button class="mobile-nav-item" data-tab="tab-publytics">
-    <span class="nav-icon" style="display:inline-flex; align-items:center; justify-content:center;">
-      <img src="/publytics-icon.png?v=157" alt="Publytics" class="publytics-nav-logo" style="width:22px; height:22px; border-radius:5px; object-fit:cover; display:block;">
+    <button class="mobile-nav-item" data-tab="tab-messages" id="mobile-nav-messages">
+    <span class="nav-icon" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      <span id="msg-badge-mobile" style="display:none; position:absolute; top:-3px; right:-5px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid #fff; box-shadow:0 0 8px rgba(239,68,68,0.9);"></span>
     </span>
-    <span>Publytics</span>
+    <span>Message</span>
   </button>
   <button class="mobile-nav-item" data-tab="tab-firewall">
     <span class="nav-icon">🛡️</span>

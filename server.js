@@ -3100,6 +3100,76 @@ app.get('/api/public/contact-info', (req, res) => {
   });
 });
 
+
+// ── Personal Messaging System API Endpoints ──
+app.get('/api/messages', requireAuth, (req, res) => {
+  try {
+    const currentUser = req.session.username;
+    const isAdmin = isAnyAdminSession(req);
+    const msgs = db.getMessages(currentUser, isAdmin);
+    const unreadCount = db.getUnreadMessageCount(currentUser);
+
+    let editors = [];
+    if (isAdmin) {
+      const allUsers = db.getUsers();
+      editors = allUsers
+        .filter(u => u && u.username)
+        .map(u => ({ username: u.username, role: u.role || 'Editor' }));
+    }
+
+    res.json({
+      success: true,
+      messages: msgs,
+      unreadCount,
+      editors,
+      isAdmin
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/messages', requireAdminOrSuperAdmin, (req, res) => {
+  try {
+    const { toUser, content, title } = req.body || {};
+    if (!toUser || !String(toUser).trim()) {
+      return res.status(400).json({ success: false, error: 'Recipient is required' });
+    }
+    if (!content || !String(content).trim()) {
+      return res.status(400).json({ success: false, error: 'Message content cannot be empty' });
+    }
+    const newMsg = db.addMessage({
+      toUser: String(toUser).trim(),
+      fromUser: req.session.username || 'Admin',
+      title: title ? String(title).trim() : 'Notice from Admin',
+      content: String(content).trim()
+    });
+    res.json({ success: true, message: newMsg });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/messages/:id', requireAdminOrSuperAdmin, (req, res) => {
+  try {
+    const id = req.params.id;
+    const ok = db.deleteMessage(id);
+    res.json({ success: ok });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/messages/mark-read', requireAuth, (req, res) => {
+  try {
+    const currentUser = req.session.username;
+    const marked = db.markMessagesRead(currentUser);
+    res.json({ success: true, marked });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/login', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
