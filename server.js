@@ -121,7 +121,7 @@ function getUserPermissions(username, role) {
   // Firewall, Traffic Analytics, and Domains are strictly Super Admin-only — never grant to Editor
   // Publytics CAN be granted to Editor by Super Admin
   const base = storedPerms || db.getDefaultPermissions('Editor');
-  return base.filter(p => p !== 'firewall' && p !== 'analytics' && p !== 'domains');
+  return base.filter(p => p !== 'firewall' && p !== 'domains');
 }
 
 // Accepts one or more permission strings (OR logic: user needs at least one).

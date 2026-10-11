@@ -411,12 +411,12 @@ module.exports = {
       const isSuper = (u.username || '').toLowerCase() === 'admin' || (u.username || '').toLowerCase() === 'master admin' || role === 'Super Admin' || role === 'Master Admin';
       const defaultPerms = (isSuper || role === 'Admin')
         ? (isSuper ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'domains', 'publytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'publytics'])
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image'];
+        : ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'settings', 'analytics'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
       const rawUserPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;
       // Domains is strictly Master Admin only — filter out for Normal Admin and Editor
-      const userPerms = rawUserPerms.filter(p => (isSuper || p !== 'domains') && (role === 'Admin' || isSuper || (p !== 'firewall' && p !== 'analytics')));
+      const userPerms = rawUserPerms.filter(p => (isSuper || p !== 'domains') && (role === 'Admin' || isSuper || (p !== 'firewall')));
       return {
         id: u.id,
         username: u.username,
@@ -528,7 +528,7 @@ module.exports = {
       if (role !== undefined) user.role = role;
       if (Array.isArray(permissions)) {
         const isSuper = (user.username || '').toLowerCase() === 'admin' || (user.username || '').toLowerCase() === 'master admin' || user.role === 'Super Admin' || user.role === 'Master Admin';
-        user.permissions = permissions.filter(p => (isSuper || p !== 'domains') && (user.role === 'Admin' || isSuper || (p !== 'firewall' && p !== 'analytics')));
+        user.permissions = permissions.filter(p => (isSuper || p !== 'domains') && (user.role === 'Admin' || isSuper || (p !== 'firewall')));
       }
       if (Array.isArray(allowedTargetDomains)) {
         user.allowedTargetDomains = [...new Set(allowedTargetDomains
