@@ -3554,12 +3554,25 @@ body:not(.is-admin) #tab-firewall #block-ip-card {
 /* ── Traffic Logs & Facebook Analytics: Super Admin Only (Problem 5 Fix) ── */
 /* In Editor accounts: completely hide Logs tab, Top Stats Stack, and Facebook Traffic Sub-Source Analytics.
    Everything runs strictly in the backend for Editors and displays only in Super Admin account */
-body:not(.is-admin) .tab-btn[data-tab="tab-analytics"],
-body:not(.is-admin) .mobile-nav-item[data-tab="tab-analytics"],
-body:not(.is-admin) #tab-analytics,
+/* Editor Logs View: Keep Logs tab visible with ONLY Genuine Organic + FB breakdown */
+body.is-editor #logs-top-stats-stack,
+body.is-editor .top-stats-stack,
+body.is-editor #logs-realtime-wrap,
+html.is-editor #logs-top-stats-stack,
+html.is-editor .top-stats-stack,
+html.is-editor #logs-realtime-wrap,
+body:not(.is-admin) #logs-top-stats-stack,
 body:not(.is-admin) .top-stats-stack,
-body:not(.is-admin) #fb-breakdown-card {
+body:not(.is-admin) #logs-realtime-wrap {
   display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
 }
 
 /* ── Zero-Flash: Instantly hide Geo tab for Editors without Geo permission ── */
