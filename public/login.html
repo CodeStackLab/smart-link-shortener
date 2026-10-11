@@ -783,7 +783,7 @@
     </div>
 
     <!-- Register Subtle Link -->
-    <div class="register-subtle">
+    <div class="register-subtle" id="register-subtle-wrap">
       <a href="/register">New user? <span style="color:#00d2ff; font-weight:600;">Create Account</span></a>
     </div>
   </div>
@@ -887,6 +887,12 @@
           } else {
             if (orDivider) orDivider.style.display = 'none';
             if (jcCard) jcCard.style.display = 'none';
+          }
+
+          // Show / Hide Register link based on Admin Settings control
+          const regLink = document.getElementById('register-subtle-wrap');
+          if (regLink) {
+            regLink.style.display = (data && data.allowRegistration === false) ? 'none' : 'block';
           }
         } catch (e) {}
       }

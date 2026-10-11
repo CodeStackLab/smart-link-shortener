@@ -1240,6 +1240,7 @@ app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req,
   delete sanitized.contactJazzcashNumber;
   delete sanitized.contactWhatsappUrl;
   delete sanitized.showJazzcashOnLogin;
+  delete sanitized.allowRegistration;
   return res.json(sanitized);
 });
 
@@ -1284,7 +1285,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     contactWhatsappNumber,
     contactJazzcashNumber,
     contactWhatsappUrl,
-    showJazzcashOnLogin
+    showJazzcashOnLogin,
+    allowRegistration
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -1351,6 +1353,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     contactJazzcashNumber: contactJazzcashNumber !== undefined ? String(contactJazzcashNumber).trim() : undefined,
     contactWhatsappUrl: contactWhatsappUrl !== undefined ? String(contactWhatsappUrl).trim() : undefined,
     showJazzcashOnLogin: showJazzcashOnLogin !== undefined ? !!showJazzcashOnLogin : undefined,
+    allowRegistration: allowRegistration !== undefined ? (allowRegistration === true || allowRegistration === 'true') : undefined,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -3107,7 +3110,8 @@ app.get('/api/public/contact-info', (req, res) => {
     whatsappNumber: s.contactWhatsappNumber || '0307 1234567',
     jazzcashNumber: s.contactJazzcashNumber || '0307 1234567',
     whatsappUrl: s.contactWhatsappUrl || '',
-    showJazzcash: s.showJazzcashOnLogin === true
+    showJazzcash: s.showJazzcashOnLogin === true,
+    allowRegistration: s.allowRegistration !== false
   });
 });
 
@@ -3195,6 +3199,10 @@ app.get('/register', (req, res) => {
 
 app.post('/api/register', (req, res) => {
   try {
+    const currentSettings = db.getSettings();
+    if (currentSettings && currentSettings.allowRegistration === false) {
+      return res.status(403).json({ error: 'Registration is currently closed by Admin. Please contact support via WhatsApp.' });
+    }
     const { username, password, confirmPassword } = req.body || {};
     const rawUser = (username || '').trim();
     if (!rawUser) {

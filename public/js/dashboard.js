@@ -3226,6 +3226,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (showJcCheckbox) {
         showJcCheckbox.checked = (settings.showJazzcashOnLogin === true);
       }
+      const allowRegCheckbox = document.getElementById('setting-allow-registration');
+      if (allowRegCheckbox) {
+        allowRegCheckbox.checked = (settings.allowRegistration !== false);
+      }
 
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
@@ -3441,6 +3445,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const jazzcashVal = jcInput ? jcInput.value.trim() : '';
     const whatsappUrlVal = waUrlInput ? waUrlInput.value.trim() : '';
     const showJazzcashVal = showJcCheckbox ? showJcCheckbox.checked : false;
+    const allowRegCheckbox = document.getElementById('setting-allow-registration');
+    const allowRegistrationVal = allowRegCheckbox ? allowRegCheckbox.checked : true;
 
     if (!whatsappVal) {
       showAlert('⚠️ Please enter a WhatsApp number.', true);
@@ -3460,7 +3466,8 @@ document.addEventListener('DOMContentLoaded', () => {
           contactWhatsappNumber: whatsappVal,
           contactJazzcashNumber: jazzcashVal || '0307 1234567',
           contactWhatsappUrl: whatsappUrlVal,
-          showJazzcashOnLogin: showJazzcashVal
+          showJazzcashOnLogin: showJazzcashVal,
+          allowRegistration: allowRegistrationVal
         })
       });
       const data = await res.json();
