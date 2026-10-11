@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    const defaultEditorPerms = ['facebook', 'links', 'upload_image', 'settings', 'analytics'];
+    const defaultEditorPerms = ['facebook', 'links', 'upload_image', 'settings'];
 
     // All permissions from session (may include col_*, geo_*, logs_* granular keys)
     const allPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : defaultEditorPerms);

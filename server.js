@@ -122,7 +122,6 @@ function getUserPermissions(username, role) {
   // Publytics CAN be granted to Editor by Super Admin
   const base = storedPerms || db.getDefaultPermissions('Editor');
   const perms = base.filter(p => p !== 'firewall' && p !== 'domains');
-  if (!perms.includes('analytics')) perms.push('analytics');
   return perms;
 }
 
