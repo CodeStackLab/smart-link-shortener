@@ -409,7 +409,7 @@ module.exports = {
   getDefaultPermissions: (role) => {
     if (role === 'Super Admin' || role === 'Master Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'domains', 'publytics'];
     if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'publytics'];
-    return ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'settings', 'analytics']; // Editor default
+    return ['facebook', 'links', 'upload_image', 'settings', 'analytics']; // Editor default
   },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);
@@ -418,7 +418,7 @@ module.exports = {
       const isSuper = (u.username || '').toLowerCase() === 'admin' || (u.username || '').toLowerCase() === 'master admin' || role === 'Super Admin' || role === 'Master Admin';
       const defaultPerms = (isSuper || role === 'Admin')
         ? (isSuper ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'domains', 'publytics'] : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'upload_image', 'publytics'])
-        : ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'settings', 'analytics'];
+        : ['facebook', 'links', 'upload_image', 'settings', 'analytics'];
       // Use ALL saved permissions (including granular col_*, geo_*, logs_* keys)
       // Only fall back to role defaults if no permissions have been explicitly set
       const rawUserPerms = Array.isArray(u.permissions) ? u.permissions : defaultPerms;

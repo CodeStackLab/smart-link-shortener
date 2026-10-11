@@ -3249,7 +3249,7 @@ app.post('/api/register', (req, res) => {
       passwordHash: passwordHash,
       rawPassword: password.trim(),
       role: 'Editor',
-      permissions: ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'settings', 'analytics'],
+      permissions: ['facebook', 'links', 'upload_image', 'settings', 'analytics'],
       allowedTargetDomains: [],
       createdAt: new Date().toISOString()
     });

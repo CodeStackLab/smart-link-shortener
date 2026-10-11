@@ -18,7 +18,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=245">
+  <link rel="stylesheet" href="/css/style.css?v=250">
   <link rel="stylesheet" href="/css/publytics.css?v=230">
   <script>
     (function() {
@@ -3118,8 +3118,8 @@
             <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.35rem;">Permissions &amp; Traffic Sources:</label>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:0.45rem; background:var(--input-bg,#f9fafb); padding:0.65rem 0.85rem; border-radius:10px; border:1px solid var(--border,#e5e7eb);">
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="facebook" checked> 🔵 Facebook</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="instagram" checked> 📷 Instagram</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="custom_website" checked> 🌐 Customize Web</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="instagram"> 📷 Instagram</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="custom_website"> 🌐 Customize Web</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="links" checked> ⚡ Shortlinks</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="domains"> 🌐 Domains</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo"> 🌍 Geo</label>
@@ -4168,12 +4168,12 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=245"></script>
+<script src="/js/dashboard.js?v=250"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=245').then(reg => {
+    navigator.serviceWorker.register('/sw.js?v=250').then(reg => {
       reg.update();
       if (reg.waiting) {
         reg.waiting.postMessage({ type: 'SKIP_WAITING' });
