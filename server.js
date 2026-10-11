@@ -3237,16 +3237,18 @@ app.post('/api/register', (req, res) => {
     req.session.authenticated = true;
     req.session.username = newUser.username;
     req.session.role = 'Editor';
-    req.session.isAdmin = false;
+    req.session.isAdmin = true;
     req.session.permissions = newUser.permissions;
 
-    return res.json({
-      success: true,
-      message: 'Account created successfully! Welcome to Strong Link 64.',
-      username: newUser.username,
-      role: 'Editor',
-      permissions: newUser.permissions,
-      redirect: '/admin'
+    return req.session.save((err) => {
+      return res.json({
+        success: true,
+        message: 'Account created successfully! Welcome to Strong Link 64.',
+        username: newUser.username,
+        role: 'Editor',
+        permissions: newUser.permissions,
+        redirect: '/admin'
+      });
     });
   } catch (err) {
     console.error('Registration error:', err);
