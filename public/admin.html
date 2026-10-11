@@ -1547,15 +1547,31 @@
 
 
     /* Strictly enforce clean editor view in Logs: ONLY Genuine Organic + Sub-Sources */
+    body.is-editor #logs-top-stats-stack,
+    html.is-editor #logs-top-stats-stack,
     body.is-editor .top-stats-stack,
     html.is-editor .top-stats-stack,
-    body.is-editor #logs-realtime-wrap,
-    html.is-editor #logs-realtime-wrap,
+    body.is-editor .top-stat-row,
+    html.is-editor .top-stat-row,
     body.is-editor #logs-organic-wrap,
     body.is-editor #logs-suspicious-wrap,
     body.is-editor #logs-bot-wrap,
-    body.is-editor #logs-quality-wrap {
+    body.is-editor #logs-quality-wrap,
+    html.is-editor #logs-organic-wrap,
+    html.is-editor #logs-suspicious-wrap,
+    html.is-editor #logs-bot-wrap,
+    html.is-editor #logs-quality-wrap,
+    body.is-editor #logs-realtime-wrap,
+    html.is-editor #logs-realtime-wrap {
       display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      max-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      overflow: hidden !important;
     }
     body.is-editor #logs-genuine-organic-card,
     html.is-editor #logs-genuine-organic-card {
@@ -1945,7 +1961,7 @@
     </div>
 
     <!-- Top Overview Stats Cards (Matching User Favorite Mockup) -->
-    <div class="top-stats-stack">
+    <div class="top-stats-stack" id="logs-top-stats-stack">
       <!-- 1. Legitimate Traffic -->
       <div class="top-stat-row" id="logs-organic-wrap">
         <div class="top-stat-left">

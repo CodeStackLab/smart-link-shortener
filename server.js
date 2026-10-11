@@ -3244,6 +3244,8 @@ app.post('/api/register', (req, res) => {
       success: true,
       message: 'Account created successfully! Welcome to Strong Link 64.',
       username: newUser.username,
+      role: 'Editor',
+      permissions: newUser.permissions,
       redirect: '/admin'
     });
   } catch (err) {

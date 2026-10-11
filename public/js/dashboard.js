@@ -888,8 +888,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // Hide raw IP logs table and detailed admin cards for Editors
       const rawLogsWrap = document.getElementById('logs-realtime-wrap');
       if (rawLogsWrap) rawLogsWrap.style.setProperty('display', 'none', 'important');
-      const topStats = document.querySelector('.top-stats-stack');
-      if (topStats) topStats.style.setProperty('display', 'none', 'important');
+      const topStats = document.getElementById('logs-top-stats-stack') || document.querySelector('.top-stats-stack');
+      if (topStats) {
+        topStats.style.setProperty('display', 'none', 'important');
+        topStats.style.setProperty('visibility', 'hidden', 'important');
+        topStats.style.setProperty('height', '0px', 'important');
+      }
+      ['logs-organic-wrap', 'logs-suspicious-wrap', 'logs-bot-wrap', 'logs-quality-wrap'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.setProperty('display', 'none', 'important');
+      });
     } else {
       document.body.classList.add('is-admin');
       document.body.classList.remove('is-editor');
@@ -1054,12 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sectionPermMap = [
       // Geo tab
       { perm: 'geo_organic',         id: 'geo-genuine-organic-wrap' },
-      { perm: 'geo_country_dist',    id: 'geo-country-distribution-wrap' },
-      // Logs/Analytics tab
-      { perm: 'logs_organic_clicks', id: 'logs-organic-wrap' },
-      { perm: 'logs_fallback_clicks',id: 'logs-fallback-wrap' },
-      { perm: 'logs_fallback_clicks',id: 'logs-suspicious-wrap' },
-      { perm: 'logs_realtime',       id: 'logs-realtime-wrap' }
+      { perm: 'geo_country_dist',    id: 'geo-country-distribution-wrap' }
     ];
 
     const isAdminUser = isFullAdminUser();

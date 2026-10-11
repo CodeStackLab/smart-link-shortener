@@ -710,6 +710,13 @@
           const data = await res.json();
 
           if (res.ok && data.success) {
+            try {
+              localStorage.setItem('cachedIsSuperAdmin', 'false');
+              localStorage.setItem('cachedUserRole', 'Editor');
+              localStorage.setItem('cachedUsername', data.username || '');
+              localStorage.setItem('cachedUserBadge', '👤 ' + (data.username || ''));
+              localStorage.setItem('cachedPermissions', JSON.stringify(data.permissions || ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'settings', 'analytics']));
+            } catch (e) {}
             showAlert("🎉 Account created successfully! Redirecting...", true);
             setTimeout(() => {
               window.location.href = data.redirect || "/admin";
