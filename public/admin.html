@@ -18,7 +18,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=240">
+  <link rel="stylesheet" href="/css/style.css?v=245">
   <link rel="stylesheet" href="/css/publytics.css?v=230">
   <script>
     (function() {
@@ -3009,19 +3009,41 @@
             </div>
 
             <!-- Toggle Switch: Allow / Disallow New User Registration -->
-            <div style="grid-column: 1 / -1; margin-top:0.35rem; padding:1.1rem 1.25rem; background:rgba(0, 148, 255, 0.08); border:1.5px solid rgba(0, 148, 255, 0.4); border-radius:14px; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
-              <div>
-                <div style="font-weight:800; font-size:0.95rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
-                  <span style="font-size:1.25rem;">📝</span> Public User Registration (Allow / Off)
+            <div style="grid-column: 1 / -1; margin-top:0.35rem; padding:1.15rem 1.25rem; background:rgba(0, 148, 255, 0.06); border:1.5px solid rgba(0, 148, 255, 0.35); border-radius:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.6rem;">
+                <div style="font-weight:800; font-size:1rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-size:1.3rem;">📝</span> Public User Registration (Allow / Off)
                 </div>
-                <small style="color:var(--text-muted); font-size:0.78rem; display:block; margin-top:0.25rem; line-height:1.4;">
-                  Agar yeh <strong>ON</strong> hoga toh naye log <code>/register</code> par account bana sakenge. Jab aap shortener ko <strong>PAID</strong> karenge toh isko <strong>OFF</strong> kar dein, jisse registration band ho jayegi aur naye users register nahi ho sakenge.
-                </small>
+                <!-- Live Status Pill -->
+                <span id="badge-allow-reg-status" style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.35rem 0.85rem; border-radius:12px; font-weight:800; font-size:0.8rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:all 0.25s ease; background:#10b981; color:#ffffff;">
+                  <span id="badge-allow-reg-dot" style="font-size:0.65rem;">🟢</span>
+                  <span id="badge-allow-reg-text">ALLOWED (ON)</span>
+                </span>
               </div>
-              <label style="position:relative; display:inline-block; width:52px; height:28px; cursor:pointer; margin:0; flex-shrink:0;">
-                <input type="checkbox" id="setting-allow-registration" checked style="opacity:0; width:0; height:0; position:absolute;">
-                <span class="custom-toggle-slider"></span>
-              </label>
+
+              <div style="color:var(--text-muted); font-size:0.8rem; line-height:1.45; margin-bottom:0.85rem;">
+                Agar yeh <strong>ON</strong> hoga toh naye log <code>/register</code> par account bana sakenge. Jab aap shortener ko <strong>PAID</strong> karenge toh isko <strong>OFF</strong> kar dein, jisse registration band ho jayegi aur naye users register nahi ho sakenge.
+              </div>
+
+              <!-- Instant Controls: Segmented Buttons + Toggle Switch -->
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; padding-top:0.75rem; border-top:1px dashed rgba(0,148,255,0.25);">
+                <div style="display:inline-flex; gap:0.4rem; background:rgba(0,0,0,0.04); padding:4px; border-radius:12px; border:1px solid rgba(0,0,0,0.06);">
+                  <button type="button" id="btn-reg-quick-allow" style="padding:0.45rem 1rem; border-radius:9px; font-weight:800; font-size:0.82rem; cursor:pointer; border:none; transition:all 0.2s ease; background:#10b981; color:#ffffff; box-shadow:0 2px 6px rgba(16,185,129,0.35);">
+                    🟢 Allow (ON)
+                  </button>
+                  <button type="button" id="btn-reg-quick-off" style="padding:0.45rem 1rem; border-radius:9px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; transition:all 0.2s ease; background:transparent; color:var(--text-secondary);">
+                    🔴 Off (Closed)
+                  </button>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:0.65rem;">
+                  <span style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Live Toggle:</span>
+                  <label style="position:relative; display:inline-block; width:54px; height:28px; cursor:pointer; margin:0; flex-shrink:0;">
+                    <input type="checkbox" id="setting-allow-registration" checked style="opacity:0; width:0; height:0; position:absolute;">
+                    <span class="custom-toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -4146,12 +4168,12 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=240"></script>
+<script src="/js/dashboard.js?v=245"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=240').then(reg => {
+    navigator.serviceWorker.register('/sw.js?v=245').then(reg => {
       reg.update();
       if (reg.waiting) {
         reg.waiting.postMessage({ type: 'SKIP_WAITING' });

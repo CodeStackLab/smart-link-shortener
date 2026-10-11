@@ -1239,6 +1239,9 @@ document.addEventListener('DOMContentLoaded', () => {
           loadDetectedDomains();
         }
         load2FAStatus();
+        if (window.loadRegistrationSettingsLive) {
+          window.loadRegistrationSettingsLive();
+        }
         if (window.loadAdminAlertSettings) {
           window.loadAdminAlertSettings();
         }
@@ -3242,10 +3245,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (showJcCheckbox) {
         showJcCheckbox.checked = (settings.showJazzcashOnLogin === true);
       }
-      const allowRegCheckbox = document.getElementById('setting-allow-registration');
-      if (allowRegCheckbox) {
-        allowRegCheckbox.checked = (settings.allowRegistration !== false);
-      }
+      syncRegistrationUi(settings.allowRegistration !== false);
 
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
@@ -3446,6 +3446,109 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Login Page Contact & Payment Numbers Management ──
+  // ── Public User Registration Toggle & Interactive State Manager ──
+  function syncRegistrationUi(isAllowed) {
+    const allowRegCheckbox = document.getElementById('setting-allow-registration');
+    const badgeStatus = document.getElementById('badge-allow-reg-status');
+    const badgeDot = document.getElementById('badge-allow-reg-dot');
+    const badgeText = document.getElementById('badge-allow-reg-text');
+    const btnAllow = document.getElementById('btn-reg-quick-allow');
+    const btnOff = document.getElementById('btn-reg-quick-off');
+
+    if (allowRegCheckbox) {
+      allowRegCheckbox.checked = isAllowed;
+    }
+
+    if (badgeStatus) {
+      if (isAllowed) {
+        badgeStatus.style.background = '#10b981';
+        badgeStatus.style.color = '#ffffff';
+        if (badgeDot) badgeDot.textContent = '🟢';
+        if (badgeText) badgeText.textContent = 'ALLOWED (ON)';
+      } else {
+        badgeStatus.style.background = '#ef4444';
+        badgeStatus.style.color = '#ffffff';
+        if (badgeDot) badgeDot.textContent = '🔴';
+        if (badgeText) badgeText.textContent = 'CLOSED (OFF)';
+      }
+    }
+
+    if (btnAllow && btnOff) {
+      if (isAllowed) {
+        btnAllow.style.background = '#10b981';
+        btnAllow.style.color = '#ffffff';
+        btnAllow.style.boxShadow = '0 2px 6px rgba(16,185,129,0.35)';
+        btnOff.style.background = 'transparent';
+        btnOff.style.color = 'var(--text-secondary, #64748b)';
+        btnOff.style.boxShadow = 'none';
+      } else {
+        btnOff.style.background = '#ef4444';
+        btnOff.style.color = '#ffffff';
+        btnOff.style.boxShadow = '0 2px 6px rgba(239,68,68,0.35)';
+        btnAllow.style.background = 'transparent';
+        btnAllow.style.color = 'var(--text-secondary, #64748b)';
+        btnAllow.style.boxShadow = 'none';
+      }
+    }
+  }
+
+  async function setRegistrationAllowed(isAllowed) {
+    syncRegistrationUi(isAllowed);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ allowRegistration: isAllowed })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (isAllowed) {
+          showFloatingToast('✅ Registration is now ALLOWED (ON). New users can register at /register');
+        } else {
+          showFloatingToast('🔒 Registration is now CLOSED (OFF). Public registration is disabled.');
+        }
+      } else {
+        showFloatingToast(data.error || 'Failed to update registration setting', true);
+        syncRegistrationUi(!isAllowed);
+      }
+    } catch (err) {
+      showFloatingToast('Error updating registration setting: ' + (err.message || err), true);
+      syncRegistrationUi(!isAllowed);
+    }
+  }
+
+  window.loadRegistrationSettingsLive = async function() {
+    try {
+      const res = await fetch('/api/admin/settings');
+      if (!res.ok) return;
+      const settings = await res.json();
+      const isAllowed = (settings.allowRegistration !== false);
+      syncRegistrationUi(isAllowed);
+    } catch (e) {}
+  };
+
+  // Wire event listeners for registration controls
+  setTimeout(() => {
+    const allowRegCheckbox = document.getElementById('setting-allow-registration');
+    if (allowRegCheckbox) {
+      allowRegCheckbox.addEventListener('change', () => {
+        setRegistrationAllowed(allowRegCheckbox.checked);
+      });
+    }
+    const btnRegQuickAllow = document.getElementById('btn-reg-quick-allow');
+    if (btnRegQuickAllow) {
+      btnRegQuickAllow.addEventListener('click', () => {
+        setRegistrationAllowed(true);
+      });
+    }
+    const btnRegQuickOff = document.getElementById('btn-reg-quick-off');
+    if (btnRegQuickOff) {
+      btnRegQuickOff.addEventListener('click', () => {
+        setRegistrationAllowed(false);
+      });
+    }
+  }, 100);
+
   window.saveLoginContactNumbers = async function(e) {
     if (e && e.preventDefault) e.preventDefault();
     if (e && e.stopPropagation) e.stopPropagation();
@@ -3503,7 +3606,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       if (btnSave) {
         btnSave.disabled = false;
-        btnSave.textContent = '💾 Save Contact & WhatsApp Link';
+        btnSave.textContent = '💾 Save Contact, JazzCash & Registration Settings';
       }
     }
     return false;
