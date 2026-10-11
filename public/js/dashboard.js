@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'settings', 'analytics'];
+    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'settings', 'analytics'];
 
     // All permissions from session (may include col_*, geo_*, logs_* granular keys)
     const allPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : defaultEditorPerms);
@@ -4621,7 +4621,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const selectedRole = newUserRoleSelect.value;
       const defaultPerms = selectedRole === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'publytics']
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'settings'];
+        : ['facebook', 'instagram', 'custom_website', 'links', 'upload_image', 'analytics', 'settings'];
 
       document.querySelectorAll('.new-perm-cb').forEach(cb => {
         cb.checked = defaultPerms.includes(cb.value);

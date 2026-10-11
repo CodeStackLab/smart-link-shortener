@@ -1593,6 +1593,20 @@
       display: block !important;
     }
 
+    html.hide-geo-tab .tab-btn[data-tab=tab-geo],
+    body.hide-geo-tab .tab-btn[data-tab=tab-geo],
+    html.hide-geo-tab .mobile-nav-item[data-tab=tab-geo],
+    body.hide-geo-tab .mobile-nav-item[data-tab=tab-geo] {
+      display: none !important;
+    }
+
+    body.is-editor .theme-instagram,
+    html.is-editor .theme-instagram,
+    body.is-editor .theme-tiktok,
+    html.is-editor .theme-tiktok {
+      display: none !important;
+    }
+
   </style>
 </head>
 <body data-theme="light">
@@ -3019,7 +3033,7 @@
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="custom_website" checked> 🌐 Customize Web</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="links" checked> ⚡ Shortlinks</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="domains"> 🌐 Domains</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo" checked> 🌍 Geo</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="geo"> 🌍 Geo</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="analytics" checked> 📊 Analytics</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="publytics" checked> 📈 Publytics</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
