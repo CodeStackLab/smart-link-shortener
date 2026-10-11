@@ -409,7 +409,7 @@ module.exports = {
   getDefaultPermissions: (role) => {
     if (role === 'Super Admin' || role === 'Master Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'domains', 'publytics'];
     if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'publytics'];
-    return ['facebook', 'links', 'upload_image', 'settings', 'analytics']; // Editor default
+    return ['facebook', 'links', 'upload_image', 'settings']; // Editor default
   },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);

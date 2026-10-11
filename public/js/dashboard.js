@@ -659,13 +659,16 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     navMap.forEach(item => {
-      // Firewall, Analytics, and Settings tabs are available to all users (scoped per role)
-      // Publytics requires Super Admin OR Normal Admin OR explicit 'publytics' permission granted by Super Admin
-      const hasAccess = (item.key === 'firewall' || item.key === 'analytics' || item.key === 'settings')
+      // Firewall and Settings tabs are available to all users (scoped per role)
+      // Analytics requires Admin OR explicit 'analytics' permission
+      // Publytics requires Super Admin OR Normal Admin OR explicit 'publytics' permission
+      const hasAccess = (item.key === 'firewall' || item.key === 'settings')
         ? true
-        : item.key === 'publytics'
-          ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
-          : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
+        : item.key === 'analytics'
+          ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('analytics'))
+          : item.key === 'publytics'
+            ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
+            : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -876,18 +879,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const fwMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-firewall"]');
       if (fwMobileBtn) fwMobileBtn.style.removeProperty('display');
 
-      // Show Logs tab for Editors, but ONLY show Genuine Organic card + Traffic Sub-source card (hide raw IP logs & top stats)
+      // Scope Logs tab & widgets strictly based on 'analytics' permission
+      const hasAnalyticsPerm = isFullAdmin || allPerms.includes('analytics');
       const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="tab-analytics"]');
-      if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'inline-flex', 'important');
       const analyticsMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-analytics"]');
-      if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'flex', 'important');
       const tabAnalytics = document.getElementById('tab-analytics');
-      if (tabAnalytics) tabAnalytics.style.removeProperty('display');
-
       const genuineOrganicCard = document.getElementById('logs-genuine-organic-card');
-      if (genuineOrganicCard) genuineOrganicCard.style.removeProperty('display');
       const fbBreakdown = document.getElementById('fb-breakdown-card');
-      if (fbBreakdown) fbBreakdown.style.removeProperty('display');
+
+      if (hasAnalyticsPerm) {
+        if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'inline-flex', 'important');
+        if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'flex', 'important');
+        if (tabAnalytics) tabAnalytics.style.removeProperty('display');
+        if (genuineOrganicCard) genuineOrganicCard.style.removeProperty('display');
+        if (fbBreakdown) fbBreakdown.style.removeProperty('display');
+      } else {
+        if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'none', 'important');
+        if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'none', 'important');
+        if (tabAnalytics) tabAnalytics.style.setProperty('display', 'none', 'important');
+        if (genuineOrganicCard) genuineOrganicCard.style.setProperty('display', 'none', 'important');
+        if (fbBreakdown) fbBreakdown.style.setProperty('display', 'none', 'important');
+      }
 
       // Hide raw IP logs table and detailed admin cards for Editors
       const rawLogsWrap = document.getElementById('logs-realtime-wrap');
