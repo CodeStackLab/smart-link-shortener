@@ -730,12 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ─── Settings Tab Cards Gating ───
-    // User / Editor Self Password Change Card — Available to all users with Settings access
-    const userChangePassCard = document.getElementById('user-change-password-card');
-    if (userChangePassCard) {
-      userChangePassCard.style.removeProperty('display');
-      userChangePassCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
-    }
+
 
     // 1. Editor URL Display Mode (Force Mask / Force Unhide / Individual Mode) — ADMIN ONLY
     const editorMaskCard = document.getElementById('editor-url-mask-card');
@@ -813,10 +808,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Change Admin Password Card — ADMIN ONLY (Editors use user-change-password-card)
+    // Change Password Card — Available to all users with Settings access
     const changePassCard = document.getElementById('change-password-card');
     if (changePassCard) {
-      changePassCard.style.display = isFullAdmin ? '' : 'none';
+      changePassCard.style.removeProperty('display');
+      changePassCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
     }
 
     // If user does not have Settings permission and is currently on Settings tab, switch back to Links tab
@@ -861,8 +857,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.style.setProperty('display', 'none', 'important');
       });
 
-      const userSelfPassCard = document.getElementById('user-change-password-card');
-      if (userSelfPassCard) userSelfPassCard.style.removeProperty('display');
+      const changePassCardEditor = document.getElementById('change-password-card');
+      if (changePassCardEditor) changePassCardEditor.style.removeProperty('display');
 
       const blockIpCard = document.getElementById('block-ip-card');
       if (blockIpCard) blockIpCard.style.removeProperty('display');
