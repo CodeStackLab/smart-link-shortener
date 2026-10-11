@@ -445,7 +445,13 @@ module.exports = {
   },
   getUserByUsername: (username) => {
     const users = readJson(FILES.users, []);
-    return users.find(u => u && u.username && u.username.toLowerCase() === (username || '').toLowerCase());
+    const clean = (username || '').trim().toLowerCase();
+    const cleanNoSpace = clean.replace(/\s+/g, '');
+    return users.find(u => {
+      if (!u || !u.username) return false;
+      const uLower = u.username.toLowerCase();
+      return uLower === clean || uLower.replace(/\s+/g, '') === cleanNoSpace;
+    });
   },
   addUser: (user) => {
     const users = readJson(FILES.users, []);
