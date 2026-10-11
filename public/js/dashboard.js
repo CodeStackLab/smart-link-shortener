@@ -581,7 +581,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // userCurrentPermissions holds ALL permissions (tab + granular) for later checks
     userCurrentPermissions = allPerms;
-    const userPerms = userFeaturePerms; // used below for tab/chip visibility
+    const userPerms = userFeaturePerms;
+    const hasInstagram = isFullAdmin || allPerms.includes("instagram");
+    if (hasInstagram) {
+      document.body.classList.add("has-perm-instagram");
+      document.documentElement.classList.add("has-perm-instagram");
+    } else {
+      document.body.classList.remove("has-perm-instagram");
+      document.documentElement.classList.remove("has-perm-instagram");
+    } // used below for tab/chip visibility
 
     // Traffic Source Chips Scoping
     // Admin always gets full access; Editor/Manager sees only permitted chips
@@ -2813,6 +2821,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const fbAutoEl = document.getElementById('stat-fb-automated');
         if (fbAutoEl) fbAutoEl.textContent = '0';
 
+        const genuineCardVal = document.getElementById('stat-logs-genuine');
+        if (genuineCardVal) genuineCardVal.textContent = '0';
+        const reelsEl = document.getElementById('stat-fb-reels');
+        if (reelsEl) reelsEl.textContent = '0';
+        const reelsPctEl = document.getElementById('stat-fb-reels-pct');
+        if (reelsPctEl) reelsPctEl.textContent = '0% of FB';
+        const igEl = document.getElementById('stat-instagram');
+        if (igEl) igEl.textContent = '0';
+        const igPctEl = document.getElementById('stat-instagram-pct');
+        if (igPctEl) igPctEl.textContent = '0% of Social';
+        const ttEl = document.getElementById('stat-tiktok');
+        if (ttEl) ttEl.textContent = '0';
+        const ttPctEl = document.getElementById('stat-tiktok-pct');
+        if (ttPctEl) ttPctEl.textContent = '0% of Social';
+
         ['profiles', 'groups', 'pages', 'stories', 'events', 'comments', 'automated'].forEach(sub => {
           const bar = document.getElementById(`stat-fb-${sub}-bar`);
           if (bar) bar.style.width = '0%';
@@ -3063,6 +3086,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (res.ok && data.success) {
         showFloatingToast('Traffic logs cleared successfully.');
+        const genuineCardVal = document.getElementById('stat-logs-genuine');
+        if (genuineCardVal) genuineCardVal.textContent = '0';
         await loadAnalytics();
       } else {
         showFloatingToast(data.error || 'Failed to clear logs', true);
