@@ -121,7 +121,9 @@ function getUserPermissions(username, role) {
   // Firewall, Traffic Analytics, and Domains are strictly Super Admin-only — never grant to Editor
   // Publytics CAN be granted to Editor by Super Admin
   const base = storedPerms || db.getDefaultPermissions('Editor');
-  return base.filter(p => p !== 'firewall' && p !== 'domains');
+  const perms = base.filter(p => p !== 'firewall' && p !== 'domains');
+  if (!perms.includes('analytics')) perms.push('analytics');
+  return perms;
 }
 
 // Accepts one or more permission strings (OR logic: user needs at least one).
@@ -1764,8 +1766,19 @@ app.get('/api/admin/logs', requireAuth, (req, res) => {
 });
 
 app.post('/api/admin/clear-logs', requireAuth, requirePermission('analytics'), (req, res) => {
-  db.clearLogs();
-  res.json({ success: true });
+  if (isAdminRole(req.session.role)) {
+    db.clearLogs();
+  } else {
+    const userCodes = db.getLinks()
+      .filter(l => l.createdBy === req.session.username)
+      .map(l => (l.code || '').toLowerCase());
+    if (userCodes.length > 0) {
+      db.clearLogsForUserCodes(userCodes);
+    } else {
+      db.clearLogs();
+    }
+  }
+  res.json({ success: true, message: 'Logs cleared successfully' });
 });
 
 // Helper to count clicks in a time window for a link

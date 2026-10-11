@@ -359,6 +359,13 @@ module.exports = {
     }
   },
   clearLogs: () => writeJson(FILES.logs, []),
+  clearLogsForUserCodes: (codes) => {
+    const codeSet = new Set((codes || []).map(c => (c || '').toLowerCase()));
+    const logs = readJson(FILES.logs, []);
+    const retained = logs.filter(log => !log.code || !codeSet.has(log.code.toLowerCase()));
+    writeJson(FILES.logs, retained);
+    return logs.length - retained.length;
+  },
   removeLogsByIds: (ids) => {
     const idSet = new Set(Array.isArray(ids) ? ids : []);
     const logs = readJson(FILES.logs, []);

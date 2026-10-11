@@ -870,9 +870,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Show Logs tab for Editors, but ONLY show Genuine Organic card + Traffic Sub-source card (hide raw IP logs & top stats)
       const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="tab-analytics"]');
-      if (analyticsTabBtn) analyticsTabBtn.style.removeProperty('display');
+      if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'inline-flex', 'important');
       const analyticsMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-analytics"]');
-      if (analyticsMobileBtn) analyticsMobileBtn.style.removeProperty('display');
+      if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'flex', 'important');
       const tabAnalytics = document.getElementById('tab-analytics');
       if (tabAnalytics) tabAnalytics.style.removeProperty('display');
 
@@ -920,9 +920,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Show Traffic Logs & Facebook Analytics tab & widgets for Admins
       const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="tab-analytics"]');
-      if (analyticsTabBtn) analyticsTabBtn.style.removeProperty('display');
+      if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'inline-flex', 'important');
       const analyticsMobileBtn = document.querySelector('.mobile-nav-item[data-tab="tab-analytics"]');
-      if (analyticsMobileBtn) analyticsMobileBtn.style.removeProperty('display');
+      if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'flex', 'important');
       const fbBreakdown = document.getElementById('fb-breakdown-card');
       if (fbBreakdown) fbBreakdown.style.removeProperty('display');
       const topStats = document.querySelector('.top-stats-stack');
@@ -3051,14 +3051,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 6000);
 
-  if (clearLogsBtn) {
-    clearLogsBtn.addEventListener('click', async () => {
-      if (!confirm('Are you sure you want to clear all click logs?')) return;
-      await fetch('/api/admin/clear-logs', { method: 'POST' });
-      showAlert('Click logs cleared.');
-      loadAnalytics();
-    });
+  async function performClearLogs() {
+    if (!confirm('Are you sure you want to clear all traffic logs? This will reset all visitor click counters to 0.')) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin/clear-logs', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFloatingToast('Traffic logs cleared successfully.');
+        await loadAnalytics();
+      } else {
+        showFloatingToast(data.error || 'Failed to clear logs', true);
+      }
+    } catch (err) {
+      showFloatingToast('Error clearing logs', true);
+    }
   }
+
+  ['clear-logs-btn', 'clear-subsource-logs-btn', 'clear-subsource-logs-bottom-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.addEventListener('click', performClearLogs);
+    }
+  });
 
   window.quickBlockIp = async function(ip) {
     if (!confirm(`Are you sure you want to block IP ${ip}?`)) return;
