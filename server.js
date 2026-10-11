@@ -1236,6 +1236,10 @@ app.get('/api/admin/settings', requireAuth, requirePermission('settings'), (req,
   delete sanitized.vpnLimitMinutes;
   delete sanitized.applyFirewallGlobally;
   delete sanitized.allowlistedIps;
+  delete sanitized.contactWhatsappNumber;
+  delete sanitized.contactJazzcashNumber;
+  delete sanitized.contactWhatsappUrl;
+  delete sanitized.showJazzcashOnLogin;
   return res.json(sanitized);
 });
 
@@ -1646,10 +1650,10 @@ app.get('/api/admin/users', requireAuth, (req, res) => {
 
 
 app.post('/api/admin/change-password', requireAuth, (req, res) => {
-  const { newPassword } = req.body;
+  const { newPassword, keepSession } = req.body || {};
 
-  if (!newPassword || newPassword.trim().length < 6) {
-    return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+  if (!newPassword || newPassword.trim().length < 5) {
+    return res.status(400).json({ error: 'New password must be at least 5 characters long.' });
   }
 
   const targetUsername = req.session.username || 'admin';
@@ -1662,9 +1666,13 @@ app.post('/api/admin/change-password', requireAuth, (req, res) => {
   const newHash = bcrypt.hashSync(newPassword.trim(), salt);
   db.updateUserPassword(currentUser.username, newHash, newPassword.trim());
 
+  if (keepSession) {
+    return res.json({ success: true, message: 'Password updated successfully!' });
+  }
+
   // Invalidate session immediately on password change
   req.session.destroy((err) => {
-    res.json({ success: true, message: 'Password updated successfully. Logged out.' });
+    res.json({ success: true, message: 'Password updated successfully. Logged out.', loggedOut: true });
   });
 });
 
@@ -3220,7 +3228,7 @@ app.post('/api/register', (req, res) => {
       passwordHash: passwordHash,
       rawPassword: password.trim(),
       role: 'Editor',
-      permissions: ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image'],
+      permissions: ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image', 'settings', 'analytics'],
       allowedTargetDomains: [],
       createdAt: new Date().toISOString()
     });

@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  link-shortener:
+  link-shortener-link64:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: link-shortener
+    container_name: link-shortener-link64
     restart: unless-stopped
     env_file:
       - .env
@@ -17,4 +17,4 @@ services:
       - ./:/app
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "3002:3000"

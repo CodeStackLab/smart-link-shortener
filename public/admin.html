@@ -1566,6 +1566,33 @@
       display: block !important;
     }
 
+    /* Strictly hide Admin Settings cards from Editors — NEVER show JazzCash or Team to Editors */
+    body.is-editor #login-contact-settings-card,
+    html.is-editor #login-contact-settings-card,
+    body.is-editor #team-management-card,
+    html.is-editor #team-management-card,
+    body.is-editor #editor-url-mask-card,
+    html.is-editor #editor-url-mask-card,
+    body.is-editor #default-fallback-url-card,
+    html.is-editor #default-fallback-url-card,
+    body.is-editor #publytics-tracking-card,
+    html.is-editor #publytics-tracking-card,
+    body.is-editor #custom-domains-card,
+    html.is-editor #custom-domains-card,
+    body.is-editor #admin-alert-settings-card,
+    html.is-editor #admin-alert-settings-card,
+    body.is-editor #official-publytics-creds-card,
+    html.is-editor #official-publytics-creds-card,
+    body.is-editor #change-password-card,
+    html.is-editor #change-password-card {
+      display: none !important;
+    }
+
+    body.is-editor #user-change-password-card,
+    html.is-editor #user-change-password-card {
+      display: block !important;
+    }
+
   </style>
 </head>
 <body data-theme="light">
@@ -2802,6 +2829,55 @@
   <div class="container settings-container" style="max-width:100% !important; box-sizing:border-box !important;">
     <div class="settings-grid" style="display:flex; flex-direction:column; gap:1.25rem; width:100%; max-width:100%; box-sizing:border-box;">
 
+      <!-- ── Change My Password Card (Available to all users / Editors) ── -->
+      <div class="card" style="padding:1.35rem; border-radius:14px; border:1.8px solid #10b981; box-shadow:0 4px 18px rgba(16,185,129,0.12);" id="user-change-password-card">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; font-size:1.05rem;">
+            <span class="accent">🔑</span> Change My Password
+          </div>
+          <span style="font-size:0.72rem; font-weight:800; color:#fff; background:linear-gradient(135deg,#10b981,#059669); padding:0.25rem 0.75rem; border-radius:20px; box-shadow:0 2px 8px rgba(16,185,129,0.35);">
+            🔒 Account Security
+          </span>
+        </div>
+        <p style="font-size:0.83rem; color:var(--text-muted); margin-bottom:1.15rem; line-height:1.45;">
+          Apne account ko secure rakhne ke liye aap yahan se kisi bhi waqt apna password change kar sakte hain.
+        </p>
+        <form id="user-change-password-form">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; margin-bottom:1.15rem;">
+            
+            <!-- New Password Input -->
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="self-new-password" style="font-weight:800; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-primary); display:flex; align-items:center; gap:0.45rem; margin-bottom:0.35rem;">
+                <span style="font-size:1.05rem;">🔒</span> New Password (min 5 chars)
+              </label>
+              <div style="position:relative;">
+                <input type="password" id="self-new-password" class="form-control" placeholder="Enter new password" minlength="5" required style="font-weight:600; font-size:0.95rem; padding-right:2.8rem;">
+                <button type="button" id="btn-toggle-self-pass-1" style="position:absolute; right:0.5rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--text-muted); padding:0.2rem 0.4rem;" aria-label="Toggle password">👁️</button>
+              </div>
+            </div>
+
+            <!-- Confirm Password Input -->
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="self-confirm-password" style="font-weight:800; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-primary); display:flex; align-items:center; gap:0.45rem; margin-bottom:0.35rem;">
+                <span style="font-size:1.05rem;">✅</span> Confirm New Password
+              </label>
+              <div style="position:relative;">
+                <input type="password" id="self-confirm-password" class="form-control" placeholder="Confirm new password" minlength="5" required style="font-weight:600; font-size:0.95rem; padding-right:2.8rem;">
+                <button type="button" id="btn-toggle-self-pass-2" style="position:absolute; right:0.5rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--text-muted); padding:0.2rem 0.4rem;" aria-label="Toggle confirm password">👁️</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+            <button type="submit" id="btn-save-self-password" class="btn btn-primary" style="font-weight:800; min-height:42px; padding:0 1.35rem; display:inline-flex; align-items:center; gap:0.5rem; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35); border-radius:10px;">
+              💾 Save New Password
+            </button>
+            <span id="self-password-status" style="font-size:0.85rem; font-weight:700; display:none;"></span>
+          </div>
+        </form>
+      </div>
+
       <!-- ── Login Page Contact & Payment Numbers Card ── -->
       <div class="card" style="padding:1.35rem; border-radius:14px; border:1.8px solid #0094ff; box-shadow:0 4px 18px rgba(0,148,255,0.14);" id="login-contact-settings-card">
         <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
@@ -2947,7 +3023,7 @@
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="analytics" checked> 📊 Analytics</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="publytics" checked> 📈 Publytics</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="firewall"> 🛡️ Firewall</label>
-              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="settings"> ⚙️ Settings</label>
+              <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="settings" checked> ⚙️ Settings</label>
               <label style="font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; color:var(--text-primary);"><input type="checkbox" class="new-perm-cb" value="upload_image" checked> 🖼️ Upload Image</label>
               <label style="display:none;"><input type="checkbox" class="new-perm-cb" value="unmask_target_url" id="new-unmask-hidden-cb"></label>
             </div>

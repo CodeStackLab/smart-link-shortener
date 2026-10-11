@@ -402,7 +402,7 @@ module.exports = {
   getDefaultPermissions: (role) => {
     if (role === 'Super Admin' || role === 'Master Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'domains', 'publytics'];
     if (role === 'Admin') return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'unmask_target_url', 'upload_image', 'publytics'];
-    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image']; // Editor default
+    return ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image', 'settings']; // Editor default
   },
   getUsersPublic: () => {
     const users = readJson(FILES.users, []);
@@ -461,7 +461,7 @@ module.exports = {
     if (!Array.isArray(user.permissions)) {
       user.permissions = user.role === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings']
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo'];
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'upload_image', 'settings'];
     }
     if (Array.isArray(user.permissions)) {
       user.permissions = user.permissions.filter(p => (isSuper || p !== 'domains') && (user.role === 'Admin' || isSuper || (p !== 'firewall' && p !== 'analytics')));

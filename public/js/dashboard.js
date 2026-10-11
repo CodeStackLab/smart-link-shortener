@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'geo'];
+    const defaultEditorPerms = ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'settings', 'analytics'];
 
     // All permissions from session (may include col_*, geo_*, logs_* granular keys)
     const allPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : defaultEditorPerms);
@@ -651,9 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     navMap.forEach(item => {
-      // Firewall tab is available to both Admins and Editors (Editors see ONLY Block IP card)
+      // Firewall, Analytics, and Settings tabs are available to all users (scoped per role)
       // Publytics requires Super Admin OR Normal Admin OR explicit 'publytics' permission granted by Super Admin
-      const hasAccess = (item.key === 'firewall' || item.key === 'analytics')
+      const hasAccess = (item.key === 'firewall' || item.key === 'analytics' || item.key === 'settings')
         ? true
         : item.key === 'publytics'
           ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
@@ -730,6 +730,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ─── Settings Tab Cards Gating ───
+    // User / Editor Self Password Change Card — Available to all users with Settings access
+    const userChangePassCard = document.getElementById('user-change-password-card');
+    if (userChangePassCard) {
+      userChangePassCard.style.removeProperty('display');
+      userChangePassCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+    }
+
     // 1. Editor URL Display Mode (Force Mask / Force Unhide / Individual Mode) — ADMIN ONLY
     const editorMaskCard = document.getElementById('editor-url-mask-card');
     if (editorMaskCard) {
@@ -748,7 +755,18 @@ document.addEventListener('DOMContentLoaded', () => {
       publyticsCard.style.display = isSuperAdminUser() ? '' : 'none';
     }
 
-    // 2. Google Authenticator 2FA Manager — Visible to anyone with Settings access
+    // 2. Login Page Contact & Payment Numbers (JazzCash & WhatsApp) — ADMIN ONLY (NEVER show to Editors)
+    const loginContactCard = document.getElementById('login-contact-settings-card');
+    if (loginContactCard) {
+      if (isFullAdmin) {
+        loginContactCard.style.removeProperty('display');
+        loginContactCard.style.display = '';
+      } else {
+        loginContactCard.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    // 3. Google Authenticator 2FA Manager — Visible to anyone with Settings access
     const twoFaCard = document.getElementById('two-factor-auth-card');
     if (twoFaCard) {
       twoFaCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
@@ -773,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
       installingSec.style.setProperty('display', 'none', 'important');
     }
 
-    // 3. Admin Alert Broadcast Card — Accessible to Master Admin & Normal Admin, Hidden from Editor
+    // 4. Admin Alert Broadcast Card — Accessible to Master Admin & Normal Admin, Hidden from Editor
     const adminAlertSettingsCard = document.getElementById('admin-alert-settings-card');
     if (adminAlertSettingsCard) {
       if (isFullAdmin || isSuperAdminUser()) {
@@ -784,10 +802,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Official Publytics Login Credentials Card in Settings
+    // Official Publytics Login Credentials Card in Settings — ADMIN ONLY
     const publyticsCredsCard = document.getElementById('official-publytics-creds-card');
     if (publyticsCredsCard) {
-      if (isFullAdmin || isSuperAdminUser() || userPerms.includes('publytics') || userPerms.includes('settings')) {
+      if (isFullAdmin || isSuperAdminUser()) {
         publyticsCredsCard.style.removeProperty('display');
         publyticsCredsCard.style.display = 'block';
       } else {
@@ -795,9 +813,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Change Admin Password Card — ADMIN ONLY (Editors use user-change-password-card)
     const changePassCard = document.getElementById('change-password-card');
     if (changePassCard) {
-      changePassCard.style.display = (isFullAdmin || userPerms.includes('settings')) ? '' : 'none';
+      changePassCard.style.display = isFullAdmin ? '' : 'none';
     }
 
     // If user does not have Settings permission and is currently on Settings tab, switch back to Links tab
@@ -817,7 +836,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('is-editor');
 
       // Non-admins (Editors): ONLY show Block IP Address card in Firewall tab
-      // Hide all other admin cards defensively
+      // Hide all admin cards defensively from Editors (JazzCash, Admin Password, etc.)
       const adminOnlyFirewallCards = [
         'auto-shield-card',
         'global-fb-rules-card',
@@ -828,12 +847,22 @@ document.addEventListener('DOMContentLoaded', () => {
         'default-fallback-url-card',
         'publytics-tracking-card',
         'modal-rule-fallback-wrap',
-        'create-fallback-url-group'
+        'create-fallback-url-group',
+        'login-contact-settings-card',
+        'change-password-card',
+        'team-management-card',
+        'editor-url-mask-card',
+        'custom-domains-card',
+        'admin-alert-settings-card',
+        'official-publytics-creds-card'
       ];
       adminOnlyFirewallCards.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.setProperty('display', 'none', 'important');
       });
+
+      const userSelfPassCard = document.getElementById('user-change-password-card');
+      if (userSelfPassCard) userSelfPassCard.style.removeProperty('display');
 
       const blockIpCard = document.getElementById('block-ip-card');
       if (blockIpCard) blockIpCard.style.removeProperty('display');
@@ -4592,7 +4621,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const selectedRole = newUserRoleSelect.value;
       const defaultPerms = selectedRole === 'Admin'
         ? ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'firewall', 'settings', 'publytics']
-        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics'];
+        : ['facebook', 'instagram', 'custom_website', 'links', 'geo', 'analytics', 'settings'];
 
       document.querySelectorAll('.new-perm-cb').forEach(cb => {
         cb.checked = defaultPerms.includes(cb.value);
@@ -4984,6 +5013,102 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+  }
+
+  // ── Self Password Change Form (Available to Editors and all users) ──
+  const selfPasswordForm = document.getElementById('user-change-password-form');
+  if (selfPasswordForm) {
+    selfPasswordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const p1Input = document.getElementById('self-new-password');
+      const p2Input = document.getElementById('self-confirm-password');
+      const statusEl = document.getElementById('self-password-status');
+      const submitBtn = document.getElementById('btn-save-self-password');
+
+      const p1 = p1Input ? p1Input.value.trim() : '';
+      const p2 = p2Input ? p2Input.value.trim() : '';
+
+      if (p1.length < 5) {
+        if (typeof showAlert === 'function') showAlert('Password must be at least 5 characters.', true);
+        if (statusEl) {
+          statusEl.textContent = '❌ Password must be at least 5 characters.';
+          statusEl.style.color = '#ef4444';
+          statusEl.style.display = 'inline-block';
+        }
+        return;
+      }
+
+      if (p1 !== p2) {
+        if (typeof showAlert === 'function') showAlert('Passwords do not match. Please verify.', true);
+        if (statusEl) {
+          statusEl.textContent = '❌ Passwords do not match.';
+          statusEl.style.color = '#ef4444';
+          statusEl.style.display = 'inline-block';
+        }
+        return;
+      }
+
+      const originalBtnText = submitBtn ? submitBtn.innerHTML : '💾 Save New Password';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Saving...';
+      }
+      if (statusEl) statusEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/admin/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPassword: p1, keepSession: true })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (typeof showAlert === 'function') showAlert('✅ Password updated successfully! Your new password is now active.');
+          if (statusEl) {
+            statusEl.textContent = '✅ Password updated successfully!';
+            statusEl.style.color = '#10b981';
+            statusEl.style.display = 'inline-block';
+          }
+          if (p1Input) p1Input.value = '';
+          if (p2Input) p2Input.value = '';
+        } else {
+          const err = data.error || 'Failed to update password';
+          if (typeof showAlert === 'function') showAlert(err, true);
+          if (statusEl) {
+            statusEl.textContent = '❌ ' + err;
+            statusEl.style.color = '#ef4444';
+            statusEl.style.display = 'inline-block';
+          }
+        }
+      } catch (err) {
+        if (typeof showAlert === 'function') showAlert('Error connecting to server.', true);
+        if (statusEl) {
+          statusEl.textContent = '❌ Connection error.';
+          statusEl.style.color = '#ef4444';
+          statusEl.style.display = 'inline-block';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+        }
+      }
+    });
+
+    const btnToggle1 = document.getElementById('btn-toggle-self-pass-1');
+    if (btnToggle1) {
+      btnToggle1.addEventListener('click', () => {
+        const inp = document.getElementById('self-new-password');
+        if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    }
+    const btnToggle2 = document.getElementById('btn-toggle-self-pass-2');
+    if (btnToggle2) {
+      btnToggle2.addEventListener('click', () => {
+        const inp = document.getElementById('self-confirm-password');
+        if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    }
   }
 
   // --------------------------------------------------------
