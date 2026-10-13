@@ -843,6 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Non-admins (Editors): ONLY show Block IP Address card in Firewall tab
       // Hide all admin cards defensively from Editors (JazzCash, Admin Password, etc.)
       const adminOnlyFirewallCards = [
+        'legal-compliance-card',
         'auto-shield-card',
         'global-fb-rules-card',
         'editor-country-block-card',
@@ -942,6 +943,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Admin Controls (Super Admin & Normal Admin) ────────────
     // Super Admin and Normal Admin can manage team members, country block, and firewall.
+    const legalCard = document.getElementById('legal-compliance-card');
+    if (legalCard) {
+      legalCard.style.display = isFullAdmin ? '' : 'none';
+    }
+
     const teamCard = document.getElementById('team-management-card');
     if (teamCard) {
       teamCard.style.display = isFullAdmin ? '' : 'none';

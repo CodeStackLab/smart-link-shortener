@@ -1649,6 +1649,8 @@
     }
 
     /* Strictly hide Admin Settings cards from Editors — NEVER show JazzCash or Team to Editors */
+    body.is-editor #legal-compliance-card,
+    html.is-editor #legal-compliance-card,
     body.is-editor #login-contact-settings-card,
     html.is-editor #login-contact-settings-card,
     body.is-editor #team-management-card,
@@ -4295,12 +4297,12 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=300"></script>
+<script src="/js/dashboard.js?v=301"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=300').then(reg => {
+    navigator.serviceWorker.register('/sw.js?v=301').then(reg => {
       reg.update();
       if (reg.waiting) {
         reg.waiting.postMessage({ type: 'SKIP_WAITING' });
