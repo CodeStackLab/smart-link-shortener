@@ -40,15 +40,14 @@
       max-width: 820px;
       margin: 0 auto;
     }
-    .header-nav {
+        .header-nav {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
       border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
     .brand-link {
       display: flex;
@@ -58,8 +57,8 @@
       color: #fff;
     }
     .brand-logo {
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       object-fit: contain;
       filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.7));
     }
@@ -73,19 +72,37 @@
     }
     .nav-links {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 3px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      max-width: 100%;
+      width: 100%;
+      justify-content: space-between;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      align-items: center;
+      padding: 2px 0 4px 0;
+    }
+    .nav-links::-webkit-scrollbar {
+      display: none;
     }
     .nav-btn {
-      padding: 6px 14px;
-      font-size: 0.82rem;
-      font-weight: 600;
+      padding: 5px 6px;
+      font-size: 0.66rem;
+      font-weight: 700;
       color: #cbd5e1;
       background: rgba(30, 41, 59, 0.6);
       border: 1px solid rgba(56, 189, 248, 0.2);
       border-radius: 9999px;
       text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: -0.2px;
     }
     .nav-btn:hover {
       background: rgba(0, 210, 255, 0.15);
@@ -97,6 +114,7 @@
       color: #020817;
       border-color: transparent;
       font-weight: 700;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.5);
     }
     .nav-btn.abuse-btn {
       border-color: rgba(239, 68, 68, 0.4);
@@ -313,31 +331,6 @@
         <a href="/login" class="nav-btn">Portal Login</a>
       </nav>
     </header>
-
-    <!-- Hero Title -->
-    <div class="doc-hero">
-      <div class="doc-icon">🔒</div>
-      <h1 class="doc-title">Privacy Policy (Policy Baraye Razdari)</h1>
-      <div class="doc-subtitle">Link64.online Data Protection, Technical Logging &amp; Regulatory Compliance</div>
-      <div class="doc-meta">
-        <span>📅 Effective Date: 12 October 2026</span>
-        <span>•</span>
-        <span>⚖️ PECA 2016 &amp; NCCIA Aligned</span>
-        <span>•</span>
-        <span>🌐 Jurisdiction: Pakistan</span>
-      </div>
-    </div>
-
-    <!-- Alert / Notice Box -->
-    <div class="notice-card">
-      <div class="notice-icon">🛡️</div>
-      <div class="notice-content">
-        <h4>Qanooni Wazahat (Legal Notice)</h4>
-        <p>
-          Link64.online Pakistan ke Cyber Crime qawaneen (Prevention of Electronic Crimes Act, 2016 — PECA) aur mutaliqa regulatory idaron (NCCIA, PTA, LEAs) ke qawaneen ki mukammal pabandi karta hai. Hamari service par fraud, phishing, ya ghair-qanooni activity karne wale kisi shakhs ko anonymity (ghumnaami) faraham nahi ki jati.
-        </p>
-      </div>
-    </div>
 
     <!-- Dynamic Privacy Policy Content Box -->
     <div class="content-box-card" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px; padding:2rem 1.6rem; box-shadow:0 8px 30px rgba(0,0,0,0.35); margin-bottom:2rem; backdrop-filter:blur(10px);">

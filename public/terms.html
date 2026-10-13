@@ -267,6 +267,83 @@
     .footer-legal a:hover {
       text-decoration: underline;
     }
+      .header-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      gap: 10px;
+    }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.7));
+    }
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-name span {
+      color: var(--primary);
+    }
+    .nav-links {
+      display: flex;
+      gap: 3px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      max-width: 100%;
+      width: 100%;
+      justify-content: space-between;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      align-items: center;
+      padding: 2px 0 4px 0;
+    }
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-btn {
+      padding: 5px 6px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 9999px;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: -0.2px;
+    }
+    .nav-btn:hover {
+      background: rgba(0, 210, 255, 0.15);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .nav-btn.active {
+      background: #00d2ff;
+      background: linear-gradient(135deg, #00d2ff 0%, #0077ff 100%);
+      color: #020817;
+      border-color: transparent;
+      font-weight: 700;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.5);
+    }
   </style>
 </head>
 <body>
@@ -276,29 +353,16 @@
     <!-- Top Navigation Bar -->
     <header class="header-nav">
       <a href="/login" class="brand-link">
-        <span>🔗 Link64.online</span>
-        <span class="brand-badge">PUBLIC</span>
+        <img src="/images/stronglink64_logo.png" alt="Link64 Logo" class="brand-logo">
+        <div class="brand-name">Link64<span>.online</span></div>
       </a>
-      <a href="/login" class="back-btn">
-        <span>←</span>
-        <span>Back to Portal</span>
-      </a>
+      <nav class="nav-links">
+        <a href="/terms" class="nav-btn active">Terms &amp; Conditions</a>
+        <a href="/privacy" class="nav-btn">Privacy Policy</a>
+        <a href="/report" class="nav-btn abuse-btn">🚨 Report Abuse</a>
+        <a href="/login" class="nav-btn">Portal Login</a>
+      </nav>
     </header>
-
-    <!-- Hero Card -->
-    <div class="hero-card">
-      <div style="font-size:2.4rem; margin-bottom:0.4rem;">📜</div>
-      <h1 class="hero-title">Terms &amp; Conditions</h1>
-      <div class="hero-subtitle">Sharaait-o-Zawabit (شرائط و ضوابط)</div>
-      <div class="effective-pill">📅 Effective Date: 12 October 2026 • Pakistan &amp; International Law</div>
-    </div>
-
-    <!-- Quick Navigation Pills -->
-    <nav class="nav-pills">
-      <a href="/terms" class="nav-pill active">📜 Terms &amp; Conditions</a>
-      <a href="/privacy" class="nav-pill">🔒 Privacy Policy</a>
-      <a href="/report" class="nav-pill abuse-pill">🚨 Report Abuse</a>
-    </nav>
 
     <!-- Dynamic Terms & Conditions Content Box -->
     <div class="content-box-card" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px; padding:2rem 1.6rem; box-shadow:0 8px 30px rgba(0,0,0,0.35); margin-bottom:2rem; backdrop-filter:blur(10px);">
