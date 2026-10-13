@@ -3287,6 +3287,80 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+
+// ── Legal & Compliance Pages (NCCIA / PECA 2016 Compliant) ──
+app.get(['/terms', '/terms.html', '/terms-and-conditions'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'terms.html'));
+});
+
+app.get(['/privacy', '/privacy.html', '/privacy-policy'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+
+app.get(['/report', '/report.html', '/report-abuse', '/report-abuse.html'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'report-abuse.html'));
+});
+
+// Public endpoint to submit abuse reports
+app.post('/api/public/report-abuse', (req, res) => {
+  try {
+    const { reportedUrl, destinationUrl, category, details, reporterContact, isLea } = req.body || {};
+    if (!reportedUrl || !reportedUrl.trim()) {
+      return res.status(400).json({ error: 'Reported URL is required.' });
+    }
+    if (!details || !details.trim()) {
+      return res.status(400).json({ error: 'Please provide description or evidence.' });
+    }
+
+    const clientIp = getClientIp(req);
+    const userAgent = req.headers['user-agent'] || '';
+
+    const saved = db.addAbuseReport({
+      reportedUrl,
+      destinationUrl,
+      category,
+      details,
+      reporterContact,
+      isLea,
+      ip: clientIp,
+      userAgent
+    });
+
+    console.log(`🚨 [NCCIA / ABUSE REPORT] Received abuse report for: ${reportedUrl} (Category: ${category}, LEA: ${isLea}, IP: ${clientIp})`);
+
+    return res.json({
+      success: true,
+      message: 'Abuse report received successfully. Our security team will review and take necessary action.',
+      reportId: saved.id
+    });
+  } catch (err) {
+    console.error('Error handling abuse report:', err);
+    return res.status(500).json({ error: 'Internal server error processing report.' });
+  }
+});
+
+// Admin endpoint to view abuse reports
+app.get('/api/admin/abuse-reports', requireAuth, requireSuperAdmin, (req, res) => {
+  try {
+    const reports = db.getAbuseReports();
+    return res.json({ success: true, reports });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/abuse-reports/:id', requireAuth, requireSuperAdmin, (req, res) => {
+  try {
+    const deleted = db.deleteAbuseReport(req.params.id);
+    return res.json({ success: deleted });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // Root fallback route -> redirect to /admin
 app.get('/', (req, res) => {
   res.redirect('/admin');

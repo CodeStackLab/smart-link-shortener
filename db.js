@@ -18,7 +18,8 @@ const FILES = {
   customDomains: path.join(DATA_DIR, 'custom_domains.json'),
   detectedDomains: path.join(DATA_DIR, 'detected_domains.json'),
   ignoredDomains: path.join(DATA_DIR, 'ignored_domains.json'),
-  messages: path.join(DATA_DIR, 'messages.json')
+  messages: path.join(DATA_DIR, 'messages.json'),
+  abuseReports: path.join(DATA_DIR, 'abuse_reports.json')
 };
 
 function readJson(file, defaultValue = []) {
@@ -913,5 +914,41 @@ module.exports = {
       const readList = Array.isArray(m.readBy) ? m.readBy.map(u => (u || '').toLowerCase()) : [];
       return !readList.includes(cleanUser);
     }).length;
+  },
+  // ── Abuse Reports (NCCIA / Legal Compliance) ──
+  getAbuseReports: () => {
+    return readJson(FILES.abuseReports, []);
+  },
+
+  addAbuseReport: (report) => {
+    const reports = readJson(FILES.abuseReports, []);
+    const newReport = {
+      id: 'rep_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      reportedUrl: (report.reportedUrl || '').trim(),
+      destinationUrl: (report.destinationUrl || '').trim(),
+      category: (report.category || 'other').trim(),
+      details: (report.details || '').trim(),
+      reporterContact: (report.reporterContact || '').trim(),
+      isLea: Boolean(report.isLea),
+      ip: (report.ip || '').trim(),
+      userAgent: (report.userAgent || '').trim(),
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    reports.unshift(newReport);
+    if (reports.length > 500) reports.length = 500;
+    writeJson(FILES.abuseReports, reports);
+    return newReport;
+  },
+
+  deleteAbuseReport: (reportId) => {
+    let reports = readJson(FILES.abuseReports, []);
+    const initialLen = reports.length;
+    reports = reports.filter(r => r && r.id !== reportId);
+    if (reports.length !== initialLen) {
+      writeJson(FILES.abuseReports, reports);
+      return true;
+    }
+    return false;
   },
 };
