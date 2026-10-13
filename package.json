@@ -25,6 +25,7 @@
     "geoip-lite": "^2.0.3",
     "helmet": "^8.0.0",
     "node-fetch": "^2.7.0",
+    "nodemailer": "^10.1.0",
     "qrcode": "^1.5.4"
   }
 }

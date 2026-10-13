@@ -1823,7 +1823,7 @@
   <button class="tab-btn" data-tab="tab-geo" style="display:none;">🌍 Country &amp; VPN</button>
   <button class="tab-btn" data-tab="tab-analytics">📊 Traffic Logs</button>
   <button class="tab-btn" data-tab="tab-messages" id="tab-btn-messages">
-    💬 Message <span id="msg-badge-desktop" style="display:none; width:8px; height:8px; background:#ef4444; border-radius:50%; margin-left:6px; display:inline-block; vertical-align:middle; box-shadow:0 0 8px rgba(239,68,68,0.9);"></span>
+    📥 Inbox &amp; Messages <span id="msg-badge-desktop" style="display:none; width:8px; height:8px; background:#ef4444; border-radius:50%; margin-left:6px; display:inline-block; vertical-align:middle; box-shadow:0 0 8px rgba(239,68,68,0.9);"></span>
   </button>
   <button class="tab-btn" data-tab="tab-publytics" id="tab-btn-publytics" style="display:none;">
     <img src="/publytics-icon.png?v=157" alt="" style="width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:6px; display:inline-block;">Publytics
@@ -3127,6 +3127,58 @@
             <span id="legal-save-status" style="font-size:0.85rem; font-weight:700; display:none;"></span>
           </div>
         </div>
+
+        <!-- Quick Abuse Reports Inbox Link in Legal Card -->
+        <div style="margin-top:1.25rem; padding:1rem; border-radius:12px; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+          <div>
+            <div style="font-weight:800; font-size:0.95rem; color:#ef4444; display:flex; align-items:center; gap:0.4rem;">
+              <span>🚨</span> Received Abuse Reports Inbox Status
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+              Total <span id="legal-card-reports-count" style="font-weight:800; color:#ef4444;">0</span> complaint(s) received from public <code>/report</code> portal.
+            </div>
+          </div>
+          <button type="button" onclick="document.querySelector('.tab-btn[data-tab=\'tab-messages\']')?.click();" class="btn btn-danger" style="font-weight:700; font-size:0.82rem; padding:0.45rem 1.1rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.4rem; background:#ef4444; color:#fff; border:none; cursor:pointer;">
+            <span>📥</span> Open Reports Inbox ↗
+          </button>
+        </div>
+
+        <!-- Optional: Email Notification Settings (Gmail / SMTP) -->
+        <div style="margin-top:1rem; padding:1rem; border-radius:12px; background:rgba(0,148,255,0.04); border:1.5px dashed rgba(0,148,255,0.3);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+            <div style="font-weight:800; font-size:0.9rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+              <span>📧</span> Report Email Alerts (Gmail / SMTP)
+            </div>
+            <span style="font-size:0.72rem; color:var(--text-muted);">(Optional: Direct Gmail Delivery)</span>
+          </div>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.4;">
+            Tamam reports upar wale <strong>Inbox</strong> me hamesha save rehti hain. Agar aap chahein ke report mosool hone par aapke <strong>Gmail Inbox</strong> par bhi email alert aaye, toh apna Gmail yahan set karein:
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem; margin-bottom:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--text-primary);">Notification Email Address:</label>
+              <input type="email" id="setting-report-alert-email" class="form-control" placeholder="e.g. nathogabol7@gmail.com" style="height:38px; font-size:0.85rem; border-radius:8px;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--text-primary);">Gmail Address (Sender):</label>
+              <input type="email" id="setting-smtp-user" class="form-control" placeholder="yourgmail@gmail.com" style="height:38px; font-size:0.85rem; border-radius:8px;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--text-primary);">Gmail App Password (16 chars):</label>
+              <input type="password" id="setting-smtp-pass" class="form-control" placeholder="16-character Google App Password" style="height:38px; font-size:0.85rem; border-radius:8px;">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+            <button type="button" id="btn-save-email-alerts" class="btn btn-primary" style="font-size:0.8rem; font-weight:700; padding:0.4rem 1rem; border-radius:8px; cursor:pointer;">
+              💾 Save Email Settings
+            </button>
+            <button type="button" id="btn-test-email-alert" class="btn btn-secondary" style="font-size:0.8rem; font-weight:700; padding:0.4rem 1rem; border-radius:8px; cursor:pointer; background:rgba(0,148,255,0.1); color:#0084ff; border:1px solid #0084ff;">
+              ✉️ Send Test Email
+            </button>
+            <span id="email-alert-save-status" style="font-size:0.8rem; font-weight:700; display:none;"></span>
+          </div>
+        </div>
+
       </div>
 
 <div class="card" style="padding:1.35rem; border-radius:14px; border:1.8px solid #0094ff; box-shadow:0 4px 18px rgba(0,148,255,0.14);" id="login-contact-settings-card">
@@ -3904,6 +3956,34 @@
 
     <!-- ── ADMIN VIEW (Personal Messaging Management Control Center) ── -->
     <div id="admin-messages-wrapper" style="display:none; flex-direction:column; gap:1.25rem;">
+
+      <!-- Card 0: Received Abuse Reports Inbox (Public Shikayaat & Complaints) -->
+      <div class="card" id="card-abuse-reports-inbox" style="padding:1.4rem; border-radius:18px; border:2px solid #ef4444; box-shadow:0 8px 24px rgba(239,68,68,0.12); background:var(--surface,#ffffff);">
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; font-size:1.15rem; color:#ef4444;">
+            <span>🚨</span> Received Abuse Reports Inbox (Public Shikayaat)
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span id="abuse-reports-badge" style="font-size:0.75rem; font-weight:800; color:#fff; background:#ef4444; padding:0.25rem 0.75rem; border-radius:20px; box-shadow:0 2px 8px rgba(239,68,68,0.4);">
+              0 Reports
+            </span>
+            <button type="button" onclick="window.loadAbuseReportsInbox();" class="btn btn-sm" style="font-size:0.75rem; font-weight:700; border-radius:10px; padding:0.3rem 0.75rem; background:rgba(239,68,68,0.08); border:1.5px solid #ef4444; color:#ef4444; cursor:pointer;">
+              🔄 Refresh Inbox
+            </button>
+          </div>
+        </div>
+        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:1.15rem; line-height:1.45;">
+          Ye aapka <strong>Main Complaint Inbox</strong> hai. Jab koi bhi user ya visitor <code>/report</code> page se kisi link ke khilaf shikayat darj karta hai, toh woh foran yahan mosool hoti hai.
+        </p>
+
+        <!-- Dynamic Container for Abuse Reports List -->
+        <div id="abuse-reports-list" style="display:flex; flex-direction:column; gap:1rem;">
+          <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.88rem;">
+            ⏳ Loading abuse reports...
+          </div>
+        </div>
+      </div>
+
       
       <!-- Card 1: Send Private Message to Editor -->
       <div class="card" style="padding:1.4rem; border-radius:18px; border:1.8px solid #0094ff; box-shadow:0 6px 20px rgba(0,148,255,0.12); background:var(--surface,#ffffff);">
@@ -4365,7 +4445,7 @@
       </svg>
       <span id="msg-badge-mobile" style="display:none; position:absolute; top:-3px; right:-5px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid #fff; box-shadow:0 0 8px rgba(239,68,68,0.9);"></span>
     </span>
-    <span>Message</span>
+    <span>Inbox</span>
   </button>
   <button class="mobile-nav-item" data-tab="tab-firewall">
     <span class="nav-icon">🛡️</span>
@@ -4377,12 +4457,12 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=303"></script>
+<script src="/js/dashboard.js?v=305"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=303').then(reg => {
+    navigator.serviceWorker.register('/sw.js?v=305').then(reg => {
       reg.update();
       if (reg.waiting) {
         reg.waiting.postMessage({ type: 'SKIP_WAITING' });

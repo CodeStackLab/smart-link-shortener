@@ -1358,6 +1358,11 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     showJazzcashOnLogin: showJazzcashOnLogin !== undefined ? !!showJazzcashOnLogin : undefined,
     allowRegistration: allowRegistration !== undefined ? (allowRegistration === true || allowRegistration === 'true') : undefined,
     showLegalFooter: showLegalFooter !== undefined ? (showLegalFooter === true || showLegalFooter === 'true') : undefined,
+    reportAlertEmail: req.body.reportAlertEmail !== undefined ? String(req.body.reportAlertEmail).trim() : undefined,
+    smtpHost: req.body.smtpHost !== undefined ? String(req.body.smtpHost).trim() : undefined,
+    smtpPort: req.body.smtpPort !== undefined ? String(req.body.smtpPort).trim() : undefined,
+    smtpUser: req.body.smtpUser !== undefined ? String(req.body.smtpUser).trim() : undefined,
+    smtpPass: req.body.smtpPass !== undefined ? String(req.body.smtpPass).trim() : undefined,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -3348,6 +3353,82 @@ app.get(['/report', '/report.html', '/report-abuse', '/report-abuse.html'], (req
 });
 
 // Public endpoint to submit abuse reports
+
+// Helper: Send email alert for new abuse reports via Nodemailer (if configured)
+async function sendAbuseReportAlert(report) {
+  try {
+    const settings = db.getSettings();
+    const alertEmail = settings.reportAlertEmail || process.env.SMTP_FROM || 'nathogabol7@gmail.com';
+    const smtpHost = settings.smtpHost || process.env.SMTP_HOST || 'smtp.gmail.com';
+    const smtpPort = parseInt(settings.smtpPort || process.env.SMTP_PORT || '465', 10);
+    const smtpUser = settings.smtpUser || process.env.SMTP_USER || '';
+    const smtpPass = settings.smtpPass || process.env.SMTP_PASS || '';
+
+    if (smtpUser && smtpPass) {
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: { user: smtpUser, pass: smtpPass }
+      });
+
+      await transporter.sendMail({
+        from: `"Link64 Abuse Monitor" <${smtpUser}>`,
+        to: alertEmail,
+        subject: `🚨 [Link64] Nayi Abuse Report Mosool Hui: ${report.reportedUrl || 'Link'}`,
+        html: `
+          <div style="font-family:Segoe UI,Tahoma,sans-serif; max-width:620px; padding:24px; border:2px solid #ef4444; border-radius:14px; background:#ffffff; color:#1e293b;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+              <span style="font-size:24px;">🚨</span>
+              <h2 style="color:#ef4444; margin:0; font-size:20px;">Nayi Abuse Report Mosool Hui Hai</h2>
+            </div>
+            <p style="font-size:14px; line-height:1.6; margin-bottom:20px;">
+              Aapki website <strong>Link64.online</strong> ke <code>/report</code> portal par aik nayi complaint darj hui hai:
+            </p>
+            <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:20px; background:#f8fafc; border-radius:8px; overflow:hidden;">
+              <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; font-weight:bold; color:#64748b; width:35%;">Reported Short URL:</td>
+                <td style="padding:10px 12px; font-weight:bold; color:#0284c7;"><a href="${report.reportedUrl}" style="color:#0284c7;">${report.reportedUrl}</a></td>
+              </tr>
+              <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; font-weight:bold; color:#64748b;">Target / Destination:</td>
+                <td style="padding:10px 12px; color:#10b981;">${report.destinationUrl || 'Not specified'}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; font-weight:bold; color:#64748b;">Category:</td>
+                <td style="padding:10px 12px;"><span style="background:#fee2e2; color:#ef4444; font-weight:bold; padding:3px 8px; border-radius:6px;">${report.category}</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; font-weight:bold; color:#64748b;">Tafseelat & Saboot:</td>
+                <td style="padding:10px 12px; white-space:pre-wrap;">${report.details}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; font-weight:bold; color:#64748b;">Reporter Contact:</td>
+                <td style="padding:10px 12px; font-weight:bold;">${report.reporterContact || 'Anonymous'}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 12px; font-weight:bold; color:#64748b;">IP Address:</td>
+                <td style="padding:10px 12px; font-family:monospace;">${report.ip}</td>
+              </tr>
+            </table>
+            <div style="text-align:center; margin-top:24px;">
+              <a href="https://www.link64.online/admin" style="background:#ef4444; color:#ffffff; padding:10px 24px; border-radius:8px; font-weight:bold; text-decoration:none; display:inline-block;">
+                Admin Panel Inbox Kholein ↗
+              </a>
+            </div>
+          </div>
+        `
+      });
+      console.log(`✉️ Abuse report email alert sent to ${alertEmail}`);
+    } else {
+      console.log(`ℹ️ Abuse report saved to Admin Inbox. (SMTP credentials not yet configured for external Gmail).`);
+    }
+  } catch(err) {
+    console.warn('Could not send email alert for abuse report:', err.message);
+  }
+}
+
 app.post('/api/public/report-abuse', (req, res) => {
   try {
     const { reportedUrl, destinationUrl, category, details, reporterContact, isLea } = req.body || {};
@@ -3374,6 +3455,8 @@ app.post('/api/public/report-abuse', (req, res) => {
 
     console.log(`🚨 [NCCIA / ABUSE REPORT] Received abuse report for: ${reportedUrl} (Category: ${category}, LEA: ${isLea}, IP: ${clientIp})`);
 
+    sendAbuseReportAlert(saved).catch(() => {});
+
     return res.json({
       success: true,
       message: 'Abuse report received successfully. Our security team will review and take necessary action.',
@@ -3399,6 +3482,43 @@ app.delete('/api/admin/abuse-reports/:id', requireAuth, requireSuperAdmin, (req,
   try {
     const deleted = db.deleteAbuseReport(req.params.id);
     return res.json({ success: deleted });
+
+// Test Email Route for Admin
+app.post('/api/admin/send-test-email', requireAuth, requireSuperAdmin, async (req, res) => {
+  try {
+    const { toEmail, smtpHost, smtpPort, smtpUser, smtpPass } = req.body || {};
+    const settings = db.getSettings();
+    const recipient = toEmail || settings.reportAlertEmail || process.env.SMTP_FROM || 'nathogabol7@gmail.com';
+    const host = smtpHost || settings.smtpHost || 'smtp.gmail.com';
+    const port = parseInt(smtpPort || settings.smtpPort || '465', 10);
+    const user = smtpUser || settings.smtpUser || '';
+    const pass = smtpPass || settings.smtpPass || '';
+
+    if (!user || !pass) {
+      return res.status(400).json({ error: 'SMTP User & Password required to send email.' });
+    }
+
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass }
+    });
+
+    await transporter.sendMail({
+      from: `"Link64 Test" <${user}>`,
+      to: recipient,
+      subject: '✅ [Link64] Test Email Successful',
+      html: '<h3>Mubarak!</h3><p>Aapki email configuration bilkul theek kaam kar rahi hai. Abuse reports ab is email par mosool hongi.</p>'
+    });
+
+    return res.json({ success: true, message: `Test email sent to ${recipient}!` });
+  } catch(err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

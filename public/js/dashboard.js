@@ -3282,6 +3282,16 @@ document.addEventListener('DOMContentLoaded', () => {
       syncRegistrationUi(settings.allowRegistration !== false);
       if (typeof window.syncLegalFooterUi === 'function') window.syncLegalFooterUi(settings.showLegalFooter !== false);
       if (typeof window.loadLegalContentLive === 'function') window.loadLegalContentLive();
+      if (typeof window.loadAbuseReportsInbox === 'function') window.loadAbuseReportsInbox();
+
+      // Populate Email Alert Settings
+      const alertEmailInp = document.getElementById('setting-report-alert-email');
+      const smtpUserInp = document.getElementById('setting-smtp-user');
+      const smtpPassInp = document.getElementById('setting-smtp-pass');
+      if (alertEmailInp && settings.reportAlertEmail) alertEmailInp.value = settings.reportAlertEmail;
+      if (smtpUserInp && settings.smtpUser) smtpUserInp.value = settings.smtpUser;
+      if (smtpPassInp && settings.smtpPass) smtpPassInp.value = settings.smtpPass;
+
 
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
@@ -3535,7 +3545,141 @@ document.addEventListener('DOMContentLoaded', () => {
   window.syncLegalFooterUi = syncLegalFooterUi;
 
   // ─── Terms & Privacy Policy Content Editor (Load & Save) ───
-  window.loadLegalContentLive = async function() {
+  
+  // ─── Received Abuse Reports Inbox (Public Shikayaat) ───
+  window.loadAbuseReportsInbox = async function() {
+    try {
+      const esc = (s) => (s ? String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "");
+      const res = await fetch('/api/admin/abuse-reports');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.success) return;
+
+      const reports = Array.isArray(data.reports) ? data.reports : [];
+      const count = reports.length;
+
+      // Update badges
+      const badgeInbox = document.getElementById('abuse-reports-badge');
+      if (badgeInbox) badgeInbox.textContent = `${count} Report${count === 1 ? '' : 's'}`;
+
+      const legalCountEl = document.getElementById('legal-card-reports-count');
+      if (legalCountEl) legalCountEl.textContent = count;
+
+      const badgeDesktop = document.getElementById('msg-badge-desktop');
+      const badgeMobile = document.getElementById('msg-badge-mobile');
+      if (count > 0) {
+        if (badgeDesktop) badgeDesktop.style.display = 'inline-block';
+        if (badgeMobile) badgeMobile.style.display = 'inline-block';
+      }
+
+      const listContainer = document.getElementById('abuse-reports-list');
+      if (!listContainer) return;
+
+      if (count === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align:center; padding:2rem 1rem; background:rgba(16,185,129,0.04); border:1.5px dashed rgba(16,185,129,0.3); border-radius:14px;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">🎉</div>
+            <div style="font-weight:800; font-size:1rem; color:#10b981; margin-bottom:0.25rem;">Inbox Bilkul Saaf Hai!</div>
+            <div style="font-size:0.82rem; color:var(--text-muted);">Filhaal koi nayi abuse report ya complaint pending nahi hai. Tamam short links safe hain.</div>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = reports.map(r => {
+        const catUpper = (r.category || 'other').toUpperCase();
+        let catColor = '#ef4444';
+        let catBg = 'rgba(239,68,68,0.12)';
+        if (r.category === 'copyright') { catColor = '#f59e0b'; catBg = 'rgba(245,158,11,0.12)'; }
+        else if (r.category === 'phishing') { catColor = '#ef4444'; catBg = 'rgba(239,68,68,0.15)'; }
+
+        const dateStr = r.createdAt ? new Date(r.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'Recently';
+        const contact = (r.reporterContact || '').trim();
+        const isEmail = contact.includes('@');
+        const cleanPhone = contact.replace(/[^0-9]/g, '');
+
+        return `
+          <div class="abuse-report-card" id="report-row-${r.id}" style="border:1.5px solid rgba(239,68,68,0.3); border-radius:14px; padding:1.15rem; background:var(--surface,#ffffff); box-shadow:0 4px 14px rgba(0,0,0,0.03); transition:all 0.2s ease;">
+            
+            <!-- Top Row: Category + Date + Delete Button -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="background:${catBg}; color:${catColor}; border:1px solid ${catColor}; font-weight:800; font-size:0.75rem; padding:0.25rem 0.65rem; border-radius:8px; text-transform:uppercase; letter-spacing:0.03em;">
+                  ⚠️ ${esc(catUpper)}
+                </span>
+                <span style="font-size:0.78rem; color:var(--text-muted);">🕒 ${dateStr}</span>
+              </div>
+              <button type="button" onclick="window.deleteAbuseReportItem('${r.id}')" class="btn btn-sm" style="background:rgba(239,68,68,0.08); color:#ef4444; border:1px solid #ef4444; font-weight:700; font-size:0.75rem; border-radius:8px; padding:0.3rem 0.75rem; cursor:pointer;" title="Delete this complaint">
+                🗑️ Delete Report
+              </button>
+            </div>
+
+            <!-- Links Row -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:0.75rem; margin-bottom:0.85rem; background:rgba(0,0,0,0.025); padding:0.85rem; border-radius:10px; border:1px solid var(--border);">
+              <div>
+                <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px;">🔗 Reported Link (Shikayat Shuda):</div>
+                <a href="${esc(r.reportedUrl)}" target="_blank" rel="noopener noreferrer" style="font-weight:800; font-size:0.9rem; color:#0088ff; word-break:break-all; text-decoration:none;">
+                  ${esc(r.reportedUrl)} ↗
+                </a>
+              </div>
+              <div>
+                <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px;">🎯 Target / Asal Website:</div>
+                ${r.destinationUrl ? `
+                  <a href="${esc(r.destinationUrl)}" target="_blank" rel="noopener noreferrer" style="font-weight:700; font-size:0.88rem; color:#10b981; word-break:break-all; text-decoration:none;">
+                    ${esc(r.destinationUrl)} ↗
+                  </a>
+                ` : '<span style="color:var(--text-muted); font-size:0.84rem;">Not specified</span>'}
+              </div>
+            </div>
+
+            <!-- Details & Evidence Box -->
+            <div style="margin-bottom:0.85rem;">
+              <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px;">📝 Tafseelat &amp; Saboot (Details &amp; Evidence):</div>
+              <div style="font-size:0.88rem; line-height:1.6; color:var(--text-primary); background:var(--input-bg, #f8fafc); padding:0.75rem 0.95rem; border-radius:10px; border:1px solid var(--border); white-space:pre-wrap; word-break:break-word;">${esc(r.details || 'No details provided')}</div>
+            </div>
+
+            <!-- Reporter Contact & Submitter IP -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; font-size:0.8rem; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:0.65rem;">
+              <div>
+                👤 <strong>Reporter Contact:</strong> 
+                ${contact ? `
+                  <a href="${isEmail ? 'mailto:' + encodeURIComponent(contact) + '?subject=' + encodeURIComponent('Link64 Abuse Report Follow-up') : 'https://wa.me/' + cleanPhone}" target="_blank" style="color:#0084ff; font-weight:800; text-decoration:none; margin-left:4px;">
+                    ${esc(contact)} ${isEmail ? '✉️' : '💬'}
+                  </a>
+                ` : '<span style="color:var(--text-muted); margin-left:4px;">Anonymous / Khufia</span>'}
+              </div>
+              <div>
+                🌐 Submitter IP: <code>${esc(r.ip || 'Unknown')}</code>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+
+    } catch(err) {
+      console.warn('Error loading abuse reports inbox:', err);
+    }
+  };
+
+  // Delete an abuse report
+  window.deleteAbuseReportItem = async function(reportId) {
+    if (!confirm('Kya aap waqai is abuse report ko delete karna chahte hain?')) return;
+    try {
+      const res = await fetch(`/api/admin/abuse-reports/${encodeURIComponent(reportId)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFloatingToast('✅ Report successfully delete ho gayi.');
+        window.loadAbuseReportsInbox();
+      } else {
+        showFloatingToast(data.error || 'Failed to delete report', true);
+      }
+    } catch(err) {
+      showFloatingToast('Error: ' + err.message, true);
+    }
+  };
+
+window.loadLegalContentLive = async function() {
     try {
       const res = await fetch('/api/admin/legal-content');
       if (!res.ok) return;
@@ -3776,6 +3920,84 @@ document.addEventListener('DOMContentLoaded', () => {
         window.saveLegalContentLive();
       });
     }
+
+
+    // Wire Email Alert Save & Test Buttons
+    const btnSaveEmail = document.getElementById('btn-save-email-alerts');
+    const btnTestEmail = document.getElementById('btn-test-email-alert');
+    const emailStatus = document.getElementById('email-alert-save-status');
+
+    if (btnSaveEmail) {
+      btnSaveEmail.addEventListener('click', async () => {
+        const reportAlertEmail = document.getElementById('setting-report-alert-email')?.value?.trim();
+        const smtpUser = document.getElementById('setting-smtp-user')?.value?.trim();
+        const smtpPass = document.getElementById('setting-smtp-pass')?.value?.trim();
+
+        btnSaveEmail.disabled = true;
+        btnSaveEmail.textContent = '⏳ Saving...';
+
+        try {
+          const res = await fetch('/api/admin/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reportAlertEmail, smtpUser, smtpPass })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            showFloatingToast('✅ Email notification settings save ho gayi hain!');
+            if (emailStatus) {
+              emailStatus.textContent = '✅ Saved!';
+              emailStatus.style.color = '#10b981';
+              emailStatus.style.display = 'inline';
+              setTimeout(() => { emailStatus.style.display = 'none'; }, 3000);
+            }
+          } else {
+            showFloatingToast(data.error || 'Failed to save', true);
+          }
+        } catch(e) {
+          showFloatingToast('Error: ' + e.message, true);
+        } finally {
+          btnSaveEmail.disabled = false;
+          btnSaveEmail.textContent = '💾 Save Email Settings';
+        }
+      });
+    }
+
+    if (btnTestEmail) {
+      btnTestEmail.addEventListener('click', async () => {
+        const toEmail = document.getElementById('setting-report-alert-email')?.value?.trim();
+        const smtpUser = document.getElementById('setting-smtp-user')?.value?.trim();
+        const smtpPass = document.getElementById('setting-smtp-pass')?.value?.trim();
+
+        if (!smtpUser || !smtpPass) {
+          showFloatingToast('Barah-e-karam Gmail address aur 16-character App Password darj karein.', true);
+          return;
+        }
+
+        btnTestEmail.disabled = true;
+        btnTestEmail.textContent = '⏳ Sending...';
+
+        try {
+          const res = await fetch('/api/admin/send-test-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ toEmail, smtpUser, smtpPass })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            showFloatingToast('🎉 ' + data.message);
+          } else {
+            showFloatingToast(data.error || 'Test email failed', true);
+          }
+        } catch(e) {
+          showFloatingToast('Error: ' + e.message, true);
+        } finally {
+          btnTestEmail.disabled = false;
+          btnTestEmail.textContent = '✉️ Send Test Email';
+        }
+      });
+    }
+
 
   }, 100);
 
