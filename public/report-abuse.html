@@ -561,12 +561,6 @@
           <div class="form-help">Takedown confirmation ya mazeed maloomat ke liye (Aam public ke liye ikhtiyari hai).</div>
         </div>
 
-        <!-- Law Enforcement / NCCIA Checkbox -->
-        <div class="checkbox-group">
-          <input type="checkbox" id="is-lea" name="isLea">
-          <label for="is-lea">🏛️ Main Law Enforcement Agency / NCCIA / Regulatory Authority ka numainda hoon</label>
-        </div>
-
         <button type="submit" id="submit-report-btn" class="submit-btn">
           <span id="btn-text">🚨 Submit Abuse Report</span>
           <div class="spinner" id="btn-spinner"></div>
@@ -632,7 +626,7 @@
         const category = document.getElementById('abuse-category').value;
         const details = document.getElementById('abuse-details').value.trim();
         const reporterContact = document.getElementById('reporter-contact').value.trim();
-        const isLea = document.getElementById('is-lea').checked;
+        const isLea = document.getElementById('is-lea') ? document.getElementById('is-lea').checked : false;
 
         if (!reportedUrl) {
           alertBox.className = 'form-alert error';
