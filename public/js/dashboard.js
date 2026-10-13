@@ -6028,7 +6028,30 @@ if (typeof loadDomains === 'function') loadDomains();
     }
   };
 
+  
+  async function syncEditorWhatsappLink() {
+    try {
+      const res = await fetch('/api/public/contact-info');
+      if (!res.ok) return;
+      const data = await res.json();
+      const btns = document.querySelectorAll('#btn-editor-contact-whatsapp, #admin-preview-whatsapp-btn');
+      let targetHref = 'https://wa.me/923468668297?text=Hello%20Admin%20Support';
+      if (data && data.whatsappUrl && data.whatsappUrl.trim()) {
+        targetHref = data.whatsappUrl.trim();
+      } else if (data && data.whatsappNumber) {
+        const clean = data.whatsappNumber.replace(/[^0-9]/g, '');
+        const waIntl = clean.startsWith('0') ? ('92' + clean.slice(1)) : clean;
+        targetHref = `https://wa.me/${waIntl}?text=Hello%20Admin%20Support`;
+      }
+      btns.forEach(btn => {
+        btn.href = targetHref;
+      });
+    } catch (e) {}
+  }
+  window.syncEditorWhatsappLink = syncEditorWhatsappLink;
+
   window.loadPersonalMessages = async function() {
+    syncEditorWhatsappLink();
     try {
       const res = await fetch('/api/messages');
       if (!res.ok) return;
