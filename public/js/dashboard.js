@@ -3280,6 +3280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showJcCheckbox.checked = (settings.showJazzcashOnLogin === true);
       }
       syncRegistrationUi(settings.allowRegistration !== false);
+      if (typeof window.syncLegalFooterUi === 'function') window.syncLegalFooterUi(settings.showLegalFooter !== false);
 
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
@@ -3479,6 +3480,85 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSaveDefaultFallback.addEventListener('click', window.saveDefaultFallbackUrl);
   }
 
+  // ── Legal & Compliance Footer Links Toggle (Show / Hide) ──
+  function syncLegalFooterUi(isShowing) {
+    const cb = document.getElementById('setting-show-legal-footer');
+    const badgeStatus = document.getElementById('badge-legal-footer-status');
+    const badgeDot = document.getElementById('badge-legal-footer-dot');
+    const badgeText = document.getElementById('badge-legal-footer-text');
+    const btnShow = document.getElementById('btn-legal-quick-show');
+    const btnHide = document.getElementById('btn-legal-quick-hide');
+
+    if (cb) cb.checked = isShowing;
+
+    if (isShowing) {
+      if (badgeStatus) {
+        badgeStatus.style.background = '#10b981';
+        badgeStatus.style.color = '#ffffff';
+      }
+      if (badgeDot) badgeDot.textContent = '🟢';
+      if (badgeText) badgeText.textContent = 'SHOWING (ON)';
+      if (btnShow) {
+        btnShow.style.background = '#10b981';
+        btnShow.style.color = '#ffffff';
+        btnShow.style.fontWeight = '800';
+        btnShow.style.boxShadow = '0 2px 6px rgba(16,185,129,0.35)';
+      }
+      if (btnHide) {
+        btnHide.style.background = 'transparent';
+        btnHide.style.color = 'var(--text-secondary)';
+        btnHide.style.fontWeight = '700';
+        btnHide.style.boxShadow = 'none';
+      }
+    } else {
+      if (badgeStatus) {
+        badgeStatus.style.background = '#ef4444';
+        badgeStatus.style.color = '#ffffff';
+      }
+      if (badgeDot) badgeDot.textContent = '🔴';
+      if (badgeText) badgeText.textContent = 'HIDDEN (OFF)';
+      if (btnShow) {
+        btnShow.style.background = 'transparent';
+        btnShow.style.color = 'var(--text-secondary)';
+        btnShow.style.fontWeight = '700';
+        btnShow.style.boxShadow = 'none';
+      }
+      if (btnHide) {
+        btnHide.style.background = '#ef4444';
+        btnHide.style.color = '#ffffff';
+        btnHide.style.fontWeight = '800';
+        btnHide.style.boxShadow = '0 2px 6px rgba(239,68,68,0.35)';
+      }
+    }
+  }
+  window.syncLegalFooterUi = syncLegalFooterUi;
+
+  async function setLegalFooterVisible(isShowing) {
+    syncLegalFooterUi(isShowing);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showLegalFooter: isShowing })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (isShowing) {
+          showFloatingToast('🟢 Terms & Report Abuse footer links are now VISIBLE (ON) on Login & Register.');
+        } else {
+          showFloatingToast('🔒 Terms & Report Abuse footer links are now HIDDEN (OFF) from Login & Register.');
+        }
+      } else {
+        showFloatingToast(data.error || 'Failed to update footer links setting', true);
+        syncLegalFooterUi(!isShowing);
+      }
+    } catch (err) {
+      showFloatingToast('Error updating footer links setting: ' + (err.message || err), true);
+      syncLegalFooterUi(!isShowing);
+    }
+  }
+  window.setLegalFooterVisible = setLegalFooterVisible;
+
   // ── Login Page Contact & Payment Numbers Management ──
   // ── Public User Registration Toggle & Interactive State Manager ──
   function syncRegistrationUi(isAllowed) {
@@ -3579,6 +3659,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRegQuickOff) {
       btnRegQuickOff.addEventListener('click', () => {
         setRegistrationAllowed(false);
+      });
+    }
+
+    // Wire Legal Footer Toggle Controls
+    const legalFooterCheckbox = document.getElementById('setting-show-legal-footer');
+    if (legalFooterCheckbox) {
+      legalFooterCheckbox.addEventListener('change', () => {
+        setLegalFooterVisible(legalFooterCheckbox.checked);
+      });
+    }
+    const btnLegalQuickShow = document.getElementById('btn-legal-quick-show');
+    if (btnLegalQuickShow) {
+      btnLegalQuickShow.addEventListener('click', () => {
+        setLegalFooterVisible(true);
+      });
+    }
+    const btnLegalQuickHide = document.getElementById('btn-legal-quick-hide');
+    if (btnLegalQuickHide) {
+      btnLegalQuickHide.addEventListener('click', () => {
+        setLegalFooterVisible(false);
       });
     }
   }, 100);

@@ -1288,7 +1288,8 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     contactJazzcashNumber,
     contactWhatsappUrl,
     showJazzcashOnLogin,
-    allowRegistration
+    allowRegistration,
+    showLegalFooter
   } = req.body;
 
   let processedAllowedDomains = undefined;
@@ -1356,6 +1357,7 @@ app.post('/api/admin/settings', requireAuth, (req, res) => {
     contactWhatsappUrl: contactWhatsappUrl !== undefined ? String(contactWhatsappUrl).trim() : undefined,
     showJazzcashOnLogin: showJazzcashOnLogin !== undefined ? !!showJazzcashOnLogin : undefined,
     allowRegistration: allowRegistration !== undefined ? (allowRegistration === true || allowRegistration === 'true') : undefined,
+    showLegalFooter: showLegalFooter !== undefined ? (showLegalFooter === true || showLegalFooter === 'true') : undefined,
     botProtectionEnabled: botProtectionEnabled !== undefined ? !!botProtectionEnabled : undefined,
     vpnProtectionEnabled: vpnProtectionEnabled !== undefined ? !!vpnProtectionEnabled : undefined,
     botLimitClicks: botLimitClicks !== undefined ? parseInt(botLimitClicks, 10) : undefined,
@@ -3124,7 +3126,8 @@ app.get('/api/public/contact-info', (req, res) => {
     jazzcashNumber: s.contactJazzcashNumber || '0307 1234567',
     whatsappUrl: s.contactWhatsappUrl || '',
     showJazzcash: s.showJazzcashOnLogin === true,
-    allowRegistration: s.allowRegistration !== false
+    allowRegistration: s.allowRegistration !== false,
+    showLegalFooter: s.showLegalFooter !== false
   });
 });
 

@@ -646,6 +646,11 @@
             if (closedCard) closedCard.style.display = 'block';
             if (waBtn && data.whatsappUrl) waBtn.href = data.whatsappUrl;
           }
+          // Show / Hide Legal & Compliance footer links based on Admin Settings control
+          const legalLinks = document.querySelector('.legal-footer-links');
+          if (legalLinks) {
+            legalLinks.style.display = (data && data.showLegalFooter === false) ? 'none' : 'block';
+          }
         })
         .catch(() => {});
 
