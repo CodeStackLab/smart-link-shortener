@@ -6037,7 +6037,7 @@ if (typeof loadDomains === 'function') loadDomains();
       const btns = document.querySelectorAll('#btn-editor-contact-whatsapp, #admin-preview-whatsapp-btn');
       let targetHref = 'https://wa.me/923468668297?text=Hello%20Admin%20Support';
       if (data && data.whatsappUrl && data.whatsappUrl.trim()) {
-        targetHref = data.whatsappUrl.trim();
+        targetHref = data.whatsappUrl.trim().replace(/\s+/g, '');
       } else if (data && data.whatsappNumber) {
         const clean = data.whatsappNumber.replace(/[^0-9]/g, '');
         const waIntl = clean.startsWith('0') ? ('92' + clean.slice(1)) : clean;
