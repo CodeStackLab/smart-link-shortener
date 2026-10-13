@@ -6567,11 +6567,13 @@ if (typeof loadDomains === 'function') loadDomains();
         const listContainer = document.getElementById('editor-messages-list');
         if (listContainer) {
           if (messages.length === 0) {
+            if (!listContainer.querySelector(".message-dashed-box") || listContainer.textContent.includes("Loading")) {
             listContainer.innerHTML = `
               <div class="message-dashed-box" style="font-size:1.02rem; font-weight:500; line-height:1.65;">
                 Hello everyone! We're working hard to make this platform better, faster and more useful for you. If you face any issues, please let us know — we're here to help. Thank you for your support!
               </div>
             `;
+            }
           } else {
             listContainer.innerHTML = messages.map(m => {
               const isPersonal = m.toUser !== '__all__';

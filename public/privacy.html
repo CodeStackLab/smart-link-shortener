@@ -410,12 +410,14 @@ Official WhatsApp helpline jo homepage par available hai ya Report Abuse page: h
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      fetch('/api/public/legal-content')
+      fetch('/api/public/legal-content?v=' + Date.now())
         .then(res => res.json())
         .then(data => {
           if (data && data.privacyText) {
             const el = document.getElementById('privacy-content-display');
-            if (el) el.textContent = data.privacyText;
+            if (el && el.textContent.trim() !== data.privacyText.trim()) {
+              el.textContent = data.privacyText;
+            }
           }
         })
         .catch(() => {});

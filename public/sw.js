@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartlink-v300';
+const CACHE_NAME = 'smartlink-v301';
 const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
@@ -40,8 +40,18 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Dynamic API calls, shortlinks and HTML pages always fetch from network
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/s/') || url.pathname === '/admin' || url.pathname === '/login' || url.pathname.endsWith('.html')) {
+  // Dynamic API calls, shortlinks, legal/report pages and HTML pages always fetch from network
+  if (
+    url.pathname.startsWith('/api/') || 
+    url.pathname.startsWith('/s/') || 
+    url.pathname === '/admin' || 
+    url.pathname === '/login' || 
+    url.pathname === '/terms' || 
+    url.pathname === '/privacy' || 
+    url.pathname === '/report' || 
+    url.pathname === '/report-abuse' || 
+    url.pathname.endsWith('.html')
+  ) {
     event.respondWith(fetch(event.request));
     return;
   }
