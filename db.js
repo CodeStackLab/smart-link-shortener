@@ -19,7 +19,8 @@ const FILES = {
   detectedDomains: path.join(DATA_DIR, 'detected_domains.json'),
   ignoredDomains: path.join(DATA_DIR, 'ignored_domains.json'),
   messages: path.join(DATA_DIR, 'messages.json'),
-  abuseReports: path.join(DATA_DIR, 'abuse_reports.json')
+  abuseReports: path.join(DATA_DIR, 'abuse_reports.json'),
+  legalContent: path.join(DATA_DIR, 'legal_content.json')
 };
 
 function readJson(file, defaultValue = []) {
@@ -950,5 +951,18 @@ module.exports = {
       return true;
     }
     return false;
+  },
+  // ── Custom Legal Pages Content (Terms & Privacy Editor) ──
+  getLegalContent: () => {
+    return readJson(FILES.legalContent, { termsText: '', privacyText: '' });
+  },
+
+  updateLegalContent: (data) => {
+    const current = readJson(FILES.legalContent, { termsText: '', privacyText: '' });
+    if (data.termsText !== undefined) current.termsText = String(data.termsText);
+    if (data.privacyText !== undefined) current.privacyText = String(data.privacyText);
+    current.updatedAt = new Date().toISOString();
+    writeJson(FILES.legalContent, current);
+    return current;
   },
 };

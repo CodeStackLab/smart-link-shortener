@@ -3281,6 +3281,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       syncRegistrationUi(settings.allowRegistration !== false);
       if (typeof window.syncLegalFooterUi === 'function') window.syncLegalFooterUi(settings.showLegalFooter !== false);
+      if (typeof window.loadLegalContentLive === 'function') window.loadLegalContentLive();
 
       // Populate Default Fallback URL in Settings
       const fallbackSettingInput = document.getElementById('setting-default-fallback-url');
@@ -3533,6 +3534,62 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.syncLegalFooterUi = syncLegalFooterUi;
 
+  // ─── Terms & Privacy Policy Content Editor (Load & Save) ───
+  window.loadLegalContentLive = async function() {
+    try {
+      const res = await fetch('/api/admin/legal-content');
+      if (!res.ok) return;
+      const data = await res.json();
+      const termsBox = document.getElementById('editor-terms-text');
+      const privacyBox = document.getElementById('editor-privacy-text');
+      if (termsBox && data.termsText) termsBox.value = data.termsText;
+      if (privacyBox && data.privacyText) privacyBox.value = data.privacyText;
+    } catch(e) {}
+  };
+
+  window.saveLegalContentLive = async function() {
+    const termsBox = document.getElementById('editor-terms-text');
+    const privacyBox = document.getElementById('editor-privacy-text');
+    const saveBtn = document.getElementById('btn-save-legal-content');
+    const statusEl = document.getElementById('legal-save-status');
+
+    const termsText = termsBox ? termsBox.value : '';
+    const privacyText = privacyBox ? privacyBox.value : '';
+
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳ Saving...';
+    }
+
+    try {
+      const res = await fetch('/api/admin/legal-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ termsText, privacyText })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFloatingToast('✅ Terms & Conditions aur Privacy Policy save ho gayi! Live update ho chuki hai.');
+        if (statusEl) {
+          statusEl.textContent = '✅ Saved Live!';
+          statusEl.style.color = '#10b981';
+          statusEl.style.display = 'inline';
+          setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+        }
+      } else {
+        showFloatingToast(data.error || 'Save failed', true);
+      }
+    } catch(err) {
+      showFloatingToast('Error saving: ' + (err.message || err), true);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save Terms & Privacy Policy Content';
+      }
+    }
+  };
+
+
   async function setLegalFooterVisible(isShowing) {
     syncLegalFooterUi(isShowing);
     try {
@@ -3681,6 +3738,45 @@ document.addEventListener('DOMContentLoaded', () => {
         setLegalFooterVisible(false);
       });
     }
+
+
+    // Wire Legal Content Editor Tabs and Save Button
+    const btnTabTerms = document.getElementById('btn-tab-edit-terms');
+    const btnTabPrivacy = document.getElementById('btn-tab-edit-privacy');
+    const wrapTerms = document.getElementById('wrap-edit-terms');
+    const wrapPrivacy = document.getElementById('wrap-edit-privacy');
+    const btnSaveLegal = document.getElementById('btn-save-legal-content');
+
+    if (btnTabTerms && btnTabPrivacy) {
+      btnTabTerms.addEventListener('click', () => {
+        btnTabTerms.style.background = '#10b981';
+        btnTabTerms.style.color = '#ffffff';
+        btnTabTerms.style.fontWeight = '800';
+        btnTabPrivacy.style.background = 'transparent';
+        btnTabPrivacy.style.color = 'var(--text-secondary)';
+        btnTabPrivacy.style.fontWeight = '700';
+        if (wrapTerms) wrapTerms.style.display = 'block';
+        if (wrapPrivacy) wrapPrivacy.style.display = 'none';
+      });
+
+      btnTabPrivacy.addEventListener('click', () => {
+        btnTabPrivacy.style.background = '#0094ff';
+        btnTabPrivacy.style.color = '#ffffff';
+        btnTabPrivacy.style.fontWeight = '800';
+        btnTabTerms.style.background = 'transparent';
+        btnTabTerms.style.color = 'var(--text-secondary)';
+        btnTabTerms.style.fontWeight = '700';
+        if (wrapTerms) wrapTerms.style.display = 'none';
+        if (wrapPrivacy) wrapPrivacy.style.display = 'block';
+      });
+    }
+
+    if (btnSaveLegal) {
+      btnSaveLegal.addEventListener('click', () => {
+        window.saveLegalContentLive();
+      });
+    }
+
   }, 100);
 
   window.saveLoginContactNumbers = async function(e) {

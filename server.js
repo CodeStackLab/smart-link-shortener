@@ -3291,6 +3291,46 @@ app.get('/login', (req, res) => {
 });
 
 
+
+// Public endpoint to get Terms and Privacy content
+app.get('/api/public/legal-content', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  const content = db.getLegalContent();
+  res.json({
+    success: true,
+    termsText: content.termsText || '',
+    privacyText: content.privacyText || '',
+    updatedAt: content.updatedAt || ''
+  });
+});
+
+// Admin endpoints to get & save Terms and Privacy content
+app.get('/api/admin/legal-content', requireAuth, requireSuperAdmin, (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  const content = db.getLegalContent();
+  res.json({
+    success: true,
+    termsText: content.termsText || '',
+    privacyText: content.privacyText || '',
+    updatedAt: content.updatedAt || ''
+  });
+});
+
+app.post('/api/admin/legal-content', requireAuth, requireSuperAdmin, (req, res) => {
+  try {
+    const { termsText, privacyText } = req.body || {};
+    const updated = db.updateLegalContent({ termsText, privacyText });
+    return res.json({
+      success: true,
+      message: 'Legal pages content saved successfully! Live on /terms and /privacy.',
+      content: updated
+    });
+  } catch (err) {
+    console.error('Error updating legal content:', err);
+    return res.status(500).json({ error: 'Failed to save legal content.' });
+  }
+});
+
 // ── Legal & Compliance Pages (NCCIA / PECA 2016 Compliant) ──
 app.get(['/terms', '/terms.html', '/terms-and-conditions'], (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
