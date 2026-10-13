@@ -80,12 +80,12 @@
     }
     .nav-links {
       display: flex;
-      gap: 3px;
+      gap: 6px;
       flex-wrap: nowrap;
       overflow-x: auto;
       max-width: 100%;
       width: 100%;
-      justify-content: space-between;
+      justify-content: flex-start;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -96,8 +96,8 @@
       display: none;
     }
     .nav-btn {
-      padding: 5px 5.5px;
-      font-size: 0.64rem;
+      padding: 6px 10px;
+      font-size: 0.69rem;
       font-weight: 700;
       color: #cbd5e1;
       background: rgba(30, 41, 59, 0.6);
@@ -110,15 +110,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      letter-spacing: -0.2px;
     }
     @media (max-width: 375px) {
       .nav-links {
-        gap: 2.5px;
+        gap: 4px;
       }
       .nav-btn {
-        padding: 4px 5px;
-        font-size: 0.59rem;
+        padding: 5px 8px;
+        font-size: 0.64rem;
       }
     }
     .nav-btn:hover {
@@ -510,7 +509,6 @@
         <a href="/terms" class="nav-btn">Terms &amp; Conditions</a>
         <a href="/privacy" class="nav-btn">Privacy Policy</a>
         <a href="/report" class="nav-btn active">🚨 Report Abuse</a>
-        <a href="/login" class="nav-btn">Portal Login</a>
       </nav>
     </header>
 
