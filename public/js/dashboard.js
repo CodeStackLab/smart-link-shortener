@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyRoleUiScoping(role, permissions) {
     const isFullAdmin = isFullAdminUser();
     const defaultFullPerms = ['facebook', 'instagram', 'custom_website', 'links', 'domains', 'geo', 'analytics', 'firewall', 'settings'];
-    const defaultEditorPerms = ['facebook', 'links', 'upload_image', 'settings'];
+    const defaultEditorPerms = ['facebook', 'links', 'upload_image', 'settings', 'analytics'];
 
     // All permissions from session (may include col_*, geo_*, logs_* granular keys)
     const allPerms = Array.isArray(permissions) ? permissions : (isFullAdmin ? defaultFullPerms : defaultEditorPerms);
@@ -662,13 +662,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Firewall and Settings tabs are available to all users (scoped per role)
       // Analytics requires Admin OR explicit 'analytics' permission
       // Publytics requires Super Admin OR Normal Admin OR explicit 'publytics' permission
-      const hasAccess = (item.key === 'firewall' || item.key === 'settings')
+      const hasAccess = (item.key === 'firewall' || item.key === 'analytics' || item.key === 'settings')
         ? true
-        : item.key === 'analytics'
-          ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('analytics'))
-          : item.key === 'publytics'
-            ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
-            : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
+        : item.key === 'publytics'
+          ? (isSuperAdminUser() || isFullAdmin || userPerms.includes('publytics'))
+          : (item.adminOnly ? isFullAdmin : (isFullAdmin || userPerms.includes(item.key)));
 
       const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.tabId}"]`);
       if (tabBtn) {
@@ -887,19 +885,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const genuineOrganicCard = document.getElementById('logs-genuine-organic-card');
       const fbBreakdown = document.getElementById('fb-breakdown-card');
 
-      if (hasAnalyticsPerm) {
-        if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'inline-flex', 'important');
-        if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'flex', 'important');
-        if (tabAnalytics) tabAnalytics.style.removeProperty('display');
-        if (genuineOrganicCard) genuineOrganicCard.style.removeProperty('display');
-        if (fbBreakdown) fbBreakdown.style.removeProperty('display');
-      } else {
-        if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'none', 'important');
-        if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'none', 'important');
-        if (tabAnalytics) tabAnalytics.style.setProperty('display', 'none', 'important');
-        if (genuineOrganicCard) genuineOrganicCard.style.setProperty('display', 'none', 'important');
-        if (fbBreakdown) fbBreakdown.style.setProperty('display', 'none', 'important');
-      }
+      // Always show Logs button & Facebook Sub-Source Analytics for Editors
+      if (analyticsTabBtn) analyticsTabBtn.style.setProperty('display', 'inline-flex', 'important');
+      if (analyticsMobileBtn) analyticsMobileBtn.style.setProperty('display', 'flex', 'important');
+      if (tabAnalytics) tabAnalytics.style.removeProperty('display');
+      if (genuineOrganicCard) genuineOrganicCard.style.removeProperty('display');
+      if (fbBreakdown) fbBreakdown.style.removeProperty('display');
 
       // Hide raw IP logs table and detailed admin cards for Editors
       const rawLogsWrap = document.getElementById('logs-realtime-wrap');

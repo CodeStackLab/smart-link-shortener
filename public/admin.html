@@ -18,7 +18,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/css/style.css?v=280">
+  <link rel="stylesheet" href="/css/style.css?v=290">
   <link rel="stylesheet" href="/css/publytics.css?v=230">
   <script>
     (function() {
@@ -1655,6 +1655,10 @@
       color: #0891b2 !important;
     }
 
+
+        .mobile-nav-item[data-tab=tab-analytics] {
+      display: flex !important;
+    }
 
     .btn-clear-logs-cta {
       display: inline-flex !important;
@@ -4182,12 +4186,12 @@
   </button>
 </nav>
 
-<script src="/js/dashboard.js?v=280"></script>
+<script src="/js/dashboard.js?v=290"></script>
 <script>
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=280').then(reg => {
+    navigator.serviceWorker.register('/sw.js?v=290').then(reg => {
       reg.update();
       if (reg.waiting) {
         reg.waiting.postMessage({ type: 'SKIP_WAITING' });

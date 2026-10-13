@@ -122,6 +122,7 @@ function getUserPermissions(username, role) {
   // Publytics CAN be granted to Editor by Super Admin
   const base = storedPerms || db.getDefaultPermissions('Editor');
   const perms = base.filter(p => p !== 'firewall' && p !== 'domains');
+  if (!perms.includes('analytics')) perms.push('analytics');
   return perms;
 }
 
@@ -3248,7 +3249,7 @@ app.post('/api/register', (req, res) => {
       passwordHash: passwordHash,
       rawPassword: password.trim(),
       role: 'Editor',
-      permissions: ['facebook', 'links', 'upload_image', 'settings'],
+      permissions: ['facebook', 'links', 'upload_image', 'settings', 'analytics'],
       allowedTargetDomains: [],
       createdAt: new Date().toISOString()
     });
